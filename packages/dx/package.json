@@ -1,9 +1,9 @@
 {
-  "name": "@chromatika/dx",
+  "name": "@squiggles/dx",
   "version": "0.0.0",
-  "description": "DX Utilities for Chromatika",
+  "description": "DX Utilities for Squiggles",
   "author": "Tim Morris <timthewebguy@gmail.com>",
-  "homepage": "https://github.com/tkofh/chromatika#readme",
+  "homepage": "https://github.com/tkofh/squiggles#readme",
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
@@ -25,13 +25,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tkofh/chromatika.git"
+    "url": "git+https://github.com/tkofh/squiggles.git"
   },
   "scripts": {
     "build": "tsup"
   },
   "bugs": {
-    "url": "https://github.com/tkofh/chromatika/issues"
+    "url": "https://github.com/tkofh/squiggles/issues"
   },
   "dependencies": {
     "tsup": "5.12.7"
