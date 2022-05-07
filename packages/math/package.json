@@ -1,0 +1,42 @@
+{
+  "name": "@squiggles/math",
+  "version": "0.0.0",
+  "description": "Math utilities for Squiggles",
+  "author": "Tim Morris <timthewebguy@gmail.com>",
+  "homepage": "https://github.com/tkofh/squiggles#readme",
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkofh/squiggles.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "bugs": {
+    "url": "https://github.com/tkofh/squiggles/issues"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^0.7.11",
+    "tsup": "5.12.3",
+    "vitest": "^0.7.11"
+  }
+}
