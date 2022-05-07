@@ -1,0 +1,39 @@
+{
+  "name": "@chromatika/dx",
+  "version": "0.0.0",
+  "description": "DX Utilities for Chromatika",
+  "author": "Tim Morris <timthewebguy@gmail.com>",
+  "homepage": "https://github.com/tkofh/chromatika#readme",
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkofh/chromatika.git"
+  },
+  "scripts": {
+    "build": "tsup"
+  },
+  "bugs": {
+    "url": "https://github.com/tkofh/chromatika/issues"
+  },
+  "dependencies": {
+    "tsup": "5.12.7"
+  }
+}
