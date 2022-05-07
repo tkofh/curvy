@@ -1,11 +1,3 @@
-# `dx`
+# `@squiggles/dx`
 
-> TODO: description
-
-## Usage
-
-```
-const dx = require('dx');
-
-// TODO: DEMONSTRATE API
-```
+DX Utilities for Squiggles. Not meant for public consumption.
