@@ -1,10 +1,18 @@
-import { Points } from './points'
-import { Rect } from './areas'
+import { ReadonlyPoints } from './points'
+import { ReadonlyRect } from './areas'
+
+export type Monotonicity = 'positive' | 'negative' | 'none'
 
 export interface Spline {
-  solve: (x: number) => number | undefined
-  solveInverse: (y: number, minX?: number, maxX?: number) => number | undefined
-  boundingBox: Rect
-  extrema: Points
-  precision: number
+  readonly boundingBox: ReadonlyRect
+  readonly extrema: ReadonlyPoints
+
+  readonly solveY: (x: number, minY?: number, maxY?: number) => number | undefined
+  readonly solveX: (y: number, minX?: number, maxX?: number) => number | undefined
+
+  readonly precisionX: number
+  readonly precisionY: number
+
+  readonly monotonicityX: Monotonicity
+  readonly monotonicityY: Monotonicity
 }

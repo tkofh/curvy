@@ -1,0 +1,2 @@
+export const DEFAULT_LUT_RESOLUTION = 512
+export const DEFAULT_PRECISION = 16

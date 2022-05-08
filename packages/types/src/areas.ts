@@ -5,6 +5,8 @@ export interface Rect {
   maxY: number
 }
 
+export type ReadonlyRect = Readonly<Rect>
+
 export interface Range<T> {
   value: T
   start: number
@@ -12,3 +14,5 @@ export interface Range<T> {
   end: number
   endInclusive: boolean
 }
+
+export type ReadonlyRange<T> = Readonly<Range<T>>

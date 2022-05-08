@@ -1,7 +1,7 @@
 {
-  "name": "@squiggles/math",
+  "name": "@squiggles/bezier",
   "version": "0.0.0",
-  "description": "Math utilities for Squiggles",
+  "description": "Bezier curve implementation for Squiggles",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/squiggles#readme",
   "license": "MIT",
@@ -33,6 +33,11 @@
   },
   "bugs": {
     "url": "https://github.com/tkofh/squiggles/issues"
+  },
+  "dependencies": {
+    "@squiggles/dx": "0.0.0",
+    "@squiggles/math": "0.0.0",
+    "@squiggles/types": "0.0.0"
   },
   "devDependencies": {
     "@vitest/ui": "^0.11.0",
