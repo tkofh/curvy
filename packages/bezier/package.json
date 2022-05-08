@@ -35,9 +35,9 @@
     "url": "https://github.com/tkofh/squiggles/issues"
   },
   "dependencies": {
-    "@squiggles/dx": "0.0.0",
-    "@squiggles/math": "0.0.0",
-    "@squiggles/types": "0.0.0"
+    "@squiggles/dx": "0.1.0",
+    "@squiggles/math": "0.1.0",
+    "@squiggles/types": "0.1.0"
   },
   "devDependencies": {
     "@vitest/ui": "^0.11.0",
