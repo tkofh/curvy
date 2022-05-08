@@ -1,3 +1,3 @@
-# `@chromatika/splines`
+# `@squiggles/bezier`
 
-> Bézier curve implementation for Chromatika
+Bézier curve implementation for Squiggles
