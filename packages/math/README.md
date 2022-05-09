@@ -1,3 +1,3 @@
-# `@squiggles/math`
+# `@curvy/math`
 
 Math utilities for Squiggles

@@ -1,6 +1,6 @@
-import { Rect, Spline } from '@squiggles/types'
-import { roundTo } from '@squiggles/math'
-import { warnDev } from '@squiggles/dx'
+import { Rect, Spline } from '@curvy/types'
+import { roundTo } from '@curvy/math'
+import { warnDev } from '@curvy/dx'
 
 interface SplineData {
   inputMin: number

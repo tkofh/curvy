@@ -1,5 +1,5 @@
-import { quadraticRoots } from '@squiggles/math'
-import { Monotonicity } from '@squiggles/types'
+import { quadraticRoots } from '@curvy/math'
+import { Monotonicity } from '@curvy/types'
 
 interface DerivativeInfo {
   roots: number[]

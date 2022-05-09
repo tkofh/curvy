@@ -1,5 +1,5 @@
-import { remap, roundTo } from '@squiggles/math'
-import { warnDev } from '@squiggles/dx'
+import { remap, roundTo } from '@curvy/math'
+import { warnDev } from '@curvy/dx'
 
 export const createCubicBezierDimensionSolver = (
   inputMin: number,

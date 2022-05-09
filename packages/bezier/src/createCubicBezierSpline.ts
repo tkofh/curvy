@@ -1,5 +1,5 @@
-import { CubicPoints, Points, Rect, Spline } from '@squiggles/types'
-import { roundTo } from '@squiggles/math'
+import { CubicPoints, Points, Rect, Spline } from '@curvy/types'
+import { roundTo } from '@curvy/math'
 import {
   createCubicBezierDimensionSolver,
   createCubicBezierSolver,

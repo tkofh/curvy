@@ -1,9 +1,9 @@
 {
-  "name": "@squiggles/bezier",
+  "name": "@curvy/bezier",
   "version": "0.1.1",
   "description": "Bezier curve implementation for Squiggles",
   "author": "Tim Morris <timthewebguy@gmail.com>",
-  "homepage": "https://github.com/tkofh/squiggles#readme",
+  "homepage": "https://github.com/tkofh/curvy#readme",
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
@@ -25,19 +25,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tkofh/squiggles.git"
+    "url": "git+https://github.com/tkofh/curvy.git"
   },
   "scripts": {
     "build": "tsup",
     "test": "vitest run"
   },
   "bugs": {
-    "url": "https://github.com/tkofh/squiggles/issues"
+    "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@squiggles/dx": "0.1.1",
-    "@squiggles/math": "0.1.1",
-    "@squiggles/types": "0.1.1"
+    "@curvy/dx": "0.1.1",
+    "@curvy/math": "0.1.1",
+    "@curvy/types": "0.1.1"
   },
   "devDependencies": {
     "@vitest/ui": "^0.11.0",
@@ -45,5 +45,5 @@
     "tsup": "^5.12.7",
     "vitest": "^0.11.0"
   },
-  "gitHead": "2f9adb53f194595fb4bb599a8689311c1105e2a2"
+  "gitHead": "f20477b96f86301777a0859458ae5a8e2e3ba178"
 }

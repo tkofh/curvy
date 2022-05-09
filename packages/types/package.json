@@ -1,9 +1,9 @@
 {
-  "name": "@squiggles/types",
+  "name": "@curvy/types",
   "version": "0.1.1",
   "description": "Types for Squiggles",
   "author": "Tim Morris <timthewebguy@gmail.com>",
-  "homepage": "https://github.com/tkofh/squiggles#readme",
+  "homepage": "https://github.com/tkofh/curvy#readme",
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
@@ -25,16 +25,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tkofh/squiggles.git"
+    "url": "git+https://github.com/tkofh/curvy.git"
   },
   "scripts": {
     "build": "tsup"
   },
   "bugs": {
-    "url": "https://github.com/tkofh/squiggles/issues"
+    "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
     "tsup": "^5.12.7"
   },
-  "gitHead": "2f9adb53f194595fb4bb599a8689311c1105e2a2"
+  "gitHead": "f20477b96f86301777a0859458ae5a8e2e3ba178"
 }

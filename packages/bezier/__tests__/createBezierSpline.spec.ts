@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest'
-import { roundTo } from '@squiggles/math'
+import { roundTo } from '@curvy/math'
 import { createBezierSpline } from '../src'
 
 describe('createBezierSolver', () => {

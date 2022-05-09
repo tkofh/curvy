@@ -1,4 +1,4 @@
-import { Monotonicity, Points, Rect, Spline } from '@squiggles/types'
+import { Monotonicity, Points, Rect, Spline } from '@curvy/types'
 import { DEFAULT_LUT_RESOLUTION, DEFAULT_PRECISION } from './constants'
 import { createCubicBezierSpline } from './createCubicBezierSpline'
 import { BezierSplineOptions } from './BezierSplineOptions'
