@@ -1,3 +1,3 @@
 # `@curvy/bezier`
 
-Bézier curve implementation for Squiggles
+Bézier curve implementation for Curvy

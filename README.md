@@ -1,3 +1,3 @@
-# Squiggles
+# Curvy
 
 Practical Berstein Curve Utilities

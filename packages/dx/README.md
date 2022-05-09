@@ -1,3 +1,3 @@
 # `@curvy/dx`
 
-DX Utilities for Squiggles. Not meant for public consumption.
+DX Utilities for Curvy. Not meant for public consumption.

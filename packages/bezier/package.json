@@ -1,7 +1,7 @@
 {
   "name": "@curvy/bezier",
   "version": "0.1.2",
-  "description": "Bezier curve implementation for Squiggles",
+  "description": "Bezier curve implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
   "license": "MIT",

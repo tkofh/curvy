@@ -1,7 +1,7 @@
 {
   "name": "@curvy/math",
   "version": "0.1.2",
-  "description": "Math utilities for Squiggles",
+  "description": "Math utilities for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
   "license": "MIT",
