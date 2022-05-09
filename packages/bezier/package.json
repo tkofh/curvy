@@ -1,6 +1,6 @@
 {
   "name": "@curvy/bezier",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Bezier curve implementation for Squiggles",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
@@ -35,9 +35,9 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/dx": "0.1.1",
-    "@curvy/math": "0.1.1",
-    "@curvy/types": "0.1.1"
+    "@curvy/dx": "0.1.2",
+    "@curvy/math": "0.1.2",
+    "@curvy/types": "0.1.2"
   },
   "devDependencies": {
     "@vitest/ui": "^0.11.0",
