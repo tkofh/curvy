@@ -15,4 +15,7 @@ export interface Spline {
 
   readonly monotonicityX: Monotonicity
   readonly monotonicityY: Monotonicity
+
+  readonly length: number
+  readonly solvePointAtLength: (length: number) => number | undefined
 }
