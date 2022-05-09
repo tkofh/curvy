@@ -1,0 +1,7 @@
+export { BezierSplineOptions } from './BezierSplineOptions'
+export { DEFAULT_PRECISION, DEFAULT_LUT_RESOLUTION } from './constants'
+export { createCubicBezierSegment } from './createCubicBezierSegment'
+export { createCubicBezierSegmentDimensionSolver } from './createCubicBezierSegmentDimensionSolver'
+export { createCubicBezierSolver } from './createCubicBezierSolver'
+export { createCubicBezierSplineDimensionSolver } from './createCubicBezierSplineDimensionSolver'
+export { getDerivativeInfo } from './getDerivativeInfo'

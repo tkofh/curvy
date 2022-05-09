@@ -1,1 +1,1 @@
-export { createBezierSpline } from './createBezierSpline'
+export { createCubicBezierSpline } from './createCubicBezierSpline'

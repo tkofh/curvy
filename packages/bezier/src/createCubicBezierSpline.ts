@@ -1,149 +1,122 @@
-import { CubicPoints, Points, Rect, Spline } from '@curvy/types'
-import { roundTo } from '@curvy/math'
+import { Monotonicity, Points, Rect, Spline } from '@curvy/types'
 import {
-  createCubicBezierDimensionSolver,
-  createCubicBezierSolver,
-  getDerivativeInfo,
-} from './util'
-import { DEFAULT_LUT_RESOLUTION, DEFAULT_PRECISION } from './constants'
-import { BezierSplineOptions } from './BezierSplineOptions'
+  BezierSplineOptions,
+  createCubicBezierSegment,
+  DEFAULT_LUT_RESOLUTION,
+  DEFAULT_PRECISION,
+  createCubicBezierSplineDimensionSolver,
+} from './lib'
 
-export const createCubicBezierSpline = (
-  points: CubicPoints,
-  options?: BezierSplineOptions
-): Spline => {
+export const createCubicBezierSpline = (points: Points, options?: BezierSplineOptions): Spline => {
+  if (points.length < 4) {
+    throw new Error('At least one cubic segment (four points) must be provided')
+  }
+
+  if ((points.length - 1) % 3 !== 0) {
+    throw new Error('Invalid number of points provided (must have 3n+1 points)')
+  }
+
   const precisionY = options?.precisionY ?? options?.precision ?? DEFAULT_PRECISION
   const precisionX = options?.precisionX ?? options?.precision ?? DEFAULT_PRECISION
 
   const lutResolution = options?.lutResolution ?? DEFAULT_LUT_RESOLUTION
 
-  /**
-   * It's safe to round the input points because they shouldn't
-   * be more precise than the desired input and output values
-   *
-   * They need to be rounded to determine the extrema of the
-   * curve after precision is taken into account, as these
-   * values may differ from the extrema of an input curve
-   * with extra precision
-   */
+  // number of points that sit along the curve
+  const fixedPointCount = (points.length - 1) / 3
 
-  const p0x = roundTo(points[0][0], precisionX)
-  const p1x = roundTo(points[1][0], precisionX)
-  const p2x = roundTo(points[2][0], precisionX)
-  const p3x = roundTo(points[3][0], precisionX)
+  const children: Spline[] = []
 
-  const p0y = roundTo(points[0][1], precisionY)
-  const p1y = roundTo(points[1][1], precisionY)
-  const p2y = roundTo(points[2][1], precisionY)
-  const p3y = roundTo(points[3][1], precisionY)
+  const extremaCandidates: Points = []
 
-  const dx = getDerivativeInfo(p0x, p1x, p2x, p3x)
-  const dy = getDerivativeInfo(p0y, p1y, p2y, p3y)
+  const boundingBox: Rect = { maxY: -Infinity, minY: Infinity, minX: Infinity, maxX: -Infinity }
+  let monotonicityX: Monotonicity = 'none'
+  let monotonicityY: Monotonicity = 'none'
 
-  const solveXForT = createCubicBezierSolver(p0x, p1x, p2x, p3x)
-  const solveYForT = createCubicBezierSolver(p0y, p1y, p2y, p3y)
+  for (let i = 0; i < fixedPointCount; i++) {
+    const child = createCubicBezierSegment(
+      [points[i * 3], points[i * 3 + 1], points[i * 3 + 2], points[i * 3 + 3]],
+      {
+        lutResolution,
+        precisionX,
+        precisionY,
+      }
+    )
+    children.push(child)
 
-  const lutX: number[] = []
-  const lutY: number[] = []
+    if (i === 0) {
+      extremaCandidates.push(...(child.extrema as Points))
+      monotonicityX = child.monotonicityX
+      monotonicityY = child.monotonicityY
+    } else {
+      extremaCandidates.push(...(child.extrema.slice(1) as Points))
 
-  lutX.push(p0x)
-  lutY.push(p0y)
+      if (child.monotonicityX !== monotonicityX) {
+        monotonicityX = 'none'
+      }
+      if (child.monotonicityY !== monotonicityY) {
+        monotonicityY = 'none'
+      }
+    }
 
-  // start at s=1 and end where s=(resolution - 1) because the endpoints are already known from the input
-  for (let s = 1; s < lutResolution - 1; s++) {
-    const t = s / (lutResolution - 1)
-
-    const sx = solveXForT(t)
-    const sy = solveYForT(t)
-
-    lutX.push(sx)
-    lutY.push(sy)
+    if (child.boundingBox.maxY > boundingBox.maxY) {
+      boundingBox.maxY = child.boundingBox.maxY
+    }
+    if (child.boundingBox.maxX > boundingBox.maxX) {
+      boundingBox.maxX = child.boundingBox.maxX
+    }
+    if (child.boundingBox.minY < boundingBox.minY) {
+      boundingBox.minY = child.boundingBox.minY
+    }
+    if (child.boundingBox.minX < boundingBox.minX) {
+      boundingBox.minX = child.boundingBox.minX
+    }
   }
-
-  lutX.push(p3x)
-  lutY.push(p3y)
 
   const extrema: Points = []
+  for (let i = 0; i < extremaCandidates.length; i++) {
+    const current = extremaCandidates[i]
+    const [currentX, currentY] = current
+    if (i === 0 || i === extremaCandidates.length - 1) {
+      extrema.push(current)
+    } else {
+      const [previousX, previousY] = extrema[extrema.length - 1]
+      const [nextX, nextY] = extremaCandidates[i + 1]
 
-  const boundingBox: Rect = {
-    minX: Math.min(p0x, p3x),
-    maxX: Math.max(p0x, p3x),
-    minY: Math.min(p0y, p3y),
-    maxY: Math.max(p0y, p3y),
-  }
-
-  extrema.push([p0x, p0y])
-
-  const uniqueRoots = new Set<number>()
-  for (const root of dx.roots) {
-    uniqueRoots.add(root)
-  }
-  for (const root of dy.roots) {
-    uniqueRoots.add(root)
-  }
-
-  const orderedRootsT = Array.from(new Set<number>([...dx.roots, ...dy.roots])).sort(
-    (a, b) => a - b
-  )
-
-  for (const root of orderedRootsT) {
-    const rx = roundTo(solveXForT(root), precisionX)
-    const ry = roundTo(solveYForT(root), precisionY)
-
-    const prevX = extrema[extrema.length - 1][0]
-    const prevY = extrema[extrema.length - 1][1]
-
-    if (
-      rx < Math.min(prevX, p3x) ||
-      rx > Math.max(prevX, p3x) ||
-      ry < Math.min(prevY, p3y) ||
-      ry > Math.max(prevY, p3y)
-    ) {
-      extrema.push([rx, ry])
-
-      if (rx < boundingBox.minX) {
-        boundingBox.minX = rx
-      } else if (rx > boundingBox.maxX) {
-        boundingBox.maxX = rx
-      }
-      if (ry < boundingBox.minY) {
-        boundingBox.minY = ry
-      } else if (ry > boundingBox.maxY) {
-        boundingBox.maxY = ry
+      if (
+        currentX < Math.min(previousX, nextX) ||
+        currentX > Math.max(previousX, nextX) ||
+        currentY < Math.min(previousY, nextY) ||
+        currentY > Math.max(previousY, nextY)
+      ) {
+        extrema.push(current)
       }
     }
   }
-  extrema.push([p3x, p3y])
 
-  const solveX = createCubicBezierDimensionSolver(
-    boundingBox.minY,
-    boundingBox.maxY,
-    boundingBox.minX,
-    boundingBox.maxX,
+  const solveX = createCubicBezierSplineDimensionSolver(
+    'Y',
+    boundingBox,
     precisionY,
     precisionX,
-    lutY,
-    lutX
+    children
   )
-  const solveY = createCubicBezierDimensionSolver(
-    boundingBox.minX,
-    boundingBox.maxX,
-    boundingBox.minY,
-    boundingBox.maxY,
+
+  const solveY = createCubicBezierSplineDimensionSolver(
+    'X',
+    boundingBox,
     precisionX,
     precisionY,
-    lutX,
-    lutY
+    children
   )
 
   return {
     solveX,
     solveY,
-    extrema,
-    boundingBox,
-    monotonicityX: dx.monotonicity,
-    monotonicityY: dy.monotonicity,
     precisionX,
     precisionY,
+    monotonicityX,
+    monotonicityY,
+    extrema,
+    boundingBox,
   }
 }
