@@ -1,0 +1,43 @@
+{
+  "name": "curvy",
+  "version": "0.0.0",
+  "description": "Bezier and Hermite Splines",
+  "author": "Tim Morris <timthewebguy@gmail.com>",
+  "homepage": "https://github.com/tkofh/curvy#readme",
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkofh/curvy.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "bugs": {
+    "url": "https://github.com/tkofh/curvy/issues"
+  },
+  "dependencies": {
+    "@curvy/bezier": "^0.1.3"
+  },
+  "devDependencies": {
+    "tsup": "^5.12.7"
+  }
+}
