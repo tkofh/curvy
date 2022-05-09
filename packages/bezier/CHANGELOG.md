@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.1](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.2.0...@curvy/bezier@0.2.1) (2022-05-09)
+
+
+### Features
+
+* **bezier:** disable rounding by default ([bf4d1f6](https://github.com/tkofh/curvy/commit/bf4d1f6125d15a73e4ac20bf23c50e1f8f0889a5))
+
+
+
+
+
 # [0.2.0](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.1.3...@curvy/bezier@0.2.0) (2022-05-09)
 
 **Note:** Version bump only for package @curvy/bezier
