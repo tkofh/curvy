@@ -1,3 +1,3 @@
 # Curvy
 
-Practical Berstein Curve Utilities
+Bezier and Hermite Splines
