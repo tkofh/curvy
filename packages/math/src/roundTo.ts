@@ -9,6 +9,11 @@ export const roundTo = (value: number, precision: number) => {
     throw new Error('precision must be a positive integer or zero')
   }
 
+  // don't bother rounding to more decimal places than javascript numbers can hold
+  if (precision >= 17) {
+    return value
+  }
+
   const coefficient = Math.pow(10, precision)
 
   return Math.round(value * coefficient) / coefficient
