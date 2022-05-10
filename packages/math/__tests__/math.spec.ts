@@ -1,5 +1,5 @@
-import { describe, test, expect } from 'vitest'
-import { clamp, lerp, mod, normalize, quadraticRoots, remap, roundTo } from '../src'
+import { describe, test, expect, vi } from 'vitest'
+import { clamp, distance, lerp, mod, normalize, quadraticRoots, remap, roundTo } from '../src'
 
 describe('clamp', () => {
   test('it clamps ', () => {
@@ -11,6 +11,29 @@ describe('clamp', () => {
     expect(clamp(0.5, 0, 1)).toBe(0.5)
     expect(clamp(1, 0, 1)).toBe(1)
     expect(clamp(2, 0, 1)).toBe(1)
+  })
+})
+
+describe('distance', () => {
+  test('it handles no distance efficiently', ({ expect }) => {
+    const absSpy = vi.spyOn(Math, 'abs')
+    const sqrtSpy = vi.spyOn(Math, 'sqrt')
+
+    expect(distance(0, 0, 0, 0)).toBe(0)
+
+    expect(absSpy).not.toHaveBeenCalled()
+    expect(sqrtSpy).not.toHaveBeenCalled()
+  })
+  test('it handles vertical and horizontal lines efficiently', ({ expect }) => {
+    const sqrtSpy = vi.spyOn(Math, 'sqrt')
+
+    expect(distance(0, 0, 0, 10)).toBe(10)
+    expect(distance(0, 0, 10, 0)).toBe(10)
+
+    expect(sqrtSpy).not.toHaveBeenCalled()
+  })
+  test('it handles any coordinates', ({ expect }) => {
+    expect(distance(0, 0, 1, 1)).toBe(Math.sqrt(2))
   })
 })
 

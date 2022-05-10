@@ -1,4 +1,5 @@
 export { clamp } from './clamp'
+export { distance } from './distance'
 export { lerp } from './lerp'
 export { mod } from './mod'
 export { normalize } from './normalize'
