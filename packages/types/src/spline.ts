@@ -1,4 +1,4 @@
-import { ReadonlyPoints } from './points'
+import { ReadonlyPoint, ReadonlyPoints } from './points'
 import { ReadonlyRect } from './areas'
 
 export type Monotonicity = 'positive' | 'negative' | 'none'
@@ -17,5 +17,5 @@ export interface Spline {
   readonly monotonicityY: Monotonicity
 
   readonly length: number
-  readonly solvePointAtLength: (length: number) => number | undefined
+  readonly solvePointAtLength: (length: number) => ReadonlyPoint | undefined
 }
