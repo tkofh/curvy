@@ -10,7 +10,7 @@ interface SplineData {
   solve: Spline['solveX'] | Spline['solveY']
 }
 
-export const createCubicBezierSplineDimensionSolver = (
+export const createSplineDimensionSolver = (
   inputAxis: 'X' | 'Y',
   boundingBox: Rect,
   precisionInput: number,

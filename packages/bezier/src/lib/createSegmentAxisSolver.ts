@@ -1,7 +1,7 @@
 import { remap, roundTo } from '@curvy/math'
 import { warnDev } from '@curvy/dx'
 
-export const createCubicBezierSegmentDimensionSolver = (
+export const createSegmentAxisSolver = (
   inputMin: number,
   inputMax: number,
   defaultOutputMin: number,

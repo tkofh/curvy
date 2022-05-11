@@ -1,13 +1,13 @@
 import { describe, test } from 'vitest'
 import { roundTo } from '@curvy/math'
-import { createCubicBezierSegment } from '../src/lib'
+import { createSegment } from '../src/lib'
 
 describe('createCubicBezierSegment', () => {
   describe('precision', () => {
     test('accepts a precision', ({ expect }) => {
       const precision = 2
 
-      const spline = createCubicBezierSegment(
+      const spline = createSegment(
         [
           [0, 0],
           [75, 0],
@@ -26,7 +26,7 @@ describe('createCubicBezierSegment', () => {
       const precisionX = 0
       const precisionY = 2
 
-      const spline = createCubicBezierSegment(
+      const spline = createSegment(
         [
           [0, 0],
           [75, 0],
@@ -45,7 +45,7 @@ describe('createCubicBezierSegment', () => {
 
   describe('monotonicity', () => {
     test('detects positive monotonicity', ({ expect }) => {
-      const spline1 = createCubicBezierSegment([
+      const spline1 = createSegment([
         [0, 0],
         [100, 0],
         [0, 100],
@@ -54,7 +54,7 @@ describe('createCubicBezierSegment', () => {
       expect(spline1.monotonicityX).toBe('positive')
       expect(spline1.monotonicityY).toBe('positive')
 
-      const spline2 = createCubicBezierSegment([
+      const spline2 = createSegment([
         [0, 0],
         [0, 100],
         [100, 0],
@@ -65,7 +65,7 @@ describe('createCubicBezierSegment', () => {
     })
 
     test('detects negative monotonicity', ({ expect }) => {
-      const spline1 = createCubicBezierSegment([
+      const spline1 = createSegment([
         [0, 0],
         [-100, 0],
         [0, -100],
@@ -74,7 +74,7 @@ describe('createCubicBezierSegment', () => {
       expect(spline1.monotonicityX).toBe('negative')
       expect(spline1.monotonicityY).toBe('negative')
 
-      const spline2 = createCubicBezierSegment([
+      const spline2 = createSegment([
         [100, 100],
         [100, 0],
         [0, 100],
@@ -85,7 +85,7 @@ describe('createCubicBezierSegment', () => {
     })
 
     test('detects no monotonicity', ({ expect }) => {
-      const spline1 = createCubicBezierSegment([
+      const spline1 = createSegment([
         [0, 20],
         [0, -50],
         [-50, 0],
@@ -94,7 +94,7 @@ describe('createCubicBezierSegment', () => {
       expect(spline1.monotonicityX).toBe('none')
       expect(spline1.monotonicityY).toBe('none')
 
-      const spline2 = createCubicBezierSegment([
+      const spline2 = createSegment([
         [20, 0],
         [-50, 0],
         [0, -50],
@@ -107,7 +107,7 @@ describe('createCubicBezierSegment', () => {
 
   describe('bounds and extrema', () => {
     test('finds bounds and extrema of line segment', ({ expect }) => {
-      const spline1 = createCubicBezierSegment([
+      const spline1 = createSegment([
         [0, 0],
         [25, 25],
         [75, 75],
@@ -127,7 +127,7 @@ describe('createCubicBezierSegment', () => {
     })
 
     test('finds bounds and extrema of parabola', ({ expect }) => {
-      const spline1 = createCubicBezierSegment([
+      const spline1 = createSegment([
         [0, 0],
         [0, 200],
         [100, 200],
@@ -141,7 +141,7 @@ describe('createCubicBezierSegment', () => {
       ])
       expect(spline1.boundingBox).toStrictEqual({ minX: 0, maxX: 100, minY: 0, maxY: 150 })
 
-      const spline2 = createCubicBezierSegment([
+      const spline2 = createSegment([
         [0, 0],
         [200, 0],
         [200, 100],
@@ -157,7 +157,7 @@ describe('createCubicBezierSegment', () => {
     })
 
     test('finds bounds and extrema of loops', ({ expect }) => {
-      const spline1 = createCubicBezierSegment(
+      const spline1 = createSegment(
         [
           [0, 20],
           [0, -50],
@@ -175,7 +175,7 @@ describe('createCubicBezierSegment', () => {
       ])
       expect(spline1.boundingBox).toStrictEqual({ minX: -17.3, maxX: 20, minY: -17.3, maxY: 20 })
 
-      const spline2 = createCubicBezierSegment([
+      const spline2 = createSegment([
         [20, 0],
         [-50, 0],
         [0, -50],
@@ -200,7 +200,7 @@ describe('createCubicBezierSegment', () => {
   describe('solving', () => {
     test('solves y and x for each other', ({ expect }) => {
       const precision = 12
-      const spline = createCubicBezierSegment(
+      const spline = createSegment(
         [
           [0, 0],
           [0, 75],
@@ -222,7 +222,7 @@ describe('createCubicBezierSegment', () => {
     })
 
     test('returns undefined for out of bounds inputs', ({ expect }) => {
-      const spline = createCubicBezierSegment([
+      const spline = createSegment([
         [0, 0],
         [25, 25],
         [75, 75],
@@ -236,7 +236,7 @@ describe('createCubicBezierSegment', () => {
     })
 
     test('respects constraints on output', ({ expect }) => {
-      const spline1 = createCubicBezierSegment(
+      const spline1 = createSegment(
         [
           [0, 0],
           [0, 100],
@@ -252,7 +252,7 @@ describe('createCubicBezierSegment', () => {
       expect(spline1.solveX(60, 81.2, 81.4)).toBe(81.3)
       expect(spline1.solveX(60, 81.4, 100)).toBeUndefined()
 
-      const spline2 = createCubicBezierSegment(
+      const spline2 = createSegment(
         [
           [0, 0],
           [100, 0],
