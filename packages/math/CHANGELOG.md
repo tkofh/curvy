@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/tkofh/curvy/compare/@curvy/math@0.1.4...@curvy/math@0.2.0) (2022-05-12)
+
+
+### Features
+
+* **math:** distance function ([9468e23](https://github.com/tkofh/curvy/commit/9468e236d921033e73b6d223ebfa72830d926ee3))
+
+
+
+
+
 ## [0.1.4](https://github.com/tkofh/curvy/compare/@curvy/math@0.1.3...@curvy/math@0.1.4) (2022-05-09)
 
 

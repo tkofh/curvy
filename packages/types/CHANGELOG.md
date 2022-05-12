@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/tkofh/curvy/compare/@curvy/types@0.1.3...@curvy/types@0.2.0) (2022-05-12)
+
+
+### Bug Fixes
+
+* **types:** solvePointAtLength returns a Point not a number ([ed7aab8](https://github.com/tkofh/curvy/commit/ed7aab81d3dff67bf8725c90b45f3701262678c3))
+
+
+### Features
+
+* **types:** add length and solvePointAtLength to Spline ([d06e7fc](https://github.com/tkofh/curvy/commit/d06e7fcd8df4afc37b7eeabcb193f1205cc665e1))
+
+
+
+
+
 ## [0.1.3](https://github.com/tkofh/curvy/compare/@curvy/types@0.1.2...@curvy/types@0.1.3) (2022-05-09)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.2.1...@curvy/bezier@0.3.0) (2022-05-12)
+
+
+### Features
+
+* **bezier:** add length ([0859922](https://github.com/tkofh/curvy/commit/0859922241bb9ef2908763ac8f80136b3b1dab70))
+
+
+
+
+
 ## [0.2.1](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.2.0...@curvy/bezier@0.2.1) (2022-05-09)
 
 
