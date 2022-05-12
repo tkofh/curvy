@@ -179,5 +179,7 @@ describe('roundTo', () => {
     expect(roundTo(1.23456, 1)).toBe(1.2)
     expect(roundTo(1.23456, 2)).toBe(1.23)
     expect(roundTo(1.23456, 3)).toBe(1.235)
+
+    expect(roundTo(0, 1)).toBe(0)
   })
 })
