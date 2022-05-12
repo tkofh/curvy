@@ -123,7 +123,7 @@ export const createCubicBezierSpline = (points: Points, options?: BezierSplineOp
           break
         }
 
-        lengthOffset += searchLength
+        lengthOffset += child.length
       }
     }
 

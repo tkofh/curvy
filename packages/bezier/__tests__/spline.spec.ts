@@ -2,7 +2,7 @@ import { describe, test } from 'vitest'
 import { roundTo } from '@curvy/math'
 import { createCubicBezierSpline } from '../src'
 
-describe('createCubicBezierSpline', () => {
+describe('spline', () => {
   describe('validation', () => {
     test('throws on too few points', ({ expect }) => {
       expect(() => createCubicBezierSpline([[0, 0]])).toThrowError(
@@ -150,6 +150,21 @@ describe('createCubicBezierSpline', () => {
     })
   })
 
+  describe('length', () => {
+    test('it calculates the length of a straight line', ({ expect }) => {
+      const spline = createCubicBezierSpline([
+        [0, 0],
+        [0.1, 0.1],
+        [0.4, 0.4],
+        [0.5, 0.5],
+        [0.6, 0.6],
+        [0.9, 0.9],
+        [1, 1],
+      ])
+      expect(roundTo(spline.length, 10)).toBe(roundTo(Math.sqrt(2), 10))
+    })
+  })
+
   describe('solving', () => {
     test('solves y and x for each other', ({ expect }) => {
       const precision = 12
@@ -227,6 +242,26 @@ describe('createCubicBezierSpline', () => {
       expect(spline2.solveY(60, 16, 84)).toBeUndefined()
       expect(spline2.solveY(60, 84, 84.2)).toBe(84.1)
       expect(spline2.solveY(60, 84.2)).toBeUndefined()
+    })
+
+    test('solves point at length', ({ expect }) => {
+      const spline = createCubicBezierSpline(
+        [
+          [0, 0],
+          [0.1, 0.1],
+          [0.4, 0.4],
+          [0.5, 0.5],
+          [0.6, 0.6],
+          [0.9, 0.9],
+          [1, 1],
+        ],
+        { precision: 2 }
+      )
+
+      for (let i = 0; i <= 1; i += 0.01) {
+        const length = roundTo(i, 2)
+        expect(spline.solvePointAtLength(Math.sqrt(2) * length)).toStrictEqual([length, length])
+      }
     })
   })
 })
