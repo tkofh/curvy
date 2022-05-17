@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/tkofh/curvy/compare/@curvy/types@0.2.0...@curvy/types@0.3.0) (2022-05-17)
+
+
+### Features
+
+* **parametric:** implement parametric package ([acec66f](https://github.com/tkofh/curvy/commit/acec66f2d888e555469b33b5ae00f02c5ed309e4))
+
+
+
+
+
 # [0.2.0](https://github.com/tkofh/curvy/compare/@curvy/types@0.1.3...@curvy/types@0.2.0) (2022-05-12)
 
 
