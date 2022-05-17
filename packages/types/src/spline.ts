@@ -1,6 +1,8 @@
 import { ReadonlyPoint, ReadonlyPoints } from './points'
 import { ReadonlyRect } from './areas'
 
+export type Axis = 'X' | 'Y'
+
 export type Monotonicity = 'positive' | 'negative' | 'none'
 
 export interface Spline {

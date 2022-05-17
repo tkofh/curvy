@@ -44,7 +44,7 @@ describe('segments', () => {
   })
 
   describe('monotonicity', () => {
-    test('detects positive monotonicity', ({ expect }) => {
+    test('detects positive getAxisMonotonicity', ({ expect }) => {
       const segment1 = createSegment([
         [0, 0],
         [100, 0],
@@ -64,7 +64,7 @@ describe('segments', () => {
       expect(segment2.monotonicityY).toBe('positive')
     })
 
-    test('detects negative monotonicity', ({ expect }) => {
+    test('detects negative getAxisMonotonicity', ({ expect }) => {
       const segment1 = createSegment([
         [0, 0],
         [-100, 0],
@@ -84,7 +84,7 @@ describe('segments', () => {
       expect(segment2.monotonicityY).toBe('negative')
     })
 
-    test('detects no monotonicity', ({ expect }) => {
+    test('detects no getAxisMonotonicity', ({ expect }) => {
       const segment1 = createSegment([
         [0, 20],
         [0, -50],
@@ -105,8 +105,8 @@ describe('segments', () => {
     })
   })
 
-  describe('bounds and extrema', () => {
-    test('finds bounds and extrema of line segment', ({ expect }) => {
+  describe('bounds and getExtrema', () => {
+    test('finds bounds and getExtrema of line segment', ({ expect }) => {
       const segment1 = createSegment([
         [0, 0],
         [25, 25],
@@ -126,7 +126,7 @@ describe('segments', () => {
       ])
     })
 
-    test('finds bounds and extrema of parabola', ({ expect }) => {
+    test('finds bounds and getExtrema of parabola', ({ expect }) => {
       const segment1 = createSegment([
         [0, 0],
         [0, 200],
@@ -156,7 +156,7 @@ describe('segments', () => {
       expect(segment2.boundingBox).toStrictEqual({ minX: 0, maxX: 150, minY: 0, maxY: 100 })
     })
 
-    test('finds bounds and extrema of loops', ({ expect }) => {
+    test('finds bounds and getExtrema of loops', ({ expect }) => {
       const segment1 = createSegment(
         [
           [0, 20],

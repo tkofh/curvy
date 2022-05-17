@@ -19,9 +19,9 @@ export const createSegment = (points: CubicPoints, options?: BezierSplineOptions
    * It's safe to round the input points because they shouldn't
    * be more precise than the desired input and output values
    *
-   * They need to be rounded to determine the extrema of the
+   * They need to be rounded to determine the getExtrema of the
    * curve after precision is taken into account, as these
-   * values may differ from the extrema of an input curve
+   * values may differ from the getExtrema of an input curve
    * with extra precision
    */
 

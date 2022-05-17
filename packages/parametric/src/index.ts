@@ -1,0 +1,1 @@
+export { createParametricSplineFactory } from './spline'

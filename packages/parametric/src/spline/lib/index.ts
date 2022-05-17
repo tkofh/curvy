@@ -1,0 +1,6 @@
+export { createAxisSolver } from './createAxisSolver'
+export { createLengthSolver } from './createLengthSolver'
+export { createSplineCurves } from './createSplineCurves'
+export { getAxisMonotonicity } from './getAxisMonotonicity'
+export { getBoundingBox } from './getBoundingBox'
+export { getExtrema } from './getExtrema'

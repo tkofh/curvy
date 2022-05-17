@@ -71,7 +71,7 @@ describe('spline', () => {
   })
 
   describe('monotonicity', () => {
-    test('detects consistent monotonicity', ({ expect }) => {
+    test('detects consistent getAxisMonotonicity', ({ expect }) => {
       const spline1 = createCubicBezierSpline([
         [0, 0],
         [10, 10],
@@ -97,7 +97,7 @@ describe('spline', () => {
       expect(spline2.monotonicityY).toBe('negative')
     })
 
-    test('handles inconsistent monotonicity', ({ expect }) => {
+    test('handles inconsistent getAxisMonotonicity', ({ expect }) => {
       const spline = createCubicBezierSpline([
         [0, 0],
         [50, 0],
@@ -112,8 +112,8 @@ describe('spline', () => {
     })
   })
 
-  describe('bounds and extrema', () => {
-    test('finds bounds and extrema of line segment', ({ expect }) => {
+  describe('bounds and getExtrema', () => {
+    test('finds bounds and getExtrema of line segment', ({ expect }) => {
       const spline = createCubicBezierSpline([
         [0, 0],
         [10, 10],
@@ -131,7 +131,7 @@ describe('spline', () => {
       ])
     })
 
-    test('finds bounds and extrema of parabola', ({ expect }) => {
+    test('finds bounds and getExtrema of parabola', ({ expect }) => {
       const spline = createCubicBezierSpline([
         [0, 0],
         [50, 0],

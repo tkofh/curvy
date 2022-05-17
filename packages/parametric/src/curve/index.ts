@@ -1,0 +1,1 @@
+export { createParametricCurve } from './createParametricCurve'

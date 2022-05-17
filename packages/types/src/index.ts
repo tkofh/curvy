@@ -1,4 +1,5 @@
 export type { Range, ReadonlyRange, ReadonlyRect, Rect } from './areas'
+export type { Matrix4x4, Matrix4x3 } from './matrix'
 export type {
   CubicPoints,
   Points,
@@ -7,4 +8,4 @@ export type {
   ReadonlyPoints,
   ReadonlyPoint,
 } from './points'
-export type { Monotonicity, Spline } from './spline'
+export type { Monotonicity, Spline, Axis } from './spline'
