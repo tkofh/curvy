@@ -1,17 +1,20 @@
 import { describe, test } from 'vitest'
 import { roundTo, lerp } from '@curvy/math'
-import { CubicPoints, Point } from '@curvy/types'
+import { PointObject } from '@curvy/types'
 import { createCubicBezierSpline } from '../src'
 
-const solveCubicDeCasteljau = (points: CubicPoints, t: number): Point => {
-  const ax = lerp(t, points[0][0], points[1][0])
-  const ay = lerp(t, points[0][1], points[1][1])
+const solveCubicDeCasteljau = (
+  points: [PointObject, PointObject, PointObject, PointObject],
+  t: number
+): PointObject => {
+  const ax = lerp(t, points[0].x, points[1].x)
+  const ay = lerp(t, points[0].y, points[1].y)
 
-  const bx = lerp(t, points[1][0], points[2][0])
-  const by = lerp(t, points[1][1], points[2][1])
+  const bx = lerp(t, points[1].x, points[2].x)
+  const by = lerp(t, points[1].y, points[2].y)
 
-  const cx = lerp(t, points[2][0], points[3][0])
-  const cy = lerp(t, points[2][1], points[3][1])
+  const cx = lerp(t, points[2].x, points[3].x)
+  const cy = lerp(t, points[2].y, points[3].y)
 
   const dx = lerp(t, ax, bx)
   const dy = lerp(t, ay, by)
@@ -22,16 +25,16 @@ const solveCubicDeCasteljau = (points: CubicPoints, t: number): Point => {
   const fx = lerp(t, dx, ex)
   const fy = lerp(t, dy, ey)
 
-  return [fx, fy]
+  return { x: fx, y: fy }
 }
 
 describe('createCubicBezierSpline', () => {
   test('creates a valid cubic bezier', ({ expect }) => {
-    const points: CubicPoints = [
-      [0, 0],
-      [0, 1],
-      [1, 0],
-      [1, 1],
+    const points: [PointObject, PointObject, PointObject, PointObject] = [
+      { x: 0, y: 0 },
+      { x: 0, y: 1 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
     ]
 
     const precision = 5
@@ -41,8 +44,8 @@ describe('createCubicBezierSpline', () => {
     for (const t of [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1]) {
       const solvedPoint = solveCubicDeCasteljau(points, t)
 
-      expect(spline.solveY(solvedPoint[0])).toBe(roundTo(solvedPoint[1], precision))
-      expect(spline.solveX(solvedPoint[1])).toBe(roundTo(solvedPoint[0], precision))
+      expect(spline.solveY(solvedPoint.x)).toBe(roundTo(solvedPoint.y, precision))
+      expect(spline.solveX(solvedPoint.y)).toBe(roundTo(solvedPoint.x, precision))
     }
 
     expect(2).toBe(2)
