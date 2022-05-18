@@ -1,6 +1,4 @@
+export { computeSplineMeta } from './computeSplineMeta'
 export { createAxisSolver } from './createAxisSolver'
-export { createLengthSolver } from './createLengthSolver'
+export { createProgressSolver } from './createProgressSolver'
 export { createSplineCurves } from './createSplineCurves'
-export { getAxisMonotonicity } from './getAxisMonotonicity'
-export { getBoundingBox } from './getBoundingBox'
-export { getExtrema } from './getExtrema'

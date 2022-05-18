@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest'
-import { Matrix4x3, Matrix4x4, Points } from '@curvy/types'
+import { Matrix4x3, Matrix4x4, Point } from '@curvy/types'
 import { roundTo } from '@curvy/math'
 import { createParametricSplineFactory } from '../src'
 
@@ -47,7 +47,7 @@ describe('createParametricSplineFactory', () => {
       [0.75, 0.75],
       [1, 1],
     ])
-    expect(spline.boundingBox).toStrictEqual({
+    expect(spline.meta.bounds).toStrictEqual({
       minX: 0,
       maxX: 1,
       minY: 0,
@@ -69,7 +69,7 @@ describe('createParametricSplineFactory', () => {
       [2.75, 2.75],
       [3, 3],
     ])
-    expect(spline.boundingBox).toStrictEqual({
+    expect(spline.meta.bounds).toStrictEqual({
       minX: 0,
       maxX: 3,
       minY: 0,
@@ -86,9 +86,9 @@ describe('createParametricSplineFactory', () => {
       [0.75, 0.75],
       [1, 1],
     ])
-    expect(spline1.extrema).toStrictEqual([
-      [0, 0],
-      [1, 1],
+    expect(spline1.meta.extrema).toStrictEqual([
+      { x: 0, y: 0 },
+      { x: 1, y: 1 },
     ])
 
     const spline2 = createBezier(
@@ -102,11 +102,11 @@ describe('createParametricSplineFactory', () => {
       { precision: 2 }
     )
 
-    expect(spline2.extrema).toStrictEqual([
-      [0, 0],
-      [0.14, 1.57],
-      [0.86, -0.57],
-      [1, 1],
+    expect(spline2.meta.extrema).toStrictEqual([
+      { x: 0, y: 0 },
+      { x: 0.14, y: 1.57 },
+      { x: 0.86, y: -0.57 },
+      { x: 1, y: 1 },
     ])
   })
   test('calculates the extrema of multiple curves', ({ expect }) => {
@@ -122,9 +122,9 @@ describe('createParametricSplineFactory', () => {
       [2, 2],
     ])
 
-    expect(spline1.extrema).toStrictEqual([
-      [0, 0],
-      [2, 2],
+    expect(spline1.meta.extrema).toStrictEqual([
+      { x: 0, y: 0 },
+      { x: 2, y: 2 },
     ])
 
     const spline2 = createBezier(
@@ -140,11 +140,11 @@ describe('createParametricSplineFactory', () => {
       { precision: 2 }
     )
 
-    expect(spline2.extrema).toStrictEqual([
-      [0, 0],
-      [0.26, 3.81],
-      [0.74, -2.81],
-      [1, 1],
+    expect(spline2.meta.extrema).toStrictEqual([
+      { x: 0, y: 0 },
+      { x: 0.26, y: 3.81 },
+      { x: 0.74, y: -2.81 },
+      { x: 1, y: 1 },
     ])
   })
 
@@ -157,7 +157,7 @@ describe('createParametricSplineFactory', () => {
       [0, 0.75],
       [0, 1],
     ])
-    expect(spline1.length).toBe(1)
+    expect(spline1.meta.length).toBe(1)
 
     const spline2 = createBezier([
       [0, 0],
@@ -165,7 +165,7 @@ describe('createParametricSplineFactory', () => {
       [0.75, 0],
       [1, 0],
     ])
-    expect(spline2.length).toBe(1)
+    expect(spline2.meta.length).toBe(1)
 
     const spline3 = createBezier([
       [0, 0],
@@ -173,7 +173,7 @@ describe('createParametricSplineFactory', () => {
       [0.75, 0.75],
       [1, 1],
     ])
-    expect(roundTo(spline3.length, 10)).toBe(roundTo(Math.sqrt(2), 10))
+    expect(roundTo(spline3.meta.length, 10)).toBe(roundTo(Math.sqrt(2), 10))
   })
   test('calculates the length of multiple curves', ({ expect }) => {
     const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
@@ -187,7 +187,7 @@ describe('createParametricSplineFactory', () => {
       [0, 1.75],
       [0, 2],
     ])
-    expect(spline1.length).toBe(2)
+    expect(spline1.meta.length).toBe(2)
 
     const spline2 = createBezier([
       [0, 0],
@@ -199,7 +199,7 @@ describe('createParametricSplineFactory', () => {
       [2, 0],
     ])
 
-    expect(spline2.length).toBe(2)
+    expect(spline2.meta.length).toBe(2)
 
     const spline3 = createBezier([
       [0, 0],
@@ -211,7 +211,7 @@ describe('createParametricSplineFactory', () => {
       [2, 2],
     ])
 
-    expect(roundTo(spline3.length, 10)).toBe(roundTo(Math.sqrt(2) * 2, 10))
+    expect(roundTo(spline3.meta.length, 10)).toBe(roundTo(Math.sqrt(2) * 2, 10))
   })
 
   test('can solve y for a given x of a single curve', ({ expect }) => {
@@ -277,7 +277,7 @@ describe('createParametricSplineFactory', () => {
   test('respects spline precision when solving y for a given x of a single curve', ({ expect }) => {
     const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
 
-    const points: Points = [
+    const points: Point[] = [
       [0, 0],
       [0.25, 0.25],
       [0.75, 0.75],
@@ -374,7 +374,7 @@ describe('createParametricSplineFactory', () => {
   }) => {
     const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
 
-    const points: Points = [
+    const points: Point[] = [
       [0, 0],
       [0.1, 0.1],
       [0.4, 0.4],
@@ -463,7 +463,7 @@ describe('createParametricSplineFactory', () => {
   test('respects spline precision when solving x for a given y of a single curve', ({ expect }) => {
     const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
 
-    const points: Points = [
+    const points: Point[] = [
       [0, 0],
       [0.25, 0.25],
       [0.75, 0.75],
@@ -560,7 +560,7 @@ describe('createParametricSplineFactory', () => {
   }) => {
     const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
 
-    const points: Points = [
+    const points: Point[] = [
       [0, 0],
       [0.1, 0.1],
       [0.4, 0.4],
@@ -599,11 +599,11 @@ describe('createParametricSplineFactory', () => {
       { precision: 2 }
     )
 
-    expect(spline.solvePointAtLength(0)).toStrictEqual([0, 0])
-    expect(spline.solvePointAtLength(Math.sqrt(2) * 0.25)).toStrictEqual([0.25, 0.25])
-    expect(spline.solvePointAtLength(Math.sqrt(2) * 0.5)).toStrictEqual([0.5, 0.5])
-    expect(spline.solvePointAtLength(Math.sqrt(2) * 0.75)).toStrictEqual([0.75, 0.75])
-    expect(spline.solvePointAtLength(Math.sqrt(2))).toStrictEqual([1, 1])
+    expect(spline.solveLength(0)).toStrictEqual({ x: 0, y: 0 })
+    expect(spline.solveLength(Math.sqrt(2) * 0.25)).toStrictEqual({ x: 0.25, y: 0.25 })
+    expect(spline.solveLength(Math.sqrt(2) * 0.5)).toStrictEqual({ x: 0.5, y: 0.5 })
+    expect(spline.solveLength(Math.sqrt(2) * 0.75)).toStrictEqual({ x: 0.75, y: 0.75 })
+    expect(spline.solveLength(Math.sqrt(2))).toStrictEqual({ x: 1, y: 1 })
   })
   test('can solve the point at a given length for multiple curves', ({ expect }) => {
     const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
@@ -621,11 +621,11 @@ describe('createParametricSplineFactory', () => {
       { precision: 2 }
     )
 
-    expect(spline.solvePointAtLength(0)).toStrictEqual([0, 0])
-    expect(spline.solvePointAtLength(Math.sqrt(2) * 0.25)).toStrictEqual([0.25, 0.25])
-    expect(spline.solvePointAtLength(Math.sqrt(2) * 0.5)).toStrictEqual([0.5, 0.5])
-    expect(spline.solvePointAtLength(Math.sqrt(2) * 0.75)).toStrictEqual([0.75, 0.75])
-    expect(spline.solvePointAtLength(Math.sqrt(2))).toStrictEqual([1, 1])
+    expect(spline.solveLength(0)).toStrictEqual({ x: 0, y: 0 })
+    expect(spline.solveLength(Math.sqrt(2) * 0.25)).toStrictEqual({ x: 0.25, y: 0.25 })
+    expect(spline.solveLength(Math.sqrt(2) * 0.5)).toStrictEqual({ x: 0.5, y: 0.5 })
+    expect(spline.solveLength(Math.sqrt(2) * 0.75)).toStrictEqual({ x: 0.75, y: 0.75 })
+    expect(spline.solveLength(Math.sqrt(2))).toStrictEqual({ x: 1, y: 1 })
   })
   test('returns undefined when attempting to solve the point at an out of bounds length for a single curve', ({
     expect,
@@ -642,8 +642,8 @@ describe('createParametricSplineFactory', () => {
       { precision: 2 }
     )
 
-    expect(spline.solvePointAtLength(-1)).toBeUndefined()
-    expect(spline.solvePointAtLength(Math.sqrt(2) + 1)).toBeUndefined()
+    expect(spline.solveLength(-1)).toBeUndefined()
+    expect(spline.solveLength(Math.sqrt(2) + 1)).toBeUndefined()
   })
   test('returns undefined when attempting to solve the point at an out of bounds length for multiple curves', ({
     expect,
@@ -663,7 +663,86 @@ describe('createParametricSplineFactory', () => {
       { precision: 2 }
     )
 
-    expect(spline.solvePointAtLength(-1)).toBeUndefined()
-    expect(spline.solvePointAtLength(Math.sqrt(2) + 1)).toBeUndefined()
+    expect(spline.solveLength(-1)).toBeUndefined()
+    expect(spline.solveLength(Math.sqrt(2) + 1)).toBeUndefined()
+  })
+
+  test('can solve the point at a given t for a single curve', ({ expect }) => {
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+
+    const spline = createBezier(
+      [
+        [0, 0],
+        [0.25, 0.25],
+        [0.75, 0.75],
+        [1, 1],
+      ],
+      { precision: 2 }
+    )
+
+    expect(spline.solveT(0)).toStrictEqual({ x: 0, y: 0 })
+    expect(spline.solveT(0.5)).toStrictEqual({ x: 0.5, y: 0.5 })
+    expect(spline.solveT(1)).toStrictEqual({ x: 1, y: 1 })
+  })
+  test('can solve the point at a given t for multiple curves', ({ expect }) => {
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+
+    const spline = createBezier(
+      [
+        [0, 0],
+        [0.25, 0.25],
+        [0.75, 0.75],
+        [1, 1],
+        [1.25, 1.25],
+        [1.75, 1.75],
+        [2, 2],
+      ],
+      { precision: 2 }
+    )
+
+    expect(spline.solveT(0)).toStrictEqual({ x: 0, y: 0 })
+    expect(spline.solveT(0.25)).toStrictEqual({ x: 0.5, y: 0.5 })
+    expect(spline.solveT(0.5)).toStrictEqual({ x: 1, y: 1 })
+    expect(spline.solveT(0.75)).toStrictEqual({ x: 1.5, y: 1.5 })
+    expect(spline.solveT(1)).toStrictEqual({ x: 2, y: 2 })
+  })
+  test('returns undefined when attempting to solve the point at an out of bounds t for a single curve', ({
+    expect,
+  }) => {
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+
+    const spline = createBezier(
+      [
+        [0, 0],
+        [0.25, 0.25],
+        [0.75, 0.75],
+        [1, 1],
+      ],
+      { precision: 2 }
+    )
+
+    expect(spline.solveT(-1)).toBeUndefined()
+    expect(spline.solveT(2)).toBeUndefined()
+  })
+  test('returns undefined when attempting to solve the point at an out of bounds t for multiple curves', ({
+    expect,
+  }) => {
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+
+    const spline = createBezier(
+      [
+        [0, 0],
+        [0.25, 0.25],
+        [0.75, 0.75],
+        [1, 1],
+        [1.25, 1.25],
+        [1.75, 1.75],
+        [2, 2],
+      ],
+      { precision: 2 }
+    )
+
+    expect(spline.solveT(-1)).toBeUndefined()
+    expect(spline.solveT(2)).toBeUndefined()
   })
 })

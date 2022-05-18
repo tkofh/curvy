@@ -1,19 +1,18 @@
-import { Points } from '@curvy/types'
+import { PointObject } from '@curvy/types'
 
-export const collapseExtrema = (candidates: Points): Points =>
-  candidates.reduce<Points>((extrema, candidate, index, candidates) => {
+export const collapseExtrema = (candidates: Array<PointObject>): Array<PointObject> =>
+  candidates.reduce<Array<PointObject>>((extrema, candidate, index, candidates) => {
     if (index === 0 || index === candidates.length - 1) {
       extrema.push(candidate)
     } else {
-      const [currentX, currentY] = candidate
-      const [previousX, previousY] = extrema[extrema.length - 1]
-      const [nextX, nextY] = candidates[index + 1]
+      const previous = extrema[extrema.length - 1]
+      const next = candidates[index + 1]
 
       if (
-        currentX <= Math.min(previousX, nextX) ||
-        currentX >= Math.max(previousX, nextX) ||
-        currentY <= Math.min(previousY, nextY) ||
-        currentY >= Math.max(previousY, nextY)
+        candidate.x <= Math.min(previous.x, next.x) ||
+        candidate.x >= Math.max(previous.x, next.x) ||
+        candidate.y <= Math.min(previous.y, next.y) ||
+        candidate.y >= Math.max(previous.y, next.y)
       ) {
         extrema.push(candidate)
       }
