@@ -1,3 +1,3 @@
-# `@curvy/bezier`
+# `@curvy/parametric`
 
-Bézier curve implementation for Curvy
+Parametric curve implementation for Curvy
