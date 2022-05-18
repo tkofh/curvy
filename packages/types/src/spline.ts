@@ -1,16 +1,13 @@
-import { ReadonlyPoint, ReadonlyPoints } from './points'
-import { ReadonlyRect } from './areas'
+import { PointObject } from './points'
+import { Bounds } from './bounds'
 
 export type Axis = 'X' | 'Y'
 
 export type Monotonicity = 'positive' | 'negative' | 'none'
 
-export interface Spline {
-  readonly boundingBox: ReadonlyRect
-  readonly extrema: ReadonlyPoints
-
-  readonly solveY: (x: number, minY?: number, maxY?: number) => number | undefined
-  readonly solveX: (y: number, minX?: number, maxX?: number) => number | undefined
+export interface SplineMetadata {
+  readonly bounds: Readonly<Bounds>
+  readonly extrema: ReadonlyArray<PointObject>
 
   readonly precisionX: number
   readonly precisionY: number
@@ -19,5 +16,14 @@ export interface Spline {
   readonly monotonicityY: Monotonicity
 
   readonly length: number
-  readonly solvePointAtLength: (length: number) => ReadonlyPoint | undefined
+}
+
+export interface Spline {
+  readonly solveY: (x: number, minY?: number, maxY?: number) => number | undefined
+  readonly solveX: (y: number, minX?: number, maxX?: number) => number | undefined
+
+  readonly solveLength: (length: number) => Readonly<PointObject> | undefined
+  readonly solveT: (t: number) => Readonly<PointObject> | undefined
+
+  readonly meta: SplineMetadata
 }

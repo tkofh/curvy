@@ -1,45 +1,34 @@
-import { Axis, Rect, Spline } from '@curvy/types'
+import { Axis, Spline, SplineMetadata } from '@curvy/types'
 import { roundTo } from '@curvy/math'
 import { warnDev } from '@curvy/dx'
 
-interface CurveData {
-  inputMin: number
-  inputMax: number
-  outputMin: number
-  outputMax: number
-  solve: Spline['solveX'] | Spline['solveY']
-}
-
-export const createAxisSolver = (
-  inputAxis: Axis,
-  bounds: Rect,
-  precisionInput: number,
-  precisionOutput: number,
-  curves: Spline[]
-) => {
+export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata, curves: Spline[]) => {
   const cache = new Map<string, number | undefined>()
 
   const outputAxis: Axis = inputAxis === 'X' ? 'Y' : 'X'
 
-  const inputMin = bounds[`min${inputAxis}`]
-  const inputMax = bounds[`max${inputAxis}`]
+  const inputMin = meta.bounds[`min${inputAxis}`]
+  const inputMax = meta.bounds[`max${inputAxis}`]
 
-  const defaultOutputMin = bounds[`min${outputAxis}`]
-  const defaultOutputMax = bounds[`max${outputAxis}`]
+  const defaultOutputMin = meta.bounds[`min${outputAxis}`]
+  const defaultOutputMax = meta.bounds[`max${outputAxis}`]
 
-  const curveData: CurveData[] = curves.map((curve) => ({
+  const precisionInput = meta[`precision${inputAxis}`]
+  const precisionOutput = meta[`precision${outputAxis}`]
+
+  const curveData = curves.map((curve) => ({
     // solve function called if the bounds check passes
     solve: curve[`solve${outputAxis}`],
 
     // inputMin/inputMax are the min & max value the roundedInput can be to consider this spline
     // i.e., `input` must lie within the bounds of the spline on our input axis
-    inputMin: curve.boundingBox[`min${inputAxis}`],
-    inputMax: curve.boundingBox[`max${inputAxis}`],
+    inputMin: curve.meta.bounds[`min${inputAxis}`],
+    inputMax: curve.meta.bounds[`max${inputAxis}`],
 
     // output min/max are the range that must intersect with the output min/max parameters
     // i.e., the min/max desired output must have some overlap with the possible output values of the spline
-    outputMin: curve.boundingBox[`min${outputAxis}`],
-    outputMax: curve.boundingBox[`max${outputAxis}`],
+    outputMin: curve.meta.bounds[`min${outputAxis}`],
+    outputMax: curve.meta.bounds[`max${outputAxis}`],
   }))
 
   return (

@@ -1,18 +1,17 @@
-import { Matrix4x3, Matrix4x4, Points, Spline } from '@curvy/types'
+import { Matrix4x3, Matrix4x4, Point, Spline } from '@curvy/types'
+import { toPointObject } from '../common'
 import { DEFAULT_LUT_RESOLUTION, DEFAULT_PRECISION } from './constants'
 import { SplineOptions } from './SplineOptions'
 import {
   createSplineCurves,
-  getBoundingBox,
-  getExtrema,
-  getAxisMonotonicity,
   createAxisSolver,
-  createLengthSolver,
+  createProgressSolver,
+  computeSplineMeta,
 } from './lib'
 
 export const createParametricSplineFactory =
   (baseScalars: Matrix4x4, primeScalars: Matrix4x3) =>
-  (points: Points, options?: SplineOptions): Spline => {
+  (points: Array<Point>, options?: SplineOptions): Spline => {
     if (points.length < 4) {
       throw new Error('At least one cubic segment (four points) must be provided')
     }
@@ -26,38 +25,30 @@ export const createParametricSplineFactory =
 
     const lutResolution = options?.lutResolution ?? DEFAULT_LUT_RESOLUTION
 
+    const pointObjects = points.map((point) => toPointObject(point))
+
     const curves = createSplineCurves(
       baseScalars,
       primeScalars,
-      points,
+      pointObjects,
       precisionX,
       precisionY,
       lutResolution
     )
 
-    const extrema = getExtrema(curves)
-    const boundingBox = getBoundingBox(curves)
+    const meta = computeSplineMeta(curves)
 
-    const length = curves.reduce((length, curve) => length + curve.length, 0)
+    const solveX = createAxisSolver('X', meta, curves)
+    const solveY = createAxisSolver('Y', meta, curves)
 
-    const monotonicityX = getAxisMonotonicity(curves, 'X')
-    const monotonicityY = getAxisMonotonicity(curves, 'Y')
-
-    const solveX = createAxisSolver('X', boundingBox, precisionX, precisionY, curves)
-    const solveY = createAxisSolver('Y', boundingBox, precisionY, precisionX, curves)
-
-    const solvePointAtLength = createLengthSolver(length, curves)
+    const solveLength = createProgressSolver('length', meta, curves)
+    const solveT = createProgressSolver('t', meta, curves)
 
     return {
+      meta,
       solveX,
       solveY,
-      precisionX,
-      precisionY,
-      monotonicityX,
-      monotonicityY,
-      extrema,
-      boundingBox,
-      length,
-      solvePointAtLength,
+      solveT,
+      solveLength,
     }
   }
