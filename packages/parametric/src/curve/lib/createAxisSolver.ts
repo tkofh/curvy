@@ -19,8 +19,8 @@ export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata) => {
 
   const lutResolution = meta.lut.length
 
-  const inputLutProp = inputAxis === 'X' ? 'x' : 'y'
-  const outputLutProp = outputAxis === 'X' ? 'x' : 'y'
+  const inputLUTProp = inputAxis === 'X' ? 'x' : 'y'
+  const outputLUTProp = outputAxis === 'X' ? 'x' : 'y'
 
   return (input: number, outputMin?: number, outputMax?: number): number | undefined => {
     const inputRounded = roundTo(input, precisionInput)
@@ -44,23 +44,17 @@ export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata) => {
       )
     } else {
       for (let i = 0; i < lutResolution - 1; i++) {
+        const inputLUTStart = meta.lut[i][inputLUTProp]
+        const inputLUTEnd = meta.lut[i + 1][inputLUTProp]
+        const outputLUTStart = meta.lut[i][outputLUTProp]
+        const outputLUTEnd = meta.lut[i + 1][outputLUTProp]
+
         if (
-          rangesOverlap(
-            meta.lut[i][outputLutProp],
-            meta.lut[i + 1][outputLutProp],
-            outputMin,
-            outputMax
-          ) &&
-          rangeIncludes(inputRounded, meta.lut[i][inputLutProp], meta.lut[i + 1][inputLutProp])
+          rangesOverlap(outputLUTStart, outputLUTEnd, outputMin, outputMax) &&
+          rangeIncludes(inputRounded, inputLUTStart, inputLUTEnd)
         ) {
           const x = roundTo(
-            remap(
-              input,
-              meta.lut[i][inputLutProp],
-              meta.lut[i + 1][inputLutProp],
-              meta.lut[i][outputLutProp],
-              meta.lut[i + 1][outputLutProp]
-            ),
+            remap(input, inputLUTStart, inputLUTEnd, outputLUTStart, outputLUTEnd),
             precisionOutput
           )
           if (x >= outputMin && x <= outputMax) {
