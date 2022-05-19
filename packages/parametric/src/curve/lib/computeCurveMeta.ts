@@ -1,6 +1,5 @@
-import { SplineMetadata, PointObject, Bounds } from '@curvy/types'
+import { SplineMetadata, PointObject, Bounds, LUTEntry } from '@curvy/types'
 import { cubicPolynomial, roundTo } from '@curvy/math'
-import { LUTEntry } from '../types'
 import { collapseExtrema } from '../../common'
 import { getAxisPrimeRoots } from './getAxisPrimeRoots'
 import { getAxisMonotonicity } from './getAxisMonotonicity'
@@ -67,5 +66,6 @@ export const computeCurveMeta = (
     precisionY,
     precisionX,
     length: lutEnd.length,
+    lut,
   }
 }

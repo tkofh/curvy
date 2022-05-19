@@ -1,5 +1,5 @@
 import { cubicPolynomial, distance } from '@curvy/math'
-import { LUTEntry } from '../types'
+import { LUTEntry } from '@curvy/types'
 
 export const computeCurveLUT = (
   baseScalarsX: [number, number, number, number],

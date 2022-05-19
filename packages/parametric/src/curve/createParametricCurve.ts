@@ -48,11 +48,11 @@ export const createParametricCurve = (
     lut
   )
 
-  const solveX = createAxisSolver('X', meta, lut)
-  const solveY = createAxisSolver('Y', meta, lut)
+  const solveX = createAxisSolver('X', meta)
+  const solveY = createAxisSolver('Y', meta)
 
-  const solveLength = createProgressSolver('length', meta, lut)
-  const solveT = createProgressSolver('t', meta, lut)
+  const solveLength = createProgressSolver('length', meta)
+  const solveT = createProgressSolver('t', meta)
 
   return {
     meta,

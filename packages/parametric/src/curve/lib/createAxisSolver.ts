@@ -2,9 +2,8 @@ import { remap, roundTo } from '@curvy/math'
 import { warnDev } from '@curvy/dx'
 import { Axis, SplineMetadata } from '@curvy/types'
 import { rangeIncludes, rangesOverlap } from '../../common'
-import { LUTEntry } from '../types'
 
-export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata, lut: LUTEntry[]) => {
+export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata) => {
   const cache = new Map<string, number | undefined>()
 
   const outputAxis: Axis = inputAxis === 'X' ? 'Y' : 'X'
@@ -18,7 +17,7 @@ export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata, lut: LUT
   const precisionInput = meta[`precision${inputAxis}`]
   const precisionOutput = meta[`precision${outputAxis}`]
 
-  const lutSize = lut.length
+  const lutResolution = meta.lut.length
 
   const inputLutProp = inputAxis === 'X' ? 'x' : 'y'
   const outputLutProp = outputAxis === 'X' ? 'x' : 'y'
@@ -45,18 +44,23 @@ export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata, lut: LUT
         `Cannot solve curve for ${inputAxis} ${inputRounded} because curve is undefined above ${inputAxis} ${inputMin}`
       )
     } else {
-      for (let i = 0; i < lutSize - 1; i++) {
+      for (let i = 0; i < lutResolution - 1; i++) {
         if (
-          rangesOverlap(lut[i][outputLutProp], lut[i + 1][outputLutProp], outputMin, outputMax) &&
-          rangeIncludes(inputRounded, lut[i][inputLutProp], lut[i + 1][inputLutProp])
+          rangesOverlap(
+            meta.lut[i][outputLutProp],
+            meta.lut[i + 1][outputLutProp],
+            outputMin,
+            outputMax
+          ) &&
+          rangeIncludes(inputRounded, meta.lut[i][inputLutProp], meta.lut[i + 1][inputLutProp])
         ) {
           const x = roundTo(
             remap(
               input,
-              lut[i][inputLutProp],
-              lut[i + 1][inputLutProp],
-              lut[i][outputLutProp],
-              lut[i + 1][outputLutProp]
+              meta.lut[i][inputLutProp],
+              meta.lut[i + 1][inputLutProp],
+              meta.lut[i][outputLutProp],
+              meta.lut[i + 1][outputLutProp]
             ),
             precisionOutput
           )
