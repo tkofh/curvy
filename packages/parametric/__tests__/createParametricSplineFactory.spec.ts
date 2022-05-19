@@ -745,4 +745,25 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveT(-1)).toBeUndefined()
     expect(spline.solveT(2)).toBeUndefined()
   })
+
+  test('merges the look up tables of multiple curves', ({ expect }) => {
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+
+    const spline = createBezier([
+      [0, 0],
+      [0.25, 0],
+      [0.75, 0],
+      [1, 0],
+      [1.25, 0],
+      [1.75, 0],
+      [2, 0],
+    ])
+
+    expect(spline.meta.lut[spline.meta.lut.length - 1]).toStrictEqual({
+      x: 2,
+      y: 0,
+      t: 1,
+      length: 2,
+    })
+  })
 })
