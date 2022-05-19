@@ -31,12 +31,11 @@ export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata, curves: 
     outputMax: curve.meta.bounds[`max${outputAxis}`],
   }))
 
-  return (
-    input: number,
-    outputMin = defaultOutputMin,
-    outputMax = defaultOutputMax
-  ): number | undefined => {
+  return (input: number, outputMin?: number, outputMax?: number): number | undefined => {
     const inputRounded = roundTo(input, precisionInput)
+
+    outputMin = outputMin ?? defaultOutputMin
+    outputMax = outputMax ?? defaultOutputMax
 
     const cacheKey = `${inputRounded}/${outputMin}|${outputMax}`
 

@@ -274,6 +274,19 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveY(0.5, 0.9712, 1)).toBe(0.9712)
     expect(spline.solveY(0.5, 0.9713, 1)).toBeUndefined()
   })
+  test('ignores explicit undefined min/max y when solving y for a given x of a single curve', ({
+    expect,
+  }) => {
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const spline = createBezier([
+      [0, 0],
+      [0.25, 0.25],
+      [0.75, 0.75],
+      [1, 1],
+    ])
+
+    expect(spline.solveY(0.5, undefined, undefined)).toBe(0.5)
+  })
   test('respects spline precision when solving y for a given x of a single curve', ({ expect }) => {
     const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
 
@@ -369,6 +382,22 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveY(0.5, 0.9983, 1)).toBe(0.9983)
     expect(spline.solveY(0.5, 0.9984, 1)).toBeUndefined()
   })
+  test('ignores explicit undefined min/max y when solving y for a given x of multiple curves', ({
+    expect,
+  }) => {
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const spline = createBezier([
+      [0, 0],
+      [0.25, 0.25],
+      [0.75, 0.75],
+      [1, 1],
+      [1.25, 1.25],
+      [1.75, 1.75],
+      [2, 2],
+    ])
+
+    expect(spline.solveY(1.5, undefined, undefined)).toBe(1.5)
+  })
   test('respects spline precision when solving y for a given x of multiple curves', ({
     expect,
   }) => {
@@ -459,6 +488,19 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveX(0.5, 0.9711, 0.9713)).toBe(0.9712)
     expect(spline.solveX(0.5, 0.9712, 1)).toBe(0.9712)
     expect(spline.solveX(0.5, 0.9713, 1)).toBeUndefined()
+  })
+  test('ignores explicit undefined min/max x when solving x for a given y of a single curve', ({
+    expect,
+  }) => {
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const spline = createBezier([
+      [0, 0],
+      [0.25, 0.25],
+      [0.75, 0.75],
+      [1, 1],
+    ])
+
+    expect(spline.solveX(0.5, undefined, undefined)).toBe(0.5)
   })
   test('respects spline precision when solving x for a given y of a single curve', ({ expect }) => {
     const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
@@ -554,6 +596,22 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveX(0.5, 0.9982, 0.9984)).toBe(0.9983)
     expect(spline.solveX(0.5, 0.9983, 1)).toBe(0.9983)
     expect(spline.solveX(0.5, 0.9984, 1)).toBeUndefined()
+  })
+  test('ignores explicit undefined min/max x when solving x for a given y of multiple curves', ({
+    expect,
+  }) => {
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const spline = createBezier([
+      [0, 0],
+      [0.25, 0.25],
+      [0.75, 0.75],
+      [1, 1],
+      [1.25, 1.25],
+      [1.75, 1.75],
+      [2, 2],
+    ])
+
+    expect(spline.solveX(1.5, undefined, undefined)).toBe(1.5)
   })
   test('respects spline precision when solving x for a given y of multiple curves', ({
     expect,
