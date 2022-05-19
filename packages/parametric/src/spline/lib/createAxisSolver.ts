@@ -18,7 +18,7 @@ export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata, curves: 
 
   const curveData = curves.map((curve) => ({
     // solve function called if the bounds check passes
-    solve: curve[`solve${outputAxis}`],
+    solve: curve[`solve${inputAxis}`],
 
     // inputMin/inputMax are the min & max value the roundedInput can be to consider this spline
     // i.e., `input` must lie within the bounds of the spline on our input axis

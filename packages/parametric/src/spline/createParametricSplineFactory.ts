@@ -38,8 +38,8 @@ export const createParametricSplineFactory =
 
     const meta = computeSplineMeta(curves)
 
-    const solveX = createAxisSolver('X', meta, curves)
-    const solveY = createAxisSolver('Y', meta, curves)
+    const solveX = createAxisSolver('Y', meta, curves)
+    const solveY = createAxisSolver('X', meta, curves)
 
     const solveLength = createProgressSolver('length', meta, curves)
     const solveT = createProgressSolver('t', meta, curves)
