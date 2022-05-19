@@ -1,5 +1,6 @@
+export { computeCurveBounds } from './computeCurveBounds'
+export { computeCurveExtrema } from './computeCurveExtrema'
 export { computeCurveLUT } from './computeCurveLUT'
-export { computeCurveMeta } from './computeCurveMeta'
 export { createAxisSolver } from './createAxisSolver'
 export { createProgressSolver } from './createProgressSolver'
 export { getAxisPrimeScalars } from './getAxisPrimeScalars'
