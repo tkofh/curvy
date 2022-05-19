@@ -1,7 +1,7 @@
 import { Bounds, LUTEntry, Spline } from '@curvy/types'
 import { distance, remap } from '@curvy/math'
 
-export const mapSpline = (spline: Spline, source: Bounds, target: Bounds): Spline => {
+export const remapSpline = (spline: Spline, source: Bounds, target: Bounds): Spline => {
   const lut = spline.meta.lut.reduce<LUTEntry[]>((lut, entry, index) => {
     const x = remap(entry.x, source.minX, source.maxX, target.minX, target.maxX)
     const y = remap(entry.y, source.minY, source.maxY, target.minY, target.maxY)
