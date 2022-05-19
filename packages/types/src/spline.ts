@@ -5,25 +5,32 @@ export type Axis = 'X' | 'Y'
 
 export type Monotonicity = 'positive' | 'negative' | 'none'
 
+export interface LUTEntry extends PointObject {
+  length: number
+  t: number
+}
+
 export interface SplineMetadata {
-  readonly bounds: Readonly<Bounds>
-  readonly extrema: ReadonlyArray<PointObject>
+  bounds: Readonly<Bounds>
+  extrema: ReadonlyArray<PointObject>
 
-  readonly precisionX: number
-  readonly precisionY: number
+  precisionX: number
+  precisionY: number
 
-  readonly monotonicityX: Monotonicity
-  readonly monotonicityY: Monotonicity
+  monotonicityX: Monotonicity
+  monotonicityY: Monotonicity
 
-  readonly length: number
+  length: number
+
+  lut: LUTEntry[]
 }
 
 export interface Spline {
-  readonly solveY: (x: number, minY?: number, maxY?: number) => number | undefined
-  readonly solveX: (y: number, minX?: number, maxX?: number) => number | undefined
+  solveY: (x: number, minY?: number, maxY?: number) => number | undefined
+  solveX: (y: number, minX?: number, maxX?: number) => number | undefined
 
-  readonly solveLength: (length: number) => Readonly<PointObject> | undefined
-  readonly solveT: (t: number) => Readonly<PointObject> | undefined
+  solveLength: (length: number) => Readonly<PointObject> | undefined
+  solveT: (t: number) => Readonly<PointObject> | undefined
 
-  readonly meta: SplineMetadata
+  meta: SplineMetadata
 }
