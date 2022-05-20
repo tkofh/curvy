@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/tkofh/curvy/compare/@curvy/parametric@0.2.0...@curvy/parametric@0.3.0) (2022-05-20)
+
+
+### Bug Fixes
+
+* **parametric:** ensure extrema are accurately solved on each axis ([112fc81](https://github.com/tkofh/curvy/commit/112fc81ae27b48cf052868437e9923f81735555f))
+* **parametric:** handle explicit undefined in axis solver ([4c2053c](https://github.com/tkofh/curvy/commit/4c2053cac3e3813c8219d1e172e4a1ca0ce929ab))
+* **parametric:** merge luts for spline ([ed63915](https://github.com/tkofh/curvy/commit/ed6391582bedc47af50c1fcf22985f4ccf35f3b4))
+* **parametric:** solve the correct axis when creating spline solvers ([7ed92d4](https://github.com/tkofh/curvy/commit/7ed92d4f15f5770e15772eb1b7f0a5a688173691))
+
+
+### Features
+
+* **parametric:** expose lut ([47464dd](https://github.com/tkofh/curvy/commit/47464dd93f6e161626826f3994c286ca7408542c))
+
+
+
+
+
 # [0.2.0](https://github.com/tkofh/curvy/compare/@curvy/parametric@0.1.0...@curvy/parametric@0.2.0) (2022-05-18)
 
 **Note:** Version bump only for package @curvy/parametric
