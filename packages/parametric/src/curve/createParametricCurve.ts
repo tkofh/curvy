@@ -1,13 +1,16 @@
-import { Matrix4x3, Matrix4x4, PointObject, Spline } from '@curvy/types'
+import { Matrix4x3, Matrix4x4, PointObject, Spline, SplineMetadata } from '@curvy/types'
 import { roundTo } from '@curvy/math'
 import {
   getAxisPrimeScalars,
   getAxisScalars,
   createAxisSolver,
   computeCurveLUT,
-  computeCurveMeta,
   createProgressSolver,
+  computeCurveExtrema,
+  computeCurveBounds,
 } from './lib'
+import { getAxisPrimeRoots } from './lib/getAxisPrimeRoots'
+import { getAxisMonotonicity } from './lib/getAxisMonotonicity'
 
 export const createParametricCurve = (
   p0: PointObject,
@@ -36,23 +39,51 @@ export const createParametricCurve = (
   const primeScalarsX = getAxisPrimeScalars(primeScalars, p0x, p1x, p2x, p3x)
   const primeScalarsY = getAxisPrimeScalars(primeScalars, p0y, p1y, p2y, p3y)
 
-  const lut = computeCurveLUT(baseScalarsX, baseScalarsY, lutResolution)
+  const primeRootsX = getAxisPrimeRoots(...primeScalarsX)
+  const primeRootsY = getAxisPrimeRoots(...primeScalarsY)
 
-  const meta = computeCurveMeta(
-    baseScalarsX,
-    baseScalarsY,
-    primeScalarsX,
-    primeScalarsY,
-    precisionX,
-    precisionY,
-    lut
+  const monotonicityX = getAxisMonotonicity(primeRootsX, primeScalarsX)
+  const monotonicityY = getAxisMonotonicity(primeRootsY, primeScalarsY)
+
+  const primeRoots = Array.from(new Set([0, 1, ...primeRootsX, ...primeRootsY])).sort(
+    (a, b) => a - b
   )
 
-  const solveX = createAxisSolver('X', meta, lut)
-  const solveY = createAxisSolver('Y', meta, lut)
+  const lut = computeCurveLUT(
+    baseScalarsX,
+    baseScalarsY,
+    lutResolution,
+    primeRoots,
+    precisionX,
+    precisionY
+  )
 
-  const solveLength = createProgressSolver('length', meta, lut)
-  const solveT = createProgressSolver('t', meta, lut)
+  const extrema = computeCurveExtrema(
+    baseScalarsX,
+    baseScalarsY,
+    primeRoots,
+    precisionX,
+    precisionY
+  )
+
+  const bounds = computeCurveBounds(extrema)
+
+  const meta: SplineMetadata = {
+    precisionX,
+    precisionY,
+    monotonicityX,
+    monotonicityY,
+    lut,
+    length: lut[lut.length - 1].length,
+    extrema,
+    bounds,
+  }
+
+  const solveX = createAxisSolver('X', meta)
+  const solveY = createAxisSolver('Y', meta)
+
+  const solveLength = createProgressSolver('length', meta)
+  const solveT = createProgressSolver('t', meta)
 
   return {
     meta,

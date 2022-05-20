@@ -2,9 +2,8 @@ import { remap, roundTo } from '@curvy/math'
 import { warnDev } from '@curvy/dx'
 import { Axis, SplineMetadata } from '@curvy/types'
 import { rangeIncludes, rangesOverlap } from '../../common'
-import { LUTEntry } from '../types'
 
-export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata, lut: LUTEntry[]) => {
+export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata) => {
   const cache = new Map<string, number | undefined>()
 
   const outputAxis: Axis = inputAxis === 'X' ? 'Y' : 'X'
@@ -18,17 +17,16 @@ export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata, lut: LUT
   const precisionInput = meta[`precision${inputAxis}`]
   const precisionOutput = meta[`precision${outputAxis}`]
 
-  const lutSize = lut.length
+  const lutResolution = meta.lut.length
 
-  const inputLutProp = inputAxis === 'X' ? 'x' : 'y'
-  const outputLutProp = outputAxis === 'X' ? 'x' : 'y'
+  const inputLUTProp = inputAxis === 'X' ? 'x' : 'y'
+  const outputLUTProp = outputAxis === 'X' ? 'x' : 'y'
 
-  return (
-    input: number,
-    outputMin = defaultOutputMin,
-    outputMax = defaultOutputMax
-  ): number | undefined => {
+  return (input: number, outputMin?: number, outputMax?: number): number | undefined => {
     const inputRounded = roundTo(input, precisionInput)
+
+    outputMin = outputMin ?? defaultOutputMin
+    outputMax = outputMax ?? defaultOutputMax
 
     const cacheKey = `${inputRounded}/${outputMin}|${outputMax}`
 
@@ -45,19 +43,18 @@ export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata, lut: LUT
         `Cannot solve curve for ${inputAxis} ${inputRounded} because curve is undefined above ${inputAxis} ${inputMin}`
       )
     } else {
-      for (let i = 0; i < lutSize - 1; i++) {
+      for (let i = 0; i < lutResolution - 1; i++) {
+        const inputLUTStart = meta.lut[i][inputLUTProp]
+        const inputLUTEnd = meta.lut[i + 1][inputLUTProp]
+        const outputLUTStart = meta.lut[i][outputLUTProp]
+        const outputLUTEnd = meta.lut[i + 1][outputLUTProp]
+
         if (
-          rangesOverlap(lut[i][outputLutProp], lut[i + 1][outputLutProp], outputMin, outputMax) &&
-          rangeIncludes(inputRounded, lut[i][inputLutProp], lut[i + 1][inputLutProp])
+          rangesOverlap(outputLUTStart, outputLUTEnd, outputMin, outputMax) &&
+          rangeIncludes(inputRounded, inputLUTStart, inputLUTEnd)
         ) {
           const x = roundTo(
-            remap(
-              input,
-              lut[i][inputLutProp],
-              lut[i + 1][inputLutProp],
-              lut[i][outputLutProp],
-              lut[i + 1][outputLutProp]
-            ),
+            remap(input, inputLUTStart, inputLUTEnd, outputLUTStart, outputLUTEnd),
             precisionOutput
           )
           if (x >= outputMin && x <= outputMax) {

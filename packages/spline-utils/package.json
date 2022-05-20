@@ -1,0 +1,48 @@
+{
+  "name": "@curvy/spline-utils",
+  "version": "0.0.0",
+  "description": "Spline Utilities for Curvy",
+  "author": "Tim Morris <timthewebguy@gmail.com>",
+  "homepage": "https://github.com/tkofh/curvy#readme",
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkofh/curvy.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "bugs": {
+    "url": "https://github.com/tkofh/curvy/issues"
+  },
+  "dependencies": {
+    "@curvy/types": "0.4.0",
+    "@curvy/math": "0.3.0"
+  },
+  "devDependencies": {
+    "@curvy/bezier": "0.5.0",
+    "@vitest/ui": "^0.11.0",
+    "c8": "^7.11.2",
+    "tsup": "^5.12.7",
+    "vitest": "^0.11.0"
+  }
+}
