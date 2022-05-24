@@ -2,7 +2,10 @@ import { Bounds, LUTEntry, Monotonicity, PointObject, Spline, SplineMetadata } f
 import { collapseExtrema } from '../../common'
 
 export const computeSplineMeta = (curves: Spline[]): SplineMetadata => {
-  const bounds: Bounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 }
+  const bounds: Bounds = {
+    x: { min: 0, max: 0 },
+    y: { min: 0, max: 0 },
+  }
   let length = 0
   let monotonicityX: Monotonicity = 'none'
   let monotonicityY: Monotonicity = 'none'
@@ -10,17 +13,17 @@ export const computeSplineMeta = (curves: Spline[]): SplineMetadata => {
   const lut: LUTEntry[] = []
 
   for (const [index, curve] of curves.entries()) {
-    if (index === 0 || curve.meta.bounds.minX < bounds.minX) {
-      bounds.minX = curve.meta.bounds.minX
+    if (index === 0 || curve.meta.bounds.x.min < bounds.x.min) {
+      bounds.x.min = curve.meta.bounds.x.min
     }
-    if (index === 0 || curve.meta.bounds.minY < bounds.minY) {
-      bounds.minY = curve.meta.bounds.minY
+    if (index === 0 || curve.meta.bounds.y.min < bounds.y.min) {
+      bounds.y.min = curve.meta.bounds.y.min
     }
-    if (index === 0 || curve.meta.bounds.maxX > bounds.maxX) {
-      bounds.maxX = curve.meta.bounds.maxX
+    if (index === 0 || curve.meta.bounds.x.max > bounds.x.max) {
+      bounds.x.max = curve.meta.bounds.x.max
     }
-    if (index === 0 || curve.meta.bounds.maxY > bounds.maxY) {
-      bounds.maxY = curve.meta.bounds.maxY
+    if (index === 0 || curve.meta.bounds.y.max > bounds.y.max) {
+      bounds.y.max = curve.meta.bounds.y.max
     }
 
     if (index === 0) {

@@ -1,17 +1,24 @@
 import { Bounds, PointObject } from '@curvy/types'
 
 export const computeCurveBounds = (extrema: PointObject[]): Bounds =>
-  extrema.slice(1).reduce<Bounds>(
-    (bounds, extreme) => ({
-      minX: Math.min(extreme.x, bounds.minX),
-      maxX: Math.max(extreme.x, bounds.maxX),
-      minY: Math.min(extreme.y, bounds.minY),
-      maxY: Math.max(extreme.y, bounds.maxY),
-    }),
+  extrema.slice(1).reduce(
+    (bounds, extreme) => {
+      if (extreme.x < bounds.x.min) {
+        bounds.x.min = extreme.x
+      } else if (extreme.x > bounds.x.max) {
+        bounds.x.max = extreme.x
+      }
+
+      if (extreme.y < bounds.y.min) {
+        bounds.y.min = extreme.y
+      } else if (extreme.y > bounds.y.max) {
+        bounds.y.max = extreme.y
+      }
+
+      return bounds
+    },
     {
-      minX: extrema[0].x,
-      maxX: extrema[0].x,
-      minY: extrema[0].y,
-      maxY: extrema[0].y,
+      x: { min: extrema[0].x, max: extrema[0].x },
+      y: { min: extrema[0].y, max: extrema[0].y },
     }
   )

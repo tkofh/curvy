@@ -1,3 +1,9 @@
-export const rangesOverlap = (startA: number, endA: number, startB: number, endB: number) =>
-  Math.min(startA, endA) <= Math.max(startB, endB) &&
-  Math.min(startB, endB) <= Math.max(startA, endA)
+import { DirectedRange, Range } from '@curvy/types'
+import { toRange } from './toRange'
+
+export const rangesOverlap = (a: Range | DirectedRange, b: Range | DirectedRange) => {
+  const { min: aMin, max: aMax } = toRange(a)
+  const { min: bMin, max: bMax } = toRange(b)
+
+  return bMin <= aMax && aMin <= bMax
+}

@@ -1,7 +1,7 @@
 import { DirectedRange, Range } from '@curvy/types'
 import { toRange } from './toRange'
 
-export const rangeIncludes = (value: number, range: Range | DirectedRange) => {
+export const rangeString = (range: Range | DirectedRange): string => {
   const { min, max } = toRange(range)
-  return min <= value && max >= value
+  return `[${min}, ${max}]`
 }

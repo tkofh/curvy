@@ -48,10 +48,8 @@ describe('createParametricSplineFactory', () => {
       [1, 1],
     ])
     expect(spline.meta.bounds).toStrictEqual({
-      minX: 0,
-      maxX: 1,
-      minY: 0,
-      maxY: 1,
+      x: { min: 0, max: 1 },
+      y: { min: 0, max: 1 },
     })
   })
   test('calculates the bounds of multiple curves', ({ expect }) => {
@@ -70,10 +68,8 @@ describe('createParametricSplineFactory', () => {
       [3, 3],
     ])
     expect(spline.meta.bounds).toStrictEqual({
-      minX: 0,
-      maxX: 3,
-      minY: 0,
-      maxY: 3,
+      x: { min: 0, max: 3 },
+      y: { min: 0, max: 3 },
     })
   })
 
