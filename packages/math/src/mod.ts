@@ -11,7 +11,9 @@ export const mod = (value: number, min: number, max: number) => {
   }
 
   if (max < min) {
-    [min, max] = [max, min]
+    const tmp = min
+    min = max
+    max = tmp
   }
 
   const delta = max - min
