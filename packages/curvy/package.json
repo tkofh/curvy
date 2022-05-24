@@ -28,8 +28,7 @@
     "url": "git+https://github.com/tkofh/curvy.git"
   },
   "scripts": {
-    "build": "tsup",
-    "test": "vitest run"
+    "build": "tsup"
   },
   "bugs": {
     "url": "https://github.com/tkofh/curvy/issues"
