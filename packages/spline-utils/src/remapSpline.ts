@@ -3,8 +3,8 @@ import { distance, remap } from '@curvy/math'
 
 export const remapSpline = (spline: Spline, source: Bounds, target: Bounds): Spline => {
   const lut = spline.meta.lut.reduce<LUTEntry[]>((lut, entry, index) => {
-    const x = remap(entry.x, source.minX, source.maxX, target.minX, target.maxX)
-    const y = remap(entry.y, source.minY, source.maxY, target.minY, target.maxY)
+    const x = remap(entry.x, source.x.min, source.x.max, target.x.min, target.x.max)
+    const y = remap(entry.y, source.y.min, source.y.max, target.y.min, target.y.max)
 
     lut.push({
       x,
@@ -22,42 +22,48 @@ export const remapSpline = (spline: Spline, source: Bounds, target: Bounds): Spl
     monotonicityX: spline.meta.monotonicityX,
     monotonicityY: spline.meta.monotonicityY,
     bounds: {
-      minX: remap(
-        spline.meta.bounds.minX,
-        source.minX,
-        source.maxX,
-        target.minX,
-        target.maxX,
-        false
-      ),
-      minY: remap(
-        spline.meta.bounds.minY,
-        source.minY,
-        source.maxY,
-        target.minY,
-        target.maxY,
-        false
-      ),
-      maxX: remap(
-        spline.meta.bounds.maxX,
-        source.minX,
-        source.maxX,
-        target.minX,
-        target.maxX,
-        false
-      ),
-      maxY: remap(
-        spline.meta.bounds.maxY,
-        source.minY,
-        source.maxY,
-        target.minY,
-        target.maxY,
-        false
-      ),
+      x: {
+        min: remap(
+          spline.meta.bounds.x.min,
+          source.x.min,
+          source.y.min,
+          target.x.min,
+          target.y.min,
+          false
+        ),
+
+        max: remap(
+          spline.meta.bounds.x.max,
+          source.x.min,
+          source.x.max,
+          target.x.min,
+          target.x.max,
+          false
+        ),
+      },
+      y: {
+        min: remap(
+          spline.meta.bounds.y.min,
+          source.y.min,
+          source.y.max,
+          target.y.min,
+          target.y.max,
+          false
+        ),
+
+        max: remap(
+          spline.meta.bounds.y.max,
+          source.y.min,
+          source.y.max,
+          target.y.min,
+          target.y.max,
+          false
+        ),
+      },
     },
     extrema: spline.meta.extrema.map((extrema) => ({
-      x: remap(extrema.x, source.minX, source.maxX, target.minX, target.maxX, false),
-      y: remap(extrema.y, source.minY, source.maxY, target.minX, target.maxX, false),
+      x: remap(extrema.x, source.x.min, source.x.max, target.x.min, target.x.max, false),
+      y: remap(extrema.y, source.y.min, source.y.max, target.y.min, target.y.max, false),
     })),
     lut,
     length: lut[lut.length - 1].length,
@@ -67,32 +73,80 @@ export const remapSpline = (spline: Spline, source: Bounds, target: Bounds): Spl
     meta,
     solveX: (y: number, minX?: number, maxX?: number): number | undefined => {
       const result = spline.solveX(
-        remap(y, target.minY, target.maxY, source.minY, source.maxY, false, meta.precisionY),
+        remap(y, target.y.min, target.y.max, source.y.min, source.y.max, false, meta.precisionY),
         minX === undefined
           ? minX
-          : remap(minX, target.minX, target.maxX, source.minX, source.maxX, false, meta.precisionX),
+          : remap(
+              minX,
+              target.x.min,
+              target.x.max,
+              source.x.min,
+              source.x.max,
+              false,
+              meta.precisionX
+            ),
         maxX === undefined
           ? maxX
-          : remap(maxX, target.minX, target.maxX, source.minX, source.maxX, false, meta.precisionX)
+          : remap(
+              maxX,
+              target.x.min,
+              target.x.max,
+              source.x.min,
+              source.x.max,
+              false,
+              meta.precisionX
+            )
       )
       return result === undefined
         ? result
-        : remap(result, source.minX, source.maxX, target.minX, target.maxX, false, meta.precisionX)
+        : remap(
+            result,
+            source.x.min,
+            source.x.max,
+            target.x.min,
+            target.x.max,
+            false,
+            meta.precisionX
+          )
     },
     solveY: (x: number, minY?: number, maxY?: number): number | undefined => {
       const result = spline.solveY(
-        remap(x, target.minX, target.maxX, source.minX, source.maxX, false, meta.precisionX),
+        remap(x, target.x.min, target.x.max, source.x.min, source.x.max, false, meta.precisionX),
         minY === undefined
           ? minY
-          : remap(minY, target.minY, target.maxY, source.minY, source.maxY, false, meta.precisionX),
+          : remap(
+              minY,
+              target.y.min,
+              target.y.max,
+              source.y.min,
+              source.y.max,
+              false,
+              meta.precisionX
+            ),
         maxY === undefined
           ? maxY
-          : remap(maxY, target.minY, target.maxY, source.minY, source.maxY, false, meta.precisionX)
+          : remap(
+              maxY,
+              target.y.min,
+              target.y.max,
+              source.y.min,
+              source.y.max,
+              false,
+              meta.precisionX
+            )
       )
 
       return result === undefined
         ? result
-        : remap(result, source.minY, source.maxY, target.minY, target.maxY, false, meta.precisionY)
+        : remap(
+            result,
+            source.y.min,
+            source.y.max,
+            target.y.min,
+            target.y.max,
+            false,
+            meta.precisionY
+          )
     },
     solveLength: (length: number) => {
       const result = spline.solveLength(remap(length, 0, meta.length, 0, spline.meta.length))
@@ -101,19 +155,19 @@ export const remapSpline = (spline: Spline, source: Bounds, target: Bounds): Spl
         : {
             x: remap(
               result.x,
-              source.minX,
-              source.maxX,
-              target.minX,
-              target.maxX,
+              source.x.min,
+              source.x.max,
+              target.x.min,
+              target.x.max,
               false,
               meta.precisionX
             ),
             y: remap(
               result.y,
-              source.minY,
-              source.maxY,
-              target.minY,
-              target.maxY,
+              source.y.min,
+              source.y.max,
+              target.y.min,
+              target.y.max,
               false,
               meta.precisionY
             ),
@@ -126,19 +180,19 @@ export const remapSpline = (spline: Spline, source: Bounds, target: Bounds): Spl
         : {
             x: remap(
               result.x,
-              source.minX,
-              source.maxX,
-              target.minX,
-              target.maxX,
+              source.x.min,
+              source.x.max,
+              target.x.min,
+              target.x.max,
               false,
               meta.precisionX
             ),
             y: remap(
               result.y,
-              source.minY,
-              source.maxY,
-              target.minY,
-              target.maxY,
+              source.y.min,
+              source.y.max,
+              target.y.min,
+              target.y.max,
               false,
               meta.precisionY
             ),
