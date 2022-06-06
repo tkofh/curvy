@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/tkofh/curvy/compare/@curvy/spline-utils@0.1.0...@curvy/spline-utils@0.2.0) (2022-06-06)
+
+
+### Features
+
+* **spline-utils:** getSplineAxisRanges util ([f5598e1](https://github.com/tkofh/curvy/commit/f5598e17077a1a2dd119f3fc1f54e8d39c6fb057))
+
+
+
+
+
 # 0.1.0 (2022-05-20)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/tkofh/curvy/compare/@curvy/types@0.5.0...@curvy/types@0.6.0) (2022-06-06)
+
+
+### Features
+
+* **types:** add bounded value ([d782ed3](https://github.com/tkofh/curvy/commit/d782ed3777237c9bf5a91f74d756a34b1824a628))
+
+
+
+
+
 # [0.5.0](https://github.com/tkofh/curvy/compare/@curvy/types@0.4.0...@curvy/types@0.5.0) (2022-05-20)
 
 
