@@ -26,9 +26,9 @@ export const remapSpline = (spline: Spline, source: Bounds, target: Bounds): Spl
         min: remap(
           spline.meta.bounds.x.min,
           source.x.min,
-          source.y.min,
+          source.x.max,
           target.x.min,
-          target.y.min,
+          target.x.max,
           false
         ),
 

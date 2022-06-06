@@ -16,8 +16,8 @@ describe('remapSpline', () => {
 
     const remappedSpline1 = remapSpline(
       originalSpline1,
-      { minX: 0, maxX: 1, minY: 0, maxY: 1 },
-      { minX: 0, maxX: 2, minY: 0, maxY: 2 }
+      { x: { min: 0, max: 1 }, y: { min: 0, max: 1 } },
+      { x: { min: 0, max: 2 }, y: { min: 0, max: 2 } }
     )
 
     expect(remappedSpline1.solveY(0)).toBe(0)
@@ -40,8 +40,8 @@ describe('remapSpline', () => {
 
     const remappedSpline2 = remapSpline(
       originalSpline2,
-      { minX: 0, maxX: 1, minY: 0, maxY: 1 },
-      { minX: 0, maxX: 2, minY: 0, maxY: 2 }
+      { x: { min: 0, max: 1 }, y: { min: 0, max: 1 } },
+      { x: { min: 0, max: 2 }, y: { min: 0, max: 2 } }
     )
 
     expect(remappedSpline2.solveX(0)).toBe(0)

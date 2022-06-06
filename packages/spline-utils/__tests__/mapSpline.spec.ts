@@ -15,13 +15,11 @@ describe('mapSpline', () => {
       { precision: 2 }
     )
 
-    const mappedSpline = mapSpline(originalSpline, { minX: 0, maxX: 1, minY: 0, maxY: 1 })
+    const mappedSpline = mapSpline(originalSpline, { x: { min: 0, max: 1 }, y: { min: 0, max: 1 } })
 
     expect(mappedSpline.meta.bounds).toStrictEqual({
-      minX: 0,
-      maxX: 1,
-      minY: 0,
-      maxY: 1,
+      x: { min: 0, max: 1 },
+      y: { min: 0, max: 1 },
     })
 
     for (const extreme of originalSpline.meta.extrema) {
@@ -29,10 +27,10 @@ describe('mapSpline', () => {
         roundTo(
           remap(
             extreme.y,
-            originalSpline.meta.bounds.minY,
-            originalSpline.meta.bounds.maxY,
-            mappedSpline.meta.bounds.minY,
-            mappedSpline.meta.bounds.maxY
+            originalSpline.meta.bounds.y.min,
+            originalSpline.meta.bounds.y.max,
+            mappedSpline.meta.bounds.y.min,
+            mappedSpline.meta.bounds.y.max
           ),
           mappedSpline.meta.precisionY
         )
