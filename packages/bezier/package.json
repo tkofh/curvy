@@ -29,7 +29,8 @@
   },
   "scripts": {
     "build": "tsup",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublish": "yarn test && yarn build"
   },
   "bugs": {
     "url": "https://github.com/tkofh/curvy/issues"
