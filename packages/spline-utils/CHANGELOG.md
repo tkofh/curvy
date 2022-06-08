@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/tkofh/curvy/compare/@curvy/spline-utils@0.2.0...@curvy/spline-utils@0.3.0) (2022-06-08)
+
+
+### Features
+
+* **spline-utils:** compare bounds and spline bounds utils ([5c04d19](https://github.com/tkofh/curvy/commit/5c04d1958f9ca938dab3e250c01072536ea5ebb7))
+
+
+
+
+
 # [0.2.0](https://github.com/tkofh/curvy/compare/@curvy/spline-utils@0.1.0...@curvy/spline-utils@0.2.0) (2022-06-06)
 
 
