@@ -1,0 +1,49 @@
+{
+  "name": "@curvy/visualize",
+  "version": "0.4.1",
+  "description": "Visualization utilities for Curvy",
+  "author": "Tim Morris <timthewebguy@gmail.com>",
+  "homepage": "https://github.com/tkofh/curvy#readme",
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkofh/curvy.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "prepublish": "yarn test && yarn build"
+  },
+  "bugs": {
+    "url": "https://github.com/tkofh/curvy/issues"
+  },
+  "dependencies": {
+    "@curvy/math": "0.4.1",
+    "@curvy/types": "0.6.1"
+  },
+  "devDependencies": {
+    "@curvy/bezier": "0.6.1",
+    "@vitest/ui": "^0.11.0",
+    "c8": "^7.11.2",
+    "tsup": "^5.12.7",
+    "vitest": "^0.11.0"
+  }
+}
