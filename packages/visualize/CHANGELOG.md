@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/tkofh/curvy/compare/@curvy/visualize@0.5.0...@curvy/visualize@0.5.1) (2022-06-17)
+
+**Note:** Version bump only for package @curvy/visualize
+
+
+
+
+
 # 0.5.0 (2022-06-17)
 
 

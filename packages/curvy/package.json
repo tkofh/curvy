@@ -1,6 +1,6 @@
 {
   "name": "curvy",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Bezier and Hermite Splines",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
@@ -34,7 +34,7 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/bezier": "0.6.1"
+    "@curvy/bezier": "0.6.2"
   },
   "devDependencies": {
     "tsup": "^5.12.7"
