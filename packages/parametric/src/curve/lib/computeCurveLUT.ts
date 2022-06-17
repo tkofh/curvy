@@ -1,4 +1,4 @@
-import { cubicPolynomial, distance, roundTo } from '@curvy/math'
+import { cubicPolynomial, distance, roundTo } from 'micro-math'
 import { LUTEntry } from '@curvy/types'
 
 export const computeCurveLUT = (

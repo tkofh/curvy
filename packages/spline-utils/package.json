@@ -36,7 +36,7 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/math": "0.4.1",
+    "micro-math": "0.3.0",
     "@curvy/types": "0.6.1"
   },
   "devDependencies": {

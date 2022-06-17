@@ -1,4 +1,4 @@
-import { remap, roundTo } from '@curvy/math'
+import { remap, roundTo } from 'micro-math'
 import { warnDev } from '@curvy/dx'
 import { Axis, DirectedRange, Range, SplineMetadata } from '@curvy/types'
 import { rangeIncludes, rangesOverlap, rangeString } from '../../common'

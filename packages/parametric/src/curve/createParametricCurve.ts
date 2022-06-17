@@ -1,5 +1,5 @@
 import { Matrix4x3, Matrix4x4, PointObject, Spline, SplineMetadata } from '@curvy/types'
-import { roundTo } from '@curvy/math'
+import { roundTo } from 'micro-math'
 import {
   getAxisPrimeScalars,
   getAxisScalars,

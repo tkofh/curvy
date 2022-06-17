@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest'
-import { roundTo, lerp } from '@curvy/math'
+import { roundTo, lerp } from 'micro-math'
 import { PointObject } from '@curvy/types'
 import { createCubicBezierSpline } from '../src'
 

@@ -3942,6 +3942,11 @@ merge2@^1.3.0, merge2@^1.4.1:
   resolved "https://registry.yarnpkg.com/merge2/-/merge2-1.4.1.tgz#4368892f885e907455a6fd7dc55c0c9d404990ae"
   integrity sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==
 
+micro-math@0.3.0, micro-math@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/micro-math/-/micro-math-0.3.0.tgz#7d7a141b60a02120fea5f8cd47cc30eb0a257592"
+  integrity sha512-6o7SptMNmbfi0OvUtfxtpF1cZStzwcdxrEtnizKoSuP320fVSze3tGtOsPD8foUf4LujKdofSYc6Azpcxj1pBw==
+
 micromatch@^4.0.4:
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/micromatch/-/micromatch-4.0.5.tgz#bc8999a7cbbf77cdc89f132f6e467051b49090c6"

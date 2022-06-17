@@ -1,5 +1,5 @@
 import { Monotonicity } from '@curvy/types'
-import { quadraticPolynomial } from '@curvy/math'
+import { quadraticPolynomial } from 'micro-math'
 
 export const getAxisMonotonicity = (
   primeRoots: number[],

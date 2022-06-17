@@ -1,6 +1,6 @@
 import { LUTEntry, PointObject, SplineMetadata, ValuedDirectedRange } from '@curvy/types'
 import { warnDev } from '@curvy/dx'
-import { remap, roundTo } from '@curvy/math'
+import { remap, roundTo } from 'micro-math'
 import { rangeIncludes } from '../../common'
 
 export const createProgressSolver = (dimension: 'length' | 't', meta: SplineMetadata) => {

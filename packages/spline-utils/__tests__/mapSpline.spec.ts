@@ -1,6 +1,6 @@
 import { describe, test } from 'vitest'
 import { createCubicBezierSpline } from '@curvy/bezier'
-import { remap, roundTo } from '@curvy/math'
+import { remap, roundTo } from 'micro-math'
 import { mapSpline } from '../src'
 
 describe('mapSpline', () => {

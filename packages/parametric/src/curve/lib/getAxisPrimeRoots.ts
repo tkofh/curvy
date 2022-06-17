@@ -1,4 +1,4 @@
-import { quadraticRoots } from '@curvy/math'
+import { quadraticRoots } from 'micro-math'
 
 export const getAxisPrimeRoots = (a: number, b: number, c: number): number[] => {
   const [root1, root2] = quadraticRoots(a, b, c)

@@ -1,5 +1,5 @@
 import { PointObject, Spline, Bounds } from '@curvy/types'
-import { remap, roundTo } from '@curvy/math'
+import { remap, roundTo } from 'micro-math'
 
 export const toPath = (spline: Spline, resolution: number, remapTo?: Bounds): string => {
   const points: PointObject[] = []

@@ -1,6 +1,6 @@
 import { describe, test } from 'vitest'
 import { Matrix4x3, Matrix4x4, Point } from '@curvy/types'
-import { roundTo } from '@curvy/math'
+import { roundTo } from 'micro-math'
 import { createParametricSplineFactory } from '../src'
 
 const bezierBaseMatrix: Matrix4x4 = [

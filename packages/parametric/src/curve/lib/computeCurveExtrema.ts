@@ -1,5 +1,5 @@
 import { PointObject } from '@curvy/types'
-import { cubicPolynomial, roundTo } from '@curvy/math'
+import { cubicPolynomial, roundTo } from 'micro-math'
 import { collapseExtrema } from '../../common'
 
 export const computeCurveExtrema = (

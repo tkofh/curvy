@@ -1,5 +1,5 @@
 import { Axis, Spline, ValuedDirectedRange } from '@curvy/types'
-import { remap, roundTo } from '@curvy/math'
+import { remap, roundTo } from 'micro-math'
 
 const createSequenceArray = (length: number, start: number, step: number, precision: number) =>
   Array.from({ length }).map((_, index) => roundTo(start + step * index, precision))

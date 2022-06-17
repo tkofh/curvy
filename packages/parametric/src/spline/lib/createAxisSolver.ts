@@ -1,5 +1,5 @@
 import { Axis, Range, Spline, SplineMetadata } from '@curvy/types'
-import { roundTo } from '@curvy/math'
+import { roundTo } from 'micro-math'
 import { warnDev } from '@curvy/dx'
 import { rangeIncludes, rangesOverlap, rangeString } from '../../common'
 
