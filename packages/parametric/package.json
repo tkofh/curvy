@@ -30,6 +30,8 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:ui": "vitest --ui",
     "prepublish": "yarn test && yarn build"
   },
   "bugs": {

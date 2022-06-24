@@ -32,9 +32,9 @@ $ npm install @curvy/bezier
 `@curvy/bezier` covers the common use cases for Cubic Bézier splines.
 
 ```typescript
-import { createCubicBezierSpline } from '@curvy/bezier'
+import { createCubicHermiteSpline } from '@curvy/bezier'
 
-const easeInOut = createCubicBezierSpline([
+const easeInOut = createCubicHermiteSpline([
   { x: 0, y: 0 },
   { x: 0.5, y: 0.2 },
   { x: 0.5, y: 0.8 },
@@ -61,10 +61,10 @@ const pointATLength = easeInOut.solveLength(0.8)
 `@curvy/spline-utils` contains utilities for working with splines and extracting additional information from them
 
 ```typescript
-import { createCubicBezierSpline } from '@curvy/bezier'
+import { createCubicHermiteSpline } from '@curvy/bezier'
 import { mapSpline, remapSpline } from '@curvy/spline-utils'
 
-const base = createCubicBezierSpline([
+const base = createCubicHermiteSpline([
   { x: 0, y: 0 },
   { x: 0.25, y: 5 },
   { x: 0.75, y: -4 },
@@ -89,10 +89,10 @@ const remapped = remapSpline(
 `@curvy/visualize` helps visualize splines after they've been created
 
 ```typescript
-import { createCubicBezierSpline } from '@curvy/bezier'
+import { createCubicHermiteSpline } from '@curvy/bezier'
 import { toPath } from '@curvy/visualize'
 
-const spline = createCubicBezierSpline([
+const spline = createCubicHermiteSpline([
   { x: 0, y: 0 },
   { x: 25, y: 500 },
   { x: 75, y: -400 },

@@ -47,7 +47,5 @@ describe('createCubicBezierSpline', () => {
       expect(spline.solveY(solvedPoint.x)).toBe(roundTo(solvedPoint.y, precision))
       expect(spline.solveX(solvedPoint.y)).toBe(roundTo(solvedPoint.x, precision))
     }
-
-    expect(2).toBe(2)
   })
 })

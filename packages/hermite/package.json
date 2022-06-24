@@ -1,7 +1,7 @@
 {
-  "name": "@curvy/visualize",
-  "version": "0.5.1",
-  "description": "Visualization utilities for Curvy",
+  "name": "@curvy/hermite",
+  "version": "0.0.0",
+  "description": "Hermite curve implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
   "license": "MIT",
@@ -38,14 +38,14 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/types": "0.6.1",
-    "micro-math": "0.3.0"
+    "@curvy/parametric": "0.4.2",
+    "@curvy/types": "0.6.1"
   },
   "devDependencies": {
-    "@curvy/bezier": "0.6.2",
     "@vitest/ui": "^0.11.0",
     "c8": "^7.11.2",
     "tsup": "^5.12.7",
     "vitest": "^0.11.0"
-  }
+  },
+  "gitHead": "f20477b96f86301777a0859458ae5a8e2e3ba178"
 }
