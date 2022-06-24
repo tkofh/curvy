@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/tkofh/curvy/compare/@curvy/dx@0.2.1...@curvy/dx@0.3.0) (2022-06-24)
+
+
+### Features
+
+* **hermite:** implement ([89dd5e7](https://github.com/tkofh/curvy/commit/89dd5e763dbfd61a3063e944188b572fe8607083))
+
+
+
+
+
 ## [0.2.1](https://github.com/tkofh/curvy/compare/@curvy/dx@0.2.0...@curvy/dx@0.2.1) (2022-06-08)
 
 **Note:** Version bump only for package @curvy/dx
