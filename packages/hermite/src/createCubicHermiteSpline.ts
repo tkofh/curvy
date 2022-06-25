@@ -1,7 +1,8 @@
 import { createParametricSplineFactory } from '@curvy/parametric'
-import { HERMITE_BASE_SCALAR_MATRIX, HERMITE_PRIME_SCALAR_MATRIX } from './constants'
 
-export const createCubicHermiteSpline = createParametricSplineFactory(
-  HERMITE_BASE_SCALAR_MATRIX,
-  HERMITE_PRIME_SCALAR_MATRIX
-)
+export const createCubicHermiteSpline = createParametricSplineFactory([
+  [2, -3, 0, 1],
+  [1, -2, 1, 0],
+  [1, -1, 0, 0],
+  [-2, 3, 0, 0],
+])

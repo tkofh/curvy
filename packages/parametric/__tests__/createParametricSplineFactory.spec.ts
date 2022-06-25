@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest'
-import { Matrix4x3, Matrix4x4, Point } from '@curvy/types'
+import { Matrix4x4, Point } from '@curvy/types'
 import { roundTo } from 'micro-math'
 import { createParametricSplineFactory } from '../src'
 
@@ -9,23 +9,17 @@ const bezierBaseMatrix: Matrix4x4 = [
   [-3, 3, 0, 0],
   [1, 0, 0, 0],
 ]
-const bezierPrimeMatrix: Matrix4x3 = [
-  [-3, 6, -3],
-  [9, -12, 3],
-  [-9, 6, 0],
-  [3, 0, 0],
-]
 
 describe('createParametricSplineFactory', () => {
   test('ensures at least one cubic segment is provided', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     expect(() => createBezier([])).toThrowError(
       'At least one cubic segment (four points) must be provided'
     )
   })
   test('ensures only complete cubic segments are provided', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     expect(() =>
       createBezier([
@@ -39,7 +33,7 @@ describe('createParametricSplineFactory', () => {
   })
 
   test('calculates the bounds of a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier([
       [0, 0],
@@ -53,7 +47,7 @@ describe('createParametricSplineFactory', () => {
     })
   })
   test('calculates the bounds of multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier([
       [0, 0],
@@ -74,7 +68,7 @@ describe('createParametricSplineFactory', () => {
   })
 
   test('calculates the extrema of a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline1 = createBezier([
       [0, 0],
@@ -106,7 +100,7 @@ describe('createParametricSplineFactory', () => {
     ])
   })
   test('ensures each extreme is included in the look up table of a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -126,7 +120,7 @@ describe('createParametricSplineFactory', () => {
     }
   })
   test('calculates the extrema of multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline1 = createBezier([
       [0, 0],
@@ -164,7 +158,7 @@ describe('createParametricSplineFactory', () => {
     ])
   })
   test('ensures each extreme is included in the look up table of multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -187,7 +181,7 @@ describe('createParametricSplineFactory', () => {
   })
 
   test('calculates the length of a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline1 = createBezier([
       [0, 0],
@@ -214,7 +208,7 @@ describe('createParametricSplineFactory', () => {
     expect(roundTo(spline3.meta.length, 10)).toBe(roundTo(Math.sqrt(2), 10))
   })
   test('calculates the length of multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline1 = createBezier([
       [0, 0],
@@ -253,7 +247,7 @@ describe('createParametricSplineFactory', () => {
   })
 
   test('can solve y for a given x of a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -273,7 +267,7 @@ describe('createParametricSplineFactory', () => {
   test('returns undefined attempting to solve y for an out of bounds x on a single curve', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier([
       [0, 0],
@@ -286,7 +280,7 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveY(2)).toBeUndefined()
   })
   test('respects min/max y when solving y for a given x of a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -315,7 +309,7 @@ describe('createParametricSplineFactory', () => {
   test('ignores explicitly undefined min/max y when solving y for a given x of a single curve', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
     const spline = createBezier([
       [0, 0],
       [0.25, 0.25],
@@ -326,7 +320,7 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveY(0.5, undefined, undefined)).toBe(0.5)
   })
   test('respects spline precision when solving y for a given x of a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const points: Point[] = [
       [0, 0],
@@ -353,7 +347,7 @@ describe('createParametricSplineFactory', () => {
   test('solves y extrema as they are presented in the metadata for a single curve', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -371,7 +365,7 @@ describe('createParametricSplineFactory', () => {
   })
 
   test('can solve y for a given x of multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -394,7 +388,7 @@ describe('createParametricSplineFactory', () => {
   test('returns undefined attempting to solve y for an out of bounds x on multiple curves', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier([
       [0, 0],
@@ -410,7 +404,7 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveY(3)).toBeUndefined()
   })
   test('respects min/max y when solving y for a given x of multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -442,7 +436,7 @@ describe('createParametricSplineFactory', () => {
   test('ignores explicitly undefined min/max y when solving y for a given x of multiple curves', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
     const spline = createBezier([
       [0, 0],
       [0.25, 0.25],
@@ -458,7 +452,7 @@ describe('createParametricSplineFactory', () => {
   test('respects spline precision when solving y for a given x of multiple curves', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const points: Point[] = [
       [0, 0],
@@ -488,7 +482,7 @@ describe('createParametricSplineFactory', () => {
   test('solves y extrema as they are presented in the metadata for multiple curves', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -509,7 +503,7 @@ describe('createParametricSplineFactory', () => {
   })
 
   test('can solve x for a given y of a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -529,7 +523,7 @@ describe('createParametricSplineFactory', () => {
   test('returns undefined attempting to solve x for an out of bounds y on a single curve', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier([
       [0, 0],
@@ -542,7 +536,7 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveX(2)).toBeUndefined()
   })
   test('respects min/max x when solving x for a given y of a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -571,7 +565,7 @@ describe('createParametricSplineFactory', () => {
   test('ignores explicitly undefined min/max x when solving x for a given y of a single curve', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
     const spline = createBezier([
       [0, 0],
       [0.25, 0.25],
@@ -582,7 +576,7 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveX(0.5, undefined, undefined)).toBe(0.5)
   })
   test('respects spline precision when solving x for a given y of a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const points: Point[] = [
       [0, 0],
@@ -609,7 +603,7 @@ describe('createParametricSplineFactory', () => {
   test('solves x extrema as they are presented in the metadata for a single curve', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -627,7 +621,7 @@ describe('createParametricSplineFactory', () => {
   })
 
   test('can solve x for a given y of multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -650,7 +644,7 @@ describe('createParametricSplineFactory', () => {
   test('returns undefined attempting to solve x for an out of bounds y on multiple curves', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier([
       [0, 0],
@@ -666,7 +660,7 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveX(3)).toBeUndefined()
   })
   test('respects min/max x when solving x for a given y of multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -698,7 +692,7 @@ describe('createParametricSplineFactory', () => {
   test('ignores explicitly undefined min/max x when solving x for a given y of multiple curves', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
     const spline = createBezier([
       [0, 0],
       [0.25, 0.25],
@@ -714,7 +708,7 @@ describe('createParametricSplineFactory', () => {
   test('respects spline precision when solving x for a given y of multiple curves', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const points: Point[] = [
       [0, 0],
@@ -744,7 +738,7 @@ describe('createParametricSplineFactory', () => {
   test('solves x extrema as they are presented in the metadata for multiple curves', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -765,7 +759,7 @@ describe('createParametricSplineFactory', () => {
   })
 
   test('can solve the point at a given length for a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -784,7 +778,7 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveLength(Math.sqrt(2))).toStrictEqual({ x: 1, y: 1 })
   })
   test('can solve the point at a given length for multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -808,7 +802,7 @@ describe('createParametricSplineFactory', () => {
   test('returns undefined when attempting to solve the point at an out of bounds length for a single curve', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -826,7 +820,7 @@ describe('createParametricSplineFactory', () => {
   test('returns undefined when attempting to solve the point at an out of bounds length for multiple curves', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -846,7 +840,7 @@ describe('createParametricSplineFactory', () => {
   })
 
   test('can solve the point at a given t for a single curve', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -863,7 +857,7 @@ describe('createParametricSplineFactory', () => {
     expect(spline.solveT(1)).toStrictEqual({ x: 1, y: 1 })
   })
   test('can solve the point at a given t for multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -887,7 +881,7 @@ describe('createParametricSplineFactory', () => {
   test('returns undefined when attempting to solve the point at an out of bounds t for a single curve', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -905,7 +899,7 @@ describe('createParametricSplineFactory', () => {
   test('returns undefined when attempting to solve the point at an out of bounds t for multiple curves', ({
     expect,
   }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier(
       [
@@ -925,7 +919,7 @@ describe('createParametricSplineFactory', () => {
   })
 
   test('merges the look up tables of multiple curves', ({ expect }) => {
-    const createBezier = createParametricSplineFactory(bezierBaseMatrix, bezierPrimeMatrix)
+    const createBezier = createParametricSplineFactory(bezierBaseMatrix)
 
     const spline = createBezier([
       [0, 0],

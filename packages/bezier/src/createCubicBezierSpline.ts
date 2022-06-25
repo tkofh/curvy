@@ -1,7 +1,8 @@
 import { createParametricSplineFactory } from '@curvy/parametric'
-import { BEZIER_BASE_SCALAR_MATRIX, BEZIER_PRIME_SCALAR_MATRIX } from './constants'
 
-export const createCubicBezierSpline = createParametricSplineFactory(
-  BEZIER_BASE_SCALAR_MATRIX,
-  BEZIER_PRIME_SCALAR_MATRIX
-)
+export const createCubicBezierSpline = createParametricSplineFactory([
+  [-1, 3, -3, 1],
+  [3, -6, 3, 0],
+  [-3, 3, 0, 0],
+  [1, 0, 0, 0],
+])
