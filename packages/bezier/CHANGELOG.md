@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.7.0...@curvy/bezier@0.8.0) (2022-06-25)
+
+
+### Features
+
+* **parametric:** use only base scalars as param ([f25ef1f](https://github.com/tkofh/curvy/commit/f25ef1f1015b3f327c41274efc4b65b93e1caf21))
+
+
+
+
+
 # [0.7.0](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.6.2...@curvy/bezier@0.7.0) (2022-06-24)
 
 

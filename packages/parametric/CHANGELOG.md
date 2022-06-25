@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/tkofh/curvy/compare/@curvy/parametric@0.5.0...@curvy/parametric@0.6.0) (2022-06-25)
+
+
+### Features
+
+* **parametric:** use only base scalars as param ([f25ef1f](https://github.com/tkofh/curvy/commit/f25ef1f1015b3f327c41274efc4b65b93e1caf21))
+
+
+
+
+
 # [0.5.0](https://github.com/tkofh/curvy/compare/@curvy/parametric@0.4.2...@curvy/parametric@0.5.0) (2022-06-24)
 
 
