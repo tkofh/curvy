@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.8.0...@curvy/bezier@0.9.0) (2022-09-03)
+
+
+### Bug Fixes
+
+* **bezier:** export bezierPoints ([2b0bd59](https://github.com/tkofh/curvy/commit/2b0bd5983dc4f29311f07713d1b590c7fc711e9c))
+
+
+### Features
+
+* **bezier:** bezierPoints fluent api for defining spline input points ([99fc91b](https://github.com/tkofh/curvy/commit/99fc91b4a5f4e98eaacc9059ea1833258f2561a8))
+
+
+
+
+
 # [0.8.0](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.7.0...@curvy/bezier@0.8.0) (2022-06-25)
 
 
