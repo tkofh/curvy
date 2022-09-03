@@ -3947,6 +3947,11 @@ micro-math@0.3.0, micro-math@^0.3.0:
   resolved "https://registry.yarnpkg.com/micro-math/-/micro-math-0.3.0.tgz#7d7a141b60a02120fea5f8cd47cc30eb0a257592"
   integrity sha512-6o7SptMNmbfi0OvUtfxtpF1cZStzwcdxrEtnizKoSuP320fVSze3tGtOsPD8foUf4LujKdofSYc6Azpcxj1pBw==
 
+micro-math@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/micro-math/-/micro-math-0.5.0.tgz#4fffec99c9a55b84117b0408a88e090b2a7f3f93"
+  integrity sha512-lpvRwGQBGeADqgKy1m4t7TqInoxiNCU4Tur11YeCMTM7ZEM/zLel1toFZeqddQ480SFgJ28BPX7eZWHWvrP44g==
+
 micromatch@^4.0.4:
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/micromatch/-/micromatch-4.0.5.tgz#bc8999a7cbbf77cdc89f132f6e467051b49090c6"
