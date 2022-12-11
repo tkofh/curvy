@@ -3828,6 +3828,11 @@ lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.21, lodash@^4.7.0:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
 
+log-if-env@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/log-if-env/-/log-if-env-0.1.0.tgz#d89223150ac48bf45a3040aef8da01b001d821cb"
+  integrity sha512-STaJh4qIWPp2QpvKTSw+2uofV8ExuFNGgZHj1xZu6fUgTaXqk/9x3adJ9XhP969OFCtsf7hUSHsvpDIhIsc3EA==
+
 loupe@^2.3.1:
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/loupe/-/loupe-2.3.4.tgz#7e0b9bffc76f148f9be769cb1321d3dcf3cb25f3"

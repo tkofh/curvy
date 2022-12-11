@@ -38,8 +38,8 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/dx": "0.3.0",
     "@curvy/types": "0.6.1",
+    "log-if-env": "^0.1.0",
     "micro-math": "^0.3.0"
   },
   "devDependencies": {

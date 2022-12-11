@@ -1,5 +1,5 @@
 import { remap, roundTo } from 'micro-math'
-import { warnDev } from '@curvy/dx'
+import { warnDev } from 'log-if-env'
 import { Axis, DirectedRange, Range, SplineMetadata } from '@curvy/types'
 import { rangeIncludes, rangesOverlap, rangeString } from '../../common'
 

@@ -1,5 +1,5 @@
 import { LUTEntry, PointObject, SplineMetadata, ValuedDirectedRange } from '@curvy/types'
-import { warnDev } from '@curvy/dx'
+import { warnDev } from 'log-if-env'
 import { remap, roundTo } from 'micro-math'
 import { rangeIncludes } from '../../common'
 

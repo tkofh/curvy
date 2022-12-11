@@ -1,5 +1,5 @@
+import { warnDev } from 'log-if-env'
 import { PointObject, Spline, SplineMetadata } from '@curvy/types'
-import { warnDev } from '@curvy/dx'
 
 export const createProgressSolver = (
   dimension: 't' | 'length',

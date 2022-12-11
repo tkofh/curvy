@@ -1,6 +1,6 @@
 import { Axis, Range, Spline, SplineMetadata } from '@curvy/types'
 import { roundTo } from 'micro-math'
-import { warnDev } from '@curvy/dx'
+import { warnDev } from 'log-if-env'
 import { rangeIncludes, rangesOverlap, rangeString } from '../../common'
 
 export const createAxisSolver = (inputAxis: Axis, meta: SplineMetadata, curves: Spline[]) => {
