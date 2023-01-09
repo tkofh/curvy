@@ -62,7 +62,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-* **types:** add length and solvePointAtLength to Spline ([d06e7fc](https://github.com/tkofh/curvy/commit/d06e7fcd8df4afc37b7eeabcb193f1205cc665e1))
+* **types:** add length and solvePointAtLength to Curve ([d06e7fc](https://github.com/tkofh/curvy/commit/d06e7fcd8df4afc37b7eeabcb193f1205cc665e1))
 
 
 

@@ -1,26 +1,12 @@
+import { BaseAxes } from './points'
+
 export interface Range {
   min: number
   max: number
 }
 
-export interface ValuedRange<T> extends Range {
-  value: T
-}
+export type ReadonlyRange = Readonly<Range>
 
-export interface DirectedRange {
-  start: number
-  end: number
-}
+export type Bounds<TAxis extends BaseAxes> = Record<TAxis, Range>
 
-export interface ValuedDirectedRange<T> extends DirectedRange {
-  value: T
-}
-
-export interface Bounds {
-  x: Range
-  y: Range
-}
-
-export interface ValuedBounds<T> extends Bounds {
-  value: T
-}
+export type ReadonlyBounds<TAxis extends BaseAxes> = Readonly<Record<TAxis, ReadonlyRange>>

@@ -1,1 +1,0 @@
-export { createParametricCurve } from './createParametricCurve'

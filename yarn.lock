@@ -202,6 +202,22 @@
   dependencies:
     "@cspotcode/source-map-consumer" "0.8.0"
 
+"@curvy/dx@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@curvy/dx/-/dx-0.3.0.tgz#6252bb1ca844f599e0298fbe0bcdd34019841d9c"
+  integrity sha512-maYRjPoX5mD74pJHaDcUMFKITdw2CuBaZiCa++16GvaiO2OYNpksqnmBKcX3qP/xNA+p+xKqdl1Jsj66i1SflQ==
+  dependencies:
+    tsup "^5.12.7"
+
+"@curvy/parametric@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@curvy/parametric/-/parametric-0.6.0.tgz#2cc0e57f9b17f3feb3b76a27231be6664d6baf57"
+  integrity sha512-HMovz1gyP5x1RLzuTMBoFhuE7AGV3kzGhBtPkyFEEAk1MWFSUZjguQWf8HhldkvmP6cbfGXxq2KmHIimBUYqOw==
+  dependencies:
+    "@curvy/dx" "0.3.0"
+    "@curvy/types" "0.6.1"
+    micro-math "^0.3.0"
+
 "@eslint/eslintrc@^1.2.3":
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/@eslint/eslintrc/-/eslintrc-1.2.3.tgz#fcaa2bcef39e13d6e9e7f6271f4cc7cae1174886"
@@ -3956,6 +3972,16 @@ micro-math@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/micro-math/-/micro-math-0.5.0.tgz#4fffec99c9a55b84117b0408a88e090b2a7f3f93"
   integrity sha512-lpvRwGQBGeADqgKy1m4t7TqInoxiNCU4Tur11YeCMTM7ZEM/zLel1toFZeqddQ480SFgJ28BPX7eZWHWvrP44g==
+
+micro-math@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/micro-math/-/micro-math-0.7.0.tgz#3049d42b9a74a30d1c0cf02f83aea759cb30857c"
+  integrity sha512-2pZSw31hGnQDThtuP9I2yrRvS0eNfu6WJGYjdd2EznP1r9qgVwj/rrMpmKo7RvW7NmZvzFunNEVfaZ1/4QgKUw==
+
+micro-math@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/micro-math/-/micro-math-0.9.0.tgz#0e80d00962d1301889f21bf4fae79599c696c62c"
+  integrity sha512-koKcY47NWl4IVtYAyDJFmlFvej+s3Yfq5TMjtYRNNoxYN7c30AdxpT4AMdWrvPKLi33u938mjBG2zlK5OCvj5A==
 
 micromatch@^4.0.4:
   version "4.0.5"

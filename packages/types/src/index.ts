@@ -1,11 +1,23 @@
+export type { Bounds, Range, ReadonlyRange, ReadonlyBounds } from './bounds'
 export type {
-  Bounds,
-  DirectedRange,
-  Range,
-  ValuedBounds,
-  ValuedRange,
-  ValuedDirectedRange,
-} from './bounds'
-export type { Matrix4x4, Matrix4x3 } from './matrix'
-export type { Point, PointObject, PointTuple } from './points'
-export type { Monotonicity, Spline, SplineMetadata, Axis, LUTEntry } from './spline'
+  AxisMonotonicity,
+  Monotonicity,
+  ReadonlyMonotonicity,
+  NormalizedPrecision,
+  ReadonlyNormalizedPrecision,
+  Precision,
+  Extreme,
+  ReadonlyExtreme,
+  CubicCurve,
+} from './curve'
+export type { Matrix4x4, Matrix4x3, ReadonlyMatrix4x4, ReadonlyMatrix4x3 } from './matrix'
+export type {
+  BaseAxes,
+  Point,
+  ReadonlyPoint,
+  CubicPoints,
+  ReadonlyCubicPoints,
+  QuadraticPoints,
+  ReadonlyQuadraticPoints,
+} from './points'
+export type { CubicSpline } from './spline'

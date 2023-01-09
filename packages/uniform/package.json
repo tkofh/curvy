@@ -1,7 +1,7 @@
 {
-  "name": "@curvy/parametric",
+  "name": "@curvy/uniform",
   "version": "0.6.0",
-  "description": "Parametric curve implementation for Curvy",
+  "description": "Uniform Spline implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
   "license": "MIT",
@@ -40,7 +40,7 @@
   "dependencies": {
     "@curvy/types": "0.6.1",
     "log-if-env": "^0.1.0",
-    "micro-math": "^0.3.0"
+    "micro-math": "^0.9.0"
   },
   "devDependencies": {
     "@vitest/ui": "^0.11.0",

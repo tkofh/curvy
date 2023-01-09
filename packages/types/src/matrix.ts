@@ -11,6 +11,13 @@ export type Matrix4x4 = [
   [number, number, number, number]
 ]
 
+export type ReadonlyMatrix4x4 = readonly [
+  readonly [number, number, number, number],
+  readonly [number, number, number, number],
+  readonly [number, number, number, number],
+  readonly [number, number, number, number]
+]
+
 /**
  * A Matrix with 4 rows and 3 columns.
  *
@@ -22,4 +29,11 @@ export type Matrix4x3 = [
   [number, number, number],
   [number, number, number],
   [number, number, number]
+]
+
+export type ReadonlyMatrix4x3 = readonly [
+  readonly [number, number, number],
+  readonly [number, number, number],
+  readonly [number, number, number],
+  readonly [number, number, number]
 ]
