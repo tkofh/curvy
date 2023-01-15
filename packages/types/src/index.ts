@@ -10,7 +10,7 @@ export type {
   ReadonlyExtreme,
   CubicCurve,
 } from './curve'
-export type { Matrix4x4, Matrix4x3, ReadonlyMatrix4x4, ReadonlyMatrix4x3 } from './matrix'
+export type { Matrix4x4, ReadonlyMatrix4x4 } from './matrix'
 export type {
   BaseAxes,
   Point,
