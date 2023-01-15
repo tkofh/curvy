@@ -11,20 +11,18 @@ const bezier: Matrix4x4 = [
 
 describe('createCubicUniformCurve', () => {
   test('ensures at least one cubic segment is provided', ({ expect }) => {
-    expect(() => createCubicUniformSpline([{ x: 0 }], bezier)).toThrowError(
-      'At least one cubic segment (four points) must be provided'
+    expect(() => createCubicUniformSpline([], bezier)).toThrowError(
+      'At least one cubic segment must be provided'
     )
-  })
-  test('ensures only complete cubic segments are provided', ({ expect }) => {
-    expect(() =>
-      createCubicUniformSpline([{ x: 0 }, { x: 1 }, { x: 2 }, { x: 3 }, { x: 4 }], bezier)
-    ).toThrowError('Invalid number of points provided (must have 3n+1 points)')
   })
 
   test('calculates the bounds of a spline', ({ expect }) => {
     expect(
       createCubicUniformSpline(
-        [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+        [
+          [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
+          [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+        ],
         bezier,
         2
       ).bounds
@@ -36,7 +34,10 @@ describe('createCubicUniformCurve', () => {
   test('calculates the extrema of a spline', ({ expect }) => {
     expect(
       createCubicUniformSpline(
-        [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+        [
+          [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
+          [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+        ],
         bezier,
         2
       ).extrema
@@ -50,7 +51,10 @@ describe('createCubicUniformCurve', () => {
 
   test('point returned by solve() is identical to extreme', ({ expect }) => {
     const spline = createCubicUniformSpline(
-      [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+      [
+        [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
+        [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+      ],
       bezier,
       2
     )
@@ -65,22 +69,30 @@ describe('createCubicUniformCurve', () => {
   test('calculates the length of a spline', ({ expect }) => {
     expect(
       createCubicUniformSpline(
-        [{ x: 0 }, { x: 1 / 3 }, { x: 2 / 3 }, { x: 1 }, { x: 4 / 3 }, { x: 5 / 3 }, { x: 2 }],
+        [
+          [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
+          [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+        ],
         bezier
       ).length
-    ).toBe(2)
+    ).toBe(6.000000000000002)
   })
 
   test('solves axes', ({ expect }) => {
     const curve = createCubicUniformSpline(
       [
-        { x: 0, y: 0 },
-        { x: 1 / 3, y: 1 / 3 },
-        { x: 2 / 3, y: 2 / 3 },
-        { x: 1, y: 1 },
-        { x: 4 / 3, y: 4 / 3 },
-        { x: 5 / 3, y: 5 / 3 },
-        { x: 2, y: 2 },
+        [
+          { x: 0, y: 0 },
+          { x: 1 / 3, y: 1 / 3 },
+          { x: 2 / 3, y: 2 / 3 },
+          { x: 1, y: 1 },
+        ],
+        [
+          { x: 1, y: 1 },
+          { x: 4 / 3, y: 4 / 3 },
+          { x: 5 / 3, y: 5 / 3 },
+          { x: 2, y: 2 },
+        ],
       ],
       bezier
     )
@@ -99,13 +111,18 @@ describe('createCubicUniformCurve', () => {
   test('solves axes with constraints', ({ expect }) => {
     const curve = createCubicUniformSpline(
       [
-        { x: 0, y: 0 },
-        { x: 1, y: 0 },
-        { x: 2, y: 0 },
-        { x: 2, y: 0.5 },
-        { x: 2, y: 1 },
-        { x: 1, y: 1 },
-        { x: 0, y: 1 },
+        [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 0.5 },
+        ],
+        [
+          { x: 2, y: 0.5 },
+          { x: 2, y: 1 },
+          { x: 1, y: 1 },
+          { x: 0, y: 1 },
+        ],
       ],
       bezier
     )
@@ -115,7 +132,10 @@ describe('createCubicUniformCurve', () => {
 
   test('returns out of bounds for out of bounds input', ({ expect }) => {
     const spline = createCubicUniformSpline(
-      [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+      [
+        [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
+        [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+      ],
       bezier
     )
     expect(spline.trySolve('x', 2)).toBeUndefined()
@@ -128,7 +148,10 @@ describe('createCubicUniformCurve', () => {
 
   test('solves extrema as they are represented in array', ({ expect }) => {
     const spline = createCubicUniformSpline(
-      [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+      [
+        [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
+        [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
+      ],
       bezier
     )
     for (const extreme of spline.extrema) {

@@ -18,35 +18,13 @@ import { createCubicUniformCurve } from './createCubicUniformCurve'
 import { DEFAULT_LUT_RESOLUTION, DEFAULT_PRECISION } from './constants'
 
 export const createCubicUniformSpline = <TAxis extends BaseAxes>(
-  points: (Point<TAxis> | CubicPoints<TAxis>)[],
+  points: CubicPoints<TAxis>[],
   identityMatrix: Matrix4x4,
   precision: Precision<TAxis> = DEFAULT_PRECISION,
   lutResolution = DEFAULT_LUT_RESOLUTION
 ): CubicSpline<TAxis> => {
-  const curvePoints: CubicPoints<TAxis>[] = []
-  let curveCount = 0
-
-  if (Array.isArray(points[0])) {
-    curveCount = points.length
-    curvePoints.push(...(points as CubicPoints<TAxis>[]))
-  } else {
-    if (points.length < 4) {
-      throw new Error('At least one cubic segment (four points) must be provided')
-    }
-
-    if ((points.length - 1) % 3 !== 0) {
-      throw new Error('Invalid number of points provided (must have 3n+1 points)')
-    }
-
-    curveCount = (points.length - 1) / 3
-    for (let i = 0; i < curveCount; i++) {
-      curvePoints.push([
-        points[i * 3] as Point<TAxis>,
-        points[i * 3 + 1] as Point<TAxis>,
-        points[i * 3 + 2] as Point<TAxis>,
-        points[i * 3 + 3] as Point<TAxis>,
-      ])
-    }
+  if (points.length === 0) {
+    throw new Error('At least one cubic segment must be provided')
   }
 
   const curves: CubicCurve<TAxis>[] = []
@@ -57,7 +35,7 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
   let monotonicity!: Monotonicity<TAxis>
   const extremaCandidates: ReadonlyExtreme<TAxis>[] = []
 
-  for (const [curveIndex, segmentPoints] of curvePoints.entries()) {
+  for (const [curveIndex, segmentPoints] of points.entries()) {
     const curve = createCubicUniformCurve(segmentPoints, identityMatrix, precision, lutResolution)
     curves.push(curve)
 
@@ -73,7 +51,7 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
           for: extreme.for,
           value: extreme.value,
           length: splineLength + extreme.length,
-          t: (curveIndex + extreme.t) / curveCount,
+          t: (curveIndex + extreme.t) / points.length,
         })
       }
     }
@@ -194,8 +172,8 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
     if (cachedResult) {
       result = cachedResult
     } else if (t >= 0 && t <= 1) {
-      const u = t * curveCount
-      const curveIndex = Math.floor(u) - (u === curveCount ? 1 : 0)
+      const u = t * curves.length
+      const curveIndex = Math.floor(u) - (u === curves.length ? 1 : 0)
 
       result = curves[curveIndex].trySolveT(u - curveIndex)
     }
@@ -228,7 +206,7 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
     precision: normalizedPrecision,
     monotonicity,
     length: splineLength,
-    points: curvePoints,
+    points,
     identityMatrix,
     axes,
     curves,
