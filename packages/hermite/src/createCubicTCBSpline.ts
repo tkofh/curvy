@@ -1,5 +1,6 @@
-import { Point, PointObject, Spline } from '@curvy/types'
-import { SplineOptions, toPointObject } from '@curvy/parametric'
+import type { Point, PointObject, Spline } from '@curvy/types'
+import type { SplineOptions} from '../../uniform';
+import { toPointObject } from '../../uniform'
 import { createCubicHermiteSpline } from './createCubicHermiteSpline'
 
 interface TCBSplineOptions extends SplineOptions {

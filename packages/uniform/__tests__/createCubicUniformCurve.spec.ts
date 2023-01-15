@@ -1,13 +1,5 @@
 import { describe, test } from 'vitest'
-import { Matrix4x4 } from '@curvy/types'
-import { createCubicUniformCurve } from '../src'
-
-const bezier: Matrix4x4 = [
-  [-1, 3, -3, 1],
-  [3, -6, 3, 0],
-  [-3, 3, 0, 0],
-  [1, 0, 0, 0],
-]
+import { bezier, createCubicUniformCurve } from '../src'
 
 describe('createCubicUniformCurve', () => {
   test('calculates the bounds of a curve', ({ expect }) => {

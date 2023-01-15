@@ -1,4 +1,4 @@
-import { Matrix4x3, Matrix4x4 } from '@curvy/types'
+import type { Matrix4x3, Matrix4x4 } from '@curvy/types'
 
 export const HERMITE_BASE_SCALAR_MATRIX: Matrix4x4 = [
   [2, -3, 0, 1],

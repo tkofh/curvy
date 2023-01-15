@@ -1,6 +1,6 @@
-import { BaseAxes, Point, ReadonlyCubicPoints, ReadonlyPoint } from './points'
-import { Bounds, ReadonlyBounds } from './bounds'
-import { ReadonlyMatrix4x4 } from './matrix'
+import type { BaseAxes, Point, ReadonlyCubicPoints, ReadonlyPoint } from './points'
+import type { Bounds, ReadonlyBounds } from './bounds'
+import type { ReadonlyMatrix4x4 } from './matrix'
 
 export type AxisMonotonicity = 'positive' | 'negative' | 'none'
 

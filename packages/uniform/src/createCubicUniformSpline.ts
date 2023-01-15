@@ -1,4 +1,4 @@
-import {
+import type {
   BaseAxes,
   Bounds,
   CubicCurve,

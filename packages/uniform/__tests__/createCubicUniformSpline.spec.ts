@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest'
-import { Matrix4x4 } from '@curvy/types'
+import type { Matrix4x4 } from '@curvy/types'
 import { createCubicUniformSpline } from '../src'
 
 const bezier: Matrix4x4 = [

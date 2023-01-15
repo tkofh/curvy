@@ -32,7 +32,8 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
-    "prepublish": "yarn test && yarn build"
+    "prepublish": "yarn test && yarn build",
+    "playground": "vite"
   },
   "bugs": {
     "url": "https://github.com/tkofh/curvy/issues"
@@ -42,10 +43,11 @@
     "micro-math": "^0.5.0"
   },
   "devDependencies": {
-    "@curvy/bezier": "0.9.0",
-    "@vitest/ui": "^0.11.0",
+    "@curvy/uniform": "workspace:0.6.0",
+    "@vitest/ui": "^0.27.1",
     "c8": "^7.11.2",
-    "tsup": "^5.12.7",
-    "vitest": "^0.11.0"
+    "tsup": "^6.5.0",
+    "vite": "^4.0.4",
+    "vitest": "^0.27.1"
   }
 }

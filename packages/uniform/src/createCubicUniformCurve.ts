@@ -1,12 +1,4 @@
-import {
-  cubicPolynomial,
-  distance,
-  lerp,
-  normalize,
-  quadraticPolynomial,
-  quadraticRoots,
-  roundTo,
-} from 'micro-math'
+import { distance, lerp, normalize, polynomial, quadraticRoots, roundTo } from 'micro-math'
 import type {
   BaseAxes,
   Bounds,
@@ -22,7 +14,6 @@ import type {
 import {
   getBounds,
   getExtrema,
-  getPrimeScalars,
   hashBounds,
   mergeBounds,
   normalizePrecision,
@@ -48,7 +39,6 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
     roundPoint(points[3], normalizedPrecision),
   ]
 
-  const primeIdentityMatrix = getPrimeScalars(identityMatrix)
   const primeRoots = new Map([
     [0, axes],
     [1, axes],
@@ -60,36 +50,30 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
   for (const axis of axes) {
     baseScalars[axis] = [
       roundedPoints[0][axis] * identityMatrix[0][0] +
-        roundedPoints[1][axis] * identityMatrix[1][0] +
-        roundedPoints[2][axis] * identityMatrix[2][0] +
-        roundedPoints[3][axis] * identityMatrix[3][0],
-      roundedPoints[0][axis] * identityMatrix[0][1] +
+        roundedPoints[1][axis] * identityMatrix[0][1] +
+        roundedPoints[2][axis] * identityMatrix[0][2] +
+        roundedPoints[3][axis] * identityMatrix[0][3],
+
+      roundedPoints[0][axis] * identityMatrix[1][0] +
         roundedPoints[1][axis] * identityMatrix[1][1] +
-        roundedPoints[2][axis] * identityMatrix[2][1] +
-        roundedPoints[3][axis] * identityMatrix[3][1],
-      roundedPoints[0][axis] * identityMatrix[0][2] +
-        roundedPoints[1][axis] * identityMatrix[1][2] +
+        roundedPoints[2][axis] * identityMatrix[1][2] +
+        roundedPoints[3][axis] * identityMatrix[1][3],
+
+      roundedPoints[0][axis] * identityMatrix[2][0] +
+        roundedPoints[1][axis] * identityMatrix[2][1] +
         roundedPoints[2][axis] * identityMatrix[2][2] +
-        roundedPoints[3][axis] * identityMatrix[3][2],
-      roundedPoints[0][axis] * identityMatrix[0][3] +
-        roundedPoints[1][axis] * identityMatrix[1][3] +
-        roundedPoints[2][axis] * identityMatrix[2][3] +
+        roundedPoints[3][axis] * identityMatrix[2][3],
+
+      roundedPoints[0][axis] * identityMatrix[3][0] +
+        roundedPoints[1][axis] * identityMatrix[3][1] +
+        roundedPoints[2][axis] * identityMatrix[3][2] +
         roundedPoints[3][axis] * identityMatrix[3][3],
     ]
 
     const primeScalars: QuadraticScalars = [
-      roundedPoints[0][axis] * primeIdentityMatrix[0][0] +
-        roundedPoints[1][axis] * primeIdentityMatrix[1][0] +
-        roundedPoints[2][axis] * primeIdentityMatrix[2][0] +
-        roundedPoints[3][axis] * primeIdentityMatrix[3][0],
-      roundedPoints[0][axis] * primeIdentityMatrix[0][1] +
-        roundedPoints[1][axis] * primeIdentityMatrix[1][1] +
-        roundedPoints[2][axis] * primeIdentityMatrix[2][1] +
-        roundedPoints[3][axis] * primeIdentityMatrix[3][1],
-      roundedPoints[0][axis] * primeIdentityMatrix[0][2] +
-        roundedPoints[1][axis] * primeIdentityMatrix[1][2] +
-        roundedPoints[2][axis] * primeIdentityMatrix[2][2] +
-        roundedPoints[3][axis] * primeIdentityMatrix[3][2],
+      baseScalars[axis][0] * 3,
+      baseScalars[axis][1] * 2,
+      baseScalars[axis][2],
     ]
 
     const [root1, root2] = quadraticRoots(...primeScalars)
@@ -116,9 +100,9 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
 
     monotonicity[axis] = 'none'
     if (!hasRoots) {
-      let basis = quadraticPolynomial(0, ...primeScalars)
+      let basis = polynomial(0, primeScalars)
       if (basis === 0) {
-        basis = quadraticPolynomial(0.5, ...primeScalars)
+        basis = polynomial(0.5, primeScalars)
       }
 
       if (basis < 0) {
@@ -149,7 +133,7 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
 
     for (const axis of axes) {
       value[axis] = roundTo(
-        cubicPolynomial(t, ...(baseScalars[axis] as CubicScalars)),
+        polynomial(t, baseScalars[axis], 'descending'),
         normalizedPrecision[axis]
       )
 

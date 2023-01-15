@@ -1,4 +1,4 @@
-import { BaseAxes, ReadonlyExtreme } from '@curvy/types'
+import type { BaseAxes, ReadonlyExtreme } from '@curvy/types'
 
 export const getExtrema = <TAxis extends BaseAxes>(
   candidates: ReadonlyExtreme<TAxis>[]

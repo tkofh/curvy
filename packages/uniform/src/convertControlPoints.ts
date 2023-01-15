@@ -1,13 +1,16 @@
-import { BaseAxes, CubicPoints, Matrix4x4 } from '@curvy/types'
-import { solveLinearSystem } from 'micro-math'
+import type { BaseAxes, CubicPoints, Matrix4x4, Precision } from '@curvy/types'
+import { roundTo, solveLinearSystem } from 'micro-math'
+import { normalizePrecision } from './util'
 
 export const convertControlPoints = <TAxis extends BaseAxes>(
   sourceControlPoints: CubicPoints<TAxis>,
   sourceIdentityMatrix: Matrix4x4,
-  targetIdentityMatrix: Matrix4x4
+  targetIdentityMatrix: Matrix4x4,
+  precision?: Precision<TAxis>
 ): CubicPoints<TAxis> => {
   const targetControlPoints = [{}, {}, {}, {}] as CubicPoints<TAxis>
-  const axes = Object.keys(sourceControlPoints[0]) as TAxis[]
+  const axes = new Set(Object.keys(sourceControlPoints[0]) as TAxis[])
+  const normalizedPrecision = normalizePrecision(precision ?? 14, axes)
 
   for (const axis of axes) {
     const solutions = solveLinearSystem(targetIdentityMatrix, [
@@ -28,10 +31,10 @@ export const convertControlPoints = <TAxis extends BaseAxes>(
         sourceControlPoints[2][axis] * sourceIdentityMatrix[3][2] +
         sourceControlPoints[3][axis] * sourceIdentityMatrix[3][3],
     ])
-    targetControlPoints[0][axis] = solutions[0]
-    targetControlPoints[1][axis] = solutions[1]
-    targetControlPoints[2][axis] = solutions[2]
-    targetControlPoints[3][axis] = solutions[3]
+    targetControlPoints[0][axis] = roundTo(solutions[0], normalizedPrecision[axis])
+    targetControlPoints[1][axis] = roundTo(solutions[1], normalizedPrecision[axis])
+    targetControlPoints[2][axis] = roundTo(solutions[2], normalizedPrecision[axis])
+    targetControlPoints[3][axis] = roundTo(solutions[3], normalizedPrecision[axis])
   }
 
   return targetControlPoints

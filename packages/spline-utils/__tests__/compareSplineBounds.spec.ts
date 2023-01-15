@@ -1,11 +1,11 @@
 import { describe, test } from 'vitest'
-import { Bounds } from '@curvy/types'
+import type { Bounds } from '@curvy/types'
 import { createCubicBezierSpline } from '@curvy/bezier'
 import { compareBounds, compareSplineBounds } from '../src'
 
 describe('compareBounds', () => {
   test('it compares bounds', ({ expect }) => {
-    const a: Bounds = {
+    const a: Bounds<'x' | 'y'> = {
       x: {
         min: 0,
         max: 10,
@@ -15,7 +15,7 @@ describe('compareBounds', () => {
         max: 10,
       },
     }
-    const b: Bounds = {
+    const b: Bounds<'x' | 'y'> = {
       x: {
         min: -1,
         max: 1,

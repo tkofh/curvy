@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest'
-import { Point } from '@curvy/types'
+import type { Point } from '@curvy/types'
 import { createCubicTCBSpline, createCubicCardinalSpline } from '../src'
 
 describe('createCubicTCBSpline', () => {

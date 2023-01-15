@@ -1,4 +1,4 @@
-import { BaseAxes } from './points'
+import type { BaseAxes } from './points'
 
 export interface Range {
   min: number

@@ -1,4 +1,4 @@
-import { Bounds, LUTEntry, Spline } from '@curvy/types'
+import type { Bounds, LUTEntry, Spline } from '@curvy/types'
 import { distance, remap } from 'micro-math'
 
 export const remapSpline = (spline: Spline, source: Bounds, target: Bounds): Spline => {

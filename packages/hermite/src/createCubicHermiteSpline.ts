@@ -1,4 +1,4 @@
-import { createParametricSplineFactory } from '@curvy/parametric'
+import { createParametricSplineFactory } from '../../uniform'
 
 export const createCubicHermiteSpline = createParametricSplineFactory([
   [2, -3, 0, 1],

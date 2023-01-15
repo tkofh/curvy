@@ -1,1 +1,1 @@
-export { toPath } from './toPath'
+export { drawSplineSVG } from './drawSplineSVG'

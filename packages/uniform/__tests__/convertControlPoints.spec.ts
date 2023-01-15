@@ -1,27 +1,6 @@
 import { describe, test } from 'vitest'
-import { CubicPoints, Matrix4x4 } from '@curvy/types'
-import { convertControlPoints } from '../src'
-
-const bezier: Matrix4x4 = [
-  [-1, 3, -3, 1],
-  [3, -6, 3, 0],
-  [-3, 3, 0, 0],
-  [1, 0, 0, 0],
-]
-
-const hermite: Matrix4x4 = [
-  [2, 1, -2, 1],
-  [-3, -2, 3, -1],
-  [0, 1, 0, 0],
-  [1, 0, 0, 0],
-]
-
-const cardinal = (a: number): Matrix4x4 => [
-  [-a, 2 - a, a - 2, a],
-  [2 * a, a - 3, 3 - 2 * a, -a],
-  [-a, 0, a, 0],
-  [0, 1, 0, 0],
-]
+import type { CubicPoints } from '@curvy/types'
+import { bezier, cardinal, convertControlPoints, hermite } from '../src'
 
 describe('convertControlPoint', () => {
   test('it works', ({ expect }) => {
@@ -73,5 +52,27 @@ describe('convertControlPoint', () => {
         bezier
       )
     ).toStrictEqual(sourceControlPoints)
+  })
+
+  test('it converts bezier to hermite', ({ expect }) => {
+    const bezierPoints: CubicPoints<'x' | 'y'> = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+    ]
+
+    expect(convertControlPoints(bezierPoints, bezier, hermite)).toStrictEqual([
+      { x: bezierPoints[0].x, y: bezierPoints[0].y },
+      {
+        x: 3 * (bezierPoints[1].x - bezierPoints[0].x),
+        y: 3 * (bezierPoints[1].y - bezierPoints[0].y),
+      },
+      { x: bezierPoints[3].x, y: bezierPoints[3].y },
+      {
+        x: 3 * (bezierPoints[3].x - bezierPoints[2].x),
+        y: 3 * (bezierPoints[3].y - bezierPoints[2].y),
+      },
+    ])
   })
 })

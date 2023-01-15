@@ -1,4 +1,4 @@
-import { BaseAxes, Bounds, ReadonlyExtreme, NormalizedPrecision, Range } from '@curvy/types'
+import type { BaseAxes, Bounds, ReadonlyExtreme, NormalizedPrecision, Range } from '@curvy/types'
 import { roundTo } from 'micro-math'
 
 export const getBounds = <TAxis extends BaseAxes>(

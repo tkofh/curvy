@@ -1,4 +1,4 @@
-import { Axis, Spline, ValuedDirectedRange } from '@curvy/types'
+import type { Axis, Spline, ValuedDirectedRange } from '@curvy/types'
 import { remap, roundTo } from 'micro-math'
 
 const createSequenceArray = (length: number, start: number, step: number, precision: number) =>

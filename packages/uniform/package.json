@@ -8,12 +8,12 @@
   "sideEffects": false,
   "type": "module",
   "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "require": "./dist/index.cjs",
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
     }
   },
@@ -28,11 +28,11 @@
     "url": "git+https://github.com/tkofh/curvy.git"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "unbuild",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
-    "prepublish": "yarn test && yarn build"
+    "prepublish": "pnpm test && pnpm build"
   },
   "bugs": {
     "url": "https://github.com/tkofh/curvy/issues"
@@ -43,9 +43,10 @@
     "micro-math": "^0.9.0"
   },
   "devDependencies": {
-    "@vitest/ui": "^0.11.0",
+    "@tsconfig/node18": "^1.0.1",
+    "@vitest/ui": "^0.27.1",
     "c8": "^7.11.2",
-    "tsup": "^5.12.7",
-    "vitest": "^0.11.0"
+    "unbuild": "^1.0.2",
+    "vitest": "^0.27.1"
   }
 }

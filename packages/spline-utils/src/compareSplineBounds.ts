@@ -1,4 +1,4 @@
-import { Bounds, Spline } from '@curvy/types'
+import type { Bounds, Spline } from '@curvy/types'
 
 export const compareBounds = (a: Bounds, b: Bounds) =>
   a.x.min === b.x.min && a.x.max === b.x.max && a.y.min === b.y.min && a.y.max === b.y.max

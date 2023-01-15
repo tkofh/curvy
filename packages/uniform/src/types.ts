@@ -1,4 +1,4 @@
-import { BaseAxes, Point } from '@curvy/types'
+import type { BaseAxes, Point } from '@curvy/types'
 
 export interface LUTEntry<TAxis extends BaseAxes> {
   length: number

@@ -1,40 +1,47 @@
-import { Point, PointObject } from '@curvy/types'
+import type { BaseAxes, CubicPoints, Point } from '@curvy/types'
 import { distance, normalizeVector } from 'micro-math'
-import { toPointObject } from '@curvy/parametric'
 
-export interface BezierSplineBuilder {
-  readonly points: readonly PointObject[]
-  symmetricTo: (p2: Point, p3: Point) => BezierSplineBuilder
-  asymmetricTo: (offset: number, p2: Point, p3: Point) => BezierSplineBuilder
-  brokenTo: (p1: Point, p2: Point, p3: Point) => BezierSplineBuilder
+export interface BezierSplineBuilder<TAxes extends BaseAxes> {
+  readonly points: readonly Point<TAxes>[]
+  symmetricTo: (p2: Point<TAxes>, p3: Point<TAxes>) => BezierSplineBuilder<TAxes>
+  asymmetricTo: (ratio: number, p2: Point<TAxes>, p3: Point<TAxes>) => BezierSplineBuilder<TAxes>
+  brokenTo: (p1: Point<TAxes>, p2: Point<TAxes>, p3: Point<TAxes>) => BezierSplineBuilder<TAxes>
 }
 
-export const bezierPoints = (p0: Point, p1: Point, p2: Point, p3: Point): BezierSplineBuilder => {
-  const points: PointObject[] = [
-    toPointObject(p0),
-    toPointObject(p1),
-    toPointObject(p2),
-    toPointObject(p3),
-  ]
+export const bezierPoints = <TAxes extends BaseAxes>(
+  points: CubicPoints<TAxes>
+): BezierSplineBuilder<TAxes> => {
+  const _points = [...points]
+  const axes = Object.keys(points[0]) as TAxes[]
 
-  const builder: BezierSplineBuilder = {
-    points,
+  const builder: BezierSplineBuilder<TAxes> = {
+    points: _points,
     brokenTo: (p1, p2, p3) => {
-      points.push(toPointObject(p1), toPointObject(p2), toPointObject(p3))
+      _points.push(p1, p2, p3)
       return builder
     },
     symmetricTo: (p2, p3) => builder.asymmetricTo(1, p2, p3),
-    asymmetricTo: (offset, p2, p3) => {
-      const p0 = points.at(-1)!
-      const pn1 = points.at(-2)!
-      const [dirX, dirY] = normalizeVector(p0.x - pn1.x, p0.y - pn1.y)
-      const dist = distance(p0.x, p0.y, pn1.x, pn1.y) * offset
+    asymmetricTo: (ratio, p2, p3) => {
+      const p0 = _points.at(-1)!
+      const pn1 = _points.at(-2)!
+      const directions: number[] = []
 
-      points.push(
-        { x: p0.x + dist * dirX, y: p0.y + dist * dirY },
-        toPointObject(p2),
-        toPointObject(p3)
-      )
+      const p0Array: number[] = []
+      const pn1Array: number[] = []
+      for (const axis of axes) {
+        p0Array.push(p0[axis])
+        pn1Array.push(pn1[axis])
+        directions.push(p0[axis] - pn1[axis])
+      }
+      const normalizedDirections = normalizeVector(...directions)
+      const dist = distance(p0Array, pn1Array) * ratio
+
+      const p1 = {} as Point<TAxes>
+      for (const [index, axis] of axes.entries()) {
+        p1[axis] = p0[axis] + dist * normalizedDirections[index]
+      }
+
+      _points.push(p1, p2, p3)
 
       return builder
     },
