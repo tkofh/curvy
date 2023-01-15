@@ -13,12 +13,6 @@ export const hermite: Matrix4x4 = [
   [0, 1, 0, 0],
   [1, 0, 0, 0],
 ]
-// export const hermite: Matrix4x4 = [
-//   [2, -2, 1, 1],
-//   [-3, 3, -2, -1],
-//   [0, 0, 1, 0],
-//   [1, 0, 0, 0],
-// ]
 
 export const cardinal = (a: number): Matrix4x4 => [
   [-a, 2 - a, a - 2, a],
