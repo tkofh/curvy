@@ -10,9 +10,9 @@ out of those points. Points are passed in with the following order:
 ## Basic Example
 
 ```typescript
-import { createCubicHermiteSpline } from '@curvy/hermite'
+import { createCubicCardinalSpline } from '@curvy/hermite'
 
-const hermiteSpline = createCubicHermiteSpline([
+const hermiteSpline = createCubicCardinalSpline([
   // The curve starts at (0, 0)
   { x: 0, y: 0 },
   
