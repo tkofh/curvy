@@ -1,0 +1,1 @@
+export { createCubicBSpline } from './createCubicBSpline'

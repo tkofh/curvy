@@ -32,6 +32,23 @@ importers:
       vite: 4.0.4
       vitest: 0.27.1
 
+  packages/b-spline:
+    specifiers:
+      '@curvy/types': workspace:*
+      '@curvy/uniform': workspace:*
+      '@vitest/ui': ^0.27.1
+      c8: ^7.11.2
+      unbuild: ^1.0.2
+      vitest: ^0.27.1
+    dependencies:
+      '@curvy/types': link:../types
+      '@curvy/uniform': link:../uniform
+    devDependencies:
+      '@vitest/ui': 0.27.1
+      c8: 7.12.0
+      unbuild: 1.0.2
+      vitest: 0.27.1_@vitest+ui@0.27.1
+
   packages/bezier:
     specifiers:
       '@curvy/types': workspace:*

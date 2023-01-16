@@ -14,6 +14,7 @@ anything else!
 ## Installation
 
 Curvy can be found on npm and installed with your favorite package manager.
+ - `@curvy/b-spline`
  - `@curvy/bezier`
  - `@curvy/cardinal`
  - `@curvy/catmull-rom`
