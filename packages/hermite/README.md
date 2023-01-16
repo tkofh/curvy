@@ -1,53 +1,34 @@
 # `@curvy/hermite`
 
+Cubic Hermite splines are drawn with a starting point and an ending point, along with the velocity of the curve coming
+out of those points. Points are passed in with the following order:
+* P0, or start point
+* v0, or start velocity
+* P1, or end point
+* v1, or end velocity
+
 ## Basic Example
 
 ```typescript
-import { createCubicCardinalSpline, createCubicTCBSpline } from '@curvy/hermite/src'
+import { createCubicHermiteSpline } from '@curvy/hermite'
 
-const tcbSpline = createCubicTCBSpline(
-  // TCB Splines pass through each point provided 
-  // and automatically calculate the tangent points
-  [
-    [0, 0],
-    [25, 50],
-    [50, 25],
-    [75, 100],
-    [100, 50]
-  ],
-  {
-    // Tension, Continuity, and Bias should be between -1 and 1
-    tension: 0,
-    continuity: 0,
-    bias: 0,
+const hermiteSpline = createCubicHermiteSpline([
+  // The curve starts at (0, 0)
+  { x: 0, y: 0 },
+  
+  // The curve is leaving the start at 100 to the right
+  { x: 100, y: 0 },
+  
+  // The curve ends at (100, 100)
+  { x: 100, y: 100 },
+  
+  // The curve is leaving the end a bit slower and to the top right
+  { x: 50, y: 50 },
+])
 
-    // Optionally provide a virtual start and end point
-    // Otherwise, the first and last points are re-used
-    virtualStart: [-25, 0],
-    virtualEnd: [125, 50]
-  }
-)
+hermiteSpline.solveT(0)
+// equals { x: 0, y: 0 }
 
-const cardinalSpline = createCubicCardinalSpline(
-  // Cardinal Splines also pass through each point provided 
-  // and automatically calculate the tangent points, but 
-  // with only one parameter: a
-  [
-    [0, 0],
-    [25, 50],
-    [50, 25],
-    [75, 100],
-    [100, 50]
-  ],
-  {
-    // A should (but does not need to) be between 0 and 1
-    a: 0.5,
-
-    // Optionally provide a virtual start and end point
-    // Otherwise, the first and last points are re-used
-    virtualStart: [-25, 0],
-    virtualEnd: [125, 50]
-  }
-)
-
+hermiteSpline.solve({ x: 100 })
+// equals { x: 100, y: 100 }
 ```
