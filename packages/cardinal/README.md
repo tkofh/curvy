@@ -8,18 +8,22 @@ through these points can be modified with a tension parameter.
 ```typescript
 import {createCubicCardinalSpline} from '@curvy/cardinal'
 
-const cardinalSpline = createCubicCardinalSpline([
-  // This point is not passed through
-  {x: -1, y: 0},
+const cardinalSpline = createCubicCardinalSpline(
+  [
+    // This point is not passed through
+    {x: -1, y: 0},
 
-  // These points are passed through
-  {x: 0, y: 0},
-  {x: 0.5, y: 0.5},
-  {x: 1, y: 1},
+    // These points are passed through
+    {x: 0, y: 0},
+    {x: 0.5, y: 0.5},
+    {x: 1, y: 1},
 
-  // This point is not passed through
-  {x: 2, y: 1}
-])
+    // This point is not passed through
+    {x: 2, y: 1}
+  ],
+  // this is the tension. should be between 0 and 1, but doesn't have to be.
+  1
+)
 
 cardinalSpline.solveT(0)
 // equals { x: 0, y: 0 }

@@ -1,0 +1,1 @@
+export { createCubicCatmullRomSpline } from './createCubicCatmullRomSpline'
