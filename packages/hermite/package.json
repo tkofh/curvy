@@ -38,7 +38,7 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/parametric": "0.6.0",
+    "@curvy/uniform": "workspace:0.6.0",
     "@curvy/types": "0.6.1"
   },
   "devDependencies": {
