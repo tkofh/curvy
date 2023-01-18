@@ -1,6 +1,6 @@
 {
   "name": "@curvy/bezier",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Bezier curve implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
