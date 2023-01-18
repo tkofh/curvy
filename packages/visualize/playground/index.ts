@@ -16,14 +16,14 @@ window.addEventListener('load', () => {
     { x: 100, y: 100 },
   ]
 
-  const spline = createCubicUniformSpline(points, bezier)
+  const spline = createCubicUniformSpline([points], bezier)
 
   const spline2 = createCubicUniformSpline(
-    convertControlPoints(points, bezier, hermite, 0),
+    [convertControlPoints(points, bezier, hermite, 0)],
     hermite
   )
   const spline3 = createCubicUniformSpline(
-    convertControlPoints(points, bezier, bSpline, 0),
+    [convertControlPoints(points, bezier, bSpline, 0)],
     bSpline
   )
 
