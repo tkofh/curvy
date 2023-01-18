@@ -38,15 +38,15 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/types": "0.6.1",
+    "@curvy/types": "workspace:0.6.1",
     "log-if-env": "^0.1.0",
     "micro-math": "^0.9.0"
   },
   "devDependencies": {
     "@tsconfig/node18": "^1.0.1",
-    "@vitest/ui": "^0.27.1",
-    "c8": "^7.11.2",
-    "unbuild": "^1.0.2",
-    "vitest": "^0.27.1"
+    "@vitest/ui": "^0.27.2",
+    "c8": "^7.12.0",
+    "unbuild": "^1.1.1",
+    "vitest": "^0.27.2"
   }
 }

@@ -44,9 +44,9 @@
   },
   "devDependencies": {
     "@curvy/bezier": "workspace:*",
-    "@vitest/ui": "^0.27.1",
+    "@vitest/ui": "^0.27.2",
     "c8": "^7.12.0",
     "unbuild": "^1.1.1",
-    "vitest": "^0.27.1"
+    "vitest": "^0.27.2"
   }
 }
