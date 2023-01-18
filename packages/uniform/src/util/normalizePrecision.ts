@@ -1,8 +1,8 @@
-import type { BaseAxes, Precision, NormalizedPrecision } from '@curvy/types'
+import type { BaseAxes, NormalizedPrecision, Precision } from '@curvy/types'
 
 export const normalizePrecision = <TAxis extends BaseAxes>(
   precision: Precision<TAxis>,
-  axes: Set<TAxis>
+  axes: ReadonlySet<TAxis>
 ): NormalizedPrecision<TAxis> => {
   if (typeof precision === 'object') {
     return precision

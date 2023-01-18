@@ -40,12 +40,12 @@
   "dependencies": {
     "@curvy/types": "workspace:*",
     "@curvy/uniform": "workspace:*",
-    "micro-math": "^0.9.0",
-    "unbuild": "^1.0.2"
+    "micro-math": "^0.9.0"
   },
   "devDependencies": {
     "@vitest/ui": "^0.27.1",
     "c8": "^7.11.2",
+    "unbuild": "^1.1.1",
     "vitest": "^0.27.1"
   },
   "gitHead": "f20477b96f86301777a0859458ae5a8e2e3ba178"
