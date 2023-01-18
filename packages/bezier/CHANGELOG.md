@@ -3,13 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [0.10.3](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.10.2...@curvy/bezier@0.10.3) (2023-01-18)
+## [0.10.4](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.10.3...@curvy/bezier@0.10.4) (2023-01-18)
 
 **Note:** Version bump only for package @curvy/bezier
 
+## [0.10.3](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.10.2...@curvy/bezier@0.10.3) (2023-01-18)
 
-
-
+**Note:** Version bump only for package @curvy/bezier
 
 ## [0.10.2](https://github.com/tkofh/curvy/compare/@curvy/bezier@0.10.1...@curvy/bezier@0.10.2) (2023-01-18)
 

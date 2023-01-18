@@ -1,6 +1,6 @@
 {
   "name": "@curvy/uniform",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Uniform Spline implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
