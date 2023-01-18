@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.5](https://github.com/tkofh/curvy/compare/@curvy/hermite@0.3.4...@curvy/hermite@0.3.5) (2023-01-18)
+
+**Note:** Version bump only for package @curvy/hermite
+
 ## [0.3.4](https://github.com/tkofh/curvy/compare/@curvy/hermite@0.3.3...@curvy/hermite@0.3.4) (2023-01-18)
 
 **Note:** Version bump only for package @curvy/hermite

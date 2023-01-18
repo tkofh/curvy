@@ -1,6 +1,6 @@
 {
   "name": "@curvy/bezier",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "description": "Bezier curve implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
@@ -38,8 +38,8 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/types": "0.7.4",
-    "@curvy/uniform": "0.7.4",
+    "@curvy/types": "0.7.5",
+    "@curvy/uniform": "0.7.5",
     "micro-math": "^0.9.0"
   },
   "devDependencies": {

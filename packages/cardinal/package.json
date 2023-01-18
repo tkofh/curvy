@@ -1,6 +1,6 @@
 {
   "name": "@curvy/cardinal",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Cardinal spline implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
@@ -38,8 +38,8 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/types": "0.7.4",
-    "@curvy/uniform": "0.7.4"
+    "@curvy/types": "0.7.5",
+    "@curvy/uniform": "0.7.5"
   },
   "devDependencies": {
     "@vitest/ui": "^0.27.2",
