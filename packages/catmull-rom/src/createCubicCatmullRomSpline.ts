@@ -1,9 +1,8 @@
 import type { BaseAxes, CubicPoints, CubicSpline, Point, Precision } from '@curvy/types'
-import { cardinal, createCubicUniformSpline } from '@curvy/uniform'
+import { catmullRom, createCubicUniformSpline } from '@curvy/uniform'
 
 export const createCubicCatmullRomSpline = <TAxis extends BaseAxes>(
   points: (Point<TAxis> | CubicPoints<TAxis>)[],
-  tension = 0.5,
   precision?: Precision<TAxis>,
   lutResolution?: number
 ): CubicSpline<TAxis> => {
@@ -30,5 +29,5 @@ export const createCubicCatmullRomSpline = <TAxis extends BaseAxes>(
     }
   }
 
-  return createCubicUniformSpline(cubicPoints, cardinal(tension), precision, lutResolution)
+  return createCubicUniformSpline(cubicPoints, catmullRom, precision, lutResolution)
 }
