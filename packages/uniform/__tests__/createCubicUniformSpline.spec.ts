@@ -1,6 +1,6 @@
 import { describe, test } from 'vitest'
 import type { Matrix4x4 } from '@curvy/types'
-import { createCubicUniformSpline } from '../src'
+import { catmullRom, createCubicUniformSpline } from '../src'
 
 const bezier: Matrix4x4 = [
   [-1, 3, -3, 1],
@@ -109,7 +109,7 @@ describe('createCubicUniformCurve', () => {
   })
 
   test('solves axes with constraints', ({ expect }) => {
-    const curve = createCubicUniformSpline(
+    const spline1 = createCubicUniformSpline(
       [
         [
           { x: 0, y: 0 },
@@ -126,8 +126,41 @@ describe('createCubicUniformCurve', () => {
       ],
       bezier
     )
-    expect(curve.solve('x', 0.75, { y: { max: 0.5, min: 0 } }).y).toBeLessThan(0.5)
-    expect(curve.solve('x', 0.75, { y: { max: 1, min: 0.5 } }).y).toBeGreaterThan(0.5)
+    expect(spline1.solve('x', 0.75, { y: { max: 0.5, min: 0 } }).y).toBeLessThan(0.5)
+    expect(spline1.solve('x', 0.75, { y: { max: 1, min: 0.5 } }).y).toBeGreaterThan(0.5)
+
+    const spline2 = createCubicUniformSpline(
+      [
+        [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0.25, y: 50 },
+          { x: 0.5, y: 25 },
+        ],
+        [
+          { x: 0, y: 0 },
+          { x: 0.25, y: 50 },
+          { x: 0.5, y: 25 },
+          { x: 0.75, y: 100 },
+        ],
+        [
+          { x: 0.25, y: 50 },
+          { x: 0.5, y: 25 },
+          { x: 0.75, y: 100 },
+          { x: 1, y: 75 },
+        ],
+        [
+          { x: 0.5, y: 25 },
+          { x: 0.75, y: 100 },
+          { x: 1, y: 75 },
+          { x: 1, y: 75 },
+        ],
+      ],
+      catmullRom,
+      { x: 4, y: 0 }
+    )
+
+    expect(spline2.solve('y', 48, { x: { min: 0.28, max: 1 } }).x).toBeGreaterThanOrEqual(0.28)
   })
 
   test('returns out of bounds for out of bounds input', ({ expect }) => {

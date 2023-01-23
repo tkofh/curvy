@@ -210,8 +210,8 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
           for (const otherAxis of axes) {
             if (
               otherAxis !== axis &&
-              (result[axis] < resolvedConstraints[axis as TAxis].min ||
-                result[axis] > resolvedConstraints[axis as TAxis].max)
+              (result[otherAxis] < resolvedConstraints[otherAxis as TAxis].min ||
+                result[otherAxis] > resolvedConstraints[otherAxis as TAxis].max)
             ) {
               matches = false
               break
