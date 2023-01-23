@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.6](https://github.com/tkofh/curvy/compare/@curvy/uniform@0.7.5...@curvy/uniform@0.7.6) (2023-01-23)
+
+### Bug Fixes
+
+- **@curvy/uniform:** respect constraints when solving points ([0ba688c](https://github.com/tkofh/curvy/commit/0ba688cf48ed4ce117a81534ba692c22769eccaa))
+
 ## [0.7.5](https://github.com/tkofh/curvy/compare/@curvy/uniform@0.7.4...@curvy/uniform@0.7.5) (2023-01-18)
 
 **Note:** Version bump only for package @curvy/uniform
