@@ -1,6 +1,6 @@
 {
   "name": "@curvy/spline-utils",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "description": "Spline Utilities for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
@@ -43,7 +43,7 @@
     "micro-math": "^0.9.0"
   },
   "devDependencies": {
-    "@curvy/bezier": "0.10.6",
+    "@curvy/bezier": "0.10.7",
     "@vitest/ui": "^0.27.2",
     "c8": "^7.12.0",
     "unbuild": "^1.1.1",

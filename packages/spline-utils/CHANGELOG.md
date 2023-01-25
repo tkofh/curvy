@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.7](https://github.com/tkofh/curvy/compare/@curvy/spline-utils@0.6.6...@curvy/spline-utils@0.6.7) (2023-01-25)
+
+**Note:** Version bump only for package @curvy/spline-utils
+
 ## [0.6.6](https://github.com/tkofh/curvy/compare/@curvy/spline-utils@0.6.5...@curvy/spline-utils@0.6.6) (2023-01-23)
 
 **Note:** Version bump only for package @curvy/spline-utils
