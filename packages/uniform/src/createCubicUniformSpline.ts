@@ -120,7 +120,7 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
     if (result === undefined) {
       throw new Error(
         `No solution found for spline at ${axis}=${input}${
-          constraints ? `with constraints ${JSON.stringify(constraints)}` : ''
+          constraints ? ` with constraints ${JSON.stringify(constraints)}` : ''
         }`
       )
     }
