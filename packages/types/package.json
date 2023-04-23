@@ -36,6 +36,6 @@
   },
   "gitHead": "ec3a68c0043ce7ddc7df99eb597a6af0c42e170a",
   "devDependencies": {
-    "unbuild": "^1.1.1"
+    "unbuild": "^1.2.1"
   }
 }
