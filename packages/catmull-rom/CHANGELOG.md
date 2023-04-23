@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/tkofh/curvy/compare/@curvy/catmull-rom@0.3.0...@curvy/catmull-rom@0.4.0) (2023-04-23)
+
+### Features
+
+- **@curvy/catmull-rom:** new utility ([151a796](https://github.com/tkofh/curvy/commit/151a7962862fc7343208da0c26e795b9b17b5efc))
+
 # [0.3.0](https://github.com/tkofh/curvy/compare/@curvy/catmull-rom@0.2.2...@curvy/catmull-rom@0.3.0) (2023-04-23)
 
 **Note:** Version bump only for package @curvy/catmull-rom
