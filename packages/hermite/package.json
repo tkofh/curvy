@@ -1,6 +1,6 @@
 {
   "name": "@curvy/hermite",
-  "version": "0.3.7",
+  "version": "0.4.0",
   "description": "Hermite curve implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",

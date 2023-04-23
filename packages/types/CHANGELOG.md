@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/tkofh/curvy/compare/@curvy/types@0.7.5...@curvy/types@0.8.0) (2023-04-23)
+
+**Note:** Version bump only for package @curvy/types
+
 ## [0.7.5](https://github.com/tkofh/curvy/compare/@curvy/types@0.7.4...@curvy/types@0.7.5) (2023-01-18)
 
 **Note:** Version bump only for package @curvy/types

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/tkofh/curvy/compare/@curvy/b-spline@0.1.7...@curvy/b-spline@0.2.0) (2023-04-23)
+
+**Note:** Version bump only for package @curvy/b-spline
+
 ## [0.1.7](https://github.com/tkofh/curvy/compare/@curvy/b-spline@0.1.6...@curvy/b-spline@0.1.7) (2023-01-25)
 
 **Note:** Version bump only for package @curvy/b-spline

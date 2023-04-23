@@ -1,6 +1,6 @@
 {
   "name": "@curvy/cardinal",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "Cardinal spline implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",

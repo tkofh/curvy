@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/tkofh/curvy/compare/@curvy/uniform@0.7.7...@curvy/uniform@0.8.0) (2023-04-23)
+
+### Features
+
+- **@curvy/uniform:** computeMonotonicity utility ([9f4a514](https://github.com/tkofh/curvy/commit/9f4a5144e580bdba3f21f6de1e01df4b2e203577))
+
 ## [0.7.7](https://github.com/tkofh/curvy/compare/@curvy/uniform@0.7.6...@curvy/uniform@0.7.7) (2023-01-25)
 
 ### Bug Fixes
