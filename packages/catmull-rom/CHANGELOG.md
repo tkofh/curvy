@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.1](https://github.com/tkofh/curvy/compare/@curvy/catmull-rom@0.4.0...@curvy/catmull-rom@0.4.1) (2023-04-24)
+
+### Bug Fixes
+
+- export util ([f2cb612](https://github.com/tkofh/curvy/commit/f2cb6122e5b3fc9ba106a4ee41afb13b1a6f125a))
+
 # [0.4.0](https://github.com/tkofh/curvy/compare/@curvy/catmull-rom@0.3.0...@curvy/catmull-rom@0.4.0) (2023-04-23)
 
 ### Features
