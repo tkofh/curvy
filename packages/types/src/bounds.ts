@@ -7,6 +7,8 @@ export interface Range {
 
 export type ReadonlyRange = Readonly<Range>
 
-export type Bounds<TAxis extends BaseAxes> = Record<TAxis, Range>
+export type Bounds<Axis extends BaseAxes> = Record<Axis, Range>
 
-export type ReadonlyBounds<TAxis extends BaseAxes> = Readonly<Record<TAxis, ReadonlyRange>>
+export type ReadonlyBounds<Axis extends BaseAxes> = Readonly<
+  Record<Axis, ReadonlyRange>
+>

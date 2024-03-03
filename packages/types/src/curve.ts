@@ -1,61 +1,72 @@
-import type { BaseAxes, Point, ReadonlyCubicPoints, ReadonlyPoint } from './points'
 import type { Bounds, ReadonlyBounds } from './bounds'
 import type { ReadonlyMatrix4x4 } from './matrix'
+import type {
+  BaseAxes,
+  Point,
+  ReadonlyCubicPoints,
+  ReadonlyPoint,
+} from './points'
 
 export type AxisMonotonicity = 'positive' | 'negative' | 'none'
 
-export type Monotonicity<TAxis extends BaseAxes> = Record<TAxis, AxisMonotonicity>
+export type Monotonicity<Axis extends BaseAxes> = Record<Axis, AxisMonotonicity>
 
-export type ReadonlyMonotonicity<TAxis extends BaseAxes> = Readonly<Record<TAxis, AxisMonotonicity>>
+export type ReadonlyMonotonicity<Axis extends BaseAxes> = Readonly<
+  Record<Axis, AxisMonotonicity>
+>
 
-export type NormalizedPrecision<TAxis extends BaseAxes> = Record<TAxis, number>
+export type NormalizedPrecision<Axis extends BaseAxes> = Record<Axis, number>
 
-export type ReadonlyNormalizedPrecision<TAxis extends BaseAxes> = Readonly<Record<TAxis, number>>
+export type ReadonlyNormalizedPrecision<Axis extends BaseAxes> = Readonly<
+  Record<Axis, number>
+>
 
-export type Precision<TAxis extends BaseAxes> = number | NormalizedPrecision<TAxis>
+export type Precision<Axis extends BaseAxes> =
+  | number
+  | NormalizedPrecision<Axis>
 
-export interface Extreme<TAxis extends BaseAxes> {
-  for: Set<TAxis>
-  value: Point<TAxis>
+export interface Extreme<Axis extends BaseAxes> {
+  for: Set<Axis>
+  value: Point<Axis>
   t: number
   length: number
 }
 
-export interface ReadonlyExtreme<TAxis extends BaseAxes> {
-  readonly for: ReadonlySet<TAxis>
-  readonly value: ReadonlyPoint<TAxis>
+export interface ReadonlyExtreme<Axis extends BaseAxes> {
+  readonly for: ReadonlySet<Axis>
+  readonly value: ReadonlyPoint<Axis>
   t: number
   length: number
 }
 
-export interface CubicCurve<TAxis extends BaseAxes> {
-  readonly solve: <TSolveAxis extends TAxis>(
+export interface CubicCurve<Axis extends BaseAxes> {
+  readonly solve: <TSolveAxis extends Axis>(
     axis: TSolveAxis,
     input: number,
-    constraints?: Partial<Bounds<Exclude<TAxis, TSolveAxis>>>
-  ) => ReadonlyPoint<TAxis>
-  readonly trySolve: <TSolveAxis extends TAxis>(
+    constraints?: Partial<Bounds<Exclude<Axis, TSolveAxis>>>,
+  ) => ReadonlyPoint<Axis>
+  readonly trySolve: <TSolveAxis extends Axis>(
     axis: TSolveAxis,
     input: number,
-    constraints?: Partial<Bounds<Exclude<TAxis, TSolveAxis>>>
-  ) => ReadonlyPoint<TAxis> | undefined
-  readonly solveLength: (length: number) => ReadonlyPoint<TAxis>
-  readonly trySolveLength: (length: number) => ReadonlyPoint<TAxis> | undefined
-  readonly solveT: (t: number) => ReadonlyPoint<TAxis>
-  readonly trySolveT: (t: number) => ReadonlyPoint<TAxis> | undefined
+    constraints?: Partial<Bounds<Exclude<Axis, TSolveAxis>>>,
+  ) => ReadonlyPoint<Axis> | undefined
+  readonly solveLength: (length: number) => ReadonlyPoint<Axis>
+  readonly trySolveLength: (length: number) => ReadonlyPoint<Axis> | undefined
+  readonly solveT: (t: number) => ReadonlyPoint<Axis>
+  readonly trySolveT: (t: number) => ReadonlyPoint<Axis> | undefined
 
-  readonly bounds: ReadonlyBounds<TAxis>
-  readonly extrema: ReadonlyArray<ReadonlyExtreme<TAxis>>
+  readonly bounds: ReadonlyBounds<Axis>
+  readonly extrema: ReadonlyArray<ReadonlyExtreme<Axis>>
 
-  readonly precision: ReadonlyNormalizedPrecision<TAxis>
+  readonly precision: ReadonlyNormalizedPrecision<Axis>
 
-  readonly monotonicity: ReadonlyMonotonicity<TAxis>
+  readonly monotonicity: ReadonlyMonotonicity<Axis>
 
   readonly length: number
 
-  readonly points: ReadonlyCubicPoints<TAxis>
+  readonly points: ReadonlyCubicPoints<Axis>
 
   readonly identityMatrix: ReadonlyMatrix4x4
 
-  readonly axes: ReadonlySet<TAxis>
+  readonly axes: ReadonlySet<Axis>
 }

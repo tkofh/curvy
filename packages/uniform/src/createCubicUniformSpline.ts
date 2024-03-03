@@ -13,30 +13,42 @@ import type {
   ReadonlyPoint,
 } from '@curvy/types'
 import { roundTo } from 'micro-math'
-import { getBounds, getExtrema, hashBounds, mergeBounds, roundBounds } from './util'
-import { createCubicUniformCurve } from './createCubicUniformCurve'
 import { DEFAULT_LUT_RESOLUTION, DEFAULT_PRECISION } from './constants'
+import { createCubicUniformCurve } from './createCubicUniformCurve'
+import {
+  getBounds,
+  getExtrema,
+  hashBounds,
+  mergeBounds,
+  roundBounds,
+} from './util'
 
-export const createCubicUniformSpline = <TAxis extends BaseAxes>(
-  points: CubicPoints<TAxis>[],
+export const createCubicUniformSpline = <Axis extends BaseAxes>(
+  points: Array<CubicPoints<Axis>>,
   identityMatrix: Matrix4x4,
-  precision: Precision<TAxis> = DEFAULT_PRECISION,
-  lutResolution = DEFAULT_LUT_RESOLUTION
-): CubicSpline<TAxis> => {
+  precision: Precision<Axis> = DEFAULT_PRECISION,
+  lutResolution = DEFAULT_LUT_RESOLUTION,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: not dealing w this
+): CubicSpline<Axis> => {
   if (points.length === 0) {
     throw new Error('At least one cubic segment must be provided')
   }
 
-  const curves: CubicCurve<TAxis>[] = []
+  const curves: Array<CubicCurve<Axis>> = []
 
-  let axes!: ReadonlySet<TAxis>
+  let axes!: ReadonlySet<Axis>
   let splineLength = 0
-  let normalizedPrecision!: NormalizedPrecision<TAxis>
-  let monotonicity!: Monotonicity<TAxis>
-  const extremaCandidates: ReadonlyExtreme<TAxis>[] = []
+  let normalizedPrecision!: NormalizedPrecision<Axis>
+  let monotonicity!: Monotonicity<Axis>
+  const extremaCandidates: Array<ReadonlyExtreme<Axis>> = []
 
   for (const [curveIndex, segmentPoints] of points.entries()) {
-    const curve = createCubicUniformCurve(segmentPoints, identityMatrix, precision, lutResolution)
+    const curve = createCubicUniformCurve(
+      segmentPoints,
+      identityMatrix,
+      precision,
+      lutResolution,
+    )
     curves.push(curve)
 
     for (const [extremeIndex, extreme] of curve.extrema.entries()) {
@@ -64,7 +76,10 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
       monotonicity = curve.monotonicity
     } else {
       for (const axis of axes) {
-        if (monotonicity[axis] !== 'none' && curve.monotonicity[axis] !== monotonicity[axis]) {
+        if (
+          monotonicity[axis] !== 'none' &&
+          curve.monotonicity[axis] !== monotonicity[axis]
+        ) {
           monotonicity[axis] = 'none'
         }
       }
@@ -75,28 +90,36 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
 
   const bounds = getBounds(extrema, axes)
 
-  const solveCache = new Map<string, Point<TAxis> | undefined>()
+  const solveCache = new Map<string, Point<Axis> | undefined>()
 
-  const trySolve = <TSolveAxis extends TAxis>(
+  const trySolve = <TSolveAxis extends Axis>(
     axis: TSolveAxis,
     input: number,
-    constraints?: Partial<Bounds<Exclude<TAxis, TSolveAxis>>>
+    constraints?: Partial<Bounds<Exclude<Axis, TSolveAxis>>>,
   ) => {
     const roundedInput = roundTo(input, normalizedPrecision[axis])
     const resolvedConstraints = mergeBounds(
-      (constraints ? roundBounds(constraints, normalizedPrecision) : {}) as Partial<Bounds<TAxis>>,
-      bounds
+      (constraints
+        ? roundBounds(constraints, normalizedPrecision)
+        : {}) as Partial<Bounds<Axis>>,
+      bounds,
     )
 
-    const key = `axis${axis}${roundedInput}${hashBounds(resolvedConstraints, normalizedPrecision)}`
+    const key = `axis${axis}${roundedInput}${hashBounds(
+      resolvedConstraints,
+      normalizedPrecision,
+    )}`
 
     const cachedResult = solveCache.get(key)
 
-    let result: ReadonlyPoint<TAxis> | undefined
+    let result: ReadonlyPoint<Axis> | undefined
 
     if (cachedResult) {
       result = cachedResult
-    } else if (roundedInput >= bounds[axis].min && roundedInput <= bounds[axis].max) {
+    } else if (
+      roundedInput >= bounds[axis].min &&
+      roundedInput <= bounds[axis].max
+    ) {
       for (const curve of curves) {
         result = curve.trySolve(axis, input, constraints)
         if (result) {
@@ -110,10 +133,10 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
     return result
   }
 
-  const solve = <TSolveAxis extends TAxis>(
+  const solve = <TSolveAxis extends Axis>(
     axis: TSolveAxis,
     input: number,
-    constraints?: Partial<Bounds<Exclude<TAxis, TSolveAxis>>>
+    constraints?: Partial<Bounds<Exclude<Axis, TSolveAxis>>>,
   ) => {
     const result = trySolve(axis, input, constraints)
 
@@ -121,7 +144,7 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
       throw new Error(
         `No solution found for spline at ${axis}=${input}${
           constraints ? ` with constraints ${JSON.stringify(constraints)}` : ''
-        }`
+        }`,
       )
     }
 
@@ -133,7 +156,7 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
 
     const cachedResult = solveCache.get(key)
 
-    let result: ReadonlyPoint<TAxis> | undefined
+    let result: ReadonlyPoint<Axis> | undefined
     if (cachedResult) {
       result = cachedResult
     } else if (length <= splineLength) {
@@ -167,7 +190,7 @@ export const createCubicUniformSpline = <TAxis extends BaseAxes>(
 
     const cachedResult = solveCache.get(key)
 
-    let result: ReadonlyPoint<TAxis> | undefined
+    let result: ReadonlyPoint<Axis> | undefined
 
     if (cachedResult) {
       result = cachedResult

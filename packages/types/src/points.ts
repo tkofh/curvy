@@ -1,25 +1,31 @@
 export type BaseAxes = 'x' | 'y' | 'z' | 'w' | (string & Record<never, never>)
 
-export type Point<TAxis extends BaseAxes> = Record<TAxis, number>
+export type Point<Axis extends BaseAxes> = Record<Axis, number>
 
-export type ReadonlyPoint<TAxis extends BaseAxes> = Readonly<Record<TAxis, number>>
+export type ReadonlyPoint<Axis extends BaseAxes> = Readonly<
+  Record<Axis, number>
+>
 
-export type CubicPoints<TAxis extends BaseAxes> = [
-  Point<TAxis>,
-  Point<TAxis>,
-  Point<TAxis>,
-  Point<TAxis>
+export type CubicPoints<Axis extends BaseAxes> = [
+  Point<Axis>,
+  Point<Axis>,
+  Point<Axis>,
+  Point<Axis>,
 ]
-export type QuadraticPoints<TAxis extends BaseAxes> = [Point<TAxis>, Point<TAxis>, Point<TAxis>]
-
-export type ReadonlyCubicPoints<TAxis extends BaseAxes> = readonly [
-  ReadonlyPoint<TAxis>,
-  ReadonlyPoint<TAxis>,
-  ReadonlyPoint<TAxis>,
-  ReadonlyPoint<TAxis>
+export type QuadraticPoints<Axis extends BaseAxes> = [
+  Point<Axis>,
+  Point<Axis>,
+  Point<Axis>,
 ]
-export type ReadonlyQuadraticPoints<TAxis extends BaseAxes> = readonly [
-  ReadonlyPoint<TAxis>,
-  ReadonlyPoint<TAxis>,
-  ReadonlyPoint<TAxis>
+
+export type ReadonlyCubicPoints<Axis extends BaseAxes> = readonly [
+  ReadonlyPoint<Axis>,
+  ReadonlyPoint<Axis>,
+  ReadonlyPoint<Axis>,
+  ReadonlyPoint<Axis>,
+]
+export type ReadonlyQuadraticPoints<Axis extends BaseAxes> = readonly [
+  ReadonlyPoint<Axis>,
+  ReadonlyPoint<Axis>,
+  ReadonlyPoint<Axis>,
 ]

@@ -1,4 +1,3 @@
-import { distance, lerp, normalize, polynomial, quadraticRoots, roundTo } from 'micro-math'
 import type {
   BaseAxes,
   Bounds,
@@ -12,6 +11,21 @@ import type {
   ReadonlyExtreme,
 } from '@curvy/types'
 import {
+  distance,
+  lerp,
+  normalize,
+  polynomial,
+  quadraticRoots,
+  roundTo,
+} from 'micro-math'
+import { DEFAULT_LUT_RESOLUTION, DEFAULT_PRECISION } from './constants'
+import type {
+  CubicScalars,
+  LUTEntry,
+  LUTRange,
+  QuadraticScalars,
+} from './types'
+import {
   getBounds,
   getExtrema,
   hashBounds,
@@ -20,19 +34,18 @@ import {
   roundBounds,
   roundPoint,
 } from './util'
-import type { CubicScalars, LUTEntry, LUTRange, QuadraticScalars } from './types'
-import { DEFAULT_LUT_RESOLUTION, DEFAULT_PRECISION } from './constants'
 
-export const createCubicUniformCurve = <TAxis extends BaseAxes>(
-  points: CubicPoints<TAxis>,
+export const createCubicUniformCurve = <Axis extends BaseAxes>(
+  points: CubicPoints<Axis>,
   identityMatrix: Matrix4x4,
-  precision: Precision<TAxis> = DEFAULT_PRECISION,
-  lutResolution = DEFAULT_LUT_RESOLUTION
-): CubicCurve<TAxis> => {
-  const axes = new Set(Object.keys(points[0]) as TAxis[])
+  precision: Precision<Axis> = DEFAULT_PRECISION,
+  lutResolution = DEFAULT_LUT_RESOLUTION,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: not dealing w this
+): CubicCurve<Axis> => {
+  const axes = new Set(Object.keys(points[0]) as Array<Axis>)
   const normalizedPrecision = normalizePrecision(precision, axes)
 
-  const roundedPoints: ReadonlyCubicPoints<TAxis> = [
+  const roundedPoints: ReadonlyCubicPoints<Axis> = [
     roundPoint(points[0], normalizedPrecision),
     roundPoint(points[1], normalizedPrecision),
     roundPoint(points[2], normalizedPrecision),
@@ -44,8 +57,8 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
     [1, axes],
   ])
 
-  const baseScalars = {} as Record<TAxis, CubicScalars>
-  const monotonicity = {} as Monotonicity<TAxis>
+  const baseScalars = {} as Record<Axis, CubicScalars>
+  const monotonicity = {} as Monotonicity<Axis>
 
   for (const axis of axes) {
     baseScalars[axis] = [
@@ -82,7 +95,7 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
     if (root1 !== root2) {
       if (root1 !== undefined && root1 > 0 && root1 < 1) {
         if (primeRoots.has(root1)) {
-          primeRoots.get(root1)!.add(axis)
+          primeRoots.get(root1)?.add(axis)
         } else {
           primeRoots.set(root1, new Set([axis]))
         }
@@ -90,7 +103,7 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
       }
       if (root2 !== undefined && root2 > 0 && root2 < 1) {
         if (primeRoots.has(root2)) {
-          primeRoots.get(root2)!.add(axis)
+          primeRoots.get(root2)?.add(axis)
         } else {
           primeRoots.set(root2, new Set([axis]))
         }
@@ -120,21 +133,21 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
   }
   const lutSamples = Array.from(lutUniqueSamples).sort((a, b) => a - b)
 
-  const lut = new Set<LUTRange<TAxis>>()
+  const lut = new Set<LUTRange<Axis>>()
 
-  const extremaCandidates: ReadonlyExtreme<TAxis>[] = []
+  const extremaCandidates: Array<ReadonlyExtreme<Axis>> = []
 
-  let lutTail: LUTEntry<TAxis> | undefined
+  let lutTail: LUTEntry<Axis> | undefined
   for (const t of lutSamples) {
-    const value = {} as Point<TAxis>
+    const value = {} as Point<Axis>
 
-    const min = {} as Point<TAxis>
-    const max = {} as Point<TAxis>
+    const min = {} as Point<Axis>
+    const max = {} as Point<Axis>
 
     for (const axis of axes) {
       value[axis] = roundTo(
         polynomial(t, baseScalars[axis], 'descending'),
-        normalizedPrecision[axis]
+        normalizedPrecision[axis],
       )
 
       if (lutTail) {
@@ -150,19 +163,22 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
 
     let length = 0
     if (lutTail) {
-      length = lutTail.length + distance(Object.values(lutTail.value), Object.values(value))
+      length =
+        lutTail.length +
+        distance(Object.values(lutTail.value), Object.values(value))
     }
 
     if (primeRoots.has(t)) {
       extremaCandidates.push({
         value: roundPoint(value, normalizedPrecision),
+        // biome-ignore lint/style/noNonNullAssertion: we know it's there
         for: primeRoots.get(t)!,
         t,
         length,
       })
     }
 
-    const entry: LUTEntry<TAxis> = { t, length, value }
+    const entry: LUTEntry<Axis> = { t, length, value }
 
     if (lutTail) {
       lut.add({ start: lutTail, end: entry, min, max })
@@ -176,42 +192,51 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
   // bounds are rounded because it is made of the rounded extrema
   const bounds = getBounds(extrema, axes)
 
-  const solveCache = new Map<string, Point<TAxis> | undefined>()
+  const solveCache = new Map<string, Point<Axis> | undefined>()
 
-  const trySolve = <TSolveAxis extends TAxis>(
+  const trySolve = <TSolveAxis extends Axis>(
     axis: TSolveAxis,
     input: number,
-    constraints?: Partial<Bounds<Exclude<TAxis, TSolveAxis>>>
+    constraints?: Partial<Bounds<Exclude<Axis, TSolveAxis>>>,
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: not dealing w this
   ) => {
     const roundedInput = roundTo(input, normalizedPrecision[axis])
     const resolvedConstraints = mergeBounds(
-      (constraints ? roundBounds(constraints, normalizedPrecision) : {}) as Partial<Bounds<TAxis>>,
-      bounds
+      (constraints
+        ? roundBounds(constraints, normalizedPrecision)
+        : {}) as Partial<Bounds<Axis>>,
+      bounds,
     )
 
-    const key = `axis${axis}${roundedInput}${hashBounds(resolvedConstraints, normalizedPrecision)}`
+    const key = `axis${axis}${roundedInput}${hashBounds(
+      resolvedConstraints,
+      normalizedPrecision,
+    )}`
 
     const cachedResult = solveCache.get(key)
 
-    let result: Point<TAxis> | undefined
+    let result: Point<Axis> | undefined
     if (cachedResult) {
       result = cachedResult
-    } else if (roundedInput >= bounds[axis].min && roundedInput <= bounds[axis].max) {
+    } else if (
+      roundedInput >= bounds[axis].min &&
+      roundedInput <= bounds[axis].max
+    ) {
       for (const { start, end, min, max } of lut.values()) {
         result =
           start.value[axis] === roundedInput
             ? start.value
             : end.value[axis] === roundedInput
-            ? end.value
-            : undefined
+              ? end.value
+              : undefined
 
         if (result !== undefined) {
           let matches = true
           for (const otherAxis of axes) {
             if (
               otherAxis !== axis &&
-              (result[otherAxis] < resolvedConstraints[otherAxis as TAxis].min ||
-                result[otherAxis] > resolvedConstraints[otherAxis as TAxis].max)
+              (result[otherAxis] < resolvedConstraints[otherAxis as Axis].min ||
+                result[otherAxis] > resolvedConstraints[otherAxis as Axis].max)
             ) {
               matches = false
               break
@@ -225,12 +250,12 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
         } else if (roundedInput >= min[axis] && roundedInput <= max[axis]) {
           const t = normalize(input, start.value[axis], end.value[axis])
 
-          const candidate = {} as Point<TAxis>
+          const candidate = {} as Point<Axis>
           let candidateValid = true
           for (const axis of axes) {
             const axisValue = roundTo(
               lerp(t, start.value[axis], end.value[axis]),
-              normalizedPrecision[axis]
+              normalizedPrecision[axis],
             )
             if (
               axisValue >= resolvedConstraints[axis].min &&
@@ -255,44 +280,50 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
     return result
   }
 
-  const solve = <TSolveAxis extends TAxis>(
+  const solve = <TSolveAxis extends Axis>(
     axis: TSolveAxis,
     input: number,
-    constraints?: Partial<Bounds<Exclude<TAxis, TSolveAxis>>>
+    constraints?: Partial<Bounds<Exclude<Axis, TSolveAxis>>>,
   ) => {
     const result = trySolve(axis, input, constraints)
     if (result === undefined) {
       throw new Error(
         `No solution found for curve at ${axis}=${input}${
           constraints ? ` with constraints ${JSON.stringify(constraints)}` : ''
-        }`
+        }`,
       )
     }
     return result
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: not dealing w this
   const trySolveLength = (length: number) => {
     const key = `length${length}`
 
     const cachedResult = solveCache.get(key)
 
-    let result: Point<TAxis> | undefined
+    let result: Point<Axis> | undefined
     if (cachedResult) {
       result = cachedResult
-    } else if (length >= 0 && length <= lutTail!.length) {
+    } else if (length >= 0 && length <= lutTail?.length) {
       for (const { start, end } of lut.values()) {
         result =
-          start.length === length ? start.value : end.length === length ? end.value : undefined
+          start.length === length
+            ? start.value
+            : end.length === length
+              ? end.value
+              : undefined
 
         if (result !== undefined) {
           break
-        } else if (length >= start.length && length <= end.length) {
+        }
+        if (length >= start.length && length <= end.length) {
           const t = normalize(length, start.length, end.length)
-          result = {} as Point<TAxis>
+          result = {} as Point<Axis>
           for (const axis of axes) {
             result[axis] = roundTo(
               lerp(t, start.value[axis], end.value[axis]),
-              normalizedPrecision[axis]
+              normalizedPrecision[axis],
             )
           }
           break
@@ -314,27 +345,30 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
     return result
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: not dealing w this
   const trySolveT = (t: number) => {
     const key = `t${t}`
 
     const cachedResult = solveCache.get(key)
 
-    let result: Point<TAxis> | undefined
+    let result: Point<Axis> | undefined
     if (cachedResult) {
       result = cachedResult
     } else if (t >= 0 && t <= 1) {
       for (const { start, end } of lut.values()) {
-        result = start.t === t ? start.value : end.t === t ? end.value : undefined
+        result =
+          start.t === t ? start.value : end.t === t ? end.value : undefined
 
         if (result !== undefined) {
           break
-        } else if (t >= start.t && t <= end.t) {
+        }
+        if (t >= start.t && t <= end.t) {
           const entryT = normalize(t, start.t, end.t)
-          result = {} as Point<TAxis>
+          result = {} as Point<Axis>
           for (const axis of axes) {
             result[axis] = roundTo(
               lerp(entryT, start.value[axis], end.value[axis]),
-              normalizedPrecision[axis]
+              normalizedPrecision[axis],
             )
           }
           break
@@ -364,7 +398,7 @@ export const createCubicUniformCurve = <TAxis extends BaseAxes>(
     monotonicity,
     axes,
     precision: normalizedPrecision,
-    length: lutTail!.length,
+    length: lutTail?.length,
     trySolve,
     solve,
     trySolveLength,

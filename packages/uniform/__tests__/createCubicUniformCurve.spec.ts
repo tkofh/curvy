@@ -4,13 +4,20 @@ import { bezier, createCubicUniformCurve } from '../src'
 describe('createCubicUniformCurve', () => {
   test('calculates the bounds of a curve', ({ expect }) => {
     expect(
-      createCubicUniformCurve([{ x: 0 }, { x: 1 / 3 }, { x: 2 / 3 }, { x: 1 }], bezier).bounds
+      createCubicUniformCurve(
+        [{ x: 0 }, { x: 1 / 3 }, { x: 2 / 3 }, { x: 1 }],
+        bezier,
+      ).bounds,
     ).toStrictEqual({
       x: { min: 0, max: 1 },
     })
 
     expect(
-      createCubicUniformCurve([{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }], bezier, 2).bounds
+      createCubicUniformCurve(
+        [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
+        bezier,
+        2,
+      ).bounds,
     ).toStrictEqual({
       x: { min: 0, max: 1.5 },
     })
@@ -18,7 +25,12 @@ describe('createCubicUniformCurve', () => {
 
   test('calculates the extrema of a curve', ({ expect }) => {
     expect(
-      createCubicUniformCurve([{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }], bezier, 2, 512).extrema
+      createCubicUniformCurve(
+        [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
+        bezier,
+        2,
+        512,
+      ).extrema,
     ).toStrictEqual([
       { for: new Set(['x']), value: { x: 0 }, t: 0, length: 0 },
       { for: new Set(['x']), value: { x: 1.5 }, t: 0.5, length: 1.5 },
@@ -26,22 +38,41 @@ describe('createCubicUniformCurve', () => {
     ])
 
     expect(
-      createCubicUniformCurve([{ x: 0 }, { x: 2 }, { x: -2 }, { x: 0 }], bezier, 2, 512).extrema
+      createCubicUniformCurve(
+        [{ x: 0 }, { x: 2 }, { x: -2 }, { x: 0 }],
+        bezier,
+        2,
+        512,
+      ).extrema,
     ).toStrictEqual([
       { for: new Set(['x']), value: { x: 0 }, t: 0, length: 0 },
-      { for: new Set(['x']), value: { x: 0.58 }, t: 0.2113248654051871, length: 0.58 },
+      {
+        for: new Set(['x']),
+        value: { x: 0.58 },
+        t: 0.2113248654051871,
+        length: 0.58,
+      },
       {
         for: new Set(['x']),
         value: { x: -0.58 },
         t: 0.7886751345948129,
         length: 1.7400000000000009,
       },
-      { for: new Set(['x']), value: { x: 0 }, t: 1, length: 2.3199999999999945 },
+      {
+        for: new Set(['x']),
+        value: { x: 0 },
+        t: 1,
+        length: 2.3199999999999945,
+      },
     ])
   })
 
   test('point returned by solve() is identical to extreme', ({ expect }) => {
-    const curve = createCubicUniformCurve([{ x: 0 }, { x: 2 }, { x: -2 }, { x: 0 }], bezier, 2)
+    const curve = createCubicUniformCurve(
+      [{ x: 0 }, { x: 2 }, { x: -2 }, { x: 0 }],
+      bezier,
+      2,
+    )
 
     for (const extreme of curve.extrema) {
       expect(curve.trySolveT(extreme.t)).toStrictEqual(extreme.value)
@@ -52,7 +83,10 @@ describe('createCubicUniformCurve', () => {
 
   test('calculates the length of a curve', ({ expect }) => {
     expect(
-      createCubicUniformCurve([{ x: 0 }, { x: 1 / 3 }, { x: 2 / 3 }, { x: 1 }], bezier).length
+      createCubicUniformCurve(
+        [{ x: 0 }, { x: 1 / 3 }, { x: 2 / 3 }, { x: 1 }],
+        bezier,
+      ).length,
     ).toBe(1)
   })
 
@@ -64,7 +98,7 @@ describe('createCubicUniformCurve', () => {
         { x: 2 / 3, y: 2 / 3 },
         { x: 1, y: 1 },
       ],
-      bezier
+      bezier,
     )
 
     for (let i = 0; i <= 1; i += 0.1) {
@@ -86,14 +120,21 @@ describe('createCubicUniformCurve', () => {
         { x: 2, y: 1 },
         { x: 0, y: 1 },
       ],
-      bezier
+      bezier,
     )
-    expect(curve.solve('x', 0.75, { y: { max: 0.5, min: 0 } }).y).toBeLessThan(0.5)
-    expect(curve.solve('x', 0.75, { y: { max: 1, min: 0.5 } }).y).toBeGreaterThan(0.5)
+    expect(curve.solve('x', 0.75, { y: { max: 0.5, min: 0 } }).y).toBeLessThan(
+      0.5,
+    )
+    expect(
+      curve.solve('x', 0.75, { y: { max: 1, min: 0.5 } }).y,
+    ).toBeGreaterThan(0.5)
   })
 
   test('returns out of bounds for out of bounds input', ({ expect }) => {
-    const curve = createCubicUniformCurve([{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }], bezier)
+    const curve = createCubicUniformCurve(
+      [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
+      bezier,
+    )
     expect(curve.trySolve('x', 2)).toBeUndefined()
     expect(curve.trySolve('x', -2)).toBeUndefined()
     expect(curve.trySolveLength(100)).toBeUndefined()
@@ -103,7 +144,10 @@ describe('createCubicUniformCurve', () => {
   })
 
   test('solves extrema as they are represented in array', ({ expect }) => {
-    const curve = createCubicUniformCurve([{ x: 0 }, { x: 2 }, { x: -2 }, { x: 0 }], bezier)
+    const curve = createCubicUniformCurve(
+      [{ x: 0 }, { x: 2 }, { x: -2 }, { x: 0 }],
+      bezier,
+    )
     for (const extreme of curve.extrema) {
       expect(curve.solveT(extreme.t)).toStrictEqual(extreme.value)
       expect(curve.solveLength(extreme.length)).toStrictEqual(extreme.value)

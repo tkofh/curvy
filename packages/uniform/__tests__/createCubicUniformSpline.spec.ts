@@ -1,5 +1,5 @@
-import { describe, test } from 'vitest'
 import type { Matrix4x4 } from '@curvy/types'
+import { describe, test } from 'vitest'
 import { catmullRom, createCubicUniformSpline } from '../src'
 
 const bezier: Matrix4x4 = [
@@ -12,7 +12,7 @@ const bezier: Matrix4x4 = [
 describe('createCubicUniformCurve', () => {
   test('ensures at least one cubic segment is provided', ({ expect }) => {
     expect(() => createCubicUniformSpline([], bezier)).toThrowError(
-      'At least one cubic segment must be provided'
+      'At least one cubic segment must be provided',
     )
   })
 
@@ -24,8 +24,8 @@ describe('createCubicUniformCurve', () => {
           [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
         ],
         bezier,
-        2
-      ).bounds
+        2,
+      ).bounds,
     ).toStrictEqual({
       x: { min: -1.5, max: 1.5 },
     })
@@ -39,12 +39,17 @@ describe('createCubicUniformCurve', () => {
           [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
         ],
         bezier,
-        2
-      ).extrema
+        2,
+      ).extrema,
     ).toStrictEqual([
       { for: new Set('x'), value: { x: 0 }, t: 0, length: 0 },
       { for: new Set('x'), value: { x: 1.5 }, t: 0.25, length: 1.5 },
-      { for: new Set('x'), value: { x: -1.5 }, t: 0.75, length: 4.4999999999999805 },
+      {
+        for: new Set('x'),
+        value: { x: -1.5 },
+        t: 0.75,
+        length: 4.4999999999999805,
+      },
       { for: new Set('x'), value: { x: 0 }, t: 1, length: 5.999999999999962 },
     ])
   })
@@ -56,7 +61,7 @@ describe('createCubicUniformCurve', () => {
         [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
       ],
       bezier,
-      2
+      2,
     )
 
     for (const extreme of spline.extrema) {
@@ -73,8 +78,8 @@ describe('createCubicUniformCurve', () => {
           [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
           [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
         ],
-        bezier
-      ).length
+        bezier,
+      ).length,
     ).toBe(6.000000000000002)
   })
 
@@ -94,7 +99,7 @@ describe('createCubicUniformCurve', () => {
           { x: 2, y: 2 },
         ],
       ],
-      bezier
+      bezier,
     )
 
     for (let i = 0; i <= 2; i += 0.1) {
@@ -124,10 +129,14 @@ describe('createCubicUniformCurve', () => {
           { x: 0, y: 1 },
         ],
       ],
-      bezier
+      bezier,
     )
-    expect(spline1.solve('x', 0.75, { y: { max: 0.5, min: 0 } }).y).toBeLessThan(0.5)
-    expect(spline1.solve('x', 0.75, { y: { max: 1, min: 0.5 } }).y).toBeGreaterThan(0.5)
+    expect(
+      spline1.solve('x', 0.75, { y: { max: 0.5, min: 0 } }).y,
+    ).toBeLessThan(0.5)
+    expect(
+      spline1.solve('x', 0.75, { y: { max: 1, min: 0.5 } }).y,
+    ).toBeGreaterThan(0.5)
 
     const spline2 = createCubicUniformSpline(
       [
@@ -157,10 +166,12 @@ describe('createCubicUniformCurve', () => {
         ],
       ],
       catmullRom,
-      { x: 4, y: 0 }
+      { x: 4, y: 0 },
     )
 
-    expect(spline2.solve('y', 48, { x: { min: 0.28, max: 1 } }).x).toBeGreaterThanOrEqual(0.28)
+    expect(
+      spline2.solve('y', 48, { x: { min: 0.28, max: 1 } }).x,
+    ).toBeGreaterThanOrEqual(0.28)
   })
 
   test('returns out of bounds for out of bounds input', ({ expect }) => {
@@ -169,7 +180,7 @@ describe('createCubicUniformCurve', () => {
         [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
         [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
       ],
-      bezier
+      bezier,
     )
     expect(spline.trySolve('x', 2)).toBeUndefined()
     expect(spline.trySolve('x', -2)).toBeUndefined()
@@ -185,7 +196,7 @@ describe('createCubicUniformCurve', () => {
         [{ x: 0 }, { x: 2 }, { x: 2 }, { x: 0 }],
         [{ x: 0 }, { x: -2 }, { x: -2 }, { x: 0 }],
       ],
-      bezier
+      bezier,
     )
     for (const extreme of spline.extrema) {
       expect(spline.solveT(extreme.t)).toStrictEqual(extreme.value)

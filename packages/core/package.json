@@ -1,0 +1,53 @@
+{
+  "name": "@curvy/core",
+  "version": "0.8.0",
+  "description": "Spline and curve utilities",
+  "author": "Tim Morris <timthewebguy@gmail.com>",
+  "homepage": "https://github.com/tkofh/curvy#readme",
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkofh/curvy.git"
+  },
+  "scripts": {
+    "build": "unbuild",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:ui": "vitest --ui",
+    "prepublish": "pnpm test && pnpm build"
+  },
+  "bugs": {
+    "url": "https://github.com/tkofh/curvy/issues"
+  },
+  "dependencies": {
+    "@curvy/types": "workspace:^",
+    "log-if-env": "^0.1.0",
+    "micro-math": "^0.9.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^2.0.0",
+    "@vitest/ui": "^0.30.1",
+    "c8": "^7.13.0",
+    "unbuild": "^1.2.1",
+    "vitest": "^0.30.1"
+  },
+  "gitHead": "ec3a68c0043ce7ddc7df99eb597a6af0c42e170a"
+}

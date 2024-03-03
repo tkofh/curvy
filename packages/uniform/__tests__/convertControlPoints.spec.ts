@@ -1,5 +1,5 @@
-import { describe, test } from 'vitest'
 import type { CubicPoints } from '@curvy/types'
+import { describe, test } from 'vitest'
 import { bezier, cardinal, convertControlPoints, hermite } from '../src'
 
 describe('convertControlPoint', () => {
@@ -13,7 +13,9 @@ describe('convertControlPoint', () => {
       { x: 1, y: 1 },
     ]
 
-    expect(convertControlPoints(sourceControlPoints, bezier, hermite)).toStrictEqual([
+    expect(
+      convertControlPoints(sourceControlPoints, bezier, hermite),
+    ).toStrictEqual([
       { x: 0, y: 0 },
       { x: 3, y: 0 },
       { x: 1, y: 1 },
@@ -29,11 +31,13 @@ describe('convertControlPoint', () => {
           { x: 3, y: 0 },
         ],
         hermite,
-        bezier
-      )
+        bezier,
+      ),
     ).toStrictEqual(sourceControlPoints)
 
-    expect(convertControlPoints(sourceControlPoints, bezier, cardinal(0.5))).toStrictEqual([
+    expect(
+      convertControlPoints(sourceControlPoints, bezier, cardinal(0.5)),
+    ).toStrictEqual([
       { x: -5, y: 1 },
       { x: 0, y: 0 },
       { x: 1, y: 1 },
@@ -49,8 +53,8 @@ describe('convertControlPoint', () => {
           { x: 6, y: 0 },
         ],
         cardinal(0.5),
-        bezier
-      )
+        bezier,
+      ),
     ).toStrictEqual(sourceControlPoints)
   })
 
