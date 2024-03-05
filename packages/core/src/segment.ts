@@ -5,12 +5,7 @@ import type {
   Monotonicity,
   QuadraticScalars,
 } from './types'
-
-const precision = 8
-const scale = 10 ** precision
-function round(value: number): number {
-  return Math.round(value * scale) / scale
-}
+import { round } from './util'
 
 function getDerivativeUnitRoots(derivative: QuadraticScalars): Set<number> {
   const roots = new Set<number>()
@@ -76,29 +71,20 @@ function getMonotonicity(
   localExtrema: Map<number, number>,
   derivative: QuadraticScalars,
 ): Monotonicity {
-  const aIsZero = derivative[0] === 0
-  const bIsZero = derivative[1] === 0
-
-  if (aIsZero && bIsZero) {
-    return 'constant'
-  }
-
   if (localExtrema.size > 2) {
     return 'none'
   }
 
-  if (aIsZero && !bIsZero) {
-    return derivative[1] > 0 ? 'increasing' : 'decreasing'
+  if (derivative[0] === 0 && derivative[1] === 0 && derivative[2] === 0) {
+    return 'constant'
   }
 
-  if (!aIsZero && bIsZero) {
-    return derivative[0] > 0 ? 'decreasing' : 'increasing'
+  let test = 0.25 * derivative[0] + 0.5 * derivative[1] + derivative[2]
+  if (test === 0) {
+    test = derivative[2]
   }
 
-  const start = localExtrema.get(0) as number
-  const end = localExtrema.get(1) as number
-
-  return start > end ? 'decreasing' : 'increasing'
+  return Math.sign(test) > 0 ? 'increasing' : 'decreasing'
 }
 
 export function createCurveSegment(

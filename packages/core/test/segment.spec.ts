@@ -23,7 +23,12 @@ describe('monotonicity', () => {
     )
   })
 
-  test('increasing for [0, 0, 1, 1] (diagonal line from bottom left to top right)', () => {
+  test('increasing for [0, 1, 2, 3] (diagonal line from bottom left to top right)', () => {
+    expect(createCurveSegment(bezier, [0, 1, 2, 3]).monotonicity).toBe(
+      'increasing',
+    )
+  })
+  test('increasing for [0, 0, 1, 1] (ease in out from bottom left to top right)', () => {
     expect(createCurveSegment(bezier, [0, 0, 1, 1]).monotonicity).toBe(
       'increasing',
     )
@@ -44,7 +49,12 @@ describe('monotonicity', () => {
     )
   })
 
-  test('decreasing for [1, 1, 0, 0] (diagonal line from top left to bottom right)', () => {
+  test('decreasing for [3, 2, 1, 0] (diagonal line from top left to bottom right)', () => {
+    expect(createCurveSegment(bezier, [3, 2, 1, 0]).monotonicity).toBe(
+      'decreasing',
+    )
+  })
+  test('decreasing for [1, 1, 0, 0] (ease in out from top left to bottom right)', () => {
     expect(createCurveSegment(bezier, [1, 1, 0, 0]).monotonicity).toBe(
       'decreasing',
     )
@@ -59,8 +69,8 @@ describe('monotonicity', () => {
       'decreasing',
     )
   })
-  test('decreasing for [-0.2, 0, 0.2, 1.5] (slightly eased from top left to bottom right, sets derivative b=0)', () => {
-    expect(createCurveSegment(bezier, [-0.2, 0, 0.2, 1.5]).monotonicity).toBe(
+  test('decreasing for [2.6, 1.6, 0.9, 0.5] (slightly eased from top left to bottom right, sets derivative b=0)', () => {
+    expect(createCurveSegment(bezier, [2.6, 1.6, 0.9, 0.5]).monotonicity).toBe(
       'decreasing',
     )
   })
@@ -80,14 +90,14 @@ describe('monotonicity', () => {
 })
 
 describe('extrema', () => {
-  test('only the endpoints for [0, 0, 1, 1] (diagonal line from bottom left to top right)', () => {
+  test('only the endpoints for [0, 0, 1, 1] (ease in out from bottom left to top right)', () => {
     const segment = createCurveSegment(bezier, [0, 0, 1, 1])
     expect(segment.localExtrema.size).toBe(2)
     expect(segment.localExtrema.get(0)).toBeDefined()
     expect(segment.localExtrema.get(1)).toBeDefined()
   })
 
-  test('only the endpoints for [1, 1, 0, 0] (diagonal line from top left to bottom right)', () => {
+  test('only the endpoints for [1, 1, 0, 0] (ease in out from top left to bottom right)', () => {
     const segment = createCurveSegment(bezier, [1, 1, 0, 0])
     expect(segment.localExtrema.size).toBe(2)
     expect(segment.localExtrema.get(0)).toBeDefined()
@@ -140,10 +150,10 @@ describe('extrema', () => {
 })
 
 describe('min', () => {
-  test('min is start for [0, 0, 1, 1] (diagonal line from bottom left to top right)', () => {
+  test('min is start for [0, 0, 1, 1] (ease in out from bottom left to top right)', () => {
     expect(createCurveSegment(bezier, [0, 0, 1, 1]).min).toBe(0)
   })
-  test('min is end for [1, 1, 0, 0] (diagonal line from top left to bottom right)', () => {
+  test('min is end for [1, 1, 0, 0] (ease in out from top left to bottom right)', () => {
     expect(createCurveSegment(bezier, [1, 1, 0, 0]).min).toBe(0)
   })
 
@@ -172,10 +182,10 @@ describe('min', () => {
 })
 
 describe('max', () => {
-  test('max is start for [0, 0, 1, 1] (diagonal line from bottom left to top right)', () => {
+  test('max is start for [0, 0, 1, 1] (ease in out from bottom left to top right)', () => {
     expect(createCurveSegment(bezier, [0, 0, -1, -1]).max).toBe(0)
   })
-  test('max is end for [1, 1, 0, 0] (diagonal line from top left to bottom right)', () => {
+  test('max is end for [1, 1, 0, 0] (ease in out from top left to bottom right)', () => {
     expect(createCurveSegment(bezier, [-1, -1, 0, 0]).max).toBe(0)
   })
 
