@@ -1,12 +1,20 @@
+import type { CubicScalars, Matrix4x4 } from './splines'
 import { basis, bezier, cardinal, catmullRom, hermite } from './splines'
-import type {
-  CubicScalars,
-  CurveSegment,
-  Matrix4x4,
-  Monotonicity,
-  QuadraticScalars,
-} from './types'
 import { round } from './util'
+
+export type QuadraticScalars = readonly [number, number, number]
+export type Monotonicity = 'none' | 'increasing' | 'decreasing' | 'constant'
+
+export type CurveSegment = {
+  readonly monotonicity: Monotonicity
+  readonly localExtrema: ReadonlyMap<number, number>
+  readonly points: CubicScalars
+  readonly polynomial: CubicScalars
+  readonly derivative: QuadraticScalars
+  readonly min: number
+  readonly max: number
+  readonly solve: (t: number) => number
+}
 
 function getDerivativeUnitRoots(derivative: QuadraticScalars): Set<number> {
   const roots = new Set<number>()
@@ -15,7 +23,8 @@ function getDerivativeUnitRoots(derivative: QuadraticScalars): Set<number> {
     const discriminant = derivative[1] ** 2 - 4 * derivative[0] * derivative[2]
 
     // only consider when the discriminant is positive because a
-    // single root means an inflection point which cannot be an extrema
+    // single root means an inflection point in the first derivative,
+    // which cannot be an extrema
     if (discriminant > 0) {
       const sqrtDiscriminant = Math.sqrt(discriminant)
       const denominator = 2 * derivative[0]

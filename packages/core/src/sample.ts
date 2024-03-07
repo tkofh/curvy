@@ -1,5 +1,7 @@
 import invariant from 'tiny-invariant'
-import type { CubicScalars, Curve, CurveSegment } from './types'
+import type { Curve } from './curve'
+import type { CurveSegment } from './segment'
+import type { CubicScalars } from './splines'
 import { round } from './util'
 
 function createSamples(count: number) {
@@ -164,7 +166,7 @@ function enforceMaxError(
   samples.set(queue[0], curve.solve(queue[0]))
 }
 
-type SamplingOptions = {
+export type SamplingOptions = {
   minSamples: number
   maxError: number | false
 }
@@ -220,8 +222,6 @@ export function remapSamplesByLength(samples: Map<number, number>) {
     lengths.set(tValue, totalLength)
     previousT = tValue
   }
-
-  console.log(lengths, totalLength)
 
   const toNormalizedLength = 1 / totalLength
 

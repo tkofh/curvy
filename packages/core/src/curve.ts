@@ -1,5 +1,6 @@
 import invariant from 'tiny-invariant'
 import { createCurveSegment } from './segment'
+import type { CurveSegment, Monotonicity } from './segment'
 import {
   basis,
   bezier,
@@ -12,14 +13,17 @@ import {
   toCatmullRomSegments,
   toHermiteSegments,
 } from './splines'
-import type {
-  CubicScalars,
-  Curve,
-  CurveSegment,
-  Matrix4x4,
-  Monotonicity,
-} from './types'
+import type { CubicScalars, Matrix4x4 } from './splines'
 import { round } from './util'
+
+export type Curve = {
+  readonly monotonicity: Monotonicity
+  readonly extrema: ReadonlyMap<number, number>
+  readonly segments: ReadonlyArray<CurveSegment>
+  readonly min: number
+  readonly max: number
+  readonly solve: (t: number) => number
+}
 
 function filterExtrema(extrema: Map<number, number>) {
   const extremaArray = [...extrema.entries()]
@@ -111,7 +115,7 @@ export function createHermiteCurve(values: Array<number>) {
   return createCurve(hermite, toHermiteSegments(values))
 }
 
-interface CardinalCurveOptions {
+type CardinalCurveOptions = {
   a: number
   duplicateEndpoints: boolean
 }
@@ -134,7 +138,7 @@ export function createCardinalCurve(
   )
 }
 
-interface CatmullRomCurveOptions {
+type CatmullRomCurveOptions = {
   duplicateEndpoints: boolean
 }
 const defaultCatmullRomCurveOptions = {
@@ -155,7 +159,7 @@ export function createCatmullRomCurve(
   )
 }
 
-interface BasisCurveOptions {
+type BasisCurveOptions = {
   triplicateEndpoints: boolean
 }
 const defaultBasisCurveOptions = {

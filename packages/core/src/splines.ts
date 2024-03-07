@@ -1,5 +1,13 @@
 import invariant from 'tiny-invariant'
-import type { CubicScalars, Matrix4x4 } from './types'
+
+export type CubicScalars = readonly [number, number, number, number]
+
+export type Matrix4x4 = readonly [
+  CubicScalars,
+  CubicScalars,
+  CubicScalars,
+  CubicScalars,
+]
 
 export function toCubicScalars(
   values: Array<number>,

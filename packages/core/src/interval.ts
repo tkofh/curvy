@@ -1,17 +1,17 @@
 export type Interval = readonly [number, number]
 
-export interface Node {
+export type Node = {
   interval: Interval
   left: Node | null
   right: Node | null
 }
 
-export interface IntervalTree {
+export type IntervalTree = {
   root: Node
   search: (query: number) => Interval | null
 }
 
-interface TakeCenterIntervalResult {
+type TakeCenterIntervalResult = {
   center: Interval
   left: Array<number> | null
   right: Array<number> | null
