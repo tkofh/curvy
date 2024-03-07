@@ -25,7 +25,12 @@ export function toCubicScalars(
   }
 
   for (let i = 0; i <= values.length - 4; i += stride) {
-    chunks.push([values[i]!, values[i + 1]!, values[i + 2]!, values[i + 3]!])
+    chunks.push([
+      values[i] as number,
+      values[i + 1] as number,
+      values[i + 2] as number,
+      values[i + 3] as number,
+    ])
   }
   return chunks
 }

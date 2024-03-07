@@ -9,6 +9,23 @@ import type {
 } from './types'
 import { round } from './util'
 
+function filterExtrema(extrema: Map<number, number>) {
+  const extremaArray = [...extrema.entries()]
+  for (let index = 1; index < extremaArray.length - 1; index++) {
+    const [t, currentValue] = extremaArray[index]
+
+    const previousValue = extremaArray[index - 1][1]
+    const nextValue = extremaArray[index + 1][1]
+
+    if (
+      (previousValue <= currentValue && currentValue <= nextValue) ||
+      (previousValue >= currentValue && currentValue >= nextValue)
+    ) {
+      extrema.delete(t)
+    }
+  }
+}
+
 export function createCurve(
   matrix: Matrix4x4,
   segmentScalars: Array<CubicScalars>,
@@ -46,20 +63,7 @@ export function createCurve(
   }
 
   if (extrema.size > 2) {
-    const extremaArray = [...extrema.entries()]
-    for (let index = 1; index < extremaArray.length - 1; index++) {
-      const [t, currentValue] = extremaArray[index]!
-
-      const previousValue = extremaArray[index - 1][1]
-      const nextValue = extremaArray[index + 1][1]
-
-      if (
-        (previousValue <= currentValue && currentValue <= nextValue) ||
-        (previousValue >= currentValue && currentValue >= nextValue)
-      ) {
-        extrema.delete(t)
-      }
-    }
+    filterExtrema(extrema)
   }
 
   return {
@@ -71,13 +75,14 @@ export function createCurve(
     solve: (t: number) => {
       invariant(t >= 0 && t <= 1, 't must be between 0 and 1')
 
-      if (t === 1) {
+      const t1 = round(t)
+
+      if (t1 === 1) {
         return segments[segments.length - 1].solve(1)
       }
 
-      const segmentT = round(t * segments.length)
+      const segmentT = round(t1 * segments.length)
       const segmentIndex = Math.floor(segmentT)
-      console.log(segmentT, segmentIndex, segments)
 
       const segment = segments[segmentIndex]
 

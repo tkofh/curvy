@@ -1,3 +1,4 @@
+import { bSpline, bezier, cardinal, catmullRom, hermite } from './splines'
 import type {
   CubicScalars,
   CurveSegment,
@@ -79,7 +80,7 @@ function getMonotonicity(
     return 'constant'
   }
 
-  let test = 0.25 * derivative[0] + 0.5 * derivative[1] + derivative[2]
+  let test = derivative[0] / 4 + derivative[1] / 2 + derivative[2]
   if (test === 0) {
     test = derivative[2]
   }
@@ -94,26 +95,26 @@ export function createCurveSegment(
   const polynomial: CubicScalars = [
     round(
       points[0] * matrix[0][0] +
-        points[1] * matrix[1][0] +
-        points[2] * matrix[2][0] +
-        points[3] * matrix[3][0],
+        points[1] * matrix[0][1] +
+        points[2] * matrix[0][2] +
+        points[3] * matrix[0][3],
     ),
     round(
-      points[0] * matrix[0][1] +
+      points[0] * matrix[1][0] +
         points[1] * matrix[1][1] +
-        points[2] * matrix[2][1] +
-        points[3] * matrix[3][1],
+        points[2] * matrix[1][2] +
+        points[3] * matrix[1][3],
     ),
     round(
-      points[0] * matrix[0][2] +
-        points[1] * matrix[1][2] +
+      points[0] * matrix[2][0] +
+        points[1] * matrix[2][1] +
         points[2] * matrix[2][2] +
-        points[3] * matrix[3][2],
+        points[3] * matrix[2][3],
     ),
     round(
-      points[0] * matrix[0][3] +
-        points[1] * matrix[1][3] +
-        points[2] * matrix[2][3] +
+      points[0] * matrix[3][0] +
+        points[1] * matrix[3][1] +
+        points[2] * matrix[3][2] +
         points[3] * matrix[3][3],
     ),
   ]
@@ -142,14 +143,35 @@ export function createCurveSegment(
     polynomial,
     derivative,
     solve: (t: number) => {
-      const t2 = t * t
-      const t3 = t2 * t
+      const t1 = round(t)
+      const t2 = t1 * t1
+      const t3 = t2 * t1
       return round(
         polynomial[0] * t3 +
           polynomial[1] * t2 +
-          polynomial[2] * t +
+          polynomial[2] * t1 +
           polynomial[3],
       )
     },
   }
+}
+
+export function createBezierSegment(points: CubicScalars) {
+  return createCurveSegment(bezier, points)
+}
+
+export function createHermiteSegment(points: CubicScalars) {
+  return createCurveSegment(hermite, points)
+}
+
+export function createCardinalSegment(points: CubicScalars, tension = 0.5) {
+  return createCurveSegment(cardinal(tension), points)
+}
+
+export function createCatmullRomSegment(points: CubicScalars) {
+  return createCurveSegment(catmullRom, points)
+}
+
+export function createBSplineSegment(points: CubicScalars) {
+  return createCurveSegment(bSpline, points)
 }

@@ -1,11 +1,18 @@
 import { describe, expect, test } from 'vitest'
-import { createCurveSegment } from '../src/segment'
+import {
+  createBSplineSegment,
+  createBezierSegment,
+  createCardinalSegment,
+  createCatmullRomSegment,
+  createCurveSegment,
+  createHermiteSegment,
+} from '../src/segment'
 import { bezier } from '../src/splines'
 import type { CurveSegment } from '../src/types'
 
 // biome-ignore lint/correctness/noUnusedVariables: keeping here for future use
 function logSamples(segment: CurveSegment) {
-  const samples = 10
+  const samples = 11
   console.log(
     Array.from({ length: samples }, (_, i) => segment.solve(i / (samples - 1))),
   )
@@ -158,6 +165,7 @@ describe('min', () => {
   })
 
   test('min is start for [0, 1, 1, 0.5] (upside down u shape with raised end)', () => {
+    console.log(createCurveSegment(bezier, [0, 5, -4, 1]))
     expect(createCurveSegment(bezier, [0, 1, 1, 0.5]).min).toBe(0)
   })
   test('min is middle for [0, -1, -1, 0] (u shape)', () => {
@@ -217,6 +225,51 @@ describe('solve', () => {
   test('solves endpoints', () => {
     const segment = createCurveSegment(bezier, [0, 0, 1, 1])
     expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(1)).toBe(1)
+  })
+})
+
+describe('bezier segment', () => {
+  test('constructs a bezier segment', () => {
+    const segment = createBezierSegment([0, 1, 0, 1])
+    expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(0.5)).toBe(0.5)
+    expect(segment.solve(1)).toBe(1)
+  })
+})
+
+describe('hermite segment', () => {
+  test('constructs a hermite segment', () => {
+    const segment = createHermiteSegment([0, 0, 1, 0])
+    expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(0.5)).toBe(0.5)
+    expect(segment.solve(1)).toBe(1)
+  })
+})
+
+describe('cardinal segment', () => {
+  test('constructs a cardinal segment', () => {
+    const segment = createCardinalSegment([-2, 0, 1, 3], 0.5)
+    expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(0.5)).toBe(0.5)
+    expect(segment.solve(1)).toBe(1)
+  })
+})
+
+describe('catmull rom segment', () => {
+  test('constructs a catmull rom segment', () => {
+    const segment = createCatmullRomSegment([-2, 0, 1, 3])
+    expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(0.5)).toBe(0.5)
+    expect(segment.solve(1)).toBe(1)
+  })
+})
+
+describe('bspline segment', () => {
+  test('constructs a bspline segment', () => {
+    const segment = createBSplineSegment([-1, 0, 1, 2])
+    expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(0.5)).toBe(0.5)
     expect(segment.solve(1)).toBe(1)
   })
 })
