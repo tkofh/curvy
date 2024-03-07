@@ -1,4 +1,4 @@
-import { bSpline, bezier, cardinal, catmullRom, hermite } from './splines'
+import { basis, bezier, cardinal, catmullRom, hermite } from './splines'
 import type {
   CubicScalars,
   CurveSegment,
@@ -172,6 +172,6 @@ export function createCatmullRomSegment(points: CubicScalars) {
   return createCurveSegment(catmullRom, points)
 }
 
-export function createBSplineSegment(points: CubicScalars) {
-  return createCurveSegment(bSpline, points)
+export function createBasisSegment(points: CubicScalars) {
+  return createCurveSegment(basis, points)
 }

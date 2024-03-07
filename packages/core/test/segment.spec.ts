@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
-  createBSplineSegment,
+  createBasisSegment,
   createBezierSegment,
   createCardinalSegment,
   createCatmullRomSegment,
@@ -165,7 +165,6 @@ describe('min', () => {
   })
 
   test('min is start for [0, 1, 1, 0.5] (upside down u shape with raised end)', () => {
-    console.log(createCurveSegment(bezier, [0, 5, -4, 1]))
     expect(createCurveSegment(bezier, [0, 1, 1, 0.5]).min).toBe(0)
   })
   test('min is middle for [0, -1, -1, 0] (u shape)', () => {
@@ -267,7 +266,7 @@ describe('catmull rom segment', () => {
 
 describe('bspline segment', () => {
   test('constructs a bspline segment', () => {
-    const segment = createBSplineSegment([-1, 0, 1, 2])
+    const segment = createBasisSegment([-1, 0, 1, 2])
     expect(segment.solve(0)).toBe(0)
     expect(segment.solve(0.5)).toBe(0.5)
     expect(segment.solve(1)).toBe(1)

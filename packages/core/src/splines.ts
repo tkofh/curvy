@@ -64,8 +64,16 @@ export const cardinal = (a: number): Matrix4x4 => [
   [0, 1, 0, 0],
 ]
 
-export function toCardinalSegments(values: Array<number>) {
-  return toCubicScalars(values, 1)
+export function toCardinalSegments(
+  values: Array<number>,
+  duplicateEndpoints = true,
+) {
+  return toCubicScalars(
+    duplicateEndpoints
+      ? [values[0], ...values, values[values.length - 1]]
+      : values,
+    1,
+  )
 }
 
 export const catmullRom: Matrix4x4 = [
@@ -75,18 +83,40 @@ export const catmullRom: Matrix4x4 = [
   [0, 1, 0, 0],
 ]
 
-export function toCatmullRomSegments(values: Array<number>) {
-  return toCubicScalars(values, 1)
+export function toCatmullRomSegments(
+  values: Array<number>,
+  duplicateEndpoints = true,
+) {
+  return toCubicScalars(
+    duplicateEndpoints
+      ? [values[0], ...values, values[values.length - 1]]
+      : values,
+    1,
+  )
 }
 
 const ONE_SIXTH = 1 / 6
-export const bSpline: Matrix4x4 = [
+export const basis: Matrix4x4 = [
   [-ONE_SIXTH, 0.5, -0.5, ONE_SIXTH],
   [0.5, -1, 0.5, 0],
   [-0.5, 0, 0.5, 0],
   [ONE_SIXTH, 4 * ONE_SIXTH, ONE_SIXTH, 0],
 ]
 
-export function toBSplineSegments(values: Array<number>) {
-  return toCubicScalars(values, 1)
+export function toBasisSegments(
+  values: Array<number>,
+  triplicateEndpoints = true,
+) {
+  return toCubicScalars(
+    triplicateEndpoints
+      ? [
+          values[0],
+          values[0],
+          ...values,
+          values[values.length - 1],
+          values[values.length - 1],
+        ]
+      : values,
+    1,
+  )
 }

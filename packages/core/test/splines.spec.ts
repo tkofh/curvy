@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import {
   cardinal,
-  toBSplineSegments,
+  toBasisSegments,
   toBezierSegments,
   toCardinalSegments,
   toCatmullRomSegments,
@@ -105,58 +105,103 @@ describe('cardinal generator', () => {
 })
 
 describe('toCardinalSegments', () => {
-  test('returns cardinal segments for valid input [0, 1, 2, 3]', () => {
-    expect(toCardinalSegments([0, 1, 2, 3])).toStrictEqual([[0, 1, 2, 3]])
+  test('returns cardinal segments for valid input [0, 1, 2, 3] without duplication', () => {
+    expect(toCardinalSegments([0, 1, 2, 3], false)).toStrictEqual([
+      [0, 1, 2, 3],
+    ])
   })
-  test('returns cardinal segments for valid input [0, 1, 2, 3, 4]', () => {
-    expect(toCardinalSegments([0, 1, 2, 3, 4])).toStrictEqual([
+  test('returns cardinal segments for valid input [0, 1, 2, 3, 4] without duplication', () => {
+    expect(toCardinalSegments([0, 1, 2, 3, 4], false)).toStrictEqual([
       [0, 1, 2, 3],
       [1, 2, 3, 4],
     ])
   })
-  test('returns cardinal segments for valid input [0, 1, 2, 3, 4, 5]', () => {
-    expect(toCardinalSegments([0, 1, 2, 3, 4, 5])).toStrictEqual([
+  test('returns cardinal segments for valid input [0, 1, 2, 3, 4, 5] without duplication', () => {
+    expect(toCardinalSegments([0, 1, 2, 3, 4, 5], false)).toStrictEqual([
       [0, 1, 2, 3],
       [1, 2, 3, 4],
       [2, 3, 4, 5],
+    ])
+  })
+
+  test('returns cardinal segments for valid input [0, 1] with duplication', () => {
+    expect(toCardinalSegments([0, 1], true)).toStrictEqual([[0, 0, 1, 1]])
+  })
+
+  test('returns cardinal segments for valid input [0, 1, 2, 3] with duplication', () => {
+    expect(toCardinalSegments([0, 1, 2, 3], true)).toStrictEqual([
+      [0, 0, 1, 2],
+      [0, 1, 2, 3],
+      [1, 2, 3, 3],
     ])
   })
 })
 
 describe('toCatmullRomSegments', () => {
-  test('returns catmull-rom segments for valid input [0, 1, 2, 3]', () => {
-    expect(toCatmullRomSegments([0, 1, 2, 3])).toStrictEqual([[0, 1, 2, 3]])
+  test('returns catmull-rom segments for valid input [0, 1, 2, 3] without duplication', () => {
+    expect(toCatmullRomSegments([0, 1, 2, 3], false)).toStrictEqual([
+      [0, 1, 2, 3],
+    ])
   })
-  test('returns catmull-rom segments for valid input [0, 1, 2, 3, 4]', () => {
-    expect(toCatmullRomSegments([0, 1, 2, 3, 4])).toStrictEqual([
+  test('returns catmull-rom segments for valid input [0, 1, 2, 3, 4] without duplication', () => {
+    expect(toCatmullRomSegments([0, 1, 2, 3, 4], false)).toStrictEqual([
       [0, 1, 2, 3],
       [1, 2, 3, 4],
     ])
   })
-  test('returns catmull-rom segments for valid input [0, 1, 2, 3, 4, 5]', () => {
-    expect(toCatmullRomSegments([0, 1, 2, 3, 4, 5])).toStrictEqual([
+  test('returns catmull-rom segments for valid input [0, 1, 2, 3, 4, 5] without duplication', () => {
+    expect(toCatmullRomSegments([0, 1, 2, 3, 4, 5], false)).toStrictEqual([
       [0, 1, 2, 3],
       [1, 2, 3, 4],
       [2, 3, 4, 5],
+    ])
+  })
+
+  test('returns catmull-rom segments for valid input [0, 1] with duplication', () => {
+    expect(toCatmullRomSegments([0, 1], true)).toStrictEqual([[0, 0, 1, 1]])
+  })
+
+  test('returns catmull-rom segments for valid input [0, 1, 2, 3] with duplication', () => {
+    expect(toCatmullRomSegments([0, 1, 2, 3], true)).toStrictEqual([
+      [0, 0, 1, 2],
+      [0, 1, 2, 3],
+      [1, 2, 3, 3],
     ])
   })
 })
 
-describe('toBSplineSegments', () => {
-  test('returns b-spline segments for valid input [0, 1, 2, 3]', () => {
-    expect(toBSplineSegments([0, 1, 2, 3])).toStrictEqual([[0, 1, 2, 3]])
+describe('toBasisSegments', () => {
+  test('returns basis segments for valid input [0, 1, 2, 3] without triplication', () => {
+    expect(toBasisSegments([0, 1, 2, 3], false)).toStrictEqual([[0, 1, 2, 3]])
   })
-  test('returns b-spline segments for valid input [0, 1, 2, 3, 4]', () => {
-    expect(toBSplineSegments([0, 1, 2, 3, 4])).toStrictEqual([
+  test('returns basis segments for valid input [0, 1, 2, 3, 4] without triplication', () => {
+    expect(toBasisSegments([0, 1, 2, 3, 4], false)).toStrictEqual([
       [0, 1, 2, 3],
       [1, 2, 3, 4],
     ])
   })
-  test('returns b-spline segments for valid input [0, 1, 2, 3, 4, 5]', () => {
-    expect(toBSplineSegments([0, 1, 2, 3, 4, 5])).toStrictEqual([
+  test('returns basis segments for valid input [0, 1, 2, 3, 4, 5] without triplication', () => {
+    expect(toBasisSegments([0, 1, 2, 3, 4, 5], false)).toStrictEqual([
       [0, 1, 2, 3],
       [1, 2, 3, 4],
       [2, 3, 4, 5],
+    ])
+  })
+
+  test('returns basis segments for valid input [0] with triplication', () => {
+    expect(toBasisSegments([0], true)).toStrictEqual([
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ])
+  })
+
+  test('returns basis segments for valid input [0, 1, 2, 3] with triplication', () => {
+    expect(toBasisSegments([0, 1, 2, 3], true)).toStrictEqual([
+      [0, 0, 0, 1],
+      [0, 0, 1, 2],
+      [0, 1, 2, 3],
+      [1, 2, 3, 3],
+      [2, 3, 3, 3],
     ])
   })
 })

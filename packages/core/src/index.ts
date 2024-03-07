@@ -1,19 +1,33 @@
 /* c8 ignore start */
 export {
-  bSpline,
+  basis,
   bezier,
   cardinal,
   catmullRom,
   hermite,
-  toBSplineSegments,
+  toBasisSegments,
   toBezierSegments,
   toCardinalSegments,
   toCatmullRomSegments,
   toHermiteSegments,
   toCubicScalars,
 } from './splines'
-export { createCurve } from './curve'
-export { createCurveSegment } from './segment'
+export {
+  createCurve,
+  createBasisCurve,
+  createBezierCurve,
+  createCardinalCurve,
+  createCatmullRomCurve,
+  createHermiteCurve,
+} from './curve'
+export {
+  createCurveSegment,
+  createBasisSegment,
+  createBezierSegment,
+  createCardinalSegment,
+  createCatmullRomSegment,
+  createHermiteSegment,
+} from './segment'
 export type {
   CubicScalars,
   Curve,

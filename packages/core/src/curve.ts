@@ -1,5 +1,17 @@
 import invariant from 'tiny-invariant'
 import { createCurveSegment } from './segment'
+import {
+  basis,
+  bezier,
+  cardinal,
+  catmullRom,
+  hermite,
+  toBasisSegments,
+  toBezierSegments,
+  toCardinalSegments,
+  toCatmullRomSegments,
+  toHermiteSegments,
+} from './splines'
 import type {
   CubicScalars,
   Curve,
@@ -89,4 +101,74 @@ export function createCurve(
       return segment.solve(segmentT - segmentIndex)
     },
   }
+}
+
+export function createBezierCurve(values: Array<number>) {
+  return createCurve(bezier, toBezierSegments(values))
+}
+
+export function createHermiteCurve(values: Array<number>) {
+  return createCurve(hermite, toHermiteSegments(values))
+}
+
+interface CardinalCurveOptions {
+  a: number
+  duplicateEndpoints: boolean
+}
+const defaultCardinalCurveOptions = {
+  a: 0.5,
+  duplicateEndpoints: true,
+} satisfies CardinalCurveOptions
+
+export function createCardinalCurve(
+  values: Array<number>,
+  options: Partial<CardinalCurveOptions> = {},
+) {
+  const { a, duplicateEndpoints } = {
+    ...defaultCardinalCurveOptions,
+    ...options,
+  }
+  return createCurve(
+    cardinal(a),
+    toCardinalSegments(values, duplicateEndpoints),
+  )
+}
+
+interface CatmullRomCurveOptions {
+  duplicateEndpoints: boolean
+}
+const defaultCatmullRomCurveOptions = {
+  duplicateEndpoints: true,
+} satisfies CatmullRomCurveOptions
+
+export function createCatmullRomCurve(
+  values: Array<number>,
+  options: Partial<CatmullRomCurveOptions> = {},
+) {
+  const { duplicateEndpoints } = {
+    ...defaultCatmullRomCurveOptions,
+    ...options,
+  }
+  return createCurve(
+    catmullRom,
+    toCatmullRomSegments(values, duplicateEndpoints),
+  )
+}
+
+interface BasisCurveOptions {
+  triplicateEndpoints: boolean
+}
+const defaultBasisCurveOptions = {
+  triplicateEndpoints: true,
+} satisfies BasisCurveOptions
+
+export function createBasisCurve(
+  values: Array<number>,
+  options: Partial<BasisCurveOptions> = {},
+) {
+  const { triplicateEndpoints } = {
+    ...defaultBasisCurveOptions,
+    ...options,
+  }
+  return createCurve(basis, toBasisSegments(values, triplicateEndpoints))
 }

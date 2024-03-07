@@ -1,3 +1,4 @@
+import invariant from 'tiny-invariant'
 import type { CubicScalars, Curve, CurveSegment } from './types'
 import { round } from './util'
 
@@ -20,13 +21,15 @@ function cubicRootsInUnitInterval(polynomial: CubicScalars) {
 
   if (discriminant > 0) {
     const a = Math.cbrt(Math.abs(r) + Math.sqrt(discriminant))
+
+    /* c8 ignore next */
     const t = r < 0 ? q / a - a : a - q / a
     const root = round(t - a2 / 3)
     if (0 <= root && root <= 1) {
       roots.add(root)
     }
   } else {
-    const theta = q === 0 ? 0 : Math.acos(r / Math.sqrt((-q) ** 3))
+    const theta = Math.acos(r / Math.sqrt((-q) ** 3))
     const theta1 = theta / 3
     const theta2 = theta1 - (2 * Math.PI) / 3
     const theta3 = theta1 + (2 * Math.PI) / 3
@@ -52,16 +55,6 @@ function cubicRootsInUnitInterval(polynomial: CubicScalars) {
   return roots
 }
 
-type LookupTableOptions = {
-  minSamples: number
-  maxError: number
-}
-
-const defaultOptions: LookupTableOptions = {
-  minSamples: 33,
-  maxError: 0.01,
-}
-
 function addPointsOfInterest(samples: Map<number, number>, curve: Curve) {
   const segmentToNormalized = 1 / curve.segments.length
   for (const [index, segment] of curve.segments.entries()) {
@@ -79,15 +72,16 @@ function addPointsOfInterest(samples: Map<number, number>, curve: Curve) {
     const extrema = Array.from(segment.localExtrema.entries())
 
     for (const [t, extreme] of extrema) {
-      samples.set((index + t) * segmentToNormalized, extreme)
+      samples.set(round((index + t) * segmentToNormalized), extreme)
     }
 
     if (extrema.length === 4) {
       const segmentInflectionX = (extrema[1][0] + extrema[2][0]) / 2
       const segmentInflectionY = (extrema[1][1] + extrema[2][1]) / 2
+
       samples.set(
-        (index + segmentInflectionX) * segmentToNormalized,
-        segmentInflectionY,
+        round((index + segmentInflectionX) * segmentToNormalized),
+        round(segmentInflectionY),
       )
     }
 
@@ -95,7 +89,7 @@ function addPointsOfInterest(samples: Map<number, number>, curve: Curve) {
     // produce incorrect areas
     const roots = cubicRootsInUnitInterval(segment.polynomial)
     for (const root of roots) {
-      samples.set((index + root) * segmentToNormalized, 0)
+      samples.set(round((index + root) * segmentToNormalized), 0)
     }
     samples.set(
       (index + 1) * segmentToNormalized,
@@ -113,7 +107,10 @@ function getLookupTableIntegral(
   const m = (y2 - y1) / (x2 - x1)
   const b = y1 - m * x1
 
-  return Math.abs((x2 ** 2 * m) / 2 + b * x2 - (x1 ** 2 * m) / 2 - b * x1)
+  const s1 = (x1 ** 2 * m) / 2 + b * x1
+  const s2 = (x2 ** 2 * m) / 2 + b * x2
+
+  return Math.abs(s2 - s1)
 }
 
 function getCurveSegmentIntegral(
@@ -126,16 +123,16 @@ function getCurveSegmentIntegral(
   const c = segment.polynomial[2] / 2
   const d = segment.polynomial[3]
 
-  const y1 = a * start ** 4 + b * start ** 3 + c * start ** 2 + d * start
-  const y2 = a * end ** 4 + b * end ** 3 + c * end ** 2 + d * end
+  const s1 = a * start ** 4 + b * start ** 3 + c * start ** 2 + d * start
+  const s2 = a * end ** 4 + b * end ** 3 + c * end ** 2 + d * end
 
-  return Math.abs(y2 - y1)
+  return Math.abs(s2 - s1)
 }
 
 function enforceMaxError(
   curve: Curve,
   samples: Map<number, number>,
-  options: LookupTableOptions,
+  maxError: number,
 ) {
   const intervalBoundaries = Array.from(samples.keys()).sort((a, b) => a - b)
 
@@ -157,7 +154,7 @@ function enforceMaxError(
 
     const error = Math.abs(lutIntegral - curveIntegral)
 
-    if (error > options.maxError) {
+    if (error > maxError) {
       queue.splice(1, 0, (start + end) / 2)
     } else {
       samples.set(start, y1)
@@ -167,23 +164,37 @@ function enforceMaxError(
   samples.set(queue[0], curve.solve(queue[0]))
 }
 
-function sampleCurve(
+type SamplingOptions = {
+  minSamples: number
+  maxError: number | false
+}
+
+const defaultOptions: SamplingOptions = {
+  minSamples: 33,
+  maxError: 0.01,
+}
+
+export function sampleCurve(
   curve: Curve,
-  options: LookupTableOptions,
+  options: Partial<SamplingOptions> = {},
 ): Map<number, number> {
-  const { minSamples, maxError } = options
+  const { minSamples, maxError } = { ...defaultOptions, ...options }
+
+  invariant(minSamples >= 2, 'minSamples must be at least 2')
+  invariant(
+    maxError === false || maxError > 0,
+    'maxError must be positive or false',
+  )
 
   const samples = new Map<number, number>()
 
-  for (const t of createSamples(Math.max(minSamples, 2))) {
+  for (const t of createSamples(minSamples)) {
     samples.set(t, curve.solve(t))
   }
 
-  if (maxError > 0) {
+  if (maxError !== false) {
     addPointsOfInterest(samples, curve)
-
-    console.log(samples)
-    enforceMaxError(curve, samples, options)
+    enforceMaxError(curve, samples, maxError)
   }
 
   const sortedKeys = Array.from(samples.keys()).sort((a, b) => a - b)
@@ -191,12 +202,36 @@ function sampleCurve(
   return new Map(sortedKeys.map((key) => [key, samples.get(key) as number]))
 }
 
-export function createLookupTable(
-  curve: Curve,
-  options?: Partial<LookupTableOptions>,
-) {
-  const mergedOptions = { ...defaultOptions, ...options }
+export function remapSamplesByLength(samples: Map<number, number>) {
+  let totalLength = 0
 
-  const _samples = sampleCurve(curve, mergedOptions)
-  // const
+  const lengths = new Map<number, number>()
+
+  let previousT: number | null = null
+  for (const tValue of samples.keys()) {
+    if (previousT !== null) {
+      const yValue = samples.get(tValue) as number
+      const previousYValue = samples.get(previousT) as number
+      const length = Math.sqrt(
+        (tValue - previousT) ** 2 + (yValue - previousYValue) ** 2,
+      )
+      totalLength += length
+    }
+    lengths.set(tValue, totalLength)
+    previousT = tValue
+  }
+
+  console.log(lengths, totalLength)
+
+  const toNormalizedLength = 1 / totalLength
+
+  const remappedSamples = new Map<number, number>()
+  for (const [t, length] of lengths.entries()) {
+    remappedSamples.set(
+      round(length * toNormalizedLength),
+      samples.get(t) as number,
+    )
+  }
+
+  return remappedSamples
 }

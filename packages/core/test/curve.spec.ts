@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'vitest'
-import { createCurve } from '../src/curve'
+import {
+  createBasisCurve,
+  createBezierCurve,
+  createCardinalCurve,
+  createCatmullRomCurve,
+  createCurve,
+  createHermiteCurve,
+} from '../src/curve'
 import { bezier, toBezierSegments } from '../src/splines'
 
 describe('monotonicity', () => {
@@ -123,5 +130,53 @@ describe('solve', () => {
     expect(
       createCurve(bezier, toBezierSegments([0, 1, 2, 3, 4, 5, 6])).solve(1),
     ).toEqual(6)
+  })
+})
+
+describe('bezier segment', () => {
+  test('constructs a bezier segment', () => {
+    const segment = createBezierCurve([0, 1, 0, 1])
+    expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(0.5)).toBe(0.5)
+    expect(segment.solve(1)).toBe(1)
+  })
+})
+
+describe('hermite curve', () => {
+  test('constructs a hermite curve', () => {
+    const segment = createHermiteCurve([0, 0, 1, 0])
+    expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(0.5)).toBe(0.5)
+    expect(segment.solve(1)).toBe(1)
+  })
+})
+
+describe('cardinal curve', () => {
+  test('constructs a cardinal curve', () => {
+    const segment = createCardinalCurve([0, 1], {
+      a: 0.5,
+      duplicateEndpoints: true,
+    })
+    expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(0.5)).toBe(0.5)
+    expect(segment.solve(1)).toBe(1)
+  })
+})
+
+describe('catmull rom curve', () => {
+  test('constructs a catmull rom curve', () => {
+    const segment = createCatmullRomCurve([0, 1], { duplicateEndpoints: true })
+    expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(0.5)).toBe(0.5)
+    expect(segment.solve(1)).toBe(1)
+  })
+})
+
+describe('bspline curve', () => {
+  test('constructs a basis curve', () => {
+    const segment = createBasisCurve([0, 1], { triplicateEndpoints: true })
+    expect(segment.solve(0)).toBe(0)
+    expect(segment.solve(0.5)).toBe(0.5)
+    expect(segment.solve(1)).toBe(1)
   })
 })
