@@ -3,6 +3,7 @@ import { getPositionScalars } from './segment'
 import type { CubicScalars, Matrix4x4 } from './splines'
 import { round } from './util'
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: this is a complex algorithm
 function determinant(matrix: ReadonlyArray<ReadonlyArray<number>>) {
   const size = matrix.length
 
