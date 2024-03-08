@@ -1,14 +1,20 @@
-import type { BaseAxes, CubicPoints, Matrix4x4, Monotonicity } from '@curvy/types'
+import type {
+  BaseAxes,
+  CubicPoints,
+  Matrix4x4,
+  Monotonicity,
+} from '@curvy/types'
 import { polynomial, quadraticRoots } from 'micro-math'
 import type { QuadraticScalars } from './types'
 
-export const computeMonotonicity = <TAxis extends BaseAxes>(
-  points: CubicPoints<TAxis>,
-  identityMatrix: Matrix4x4
-): Monotonicity<TAxis> => {
-  const axes = new Set(Object.keys(points[0]) as TAxis[])
+export const computeMonotonicity = <Axis extends BaseAxes>(
+  points: CubicPoints<Axis>,
+  identityMatrix: Matrix4x4,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: not dealing w this
+): Monotonicity<Axis> => {
+  const axes = new Set(Object.keys(points[0]) as Array<Axis>)
 
-  const monotonicity = {} as Monotonicity<TAxis>
+  const monotonicity = {} as Monotonicity<Axis>
 
   for (const axis of axes) {
     const primeScalars: QuadraticScalars = [

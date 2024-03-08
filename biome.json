@@ -1,0 +1,78 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "warn",
+        "useSimplifiedLogicExpression": "warn"
+      },
+      "correctness": {
+        "noNewSymbol": "error",
+        "noUnusedVariables": "warn"
+      },
+      "style": {
+        "noDefaultExport": "error",
+        "noNamespace": "error",
+        "useCollapsedElseIf": "error",
+        "useBlockStatements": "error",
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": false
+          }
+        }
+      },
+      "suspicious": {
+        "noApproximativeNumericConstant": "error"
+      },
+      "nursery": {
+        "useImportType": "error",
+        "useExportType": "error",
+        "useGroupedTypeImport": "error",
+        "useConsistentArrayType": {
+          "level": "error",
+          "options": {
+            "syntax": "generic"
+          }
+        },
+        "noUselessTernary": "warn",
+        "noUnusedImports": "error"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "asNeeded",
+      "quoteStyle": "single"
+    }
+  },
+  "overrides": [
+    {
+      "include": ["*.config.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    }
+  ]
+}

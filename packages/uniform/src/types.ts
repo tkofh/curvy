@@ -1,18 +1,18 @@
 import type { BaseAxes, Point } from '@curvy/types'
 
-export interface LUTEntry<TAxis extends BaseAxes> {
+export interface LUTEntry<Axis extends BaseAxes> {
   length: number
   t: number
-  value: Point<TAxis>
+  value: Point<Axis>
 }
 
-export interface LUTRange<TAxis extends BaseAxes> {
-  start: LUTEntry<TAxis>
-  end: LUTEntry<TAxis>
+export interface LUTRange<Axis extends BaseAxes> {
+  start: LUTEntry<Axis>
+  end: LUTEntry<Axis>
 
-  max: Point<TAxis>
+  max: Point<Axis>
 
-  min: Point<TAxis>
+  min: Point<Axis>
 }
 
 export type CubicScalars = [number, number, number, number]

@@ -8,12 +8,12 @@ export type Matrix4x4 = [
   [number, number, number, number],
   [number, number, number, number],
   [number, number, number, number],
-  [number, number, number, number]
+  [number, number, number, number],
 ]
 
 export type ReadonlyMatrix4x4 = readonly [
   readonly [number, number, number, number],
   readonly [number, number, number, number],
   readonly [number, number, number, number],
-  readonly [number, number, number, number]
+  readonly [number, number, number, number],
 ]

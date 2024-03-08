@@ -1,11 +1,11 @@
+import type { CubicPoints } from '@curvy/types'
 import {
-  bezier,
   bSpline,
+  bezier,
   convertControlPoints,
   createCubicUniformSpline,
   hermite,
 } from '@curvy/uniform'
-import type { CubicPoints } from '@curvy/types'
 import { drawSplineSVG } from '../src'
 
 window.addEventListener('load', () => {
@@ -20,11 +20,11 @@ window.addEventListener('load', () => {
 
   const spline2 = createCubicUniformSpline(
     [convertControlPoints(points, bezier, hermite, 0)],
-    hermite
+    hermite,
   )
   const spline3 = createCubicUniformSpline(
     [convertControlPoints(points, bezier, bSpline, 0)],
-    bSpline
+    bSpline,
   )
 
   console.log(spline.solveT(0.3))
@@ -33,6 +33,7 @@ window.addEventListener('load', () => {
 
   console.log({ spline, spline2, spline3 })
 
+  // biome-ignore lint/style/noNonNullAssertion: we know its there
   document.querySelector('#app')!.innerHTML =
     drawSplineSVG(spline, {
       strategy: 'sample',

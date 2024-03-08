@@ -1,7 +1,8 @@
-import type { BaseAxes, ReadonlyCubicPoints } from './points'
 import type { CubicCurve } from './curve'
+import type { BaseAxes, ReadonlyCubicPoints } from './points'
 
-export interface CubicSpline<TAxis extends BaseAxes> extends Omit<CubicCurve<TAxis>, 'points'> {
-  readonly points: ReadonlyArray<ReadonlyCubicPoints<TAxis>>
-  readonly curves: ReadonlyArray<CubicCurve<TAxis>>
+export interface CubicSpline<Axis extends BaseAxes>
+  extends Omit<CubicCurve<Axis>, 'points'> {
+  readonly points: ReadonlyArray<ReadonlyCubicPoints<Axis>>
+  readonly curves: ReadonlyArray<CubicCurve<Axis>>
 }

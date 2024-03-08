@@ -9,7 +9,7 @@ describe('bezier builder', () => {
         { x: 0, y: 1 },
         { x: 1, y: 1 },
         { x: 1, y: 0 },
-      ]).brokenTo({ x: 0, y: 0 }, { x: 0, y: -1 }, { x: 1, y: -1 }).points
+      ]).brokenTo({ x: 0, y: 0 }, { x: 0, y: -1 }, { x: 1, y: -1 }).points,
     ).toStrictEqual([
       { x: 0, y: 0 },
       { x: 0, y: 1 },
@@ -28,7 +28,7 @@ describe('bezier builder', () => {
         { x: 0, y: 1 },
         { x: 1, y: 1 },
         { x: 1, y: 0 },
-      ]).asymmetricTo(1.5, { x: 2, y: -1.5 }, { x: 2, y: 0 }).points
+      ]).asymmetricTo(1.5, { x: 2, y: -1.5 }, { x: 2, y: 0 }).points,
     ).toStrictEqual([
       { x: 0, y: 0 },
       { x: 0, y: 1 },
@@ -47,7 +47,7 @@ describe('bezier builder', () => {
         { x: 0, y: 1 },
         { x: 1, y: 1 },
         { x: 1, y: 0 },
-      ]).symmetricTo({ x: 2, y: -1 }, { x: 2, y: 0 }).points
+      ]).symmetricTo({ x: 2, y: -1 }, { x: 2, y: 0 }).points,
     ).toStrictEqual([
       { x: 0, y: 0 },
       { x: 0, y: 1 },
