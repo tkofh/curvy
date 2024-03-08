@@ -11,7 +11,6 @@
     "moduleDetection": "force",
     "moduleResolution": "Bundler",
     "noImplicitAny": true,
-    "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
