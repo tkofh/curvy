@@ -34,7 +34,7 @@
   "bugs": {
     "url": "https://github.com/tkofh/curvy/issues"
   },
-  "gitHead": "ec3a68c0043ce7ddc7df99eb597a6af0c42e170a",
+  "gitHead": "ffbbbb9bd151e45b05f903c38ef1d69b180e74e8",
   "devDependencies": {
     "unbuild": "^1.2.1"
   }

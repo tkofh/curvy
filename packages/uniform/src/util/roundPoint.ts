@@ -7,7 +7,7 @@ export const roundPoint = <Axis extends BaseAxes>(
 ): Point<Axis> => {
   const rounded: Point<Axis> = { ...point }
   for (const key in rounded) {
-    if (Object.hasOwn(rounded, key)) {
+    if (key in rounded) {
       rounded[key] = roundTo(rounded[key], precision[key])
     }
   }

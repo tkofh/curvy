@@ -38,8 +38,8 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/types": "workspace:*",
-    "@curvy/uniform": "workspace:*"
+    "@curvy/types": "0.8.1",
+    "@curvy/uniform": "0.8.1"
   },
   "devDependencies": {
     "@vitest/ui": "^0.30.1",
@@ -47,5 +47,5 @@
     "unbuild": "^1.2.1",
     "vitest": "^0.30.1"
   },
-  "gitHead": "ec3a68c0043ce7ddc7df99eb597a6af0c42e170a"
+  "gitHead": "ffbbbb9bd151e45b05f903c38ef1d69b180e74e8"
 }

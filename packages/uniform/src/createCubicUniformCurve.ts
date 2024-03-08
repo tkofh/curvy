@@ -305,7 +305,8 @@ export const createCubicUniformCurve = <Axis extends BaseAxes>(
     let result: Point<Axis> | undefined
     if (cachedResult) {
       result = cachedResult
-    } else if (length >= 0 && length <= lutTail?.length) {
+      // biome-ignore lint/style/noNonNullAssertion: we know its there
+    } else if (length >= 0 && length <= lutTail!.length) {
       for (const { start, end } of lut.values()) {
         result =
           start.length === length
@@ -398,7 +399,8 @@ export const createCubicUniformCurve = <Axis extends BaseAxes>(
     monotonicity,
     axes,
     precision: normalizedPrecision,
-    length: lutTail?.length,
+    // biome-ignore lint/style/noNonNullAssertion: we know its there
+    length: lutTail!.length,
     trySolve,
     solve,
     trySolveLength,

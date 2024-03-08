@@ -37,9 +37,9 @@ export const hashBounds = <Axis extends BaseAxes>(
   const axes = Object.keys(bounds).sort() as Array<keyof Partial<Bounds<Axis>>>
   for (const axis of axes) {
     // biome-ignore lint/style/noNonNullAssertion: we know its there
-    const hasMin = Object.hasOwn(bounds[axis]!, 'min')
+    const hasMin = 'min' in bounds[axis]!
     // biome-ignore lint/style/noNonNullAssertion: we know its there
-    const hasMax = Object.hasOwn(bounds[axis]!, 'max')
+    const hasMax = 'max' in bounds[axis]!
     if (hasMin || hasMax) {
       bits.push(axis)
       if (hasMin) {
@@ -65,7 +65,7 @@ export const mergeBounds = <Axis extends BaseAxes>(
     result[axis] = Object.assign(
       {},
       defaults[axis],
-      Object.hasOwn(bounds, axis) ? bounds[axis] : {},
+      axis in bounds ? bounds[axis] : {},
     )
   }
 
@@ -82,12 +82,12 @@ export const roundBounds = <Axis extends BaseAxes>(
   >) {
     output[axis] = {} as Range
     // biome-ignore lint/style/noNonNullAssertion: we know its there
-    if (Object.hasOwn(bounds[axis]!, 'min')) {
+    if ('min' in bounds[axis]!) {
       // biome-ignore lint/style/noNonNullAssertion: we know its there
       output[axis]!.min = roundTo(bounds[axis]!.min, precision[axis])
     }
     // biome-ignore lint/style/noNonNullAssertion: we know its there
-    if (Object.hasOwn(bounds[axis]!, 'max')) {
+    if ('max' in bounds[axis]!) {
       // biome-ignore lint/style/noNonNullAssertion: we know its there
       output[axis]!.max = roundTo(bounds[axis]!.max, precision[axis])
     }
