@@ -1,6 +1,6 @@
 {
   "name": "@curvy/hermite",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Hermite curve implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
@@ -38,8 +38,8 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/types": "0.8.1",
-    "@curvy/uniform": "0.8.1"
+    "@curvy/types": "0.8.2",
+    "@curvy/uniform": "0.8.2"
   },
   "devDependencies": {
     "@vitest/ui": "^0.30.1",
