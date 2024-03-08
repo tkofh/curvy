@@ -23,6 +23,7 @@ export type Curve = {
   readonly min: number
   readonly max: number
   readonly solve: (t: number) => number
+  readonly velocity: (t: number) => number
 }
 
 function filterExtrema(extrema: Map<number, number>) {
@@ -39,6 +40,33 @@ function filterExtrema(extrema: Map<number, number>) {
     ) {
       extrema.delete(t)
     }
+  }
+}
+
+function getSegmentAndT(
+  segments: ReadonlyArray<CurveSegment>,
+  t: number,
+): { segment: CurveSegment; t: number } {
+  invariant(t >= 0 && t <= 1, 't must be between 0 and 1')
+
+  const rounded = round(t)
+
+  if (rounded === 1) {
+    return {
+      segment: segments[segments.length - 1],
+      t: 1,
+    }
+  }
+
+  const denormalized = t * segments.length
+
+  const index = Math.floor(denormalized)
+  const segment = segments[index]
+  const localT = denormalized - index
+
+  return {
+    segment,
+    t: localT,
   }
 }
 
@@ -82,28 +110,24 @@ export function createCurve(
     filterExtrema(extrema)
   }
 
+  function solve(t: number): number {
+    const { segment, t: localT } = getSegmentAndT(segments, t)
+    return segment.solve(localT)
+  }
+
+  function velocity(t: number): number {
+    const { segment, t: localT } = getSegmentAndT(segments, t)
+    return segment.velocity(localT)
+  }
+
   return {
     extrema,
     max,
     min,
     monotonicity,
     segments,
-    solve: (t: number) => {
-      invariant(t >= 0 && t <= 1, 't must be between 0 and 1')
-
-      const t1 = round(t)
-
-      if (t1 === 1) {
-        return segments[segments.length - 1].solve(1)
-      }
-
-      const segmentT = round(t1 * segments.length)
-      const segmentIndex = Math.floor(segmentT)
-
-      const segment = segments[segmentIndex]
-
-      return segment.solve(segmentT - segmentIndex)
-    },
+    solve,
+    velocity,
   }
 }
 

@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant'
-import { getPolynomial } from './segment'
+import { getPositionScalars } from './segment'
 import type { CubicScalars, Matrix4x4 } from './splines'
 import { round } from './util'
 
@@ -75,7 +75,7 @@ export function convertScalars(
 ): CubicScalars {
   const solutions = solveLinearSystem(
     targetSpline,
-    getPolynomial(sourceSpline, points),
+    getPositionScalars(sourceSpline, points),
   )
 
   return [

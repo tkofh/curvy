@@ -8,15 +8,6 @@ import {
   createHermiteSegment,
 } from '../src/segment'
 import { bezier } from '../src/splines'
-import type { CurveSegment } from '../src/types'
-
-// biome-ignore lint/correctness/noUnusedVariables: keeping here for future use
-function logSamples(segment: CurveSegment) {
-  const samples = 11
-  console.log(
-    Array.from({ length: samples }, (_, i) => segment.solve(i / (samples - 1))),
-  )
-}
 
 describe('monotonicity', () => {
   test('constant for [0, 0, 0, 0] (horizontal line at y=0)', () => {

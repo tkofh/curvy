@@ -9,14 +9,15 @@ export type CurveSegment = {
   readonly monotonicity: Monotonicity
   readonly localExtrema: ReadonlyMap<number, number>
   readonly points: CubicScalars
-  readonly polynomial: CubicScalars
-  readonly derivative: QuadraticScalars
+  readonly positionScalars: CubicScalars
+  readonly velocityScalars: QuadraticScalars
   readonly min: number
   readonly max: number
   readonly solve: (t: number) => number
+  readonly velocity: (t: number) => number
 }
 
-function getDerivativeUnitRoots(derivative: QuadraticScalars): Set<number> {
+function getVelocityUnitRoots(derivative: QuadraticScalars): Set<number> {
   const roots = new Set<number>()
 
   if (derivative[0] !== 0) {
@@ -49,29 +50,34 @@ function getDerivativeUnitRoots(derivative: QuadraticScalars): Set<number> {
 }
 
 function getLocalExtrema(
-  derivativeRoots: Set<number>,
-  polynomial: CubicScalars,
+  velocityRoots: Set<number>,
+  positionScalars: CubicScalars,
 ): Map<number, number> {
   const localExtrema = new Map<number, number>()
-  localExtrema.set(0, polynomial[3])
+  localExtrema.set(0, positionScalars[3])
 
-  for (const root of derivativeRoots) {
+  for (const root of velocityRoots) {
     const t2 = root * root
     const t3 = t2 * root
     localExtrema.set(
       root,
       round(
-        polynomial[0] * t3 +
-          polynomial[1] * t2 +
-          polynomial[2] * root +
-          polynomial[3],
+        positionScalars[0] * t3 +
+          positionScalars[1] * t2 +
+          positionScalars[2] * root +
+          positionScalars[3],
       ),
     )
   }
 
   localExtrema.set(
     1,
-    round(polynomial[0] + polynomial[1] + polynomial[2] + polynomial[3]),
+    round(
+      positionScalars[0] +
+        positionScalars[1] +
+        positionScalars[2] +
+        positionScalars[3],
+    ),
   )
 
   return localExtrema
@@ -97,7 +103,7 @@ function getMonotonicity(
   return Math.sign(test) > 0 ? 'increasing' : 'decreasing'
 }
 
-export function getPolynomial(
+export function getPositionScalars(
   matrix: Matrix4x4,
   points: CubicScalars,
 ): CubicScalars {
@@ -133,22 +139,42 @@ export function createCurveSegment(
   matrix: Matrix4x4,
   points: CubicScalars,
 ): CurveSegment {
-  const polynomial = getPolynomial(matrix, points)
+  const positionScalars = getPositionScalars(matrix, points)
 
-  const derivative: QuadraticScalars = [
-    round(polynomial[0] * 3),
-    round(polynomial[1] * 2),
-    polynomial[2],
+  const velocityScalars: QuadraticScalars = [
+    round(positionScalars[0] * 3),
+    round(positionScalars[1] * 2),
+    positionScalars[2],
   ]
 
-  const derivativeRoots = getDerivativeUnitRoots(derivative)
+  const velocityRoots = getVelocityUnitRoots(velocityScalars)
 
-  const localExtrema = getLocalExtrema(derivativeRoots, polynomial)
+  const localExtrema = getLocalExtrema(velocityRoots, positionScalars)
 
   const max = Math.max(...localExtrema.values())
   const min = Math.min(...localExtrema.values())
 
-  const monotonicity = getMonotonicity(localExtrema, derivative)
+  const monotonicity = getMonotonicity(localExtrema, velocityScalars)
+
+  function solve(t: number): number {
+    const t1 = round(t)
+    const t2 = t1 * t1
+    const t3 = t2 * t1
+    return round(
+      positionScalars[0] * t3 +
+        positionScalars[1] * t2 +
+        positionScalars[2] * t1 +
+        positionScalars[3],
+    )
+  }
+
+  function velocity(t: number): number {
+    const t1 = round(t)
+    const t2 = t1 * t1
+    return round(
+      velocityScalars[0] * t2 + velocityScalars[1] * t1 + velocityScalars[2],
+    )
+  }
 
   return {
     localExtrema,
@@ -156,19 +182,10 @@ export function createCurveSegment(
     max,
     min,
     points,
-    polynomial,
-    derivative,
-    solve: (t: number) => {
-      const t1 = round(t)
-      const t2 = t1 * t1
-      const t3 = t2 * t1
-      return round(
-        polynomial[0] * t3 +
-          polynomial[1] * t2 +
-          polynomial[2] * t1 +
-          polynomial[3],
-      )
-    },
+    positionScalars,
+    velocityScalars,
+    solve,
+    velocity,
   }
 }
 

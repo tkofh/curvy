@@ -2,20 +2,13 @@ import invariant from 'tiny-invariant'
 import type { Curve } from './curve'
 import { createIntervalTree } from './interval'
 import { createLengthLookup } from './sample'
-import type { LengthLookupOptions } from './sample'
 import { remap, round } from './util'
 
-type Prettify<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
-
-type SolverOptions = Prettify<
-  LengthLookupOptions & {
-    lengthAdjust: number
-  }
->
+type SolverOptions = {
+  lengthAdjust: number
+}
 
 const defaultSolverOptions: SolverOptions = {
-  minSamples: 64,
-  maxError: 0.001,
   lengthAdjust: 1,
 }
 
@@ -23,23 +16,29 @@ export function createSolver(
   curve: Curve,
   options: Partial<SolverOptions> = {},
 ) {
-  const {
-    maxError,
-    minSamples,
-    lengthAdjust: defaultLengthAdjust,
-  } = {
+  const { lengthAdjust: defaultLengthAdjust } = {
     ...defaultSolverOptions,
     ...options,
   }
 
-  const lengthSamples = createLengthLookup(curve, { maxError, minSamples })
+  const lengthSamples = createLengthLookup(curve)
 
   const { search } = createIntervalTree(Array.from(lengthSamples.keys()))
 
-  return function solve(input: number, lengthAdjust = defaultLengthAdjust) {
+  function solve(input: number, lengthAdjust = defaultLengthAdjust) {
     const query = round(input)
 
+    invariant(typeof query === 'number', 'input must be a number')
     invariant(query >= 0 && query <= 1, 'input must be between 0 and 1')
+
+    invariant(
+      typeof lengthAdjust === 'number',
+      'lengthAddjust must be a number',
+    )
+    invariant(
+      lengthAdjust >= 0 && lengthAdjust <= 1,
+      'lengthAddjust must be between 0 and 1',
+    )
 
     let t!: number
 
@@ -63,6 +62,11 @@ export function createSolver(
       }
     }
 
-    return curve.solve(t)
+    return { input: t, output: curve.solve(t) }
+  }
+
+  return {
+    solve,
+    lengthSamples,
   }
 }
