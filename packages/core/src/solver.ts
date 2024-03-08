@@ -1,46 +1,68 @@
 import invariant from 'tiny-invariant'
 import type { Curve } from './curve'
 import { createIntervalTree } from './interval'
-import { remapSamplesByLength, sampleCurve } from './sample'
-import type { SamplingOptions } from './sample'
+import { createLengthLookup } from './sample'
+import type { LengthLookupOptions } from './sample'
 import { remap, round } from './util'
 
-function createSolver(samples: Map<number, number>) {
-  const { search } = createIntervalTree(Array.from(samples.keys()))
+type Prettify<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
-  return function solve(input: number) {
+type SolverOptions = Prettify<
+  LengthLookupOptions & {
+    lengthAdjust: number
+  }
+>
+
+const defaultSolverOptions: SolverOptions = {
+  minSamples: 64,
+  maxError: 0.001,
+  lengthAdjust: 1,
+}
+
+export function createSolver(
+  curve: Curve,
+  options: Partial<SolverOptions> = {},
+) {
+  const {
+    maxError,
+    minSamples,
+    lengthAdjust: defaultLengthAdjust,
+  } = {
+    ...defaultSolverOptions,
+    ...options,
+  }
+
+  const lengthSamples = createLengthLookup(curve, { maxError, minSamples })
+
+  const { search } = createIntervalTree(Array.from(lengthSamples.keys()))
+
+  return function solve(input: number, lengthAdjust = defaultLengthAdjust) {
     const query = round(input)
 
     invariant(query >= 0 && query <= 1, 'input must be between 0 and 1')
 
-    const result = search(query)
+    let t!: number
 
-    invariant(result, 'result must be defined')
+    if (lengthAdjust === 0) {
+      t = query
+    } else {
+      const lengthRange = search(query)
 
-    const [x1, x2] = result
+      invariant(lengthRange, 'lengthRange must be defined')
 
-    const y1 = samples.get(x1) as number
-    const y2 = samples.get(x2) as number
+      const [length1, length2] = lengthRange
+      const t1 = lengthSamples.get(length1) as number
+      const t2 = lengthSamples.get(length2) as number
 
-    return remap(query, x1, x2, y1, y2)
+      const lengthT = remap(query, length1, length2, t1, t2)
+
+      if (lengthAdjust === 1) {
+        t = lengthT
+      } else {
+        t = (1 - lengthAdjust) * query + lengthAdjust * lengthT
+      }
+    }
+
+    return curve.solve(t)
   }
-}
-
-export function createTSpaceSolver(
-  curve: Curve,
-  options: Partial<SamplingOptions> = {},
-) {
-  const samples = sampleCurve(curve, options)
-
-  return createSolver(samples)
-}
-
-export function createNormalizedLengthSolver(
-  curve: Curve,
-  options: Partial<SamplingOptions> = {},
-) {
-  const samples = sampleCurve(curve, options)
-  const lengthSamples = remapSamplesByLength(samples)
-
-  return createSolver(lengthSamples)
 }

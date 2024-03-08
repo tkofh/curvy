@@ -1,4 +1,6 @@
 /* c8 ignore start */
+export { convertScalars } from './convert'
+
 export {
   createCurve,
   createBasisCurve,
@@ -10,7 +12,7 @@ export {
 
 export { createIntervalTree } from './interval'
 
-export { remapSamplesByLength, sampleCurve } from './sample'
+export { createLengthLookup } from './sample'
 
 export {
   createCurveSegment,
@@ -20,6 +22,8 @@ export {
   createCatmullRomSegment,
   createHermiteSegment,
 } from './segment'
+
+export { createSolver } from './solver'
 
 export {
   basis,
@@ -35,5 +39,5 @@ export {
   toCubicScalars,
 } from './splines'
 
-export { round } from './util'
+export { round, remap } from './util'
 /* c8 ignore end */

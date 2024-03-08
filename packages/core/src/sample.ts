@@ -166,28 +166,11 @@ function enforceMaxError(
   samples.set(queue[0], curve.solve(queue[0]))
 }
 
-export type SamplingOptions = {
-  minSamples: number
-  maxError: number | false
-}
-
-const defaultOptions: SamplingOptions = {
-  minSamples: 33,
-  maxError: 0.01,
-}
-
-export function sampleCurve(
+export function sampleCurveLength(
   curve: Curve,
-  options: Partial<SamplingOptions> = {},
+  minSamples: number,
+  maxError: number | false,
 ): Map<number, number> {
-  const { minSamples, maxError } = { ...defaultOptions, ...options }
-
-  invariant(minSamples >= 2, 'minSamples must be at least 2')
-  invariant(
-    maxError === false || maxError > 0,
-    'maxError must be positive or false',
-  )
-
   const samples = new Map<number, number>()
 
   for (const t of createSamples(minSamples)) {
@@ -204,7 +187,28 @@ export function sampleCurve(
   return new Map(sortedKeys.map((key) => [key, samples.get(key) as number]))
 }
 
-export function remapSamplesByLength(samples: Map<number, number>) {
+export type LengthLookupOptions = {
+  minSamples: number
+  maxError: number | false
+}
+
+const defaultOptions: LengthLookupOptions = {
+  minSamples: 33,
+  maxError: 0.00001,
+}
+
+export function createLengthLookup(
+  curve: Curve,
+  options: Partial<LengthLookupOptions> = {},
+) {
+  const { minSamples, maxError } = { ...defaultOptions, ...options }
+  invariant(minSamples >= 2, 'minSamples must be at least 2')
+  invariant(
+    maxError === false || maxError > 0,
+    'maxError must be positive or false',
+  )
+
+  const samples = sampleCurveLength(curve, minSamples, maxError)
   let totalLength = 0
 
   const lengths = new Map<number, number>()
@@ -227,10 +231,7 @@ export function remapSamplesByLength(samples: Map<number, number>) {
 
   const remappedSamples = new Map<number, number>()
   for (const [t, length] of lengths.entries()) {
-    remappedSamples.set(
-      round(length * toNormalizedLength),
-      samples.get(t) as number,
-    )
+    remappedSamples.set(round(length * toNormalizedLength), t)
   }
 
   return remappedSamples

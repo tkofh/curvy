@@ -97,11 +97,11 @@ function getMonotonicity(
   return Math.sign(test) > 0 ? 'increasing' : 'decreasing'
 }
 
-export function createCurveSegment(
+export function getPolynomial(
   matrix: Matrix4x4,
   points: CubicScalars,
-): CurveSegment {
-  const polynomial: CubicScalars = [
+): CubicScalars {
+  return [
     round(
       points[0] * matrix[0][0] +
         points[1] * matrix[0][1] +
@@ -127,6 +127,13 @@ export function createCurveSegment(
         points[3] * matrix[3][3],
     ),
   ]
+}
+
+export function createCurveSegment(
+  matrix: Matrix4x4,
+  points: CubicScalars,
+): CurveSegment {
+  const polynomial = getPolynomial(matrix, points)
 
   const derivative: QuadraticScalars = [
     round(polynomial[0] * 3),
