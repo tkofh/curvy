@@ -17,9 +17,7 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "publishConfig": {
     "access": "public"
   },
@@ -38,15 +36,15 @@
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
-    "@curvy/types": "0.8.2",
-    "@curvy/uniform": "0.8.2",
-    "micro-math": "^0.9.0"
+    "@curvy/types": "workspace:*",
+    "@curvy/uniform": "workspace:*",
+    "micro-math": "^0.10.0"
   },
   "devDependencies": {
-    "@vitest/ui": "^0.30.1",
-    "c8": "^7.13.0",
-    "unbuild": "^1.2.1",
-    "vitest": "^0.30.1"
+    "@vitest/ui": "^1.3.1",
+    "c8": "^9.1.0",
+    "unbuild": "^2.0.0",
+    "vitest": "^1.3.1"
   },
   "gitHead": "ffbbbb9bd151e45b05f903c38ef1d69b180e74e8"
 }

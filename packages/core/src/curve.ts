@@ -1,6 +1,6 @@
 import invariant from 'tiny-invariant'
-import { createCurveSegment } from './segment'
-import type { CurveSegment, Monotonicity } from './segment'
+import { createCurveSegment, solveSegmentT } from './segment'
+import type { CurveSegment, Interval, Monotonicity } from './segment'
 import {
   basis,
   bezier,
@@ -19,11 +19,10 @@ import { round } from './util'
 export type Curve = {
   readonly monotonicity: Monotonicity
   readonly extrema: ReadonlyMap<number, number>
+  readonly range: Interval
   readonly segments: ReadonlyArray<CurveSegment>
-  readonly min: number
-  readonly max: number
-  readonly solve: (t: number) => number
-  readonly velocity: (t: number) => number
+  readonly positionAt: (t: number) => number
+  readonly velocityAt: (t: number) => number
 }
 
 function filterExtrema(extrema: Map<number, number>) {
@@ -75,8 +74,10 @@ export function createCurve(
   segmentScalars: Array<CubicScalars>,
 ): Curve {
   const segments: Array<CurveSegment> = []
-  let min = 0
-  let max = 0
+  const range = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY] as [
+    number,
+    number,
+  ]
   let monotonicity: Monotonicity = 'none'
 
   const normalizedToSegment = segmentScalars.length
@@ -90,17 +91,17 @@ export function createCurve(
     segments.push(segment)
 
     if (index === 0) {
-      min = segment.min
-      max = segment.max
+      range[0] = segment.range[0]
+      range[1] = segment.range[1]
       monotonicity = segment.monotonicity
     } else {
-      min = Math.min(min, segment.min)
-      max = Math.max(max, segment.max)
+      range[0] = Math.min(range[0], segment.range[0])
+      range[1] = Math.max(range[1], segment.range[1])
       monotonicity =
         segment.monotonicity === monotonicity ? monotonicity : 'none'
     }
 
-    for (const [t, value] of segment.localExtrema) {
+    for (const [t, value] of segment.extrema) {
       const curveT = round((t + index) * segmentToNormalized)
       extrema.set(curveT, value)
     }
@@ -110,24 +111,23 @@ export function createCurve(
     filterExtrema(extrema)
   }
 
-  function solve(t: number): number {
+  function positionAt(t: number): number {
     const { segment, t: localT } = getSegmentAndT(segments, t)
-    return segment.solve(localT)
+    return segment.positionAt(localT)
   }
 
-  function velocity(t: number): number {
+  function velocityAt(t: number): number {
     const { segment, t: localT } = getSegmentAndT(segments, t)
-    return segment.velocity(localT)
+    return segment.velocityAt(localT)
   }
 
   return {
     extrema,
-    max,
-    min,
+    range,
     monotonicity,
     segments,
-    solve,
-    velocity,
+    positionAt,
+    velocityAt,
   }
 }
 
@@ -199,4 +199,27 @@ export function createBasisCurve(
     ...options,
   }
   return createCurve(basis, toBasisSegments(values, triplicateEndpoints))
+}
+
+export function solveCurveT(
+  curve: Curve,
+  position: number,
+  domain: Interval,
+): ReadonlyArray<number> {
+  invariant(typeof position === 'number', 'position must be a number')
+
+  const rounded = round(position)
+
+  invariant(
+    rounded >= curve.range[0] && rounded <= curve.range[1],
+    "position must be within the curve's range",
+  )
+
+  const results: Array<number> = []
+
+  for (const segment of curve.segments) {
+    results.push(...solveSegmentT(segment, position, domain))
+  }
+
+  return results
 }

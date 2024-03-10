@@ -16,7 +16,6 @@ export type CurveSegment = {
   readonly range: Interval
   readonly positionAt: (t: number) => number
   readonly velocityAt: (t: number) => number
-  readonly solveT: (position: number, domain?: Interval) => number
 }
 
 function getVelocityUnitRoots(derivative: QuadraticScalars): Set<number> {
@@ -56,7 +55,10 @@ function getExtremaAndRange(
   positionScalars: CubicScalars,
 ): { extrema: ReadonlyMap<number, number>; range: Interval } {
   const extrema = new Map<number, number>()
-  const range: [number, number] = [Infinity, -Infinity]
+  const range: [number, number] = [
+    Number.POSITIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+  ]
 
   for (const root of [0, ...velocityRoots, 1]) {
     const t2 = root * root
@@ -134,7 +136,7 @@ const twoThirdsPI = (2 * Math.PI) / 3
 
 export function createCubicRootSolver(
   polynomial: CubicScalars,
-): (y: number) => ReadonlyArray<number> {
+): (y: number, domain: Interval) => ReadonlyArray<number> {
   const oneOverA = 1 / polynomial[0]
 
   const a2 = polynomial[1] * oneOverA
@@ -145,7 +147,8 @@ export function createCubicRootSolver(
   const q = a1 / 3 - a2 ** 2 / 9
   const r0 = (a1 * a2) / 6 - a2 ** 3 / 27
 
-  return function solve(y: number) {
+  return function solve(y: number, domain: Interval) {
+    const candidates: Array<number> = []
     const a0 = (polynomial[3] - y) * oneOverA
 
     const r = r0 - a0 * 0.5
@@ -157,20 +160,29 @@ export function createCubicRootSolver(
 
       /* c8 ignore next */
       const t = r < 0 ? q / a - a : a - q / a
-      return [round(t - a2Over3)]
+      candidates.push(round(t - a2Over3))
+    } else {
+      const theta = Math.acos(r / Math.sqrt((-q) ** 3))
+      const theta1 = theta / 3
+      const theta2 = theta1 - twoThirdsPI
+      const theta3 = theta1 + twoThirdsPI
+
+      const twoRootQ = 2 * Math.sqrt(-q)
+
+      candidates.push(round(twoRootQ * Math.cos(theta1) - a2Over3))
+      candidates.push(round(twoRootQ * Math.cos(theta2) - a2Over3))
+      candidates.push(round(twoRootQ * Math.cos(theta3) - a2Over3))
     }
-    const theta = Math.acos(r / Math.sqrt((-q) ** 3))
-    const theta1 = theta / 3
-    const theta2 = theta1 - twoThirdsPI
-    const theta3 = theta1 + twoThirdsPI
 
-    const twoRootQ = 2 * Math.sqrt(-q)
+    candidates.sort((a, b) => a - b)
 
-    return [
-      round(twoRootQ * Math.cos(theta1) - a2Over3),
-      round(twoRootQ * Math.cos(theta2) - a2Over3),
-      round(twoRootQ * Math.cos(theta3) - a2Over3),
-    ].sort((a, b) => a - b)
+    const result: Array<number> = []
+    for (const candidate of candidates) {
+      if (candidate >= domain[0] && candidate <= domain[1]) {
+        result.push(candidate)
+      }
+    }
+    return result
   }
 }
 
@@ -192,8 +204,6 @@ export function createCurveSegment(
 
   const monotonicity = getMonotonicity(extrema, velocityScalars)
 
-  const solveForPosition = createCubicRootSolver(positionScalars)
-
   function positionAt(t: number): number {
     const t1 = round(t)
     const t2 = t1 * t1
@@ -214,29 +224,6 @@ export function createCurveSegment(
     )
   }
 
-  function solveT(position: number, domain: Interval = [0, 1]) {
-    invariant(typeof position === 'number', 'position must be a number')
-
-    const rounded = round(position)
-
-    invariant(
-      rounded >= range[0] && rounded <= range[1],
-      'position out of range',
-    )
-
-    let solution: number | undefined
-    for (const t of solveForPosition(position)) {
-      if (t >= domain[0] && t <= domain[1]) {
-        solution = t
-        break
-      }
-    }
-
-    invariant(typeof solution === 'number', 'no solution found')
-
-    return solution
-  }
-
   return {
     extrema,
     monotonicity,
@@ -246,7 +233,6 @@ export function createCurveSegment(
     velocityScalars,
     positionAt,
     velocityAt,
-    solveT,
   }
 }
 
@@ -268,4 +254,22 @@ export function createCatmullRomSegment(positions: CubicScalars) {
 
 export function createBasisSegment(positions: CubicScalars) {
   return createCurveSegment(basis, positions)
+}
+
+export function solveSegmentT(
+  segment: CurveSegment,
+  position: number,
+  domain: Interval = segment.range,
+): ReadonlyArray<number> {
+  const solveForPosition = createCubicRootSolver(segment.positionScalars)
+  invariant(typeof position === 'number', 'position must be a number')
+
+  const rounded = round(position)
+
+  invariant(
+    rounded >= segment.range[0] && rounded <= segment.range[1],
+    'position out of range',
+  )
+
+  return solveForPosition(position, domain)
 }

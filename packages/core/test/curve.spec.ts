@@ -7,7 +7,7 @@ import {
   createCurve,
   createHermiteCurve,
 } from '../src/curve'
-import { bezier, toBezierSegments } from '../src/splines'
+import { bezier, toBasisSegments, toBezierSegments } from '../src/splines'
 
 describe('monotonicity', () => {
   test('constant for [0, 0, 0, 0, 0, 0, 0] (horizontal line at y=0', () => {
@@ -82,19 +82,19 @@ describe('extrema', () => {
 describe('min', () => {
   test('0 for [0, 1, 2, 3, 4, 5, 6]', () => {
     expect(
-      createCurve(bezier, toBezierSegments([0, 1, 2, 3, 4, 5, 6])).min,
+      createCurve(bezier, toBezierSegments([0, 1, 2, 3, 4, 5, 6])).range[0],
     ).toEqual(0)
   })
 
   test('0 for [0, 0, 0, 0, 0, 0, 0]', () => {
     expect(
-      createCurve(bezier, toBezierSegments([0, 0, 0, 0, 0, 0, 0])).min,
+      createCurve(bezier, toBezierSegments([0, 0, 0, 0, 0, 0, 0])).range[0],
     ).toEqual(0)
   })
 
   test('-0.75 for [0, -1, -1, 0, 1, 1, 0]', () => {
     expect(
-      createCurve(bezier, toBezierSegments([0, -1, -1, 0, 1, 1, 0])).min,
+      createCurve(bezier, toBezierSegments([0, -1, -1, 0, 1, 1, 0])).range[0],
     ).toEqual(-0.75)
   })
 })
@@ -102,52 +102,94 @@ describe('min', () => {
 describe('max', () => {
   test('6 for [0, 1, 2, 3, 4, 5, 6]', () => {
     expect(
-      createCurve(bezier, toBezierSegments([0, 1, 2, 3, 4, 5, 6])).max,
+      createCurve(bezier, toBezierSegments([0, 1, 2, 3, 4, 5, 6])).range[1],
     ).toEqual(6)
   })
 
   test('0 for [0, 0, 0, 0, 0, 0, 0]', () => {
     expect(
-      createCurve(bezier, toBezierSegments([0, 0, 0, 0, 0, 0, 0])).max,
+      createCurve(bezier, toBezierSegments([0, 0, 0, 0, 0, 0, 0])).range[1],
     ).toEqual(0)
   })
 
   test('0.75 for [0, -1, -1, 0, 1, 1, 0]', () => {
     expect(
-      createCurve(bezier, toBezierSegments([0, -1, -1, 0, 1, 1, 0])).max,
+      createCurve(bezier, toBezierSegments([0, -1, -1, 0, 1, 1, 0])).range[1],
     ).toEqual(0.75)
   })
 })
 
-describe('solve', () => {
+describe('positionAt', () => {
   test('0 for t=0 with [0, 1, 2, 3, 4, 5, 6]', () => {
     expect(
-      createCurve(bezier, toBezierSegments([0, 1, 2, 3, 4, 5, 6])).solve(0),
+      createCurve(bezier, toBezierSegments([0, 1, 2, 3, 4, 5, 6])).positionAt(
+        0,
+      ),
     ).toEqual(0)
   })
 
   test('6 for t=1 with [0, 1, 2, 3, 4, 5, 6]', () => {
     expect(
-      createCurve(bezier, toBezierSegments([0, 1, 2, 3, 4, 5, 6])).solve(1),
+      createCurve(bezier, toBezierSegments([0, 1, 2, 3, 4, 5, 6])).positionAt(
+        1,
+      ),
     ).toEqual(6)
+  })
+})
+
+describe('velocityAt', () => {
+  test('0 for t=0 with [0, 0, 1, 1, 1, 0, 0]', () => {
+    expect(
+      createCurve(bezier, toBasisSegments([0, 0, 1, 1, 1, 0, 0])).velocityAt(0),
+    ).toEqual(0)
+  })
+
+  test('>0 for t=0.25 with [0, 0, 1, 1, 1, 0, 0]', () => {
+    expect(
+      createCurve(bezier, toBasisSegments([0, 0, 1, 1, 1, 0, 0])).velocityAt(
+        0.25,
+      ),
+    ).toBeGreaterThan(0)
+  })
+
+  test('0 for t=0.5 with [0, 0, 1, 1, 1, 0, 0]', () => {
+    expect(
+      createCurve(bezier, toBasisSegments([0, 0, 1, 1, 1, 0, 0])).velocityAt(
+        0.5,
+      ),
+    ).toEqual(0)
+  })
+
+  test('>0 for t=0.75 with [0, 0, 1, 1, 1, 0, 0]', () => {
+    expect(
+      createCurve(bezier, toBasisSegments([0, 0, 1, 1, 1, 0, 0])).velocityAt(
+        0.25,
+      ),
+    ).toBeGreaterThan(0)
+  })
+
+  test('0 for t=0.5 with [0, 0, 1, 1, 1, 0, 0]', () => {
+    expect(
+      createCurve(bezier, toBasisSegments([0, 0, 1, 1, 1, 0, 0])).velocityAt(1),
+    ).toEqual(0)
   })
 })
 
 describe('bezier segment', () => {
   test('constructs a bezier segment', () => {
     const segment = createBezierCurve([0, 1, 0, 1])
-    expect(segment.solve(0)).toBe(0)
-    expect(segment.solve(0.5)).toBe(0.5)
-    expect(segment.solve(1)).toBe(1)
+    expect(segment.positionAt(0)).toBe(0)
+    expect(segment.positionAt(0.5)).toBe(0.5)
+    expect(segment.positionAt(1)).toBe(1)
   })
 })
 
 describe('hermite curve', () => {
   test('constructs a hermite curve', () => {
     const segment = createHermiteCurve([0, 0, 1, 0])
-    expect(segment.solve(0)).toBe(0)
-    expect(segment.solve(0.5)).toBe(0.5)
-    expect(segment.solve(1)).toBe(1)
+    expect(segment.positionAt(0)).toBe(0)
+    expect(segment.positionAt(0.5)).toBe(0.5)
+    expect(segment.positionAt(1)).toBe(1)
   })
 })
 
@@ -157,26 +199,26 @@ describe('cardinal curve', () => {
       a: 0.5,
       duplicateEndpoints: true,
     })
-    expect(segment.solve(0)).toBe(0)
-    expect(segment.solve(0.5)).toBe(0.5)
-    expect(segment.solve(1)).toBe(1)
+    expect(segment.positionAt(0)).toBe(0)
+    expect(segment.positionAt(0.5)).toBe(0.5)
+    expect(segment.positionAt(1)).toBe(1)
   })
 })
 
 describe('catmull rom curve', () => {
   test('constructs a catmull rom curve', () => {
     const segment = createCatmullRomCurve([0, 1], { duplicateEndpoints: true })
-    expect(segment.solve(0)).toBe(0)
-    expect(segment.solve(0.5)).toBe(0.5)
-    expect(segment.solve(1)).toBe(1)
+    expect(segment.positionAt(0)).toBe(0)
+    expect(segment.positionAt(0.5)).toBe(0.5)
+    expect(segment.positionAt(1)).toBe(1)
   })
 })
 
 describe('bspline curve', () => {
   test('constructs a basis curve', () => {
     const segment = createBasisCurve([0, 1], { triplicateEndpoints: true })
-    expect(segment.solve(0)).toBe(0)
-    expect(segment.solve(0.5)).toBe(0.5)
-    expect(segment.solve(1)).toBe(1)
+    expect(segment.positionAt(0)).toBe(0)
+    expect(segment.positionAt(0.5)).toBe(0.5)
+    expect(segment.positionAt(1)).toBe(1)
   })
 })

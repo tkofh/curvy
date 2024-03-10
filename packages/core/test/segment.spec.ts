@@ -6,6 +6,7 @@ import {
   createCatmullRomSegment,
   createCurveSegment,
   createHermiteSegment,
+  solveSegmentT,
 } from '../src/segment'
 import { bezier } from '../src/splines'
 
@@ -212,43 +213,33 @@ describe('max', () => {
 })
 
 describe('positionAt', () => {
-  test('finds endpoints', () => {
-    const segment = createCurveSegment(bezier, [0, 0, 1, 1])
-    expect(segment.positionAt(0)).toBe(0)
-    expect(segment.positionAt(1)).toBe(1)
+  test('0 at t=0 with [0, 0, 1, 1]', () => {
+    expect(createCurveSegment(bezier, [0, 0, 1, 1]).positionAt(0)).toBe(0)
+  })
+
+  test('0.5 at t=0.5 with [0, 0, 1, 1]', () => {
+    expect(createCurveSegment(bezier, [0, 0, 1, 1]).positionAt(0.5)).toBe(0.5)
+  })
+
+  test('1 at t=1 with [0, 0, 1, 1]', () => {
+    expect(createCurveSegment(bezier, [0, 0, 1, 1]).positionAt(1)).toBe(1)
   })
 })
 
 describe('velocityAt', () => {
-  test('finds velocity of 0 at endpoints', () => {
-    const segment = createCurveSegment(bezier, [0, 0, 1, 1])
-    expect(segment.velocityAt(0)).toBe(0)
-    expect(segment.velocityAt(1)).toBe(0)
-  })
-})
-
-describe('solveT', () => {
-  test('finds t for y=0.5 with [0, 0, 1, 1]', () => {
-    const segment = createCurveSegment(bezier, [0, 0, 1, 1])
-    expect(segment.solveT(0.5)).toBe(0.5)
+  test('0 at t=0 with [0, 0, 1, 1]', () => {
+    expect(createCurveSegment(bezier, [0, 0, 1, 1]).velocityAt(0)).toBe(0)
   })
 
-  test('finds t within [0, 0.33] for y=0 with [-1, 3, -2, 1]', () => {
-    const segment = createCurveSegment(bezier, [-1, 2, -2, 1])
-    const t = segment.solveT(0, [0, 0.33])
-    expect(segment.positionAt(t)).toBe(0)
+  test('>0 at t=0.5 with [0, 0, 1, 1]', () => {
+    console.log(createCurveSegment(bezier, [0, 0, 1, 1]).velocityAt(0.5))
+    expect(
+      createCurveSegment(bezier, [0, 0, 1, 1]).velocityAt(0.5),
+    ).toBeGreaterThan(0)
   })
 
-  test('finds t within [0.33, 0.66] for y=0 with [-1, 3, -2, 1]', () => {
-    const segment = createCurveSegment(bezier, [-1, 2, -2, 1])
-    const t = segment.solveT(0, [0.33, 0.66])
-    expect(segment.positionAt(t)).toBe(0)
-  })
-
-  test('finds t within [0.66, 1] for y=0 with [-1, 3, -2, 1]', () => {
-    const segment = createCurveSegment(bezier, [-1, 2, -2, 1])
-    const t = segment.solveT(0, [0.66, 1])
-    expect(segment.positionAt(t)).toBe(0)
+  test('0 at t=1 with [0, 0, 1, 1]', () => {
+    expect(createCurveSegment(bezier, [0, 0, 1, 1]).velocityAt(1)).toBe(0)
   })
 })
 
@@ -294,5 +285,42 @@ describe('bspline segment', () => {
     expect(segment.positionAt(0)).toBe(0)
     expect(segment.positionAt(0.5)).toBe(0.5)
     expect(segment.positionAt(1)).toBe(1)
+  })
+})
+
+describe('solveSegmentT', () => {
+  test('finds t for y=0.5 with [0, 0, 1, 1]', () => {
+    const segment = createCurveSegment(bezier, [0, 0, 1, 1])
+    expect(solveSegmentT(segment, 0.5)).toStrictEqual([0.5])
+  })
+
+  test('finds t within [0, 0.33] for y=0 with [-1, 3, -2, 1]', () => {
+    const segment = createCurveSegment(bezier, [-1, 2, -2, 1])
+    const t = solveSegmentT(segment, 0, [0, 0.33])
+    expect(t).toHaveLength(1)
+    expect(segment.positionAt(t[0])).toBe(0)
+  })
+
+  test('finds t within [0.33, 0.66] for y=0 with [-1, 3, -2, 1]', () => {
+    const segment = createCurveSegment(bezier, [-1, 2, -2, 1])
+    const t = solveSegmentT(segment, 0, [0.33, 0.66])
+    expect(t).toHaveLength(1)
+    expect(segment.positionAt(t[0])).toBe(0)
+  })
+
+  test('finds t within [0.66, 1] for y=0 with [-1, 3, -2, 1]', () => {
+    const segment = createCurveSegment(bezier, [-1, 2, -2, 1])
+    const t = solveSegmentT(segment, 0, [0.66, 1])
+    expect(t).toHaveLength(1)
+    expect(segment.positionAt(t[0])).toBe(0)
+  })
+
+  test('finds all t for y=0 with [-1, 3, -2, 1]', () => {
+    const segment = createCurveSegment(bezier, [-1, 2, -2, 1])
+    const t = solveSegmentT(segment, 0)
+    expect(t).toHaveLength(3)
+    expect(segment.positionAt(t[0])).toBe(0)
+    expect(segment.positionAt(t[1])).toBe(0)
+    expect(segment.positionAt(t[2])).toBe(0)
   })
 })
