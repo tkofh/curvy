@@ -1,2 +1,0 @@
-export const DEFAULT_PRECISION = 8
-export const DEFAULT_LUT_RESOLUTION = 512

@@ -1,1 +1,0 @@
-export { createCubicHermiteSpline } from './createCubicHermiteSpline'

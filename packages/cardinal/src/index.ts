@@ -1,1 +1,0 @@
-export { createCubicCardinalSpline } from './createCubicCardinalSpline'

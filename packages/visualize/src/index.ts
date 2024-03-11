@@ -1,1 +1,0 @@
-export { drawSplineSVG } from './drawSplineSVG'
