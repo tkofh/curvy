@@ -17,9 +17,7 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "publishConfig": {
     "access": "public"
   },
@@ -36,6 +34,6 @@
   },
   "gitHead": "ffbbbb9bd151e45b05f903c38ef1d69b180e74e8",
   "devDependencies": {
-    "unbuild": "^1.2.1"
+    "unbuild": "^2.0.0"
   }
 }

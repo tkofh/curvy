@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/1.6.0/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -19,7 +19,8 @@
       },
       "correctness": {
         "noNewSymbol": "error",
-        "noUnusedVariables": "warn"
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "error"
       },
       "style": {
         "noDefaultExport": "error",
@@ -31,23 +32,27 @@
           "options": {
             "strictCase": false
           }
+        },
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": false
+          }
+        },
+        "useImportType": "error",
+        "useExportType": "error",
+        "useConsistentArrayType": {
+          "level": "error",
+          "options": {
+            "syntax": "generic"
+          }
         }
       },
       "suspicious": {
         "noApproximativeNumericConstant": "error"
       },
       "nursery": {
-        "useImportType": "error",
-        "useExportType": "error",
-        "useGroupedTypeImport": "error",
-        "useConsistentArrayType": {
-          "level": "error",
-          "options": {
-            "syntax": "generic"
-          }
-        },
-        "noUselessTernary": "warn",
-        "noUnusedImports": "error"
+        "noUselessTernary": "warn"
       }
     }
   },

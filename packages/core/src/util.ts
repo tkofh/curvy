@@ -1,7 +1,10 @@
-const precision = 12
-const scale = 10 ** precision
-export function round(value: number): number {
-  return Math.round(value * scale) / scale
+export function round(value: number, precision = 12): number {
+  const scale = 10 ** precision
+  const result = Math.round(value * scale) / scale
+  if (result === 0) {
+    return 0
+  }
+  return result
 }
 
 export function remap(
@@ -11,5 +14,5 @@ export function remap(
   y1: number,
   y2: number,
 ): number {
-  return round(y1 + ((x - x1) / (x2 - x1)) * (y2 - y1))
+  return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
 }

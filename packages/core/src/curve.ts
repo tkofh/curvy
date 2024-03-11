@@ -1,178 +1,149 @@
 import invariant from 'tiny-invariant'
-import { createCurveSegment } from './segment'
-import type { CurveSegment, Monotonicity } from './segment'
-import {
-  basis,
-  bezier,
-  cardinal,
-  catmullRom,
-  hermite,
-  toBasisSegments,
-  toBezierSegments,
-  toCardinalSegments,
-  toCatmullRomSegments,
-  toHermiteSegments,
-} from './splines'
-import type { CubicScalars, Matrix4x4 } from './splines'
+import { type CurveAxis, createCurveAxis } from './axis'
+import { createLengthLookup } from './sample'
+import type { Spline } from './splines'
+import { splines } from './splines'
 import { round } from './util'
 
-export type Curve = {
-  readonly monotonicity: Monotonicity
-  readonly extrema: ReadonlyMap<number, number>
-  readonly segments: ReadonlyArray<CurveSegment>
-  readonly min: number
-  readonly max: number
-  readonly solve: (t: number) => number
+export type Point<Axis extends string | number> = Readonly<{
+  [A in Axis]: number
+}>
+
+export type Curve<Axis extends string | number> = {
+  readonly axes: Readonly<Record<Axis, CurveAxis>>
+  readonly positionAt: (
+    input: number,
+    normalize?: number,
+    precision?: number,
+  ) => Point<Axis>
+  readonly solveWhere: <SolveAxis extends Axis>(
+    axis: SolveAxis,
+    position: number,
+    precsiion?: number,
+  ) => Point<Axis>
 }
 
-function filterExtrema(extrema: Map<number, number>) {
-  const extremaArray = [...extrema.entries()]
-  for (let index = 1; index < extremaArray.length - 1; index++) {
-    const [t, currentValue] = extremaArray[index]
+function createCurve<Axis extends string | number>(
+  points: ReadonlyArray<Point<Axis>>,
+  spline: Spline,
+): Curve<Axis> {
+  const axisKeys = Object.keys(points[0]) as unknown as ReadonlyArray<Axis>
+  const axisPoints = {} as Record<Axis, Array<number>>
 
-    const previousValue = extremaArray[index - 1][1]
-    const nextValue = extremaArray[index + 1][1]
-
-    if (
-      (previousValue <= currentValue && currentValue <= nextValue) ||
-      (previousValue >= currentValue && currentValue >= nextValue)
-    ) {
-      extrema.delete(t)
-    }
+  for (const key of axisKeys) {
+    axisPoints[key] = []
   }
-}
 
-export function createCurve(
-  matrix: Matrix4x4,
-  segmentScalars: Array<CubicScalars>,
-): Curve {
-  const segments: Array<CurveSegment> = []
-  let min = 0
-  let max = 0
-  let monotonicity: Monotonicity = 'none'
-
-  const normalizedToSegment = segmentScalars.length
-  const segmentToNormalized = 1 / normalizedToSegment
-
-  const extrema = new Map<number, number>()
-
-  for (const [index, points] of segmentScalars.entries()) {
-    const segment = createCurveSegment(matrix, points)
-
-    segments.push(segment)
-
-    if (index === 0) {
-      min = segment.min
-      max = segment.max
-      monotonicity = segment.monotonicity
-    } else {
-      min = Math.min(min, segment.min)
-      max = Math.max(max, segment.max)
-      monotonicity =
-        segment.monotonicity === monotonicity ? monotonicity : 'none'
-    }
-
-    for (const [t, value] of segment.localExtrema) {
-      const curveT = round((t + index) * segmentToNormalized)
-      extrema.set(curveT, value)
+  for (const point of points) {
+    for (const key of axisKeys) {
+      invariant(key in point, `Point ${point} is missing axis "${key}"`)
+      axisPoints[key].push(point[key])
     }
   }
 
-  if (extrema.size > 2) {
-    filterExtrema(extrema)
+  const axes = {} as Record<Axis, CurveAxis>
+  for (const key of axisKeys) {
+    axes[key] = createCurveAxis(spline.chunkCoefficients(axisPoints[key]))
+  }
+
+  const solveT = (t: number, precision = 12) => {
+    const rounded = round(t)
+    invariant(
+      rounded >= 0 && rounded <= 1,
+      `t must be between 0 and 1, got ${rounded}`,
+    )
+    const position = {} as { [A in Axis]: number }
+    for (const key of axisKeys) {
+      position[key] = round(axes[key].solvePosition(rounded), precision)
+    }
+    return position
+  }
+
+  const lengthLookup = createLengthLookup(solveT)
+
+  const positionAt = (input: number, normalize = 1, precision = 12) => {
+    invariant(
+      input >= 0 && input <= 1,
+      `Input must be between 0 and 1, got ${input}`,
+    )
+    let t = input
+    if (normalize > 0) {
+      const denormalizedT = lengthLookup(input)
+
+      if (normalize === 1) {
+        t = denormalizedT
+      } else {
+        t = (1 - normalize) * input + normalize * denormalizedT
+      }
+    }
+
+    return solveT(t, precision)
+  }
+
+  const solveWhere = <SolveAxis extends Axis>(
+    axis: SolveAxis,
+    position: number,
+    precision = 12,
+  ): Point<Axis> => {
+    const curveAxis = axes[axis]
+    invariant(curveAxis.monotonicity !== 'none', 'Axis is not monotonic')
+
+    const t = curveAxis.solveT(position, curveAxis.domain)[0]
+
+    invariant(
+      typeof t === 'number',
+      `Could not solve for ${axis} = ${position}`,
+    )
+
+    const result = { [axis]: round(position, precision) } as {
+      [A in Axis]: number
+    }
+    for (const key of axisKeys) {
+      if (key !== axis) {
+        result[key] = round(axes[key].solvePosition(t), precision)
+      }
+    }
+
+    return result
   }
 
   return {
-    extrema,
-    max,
-    min,
-    monotonicity,
-    segments,
-    solve: (t: number) => {
-      invariant(t >= 0 && t <= 1, 't must be between 0 and 1')
-
-      const t1 = round(t)
-
-      if (t1 === 1) {
-        return segments[segments.length - 1].solve(1)
-      }
-
-      const segmentT = round(t1 * segments.length)
-      const segmentIndex = Math.floor(segmentT)
-
-      const segment = segments[segmentIndex]
-
-      return segment.solve(segmentT - segmentIndex)
-    },
+    axes,
+    positionAt,
+    solveWhere,
   }
 }
 
-export function createBezierCurve(values: Array<number>) {
-  return createCurve(bezier, toBezierSegments(values))
+export function createBasisCurve<Axis extends string | number>(
+  points: ReadonlyArray<Point<Axis>>,
+  triplicateEndpoints = true,
+): Curve<Axis> {
+  return createCurve(points, splines.basis(triplicateEndpoints))
 }
 
-export function createHermiteCurve(values: Array<number>) {
-  return createCurve(hermite, toHermiteSegments(values))
+export function createBezierCurve<Axis extends string | number>(
+  points: ReadonlyArray<Point<Axis>>,
+): Curve<Axis> {
+  return createCurve(points, splines.bezier)
 }
 
-type CardinalCurveOptions = {
-  a: number
-  duplicateEndpoints: boolean
-}
-const defaultCardinalCurveOptions = {
-  a: 0.5,
-  duplicateEndpoints: true,
-} satisfies CardinalCurveOptions
-
-export function createCardinalCurve(
-  values: Array<number>,
-  options: Partial<CardinalCurveOptions> = {},
-) {
-  const { a, duplicateEndpoints } = {
-    ...defaultCardinalCurveOptions,
-    ...options,
-  }
-  return createCurve(
-    cardinal(a),
-    toCardinalSegments(values, duplicateEndpoints),
-  )
+export function createCardinalCurve<Axis extends string | number>(
+  points: ReadonlyArray<Point<Axis>>,
+  tension = 0.5,
+  duplicateEndpoints = true,
+): Curve<Axis> {
+  return createCurve(points, splines.cardinal(tension, duplicateEndpoints))
 }
 
-type CatmullRomCurveOptions = {
-  duplicateEndpoints: boolean
-}
-const defaultCatmullRomCurveOptions = {
-  duplicateEndpoints: true,
-} satisfies CatmullRomCurveOptions
-
-export function createCatmullRomCurve(
-  values: Array<number>,
-  options: Partial<CatmullRomCurveOptions> = {},
-) {
-  const { duplicateEndpoints } = {
-    ...defaultCatmullRomCurveOptions,
-    ...options,
-  }
-  return createCurve(
-    catmullRom,
-    toCatmullRomSegments(values, duplicateEndpoints),
-  )
+export function createCatmullRomCurve<Axis extends string | number>(
+  points: ReadonlyArray<Point<Axis>>,
+  duplicateEndpoints = true,
+): Curve<Axis> {
+  return createCurve(points, splines.catmullRom(duplicateEndpoints))
 }
 
-type BasisCurveOptions = {
-  triplicateEndpoints: boolean
-}
-const defaultBasisCurveOptions = {
-  triplicateEndpoints: true,
-} satisfies BasisCurveOptions
-
-export function createBasisCurve(
-  values: Array<number>,
-  options: Partial<BasisCurveOptions> = {},
-) {
-  const { triplicateEndpoints } = {
-    ...defaultBasisCurveOptions,
-    ...options,
-  }
-  return createCurve(basis, toBasisSegments(values, triplicateEndpoints))
+export function createHermiteCurve<Axis extends string | number>(
+  points: ReadonlyArray<Point<Axis>>,
+): Curve<Axis> {
+  return createCurve(points, splines.hermite)
 }

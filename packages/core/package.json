@@ -7,19 +7,32 @@
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/curve.cjs",
+  "module": "./dist/curve.mjs",
+  "types": "./dist/curve.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/curve.cjs",
+      "import": "./dist/curve.mjs",
+      "types": "./dist/curve.d.ts"
+    },
+    "./axis": {
+      "require": "./dist/axis.cjs",
+      "import": "./dist/axis.mjs",
+      "types": "./dist/axis.d.ts"
+    },
+    "./convert": {
+      "require": "./dist/convert.cjs",
+      "import": "./dist/convert.mjs",
+      "types": "./dist/convert.d.ts"
+    },
+    "./splines": {
+      "require": "./dist/splines.cjs",
+      "import": "./dist/splines.mjs",
+      "types": "./dist/splines.d.ts"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "publishConfig": {
     "access": "public"
   },

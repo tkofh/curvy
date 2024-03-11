@@ -1,8 +1,10 @@
 import invariant from 'tiny-invariant'
-import { getPolynomial } from './segment'
-import type { CubicScalars, Matrix4x4 } from './splines'
+import type { CubicCoefficients } from './polynomial'
+import { pointsToCoefficients } from './splines'
+import type { Matrix4x4 } from './splines'
 import { round } from './util'
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: this is a complex algorithm
 function determinant(matrix: ReadonlyArray<ReadonlyArray<number>>) {
   const size = matrix.length
 
@@ -39,8 +41,8 @@ function determinant(matrix: ReadonlyArray<ReadonlyArray<number>>) {
 
 function solveLinearSystem(
   coefficients: Matrix4x4,
-  solutions: CubicScalars,
-): CubicScalars {
+  solutions: CubicCoefficients,
+): CubicCoefficients {
   const coefficientDeterminant = determinant(coefficients)
 
   invariant(
@@ -65,17 +67,17 @@ function solveLinearSystem(
     variables[index] = determinant(solutionMatrix) / coefficientDeterminant
   }
 
-  return variables as CubicScalars
+  return variables as CubicCoefficients
 }
 
 export function convertScalars(
-  points: CubicScalars,
+  points: CubicCoefficients,
   sourceSpline: Matrix4x4,
   targetSpline: Matrix4x4,
-): CubicScalars {
+): CubicCoefficients {
   const solutions = solveLinearSystem(
     targetSpline,
-    getPolynomial(sourceSpline, points),
+    pointsToCoefficients(sourceSpline, points),
   )
 
   return [
