@@ -1,82 +1,88 @@
 import { describe, expect, test } from 'vitest'
-import {
-  createBasisCoefficients,
-  createBezierCoefficients,
-  createCardinalCoefficients,
-  createCatmullRomCoefficients,
-  createHermiteCoefficients,
-} from '../src/splines'
+import { splines } from '../src/splines'
 
-describe('createBasisCoefficients', () => {
+describe('splines.basis.chunkCoefficients', () => {
   test('it makes basis coefficients with triplicated points', () => {
-    const coefficients = createBasisCoefficients([0, 1, 2, 3], true)
+    const coefficients = splines.basis(true).chunkCoefficients([0, 1, 2, 3])
     expect(coefficients).toHaveLength(5)
   })
 
   test('it makes basis coefficients with non-triplicated points', () => {
-    const coefficients = createBasisCoefficients([0, 1, 2, 3], false)
+    const coefficients = splines.basis(false).chunkCoefficients([0, 1, 2, 3])
     expect(coefficients).toHaveLength(1)
   })
 
   test('it throws for an invalid number of non-triplicated points', () => {
-    expect(() => createBasisCoefficients([0, 1, 2], false)).toThrow()
+    expect(() => splines.basis(false).chunkCoefficients([0, 1, 2])).toThrow()
   })
 })
 
-describe('createBezierCoefficients', () => {
+describe('splines.bezier.chunkCoefficients', () => {
   test('it makes bezier coefficients', () => {
-    const coefficients = createBezierCoefficients([0, 0, 0, 0, 0, 0, 0])
+    const coefficients = splines.bezier.chunkCoefficients([0, 0, 0, 0, 0, 0, 0])
     expect(coefficients).toHaveLength(2)
   })
 
   test('it throws for an invalid number of points (6)', () => {
-    expect(() => createBezierCoefficients([0, 0, 0, 0, 0, 0])).toThrow()
+    expect(() => splines.bezier.chunkCoefficients([0, 0, 0, 0, 0, 0])).toThrow()
   })
   test('it throws for an invalid number of points (3)', () => {
-    expect(() => createBezierCoefficients([0, 0, 0])).toThrow()
+    expect(() => splines.bezier.chunkCoefficients([0, 0, 0])).toThrow()
   })
 })
 
-describe('createCardinalCoefficients', () => {
+describe('splines.cardinal.chunkCoefficients', () => {
   test('it makes cardinal coefficients with duplicated points', () => {
-    const coefficients = createCardinalCoefficients([0, 0, 0, 0], 0.5, true)
+    const coefficients = splines
+      .cardinal(0.5, true)
+      .chunkCoefficients([0, 0, 0, 0])
     expect(coefficients).toHaveLength(3)
   })
   test('it makes cardinal coefficients with non-duplicated points', () => {
-    const coefficients = createCardinalCoefficients([0, 0, 0, 0], 0.5, false)
+    const coefficients = splines
+      .cardinal(0.5, false)
+      .chunkCoefficients([0, 0, 0, 0])
     expect(coefficients).toHaveLength(1)
   })
   test('it throws for an invalid number of duplicated points', () => {
-    expect(() => createCardinalCoefficients([0], 0.5, true)).toThrow()
+    expect(() => splines.cardinal(0.5, true).chunkCoefficients([0])).toThrow()
   })
   test('it throws for an invalid number of non-duplicated points', () => {
-    expect(() => createCardinalCoefficients([0, 0, 0], 0.5, false)).toThrow()
+    expect(() =>
+      splines.cardinal(0.5, false).chunkCoefficients([0, 0, 0]),
+    ).toThrow()
   })
 })
 
-describe('createCatmullRomCoefficients', () => {
+describe('splines.catmullRom.chunkCoefficients', () => {
   test('it makes catmull-rom coefficients with duplicated points', () => {
-    const coefficients = createCatmullRomCoefficients([0, 0, 0, 0], true)
+    const coefficients = splines
+      .catmullRom(true)
+      .chunkCoefficients([0, 0, 0, 0])
     expect(coefficients).toHaveLength(3)
   })
   test('it makes catmull-rom coefficients with non-duplicated points', () => {
-    const coefficients = createCatmullRomCoefficients([0, 0, 0, 0], false)
+    const coefficients = splines
+      .catmullRom(false)
+      .chunkCoefficients([0, 0, 0, 0])
     expect(coefficients).toHaveLength(1)
   })
   test('it throws for an invalid number of duplicated points', () => {
-    expect(() => createCatmullRomCoefficients([0], true)).toThrow()
+    expect(() => splines.catmullRom(true).chunkCoefficients([0])).toThrow()
   })
   test('it throws for an invalid number of non-duplicated points', () => {
-    expect(() => createCatmullRomCoefficients([0, 0, 0], false)).toThrow()
+    expect(() =>
+      splines.catmullRom(false).chunkCoefficients([0, 0, 0]),
+    ).toThrow()
   })
 })
 
-describe('createHermiteCoefficients', () => {
+describe('splines.hermite.chunkCoefficients', () => {
   test('it makes hermite coefficients', () => {
-    const coefficients = createHermiteCoefficients([0, 0, 0, 0])
+    const coefficients = splines.hermite.chunkCoefficients([0, 0, 0, 0])
     expect(coefficients).toHaveLength(1)
   })
   test('it throws for an invalid number of points', () => {
-    expect(() => createHermiteCoefficients([0, 0, 0])).toThrow()
+    expect(() => splines.hermite.chunkCoefficients([0, 0, 0])).toThrow()
   })
 })

@@ -1,18 +1,14 @@
 import { describe, expect, test } from 'vitest'
-import { createCurve } from '../src/curve'
-import { createBezierCoefficients } from '../src/splines'
+import { createBezierCurve } from '../src/curve'
 
 describe('createCurve', () => {
   test('creates a curve', () => {
-    const curve = createCurve(
-      [
-        { x: 0, y: 0 },
-        { x: 0, y: 1 },
-        { x: 1, y: 0 },
-        { x: 1, y: 1 },
-      ],
-      createBezierCoefficients,
-    )
+    const curve = createBezierCurve([
+      { x: 0, y: 0 },
+      { x: 0, y: 1 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+    ])
 
     console.log(curve)
 
