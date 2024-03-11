@@ -1,6 +1,6 @@
 {
   "name": "@curvy/hermite",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Hermite curve implementation for Curvy",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
@@ -17,7 +17,9 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },

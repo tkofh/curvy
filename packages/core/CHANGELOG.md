@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/tkofh/curvy/compare/curvy@0.1.1...curvy@0.2.0) (2024-03-11)
+
+
+### Bug Fixes
+
+* tests ([f030df3](https://github.com/tkofh/curvy/commit/f030df38db21919d28bb01fbd09b6d9134e27a89))
+
+
+### Features
+
+* curve ([4673bf7](https://github.com/tkofh/curvy/commit/4673bf7bb489f77fcd5d57f30b107a7fdf5e3bb3))
+* solveT ([d93178a](https://github.com/tkofh/curvy/commit/d93178ac9d4423b7568f1de6eec122ec97253fb6))
+* things ([8f441dc](https://github.com/tkofh/curvy/commit/8f441dc16e856958d476eae63d5c8e4ea1881599))
+* works ([56aff20](https://github.com/tkofh/curvy/commit/56aff2048ec94bb34cc1ea0239728f89e79b86ad))
+
+
+
+
+
 ## [0.1.1](https://github.com/tkofh/curvy/compare/curvy@0.1.0...curvy@0.1.1) (2024-03-08)
 
 **Note:** Version bump only for package curvy
