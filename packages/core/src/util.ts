@@ -1,17 +1,6 @@
-const finePrecision = 12
-const fineScale = 10 ** finePrecision
-export function round(value: number): number {
-  const result = Math.round(value * fineScale) / fineScale
-  if (result === 0) {
-    return 0
-  }
-  return result
-}
-
-const coarsePrecision = 8
-const coarseScale = 10 ** coarsePrecision
-export function coarseRound(value: number): number {
-  const result = Math.round(value * coarseScale) / coarseScale
+export function round(value: number, precision = 12): number {
+  const scale = 10 ** precision
+  const result = Math.round(value * scale) / scale
   if (result === 0) {
     return 0
   }
@@ -25,5 +14,5 @@ export function remap(
   y1: number,
   y2: number,
 ): number {
-  return round(y1 + ((x - x1) / (x2 - x1)) * (y2 - y1))
+  return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
 }

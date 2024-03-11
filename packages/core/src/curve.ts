@@ -1,7 +1,9 @@
 import invariant from 'tiny-invariant'
 import { type CurveAxis, createCurveAxis } from './axis'
+import { createLengthLookup } from './sample'
 import type { Spline } from './splines'
 import { splines } from './splines'
+import { round } from './util'
 
 export type Point<Axis extends string | number> = Readonly<{
   [A in Axis]: number
@@ -9,21 +11,16 @@ export type Point<Axis extends string | number> = Readonly<{
 
 export type Curve<Axis extends string | number> = {
   readonly axes: Readonly<Record<Axis, CurveAxis>>
-  readonly positionAt: (t: number, precision?: number) => Point<Axis>
+  readonly positionAt: (
+    input: number,
+    normalize?: number,
+    precision?: number,
+  ) => Point<Axis>
   readonly solveWhere: <SolveAxis extends Axis>(
     axis: SolveAxis,
     position: number,
     precsiion?: number,
   ) => Point<Axis>
-}
-
-function round(value: number, precision = 12): number {
-  const scale = 10 ** precision
-  const result = Math.round(value * scale) / scale
-  if (result === 0) {
-    return 0
-  }
-  return result
 }
 
 function createCurve<Axis extends string | number>(
@@ -49,7 +46,7 @@ function createCurve<Axis extends string | number>(
     axes[key] = createCurveAxis(spline.chunkCoefficients(axisPoints[key]))
   }
 
-  const positionAt = (t: number, precision = 12) => {
+  const solveT = (t: number, precision = 12) => {
     const rounded = round(t)
     invariant(
       rounded >= 0 && rounded <= 1,
@@ -60,6 +57,27 @@ function createCurve<Axis extends string | number>(
       position[key] = round(axes[key].solvePosition(rounded), precision)
     }
     return position
+  }
+
+  const lengthLookup = createLengthLookup(solveT)
+
+  const positionAt = (input: number, normalize = 1, precision = 12) => {
+    invariant(
+      input >= 0 && input <= 1,
+      `Input must be between 0 and 1, got ${input}`,
+    )
+    let t = input
+    if (normalize > 0) {
+      const denormalizedT = lengthLookup(input)
+
+      if (normalize === 1) {
+        t = denormalizedT
+      } else {
+        t = (1 - normalize) * input + normalize * denormalizedT
+      }
+    }
+
+    return solveT(t, precision)
   }
 
   const solveWhere = <SolveAxis extends Axis>(

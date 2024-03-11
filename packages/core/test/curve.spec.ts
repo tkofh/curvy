@@ -6,16 +6,16 @@ describe('createCurve', () => {
     const curve = createBezierCurve([
       { x: 0, y: 0 },
       { x: 0, y: 1 },
-      { x: 1, y: 0 },
-      { x: 1, y: 1 },
+      { x: 2, y: 0 },
+      { x: 2, y: 1 },
     ])
 
-    console.log(curve)
+    // console.log(curve)
 
     expect(curve).toBeDefined()
 
-    for (const i of Array.from({ length: 101 }, (_, i) => i / 100)) {
-      console.log(i, curve.solveWhere('x', i))
-    }
+    // for (const i of Array.from({ length: 101 }, (_, i) => i / 100)) {
+    //   console.log(i, curve.solveWhere('x', i))
+    // }
   })
 })
