@@ -1,19 +1,18 @@
 import invariant from 'tiny-invariant'
-
-export type CubicScalars = readonly [number, number, number, number]
+import type { CubicCoefficients } from './polynomial'
 
 export type Matrix4x4 = readonly [
-  CubicScalars,
-  CubicScalars,
-  CubicScalars,
-  CubicScalars,
+  CubicCoefficients,
+  CubicCoefficients,
+  CubicCoefficients,
+  CubicCoefficients,
 ]
 
-export function toCubicScalars(
-  values: Array<number>,
+function chunkPointsBy(
+  values: ReadonlyArray<number>,
   stride: number,
-): Array<CubicScalars> {
-  const chunks: Array<CubicScalars> = []
+): Array<CubicCoefficients> {
+  const chunks: Array<CubicCoefficients> = []
 
   invariant(values.length >= 4, 'Values must have at least 4 elements')
   invariant(
@@ -43,6 +42,30 @@ export function toCubicScalars(
   return chunks
 }
 
+export function pointsToCoefficients(
+  matrix: Matrix4x4,
+  parameters: CubicCoefficients,
+): CubicCoefficients {
+  return [
+    parameters[0] * matrix[0][0] +
+      parameters[1] * matrix[0][1] +
+      parameters[2] * matrix[0][2] +
+      parameters[3] * matrix[0][3],
+    parameters[0] * matrix[1][0] +
+      parameters[1] * matrix[1][1] +
+      parameters[2] * matrix[1][2] +
+      parameters[3] * matrix[1][3],
+    parameters[0] * matrix[2][0] +
+      parameters[1] * matrix[2][1] +
+      parameters[2] * matrix[2][2] +
+      parameters[3] * matrix[2][3],
+    parameters[0] * matrix[3][0] +
+      parameters[1] * matrix[3][1] +
+      parameters[2] * matrix[3][2] +
+      parameters[3] * matrix[3][3],
+  ]
+}
+
 export const bezier: Matrix4x4 = [
   [-1, 3, -3, 1],
   [3, -6, 3, 0],
@@ -50,8 +73,15 @@ export const bezier: Matrix4x4 = [
   [1, 0, 0, 0],
 ]
 
-export function toBezierSegments(values: Array<number>) {
-  return toCubicScalars(values, 3)
+export function createBezierCoefficients(
+  parameters: ReadonlyArray<number>,
+): ReadonlyArray<CubicCoefficients> {
+  const chunks = chunkPointsBy(parameters, 3)
+  const coefficients: Array<CubicCoefficients> = []
+  for (const chunk of chunks) {
+    coefficients.push(pointsToCoefficients(bezier, chunk))
+  }
+  return coefficients
 }
 
 export const hermite: Matrix4x4 = [
@@ -61,8 +91,15 @@ export const hermite: Matrix4x4 = [
   [1, 0, 0, 0],
 ]
 
-export function toHermiteSegments(values: Array<number>) {
-  return toCubicScalars(values, 2)
+export function createHermiteCoefficients(
+  parameters: ReadonlyArray<number>,
+): ReadonlyArray<CubicCoefficients> {
+  const chunks = chunkPointsBy(parameters, 2)
+  const coefficients: Array<CubicCoefficients> = []
+  for (const chunk of chunks) {
+    coefficients.push(pointsToCoefficients(hermite, chunk))
+  }
+  return coefficients
 }
 
 export const cardinal = (a: number): Matrix4x4 => [
@@ -72,16 +109,22 @@ export const cardinal = (a: number): Matrix4x4 => [
   [0, 1, 0, 0],
 ]
 
-export function toCardinalSegments(
-  values: Array<number>,
+export function createCardinalCoefficients(
+  parameters: ReadonlyArray<number>,
+  a: number,
   duplicateEndpoints = true,
-) {
-  return toCubicScalars(
+): ReadonlyArray<CubicCoefficients> {
+  const chunks = chunkPointsBy(
     duplicateEndpoints
-      ? [values[0], ...values, values[values.length - 1]]
-      : values,
+      ? [parameters[0], ...parameters, parameters[parameters.length - 1]]
+      : parameters,
     1,
   )
+  const coefficients: Array<CubicCoefficients> = []
+  for (const chunk of chunks) {
+    coefficients.push(pointsToCoefficients(cardinal(a), chunk))
+  }
+  return coefficients
 }
 
 export const catmullRom: Matrix4x4 = [
@@ -91,16 +134,21 @@ export const catmullRom: Matrix4x4 = [
   [0, 1, 0, 0],
 ]
 
-export function toCatmullRomSegments(
-  values: Array<number>,
+export function createCatmullRomCoefficients(
+  parameters: ReadonlyArray<number>,
   duplicateEndpoints = true,
-) {
-  return toCubicScalars(
+): ReadonlyArray<CubicCoefficients> {
+  const chunks = chunkPointsBy(
     duplicateEndpoints
-      ? [values[0], ...values, values[values.length - 1]]
-      : values,
+      ? [parameters[0], ...parameters, parameters[parameters.length - 1]]
+      : parameters,
     1,
   )
+  const coefficients: Array<CubicCoefficients> = []
+  for (const chunk of chunks) {
+    coefficients.push(pointsToCoefficients(catmullRom, chunk))
+  }
+  return coefficients
 }
 
 const ONE_SIXTH = 1 / 6
@@ -111,20 +159,25 @@ export const basis: Matrix4x4 = [
   [ONE_SIXTH, 4 * ONE_SIXTH, ONE_SIXTH, 0],
 ]
 
-export function toBasisSegments(
-  values: Array<number>,
+export function createBasisCoefficients(
+  parameters: ReadonlyArray<number>,
   triplicateEndpoints = true,
-) {
-  return toCubicScalars(
+): ReadonlyArray<CubicCoefficients> {
+  const chunks = chunkPointsBy(
     triplicateEndpoints
       ? [
-          values[0],
-          values[0],
-          ...values,
-          values[values.length - 1],
-          values[values.length - 1],
+          parameters[0],
+          parameters[0],
+          ...parameters,
+          parameters[parameters.length - 1],
+          parameters[parameters.length - 1],
         ]
-      : values,
+      : parameters,
     1,
   )
+  const coefficients: Array<CubicCoefficients> = []
+  for (const chunk of chunks) {
+    coefficients.push(pointsToCoefficients(basis, chunk))
+  }
+  return coefficients
 }

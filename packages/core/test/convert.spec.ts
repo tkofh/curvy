@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { bezier, convertScalars, hermite } from '../src'
+import { convertScalars } from '../src/convert'
+import { bezier, hermite } from '../src/splines'
 
 describe('convertControlPoint', () => {
   test('it converts bezier [0, 1, 0, 1] to hermite', () => {
