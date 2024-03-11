@@ -1,20 +1,16 @@
 import invariant from 'tiny-invariant'
 import { type CurveAxis, createCurveAxis } from './axis'
-import type { CubicCoefficients } from './polynomial'
-import {
-  createBasisCoefficients,
-  createBezierCoefficients,
-  createCardinalCoefficients,
-  createCatmullRomCoefficients,
-  createHermiteCoefficients,
-} from './splines'
+import type { Spline } from './splines'
+import { splines } from './splines'
 
-export type Point<Axis extends string | number> = { [A in Axis]: number }
+export type Point<Axis extends string | number> = Readonly<{
+  [A in Axis]: number
+}>
 
 export type Curve<Axis extends string | number> = {
-  axes: Record<Axis, CurveAxis>
-  positionAt: (t: number, precision?: number) => Point<Axis>
-  solveWhere: <SolveAxis extends Axis>(
+  readonly axes: Readonly<Record<Axis, CurveAxis>>
+  readonly positionAt: (t: number, precision?: number) => Point<Axis>
+  readonly solveWhere: <SolveAxis extends Axis>(
     axis: SolveAxis,
     position: number,
     precsiion?: number,
@@ -30,11 +26,9 @@ function round(value: number, precision = 12): number {
   return result
 }
 
-export function createCurve<Axis extends string | number>(
+function createCurve<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
-  coefficientsGenerator: (
-    points: ReadonlyArray<number>,
-  ) => ReadonlyArray<CubicCoefficients>,
+  spline: Spline,
 ): Curve<Axis> {
   const axisKeys = Object.keys(points[0]) as unknown as ReadonlyArray<Axis>
   const axisPoints = {} as Record<Axis, Array<number>>
@@ -52,7 +46,7 @@ export function createCurve<Axis extends string | number>(
 
   const axes = {} as Record<Axis, CurveAxis>
   for (const key of axisKeys) {
-    axes[key] = createCurveAxis(coefficientsGenerator(axisPoints[key]))
+    axes[key] = createCurveAxis(spline.chunkCoefficients(axisPoints[key]))
   }
 
   const positionAt = (t: number, precision = 12) => {
@@ -61,7 +55,7 @@ export function createCurve<Axis extends string | number>(
       rounded >= 0 && rounded <= 1,
       `t must be between 0 and 1, got ${rounded}`,
     )
-    const position = {} as Point<Axis>
+    const position = {} as { [A in Axis]: number }
     for (const key of axisKeys) {
       position[key] = round(axes[key].solvePosition(rounded), precision)
     }
@@ -83,7 +77,9 @@ export function createCurve<Axis extends string | number>(
       `Could not solve for ${axis} = ${position}`,
     )
 
-    const result = { [axis]: round(position, precision) } as Point<Axis>
+    const result = { [axis]: round(position, precision) } as {
+      [A in Axis]: number
+    }
     for (const key of axisKeys) {
       if (key !== axis) {
         result[key] = round(axes[key].solvePosition(t), precision)
@@ -104,15 +100,13 @@ export function createBasisCurve<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
   triplicateEndpoints = true,
 ): Curve<Axis> {
-  return createCurve(points, (points) =>
-    createBasisCoefficients(points, triplicateEndpoints),
-  )
+  return createCurve(points, splines.basis(triplicateEndpoints))
 }
 
 export function createBezierCurve<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
 ): Curve<Axis> {
-  return createCurve(points, createBezierCoefficients)
+  return createCurve(points, splines.bezier)
 }
 
 export function createCardinalCurve<Axis extends string | number>(
@@ -120,22 +114,18 @@ export function createCardinalCurve<Axis extends string | number>(
   tension = 0.5,
   duplicateEndpoints = true,
 ): Curve<Axis> {
-  return createCurve(points, (points) =>
-    createCardinalCoefficients(points, tension, duplicateEndpoints),
-  )
+  return createCurve(points, splines.cardinal(tension, duplicateEndpoints))
 }
 
 export function createCatmullRomCurve<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
   duplicateEndpoints = true,
 ): Curve<Axis> {
-  return createCurve(points, (points) =>
-    createCatmullRomCoefficients(points, duplicateEndpoints),
-  )
+  return createCurve(points, splines.catmullRom(duplicateEndpoints))
 }
 
 export function createHermiteCurve<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
 ): Curve<Axis> {
-  return createCurve(points, createHermiteCoefficients)
+  return createCurve(points, splines.hermite)
 }

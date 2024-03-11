@@ -8,6 +8,13 @@ export type Matrix4x4 = readonly [
   CubicCoefficients,
 ]
 
+export type Spline = {
+  matrix: Matrix4x4
+  chunkCoefficients: (
+    parameters: ReadonlyArray<number>,
+  ) => ReadonlyArray<CubicCoefficients>
+}
+
 function chunkPointsBy(
   values: ReadonlyArray<number>,
   stride: number,
@@ -66,118 +73,113 @@ export function pointsToCoefficients(
   ]
 }
 
-export const bezier: Matrix4x4 = [
-  [-1, 3, -3, 1],
-  [3, -6, 3, 0],
-  [-3, 3, 0, 0],
-  [1, 0, 0, 0],
-]
-
-export function createBezierCoefficients(
-  parameters: ReadonlyArray<number>,
-): ReadonlyArray<CubicCoefficients> {
-  const chunks = chunkPointsBy(parameters, 3)
-  const coefficients: Array<CubicCoefficients> = []
-  for (const chunk of chunks) {
-    coefficients.push(pointsToCoefficients(bezier, chunk))
-  }
-  return coefficients
+export const bezier: Spline = {
+  matrix: [
+    [-1, 3, -3, 1],
+    [3, -6, 3, 0],
+    [-3, 3, 0, 0],
+    [1, 0, 0, 0],
+  ],
+  chunkCoefficients(parameters) {
+    const coefficients: Array<CubicCoefficients> = []
+    for (const chunk of chunkPointsBy(parameters, 3)) {
+      coefficients.push(pointsToCoefficients(this.matrix, chunk))
+    }
+    return coefficients
+  },
 }
 
-export const hermite: Matrix4x4 = [
-  [2, 1, -2, 1],
-  [-3, -2, 3, -1],
-  [0, 1, 0, 0],
-  [1, 0, 0, 0],
-]
-
-export function createHermiteCoefficients(
-  parameters: ReadonlyArray<number>,
-): ReadonlyArray<CubicCoefficients> {
-  const chunks = chunkPointsBy(parameters, 2)
-  const coefficients: Array<CubicCoefficients> = []
-  for (const chunk of chunks) {
-    coefficients.push(pointsToCoefficients(hermite, chunk))
-  }
-  return coefficients
+export const hermite: Spline = {
+  matrix: [
+    [2, 1, -2, 1],
+    [-3, -2, 3, -1],
+    [0, 1, 0, 0],
+    [1, 0, 0, 0],
+  ],
+  chunkCoefficients(parameters) {
+    const coefficients: Array<CubicCoefficients> = []
+    for (const chunk of chunkPointsBy(parameters, 2)) {
+      coefficients.push(pointsToCoefficients(this.matrix, chunk))
+    }
+    return coefficients
+  },
 }
 
-export const cardinal = (a: number): Matrix4x4 => [
-  [-a, 2 - a, a - 2, a],
-  [2 * a, a - 3, 3 - 2 * a, -a],
-  [-a, 0, a, 0],
-  [0, 1, 0, 0],
-]
+export const cardinal = (a: number, duplicateEndpoints = true): Spline => ({
+  matrix: [
+    [-a, 2 - a, a - 2, a],
+    [2 * a, a - 3, 3 - 2 * a, -a],
+    [-a, 0, a, 0],
+    [0, 1, 0, 0],
+  ],
+  chunkCoefficients(parameters) {
+    const coefficients: Array<CubicCoefficients> = []
+    for (const chunk of chunkPointsBy(
+      duplicateEndpoints
+        ? [parameters[0], ...parameters, parameters[parameters.length - 1]]
+        : parameters,
+      1,
+    )) {
+      coefficients.push(pointsToCoefficients(this.matrix, chunk))
+    }
+    return coefficients
+  },
+})
 
-export function createCardinalCoefficients(
-  parameters: ReadonlyArray<number>,
-  a: number,
-  duplicateEndpoints = true,
-): ReadonlyArray<CubicCoefficients> {
-  const chunks = chunkPointsBy(
-    duplicateEndpoints
-      ? [parameters[0], ...parameters, parameters[parameters.length - 1]]
-      : parameters,
-    1,
-  )
-  const coefficients: Array<CubicCoefficients> = []
-  for (const chunk of chunks) {
-    coefficients.push(pointsToCoefficients(cardinal(a), chunk))
-  }
-  return coefficients
-}
-
-export const catmullRom: Matrix4x4 = [
-  [-0.5, 1.5, -1.5, 0.5],
-  [1, -2.5, 2, -0.5],
-  [-0.5, 0, 0.5, 0],
-  [0, 1, 0, 0],
-]
-
-export function createCatmullRomCoefficients(
-  parameters: ReadonlyArray<number>,
-  duplicateEndpoints = true,
-): ReadonlyArray<CubicCoefficients> {
-  const chunks = chunkPointsBy(
-    duplicateEndpoints
-      ? [parameters[0], ...parameters, parameters[parameters.length - 1]]
-      : parameters,
-    1,
-  )
-  const coefficients: Array<CubicCoefficients> = []
-  for (const chunk of chunks) {
-    coefficients.push(pointsToCoefficients(catmullRom, chunk))
-  }
-  return coefficients
-}
+export const catmullRom = (duplicateEndpoints = true): Spline => ({
+  matrix: [
+    [-0.5, 1.5, -1.5, 0.5],
+    [1, -2.5, 2, -0.5],
+    [-0.5, 0, 0.5, 0],
+    [0, 1, 0, 0],
+  ],
+  chunkCoefficients(parameters) {
+    const coefficients: Array<CubicCoefficients> = []
+    for (const chunk of chunkPointsBy(
+      duplicateEndpoints
+        ? [parameters[0], ...parameters, parameters[parameters.length - 1]]
+        : parameters,
+      1,
+    )) {
+      coefficients.push(pointsToCoefficients(this.matrix, chunk))
+    }
+    return coefficients
+  },
+})
 
 const ONE_SIXTH = 1 / 6
-export const basis: Matrix4x4 = [
-  [-ONE_SIXTH, 0.5, -0.5, ONE_SIXTH],
-  [0.5, -1, 0.5, 0],
-  [-0.5, 0, 0.5, 0],
-  [ONE_SIXTH, 4 * ONE_SIXTH, ONE_SIXTH, 0],
-]
 
-export function createBasisCoefficients(
-  parameters: ReadonlyArray<number>,
-  triplicateEndpoints = true,
-): ReadonlyArray<CubicCoefficients> {
-  const chunks = chunkPointsBy(
-    triplicateEndpoints
-      ? [
-          parameters[0],
-          parameters[0],
-          ...parameters,
-          parameters[parameters.length - 1],
-          parameters[parameters.length - 1],
-        ]
-      : parameters,
-    1,
-  )
-  const coefficients: Array<CubicCoefficients> = []
-  for (const chunk of chunks) {
-    coefficients.push(pointsToCoefficients(basis, chunk))
-  }
-  return coefficients
-}
+export const basis = (triplicateEndpoints = true): Spline => ({
+  matrix: [
+    [-ONE_SIXTH, 0.5, -0.5, ONE_SIXTH],
+    [0.5, -1, 0.5, 0],
+    [-0.5, 0, 0.5, 0],
+    [ONE_SIXTH, 4 * ONE_SIXTH, ONE_SIXTH, 0],
+  ],
+  chunkCoefficients(parameters) {
+    const coefficients: Array<CubicCoefficients> = []
+    for (const chunk of chunkPointsBy(
+      triplicateEndpoints
+        ? [
+            parameters[0],
+            parameters[0],
+            ...parameters,
+            parameters[parameters.length - 1],
+            parameters[parameters.length - 1],
+          ]
+        : parameters,
+      1,
+    )) {
+      coefficients.push(pointsToCoefficients(this.matrix, chunk))
+    }
+    return coefficients
+  },
+})
+
+export const splines = {
+  basis,
+  bezier,
+  cardinal,
+  catmullRom,
+  hermite,
+} as const

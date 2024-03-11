@@ -33,6 +33,12 @@
             "strictCase": false
           }
         },
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": false
+          }
+        },
         "useImportType": "error",
         "useExportType": "error",
         "useConsistentArrayType": {

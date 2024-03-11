@@ -6,6 +6,7 @@ import type {
   Monotonicity,
 } from './polynomial'
 import { UNIT_INTERVAL, createCubicPolynomial } from './polynomial'
+import { splines } from './splines'
 
 export type CurveAxis = {
   readonly domain: Interval
@@ -133,4 +134,42 @@ export function createCurveAxis(
     solveVelocity,
     solveT,
   }
+}
+
+export function createBasisAxis(
+  parameters: ReadonlyArray<number>,
+  triplicateEndpoints = true,
+): CurveAxis {
+  return createCurveAxis(
+    splines.basis(triplicateEndpoints).chunkCoefficients(parameters),
+  )
+}
+
+export function createBezierAxis(parameters: ReadonlyArray<number>): CurveAxis {
+  return createCurveAxis(splines.bezier.chunkCoefficients(parameters))
+}
+
+export function createCardinalAxis(
+  parameters: ReadonlyArray<number>,
+  a = 0.5,
+  duplicateEndpoints = true,
+): CurveAxis {
+  return createCurveAxis(
+    splines.cardinal(a, duplicateEndpoints).chunkCoefficients(parameters),
+  )
+}
+
+export function createCatmullRomAxis(
+  parameters: ReadonlyArray<number>,
+  duplicateEndpoints = true,
+): CurveAxis {
+  return createCurveAxis(
+    splines.catmullRom(duplicateEndpoints).chunkCoefficients(parameters),
+  )
+}
+
+export function createHermiteAxis(
+  parameters: ReadonlyArray<number>,
+): CurveAxis {
+  return createCurveAxis(splines.hermite.chunkCoefficients(parameters))
 }
