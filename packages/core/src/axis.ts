@@ -68,8 +68,8 @@ export function createCurveAxis(
     }
 
     if (i === 0) {
-      monotonicity = segment.monotonocity
-    } else if (monotonicity !== segment.monotonocity) {
+      monotonicity = segment.monotonicity
+    } else if (monotonicity !== segment.monotonicity) {
       monotonicity = 'none'
     }
   }

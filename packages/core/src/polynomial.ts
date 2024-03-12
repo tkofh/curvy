@@ -10,7 +10,7 @@ export type LinearCoefficients = readonly [number, number]
 export type LinearPolynomial = {
   readonly domain: Interval
   readonly range: Interval
-  readonly monotonocity: Monotonicity
+  readonly monotonicity: Monotonicity
   readonly coefficients: LinearCoefficients
   readonly root: number | null
   readonly solve: (x: number) => number
@@ -48,7 +48,7 @@ export function createLinearPolynomial(
   return {
     domain,
     range,
-    monotonocity: a === 0 ? 'constant' : a > 0 ? 'increasing' : 'decreasing',
+    monotonicity: a === 0 ? 'constant' : a > 0 ? 'increasing' : 'decreasing',
     coefficients,
     root,
     solve,
@@ -60,7 +60,7 @@ export type QuadraticCoefficients = readonly [number, number, number]
 export type QuadraticPolynomial = {
   readonly domain: Interval
   readonly range: Interval
-  readonly monotonocity: Monotonicity
+  readonly monotonicity: Monotonicity
   readonly coefficients: QuadraticCoefficients
   readonly extreme: number | null
   readonly roots: ReadonlyArray<number>
@@ -161,7 +161,7 @@ export function createQuadraticPolynomial(
     domain,
     range,
     coefficients,
-    monotonocity:
+    monotonicity:
       a !== 0
         ? 'none'
         : b === 0
@@ -180,7 +180,7 @@ export type CubicCoefficients = readonly [number, number, number, number]
 export type CubicPolynomial = {
   readonly domain: Interval
   readonly range: Interval
-  readonly monotonocity: Monotonicity
+  readonly monotonicity: Monotonicity
   readonly coefficients: CubicCoefficients
   readonly extrema: ReadonlyArray<number>
   readonly roots: ReadonlyArray<number>
@@ -325,12 +325,12 @@ export function createCubicPolynomial(
   const solveInverse = createCubicRootSolver(coefficients, domain, range)
   const roots = range[0] > 0 || range[1] < 0 ? [] : solveInverse(0, domain)
 
-  const monotonocity = getMonotonicity(extrema, derivative, domain)
+  const monotonicity = getMonotonicity(extrema, derivative, domain)
 
   return {
     domain,
     range,
-    monotonocity,
+    monotonicity,
     coefficients,
     extrema,
     roots,

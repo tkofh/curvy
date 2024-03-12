@@ -1,6 +1,6 @@
 import invariant from 'tiny-invariant'
 import { type CurveAxis, createCurveAxis } from './axis'
-import { createLengthLookup } from './sample'
+import { createCurveLengthLookups } from './sample'
 import type { Spline } from './splines'
 import { splines } from './splines'
 import { round } from './util'
@@ -16,10 +16,16 @@ export type Curve<Axis extends string | number> = {
     normalize?: number,
     precision?: number,
   ) => Point<Axis>
+  readonly solveAlong: <SolveAxis extends Axis>(
+    axis: SolveAxis,
+    input: number,
+    normalize?: number,
+    precision?: number,
+  ) => Point<Axis>
   readonly solveWhere: <SolveAxis extends Axis>(
     axis: SolveAxis,
     position: number,
-    precsiion?: number,
+    precision?: number,
   ) => Point<Axis>
 }
 
@@ -59,7 +65,7 @@ function createCurve<Axis extends string | number>(
     return position
   }
 
-  const lengthLookup = createLengthLookup(solveT)
+  const lengthLookups = createCurveLengthLookups(axes, solveT)
 
   const positionAt = (input: number, normalize = 1, precision = 12) => {
     invariant(
@@ -68,8 +74,32 @@ function createCurve<Axis extends string | number>(
     )
     let t = input
     if (normalize > 0) {
-      const denormalizedT = lengthLookup(input)
+      const denormalizedT = lengthLookups.curve(input)
 
+      if (normalize === 1) {
+        t = denormalizedT
+      } else {
+        t = (1 - normalize) * input + normalize * denormalizedT
+      }
+    }
+
+    return solveT(t, precision)
+  }
+
+  const solveAlong = <SolveAxis extends Axis>(
+    axis: SolveAxis,
+    input: number,
+    normalize = 1,
+    precision = 12,
+  ): Point<Axis> => {
+    invariant(
+      input >= 0 && input <= 1,
+      `Input must be between 0 and 1, got ${input}`,
+    )
+
+    let t = input
+    if (normalize > 0) {
+      const denormalizedT = lengthLookups.axes[axis](input)
       if (normalize === 1) {
         t = denormalizedT
       } else {
@@ -95,21 +125,13 @@ function createCurve<Axis extends string | number>(
       `Could not solve for ${axis} = ${position}`,
     )
 
-    const result = { [axis]: round(position, precision) } as {
-      [A in Axis]: number
-    }
-    for (const key of axisKeys) {
-      if (key !== axis) {
-        result[key] = round(axes[key].solvePosition(t), precision)
-      }
-    }
-
-    return result
+    return positionAt(t, 0, precision)
   }
 
   return {
     axes,
     positionAt,
+    solveAlong,
     solveWhere,
   }
 }
