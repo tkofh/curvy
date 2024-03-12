@@ -29,10 +29,10 @@ export type Curve<Axis extends string | number> = {
   ) => Point<Axis>
 }
 
-function createCurve<Axis extends string | number>(
+function convertPointsToAxes<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
   spline: Spline,
-): Curve<Axis> {
+): Record<Axis, CurveAxis> {
   const axisKeys = Object.keys(points[0]) as unknown as ReadonlyArray<Axis>
   const axisPoints = {} as Record<Axis, Array<number>>
 
@@ -51,6 +51,14 @@ function createCurve<Axis extends string | number>(
   for (const key of axisKeys) {
     axes[key] = createCurveAxis(spline.chunkCoefficients(axisPoints[key]))
   }
+
+  return axes
+}
+
+export function createCurve<Axis extends string | number>(
+  axes: Record<Axis, CurveAxis>,
+): Curve<Axis> {
+  const axisKeys = Object.keys(axes) as unknown as ReadonlyArray<Axis>
 
   const solveT = (t: number, precision = 12) => {
     const rounded = round(t)
@@ -140,13 +148,15 @@ export function createBasisCurve<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
   triplicateEndpoints = true,
 ): Curve<Axis> {
-  return createCurve(points, splines.basis(triplicateEndpoints))
+  return createCurve(
+    convertPointsToAxes(points, splines.basis(triplicateEndpoints)),
+  )
 }
 
 export function createBezierCurve<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
 ): Curve<Axis> {
-  return createCurve(points, splines.bezier)
+  return createCurve(convertPointsToAxes(points, splines.bezier))
 }
 
 export function createCardinalCurve<Axis extends string | number>(
@@ -154,18 +164,22 @@ export function createCardinalCurve<Axis extends string | number>(
   tension = 0.5,
   duplicateEndpoints = true,
 ): Curve<Axis> {
-  return createCurve(points, splines.cardinal(tension, duplicateEndpoints))
+  return createCurve(
+    convertPointsToAxes(points, splines.cardinal(tension, duplicateEndpoints)),
+  )
 }
 
 export function createCatmullRomCurve<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
   duplicateEndpoints = true,
 ): Curve<Axis> {
-  return createCurve(points, splines.catmullRom(duplicateEndpoints))
+  return createCurve(
+    convertPointsToAxes(points, splines.catmullRom(duplicateEndpoints)),
+  )
 }
 
 export function createHermiteCurve<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
 ): Curve<Axis> {
-  return createCurve(points, splines.hermite)
+  return createCurve(convertPointsToAxes(points, splines.hermite))
 }
