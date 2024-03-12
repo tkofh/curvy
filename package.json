@@ -5,7 +5,7 @@
     "check": "biome check --apply-unsafe .",
     "check:report": "biome check .",
     "prepare": "lefthook install",
-    "publish-packages": "bun check:report && turbo run build lint test && changeset version && changeset publish"
+    "publish-packages": "bun check:report && turbo run build test:run && changeset version && changeset publish"
   },
   "private": true,
   "devDependencies": {
