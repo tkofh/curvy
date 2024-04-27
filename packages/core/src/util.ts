@@ -17,6 +17,12 @@ export function remap(
   return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
 }
 
+export function objectKeys<T extends object>(
+  object: T,
+): ReadonlyArray<keyof T> {
+  return Object.keys(object) as Array<keyof T>
+}
+
 export function invariant(
   condition: boolean,
   message: string,

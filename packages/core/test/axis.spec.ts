@@ -45,10 +45,6 @@ describe('createCurveAxis', () => {
   })
 
   test('finds extrema for [0, 3, 3, 0, -3, -3, 0]', () => {
-    console.log(
-      createCurveAxis(splines.bezier.chunkCoefficients([0, 3, 3, 0, -3, -3, 0]))
-        .segments,
-    )
     expect(
       createCurveAxis(splines.bezier.chunkCoefficients([0, 3, 3, 0, -3, -3, 0]))
         .extrema,

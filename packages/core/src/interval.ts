@@ -34,7 +34,7 @@ export function takeCenterInterval(
     mid + 1 < boundaries.length - 1 ? boundaries.slice(mid + 1) : null
 
   return {
-    center: [boundaries[mid], boundaries[mid + 1]] as const,
+    center: [boundaries[mid] as number, boundaries[mid + 1] as number],
     left,
     right,
   }

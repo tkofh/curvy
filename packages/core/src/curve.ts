@@ -2,7 +2,7 @@ import { type CurveAxis, createCurveAxis } from './axis'
 import { createCurveLengthLookups } from './sample'
 import type { Spline } from './splines'
 import { splines } from './splines'
-import { invariant, round } from './util'
+import { invariant, objectKeys, round } from './util'
 
 export type Point<Axis extends string | number> = Readonly<{
   [A in Axis]: number
@@ -32,7 +32,7 @@ function convertPointsToAxes<Axis extends string | number>(
   points: ReadonlyArray<Point<Axis>>,
   spline: Spline,
 ): Record<Axis, CurveAxis> {
-  const axisKeys = Object.keys(points[0]) as unknown as ReadonlyArray<Axis>
+  const axisKeys = objectKeys(points[0] as Point<Axis>)
   const axisPoints = {} as Record<Axis, Array<number>>
 
   for (const key of axisKeys) {

@@ -1,7 +1,7 @@
 import type { CurveAxis } from './axis'
 import type { Point } from './curve'
 import { createIntervalTree } from './interval'
-import { computeCubicAntiderivative } from './polynomial'
+import { type CubicPolynomial, computeCubicAntiderivative } from './polynomial'
 import { invariant, remap } from './util'
 
 function collectPointsOfInterest(axis: CurveAxis): Array<number> {
@@ -44,10 +44,10 @@ function takePolynomialIntegral(
   let s1 = 0
   let s2 = 0
 
-  for (let i = 0; i < coefficients.length; i++) {
-    const power = coefficients.length - i
-    s1 += (coefficients[i] * start ** power) / power
-    s2 += (coefficients[i] * end ** power) / power
+  for (const [index, coefficient] of coefficients.entries()) {
+    const power = coefficients.length - index
+    s1 += (coefficient * start ** power) / power
+    s2 += (coefficient * end ** power) / power
   }
 
   return Math.abs(s2 - s1)
@@ -65,8 +65,8 @@ function* createAxisSampler<Axis extends string | number>(
   const lengthLookup = new Map<number, number>()
 
   while (queue.length > 0) {
-    const current = queue[0]
-    const next = queue[1] as number | undefined
+    const current = queue[0] as number
+    const next = queue[1]
 
     if (next === undefined) {
       yield current
@@ -74,7 +74,9 @@ function* createAxisSampler<Axis extends string | number>(
       break
     }
 
-    const segment = axis.segments[Math.floor(current * axis.segments.length)]
+    const segment = axis.segments[
+      Math.floor(current * axis.segments.length)
+    ] as CubicPolynomial
 
     const currentPosition = axis.solvePosition(current)
     const nextPosition = axis.solvePosition(next)
@@ -132,8 +134,7 @@ function* createAxisSampler<Axis extends string | number>(
 
 type AxisSampler<Axis extends string | number> = Generator<
   number,
-  readonly [Axis, LengthData],
-  unknown
+  readonly [Axis, LengthData]
 >
 
 function distance<Axis extends string | number>(
@@ -188,7 +189,7 @@ function createLengthLookup({
 
     const result = search(length)
 
-    invariant(result, 'Length not found')
+    invariant(result !== null, 'Length not found')
 
     return remap(
       length,

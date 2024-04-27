@@ -49,6 +49,27 @@ function chunkPointsBy(
   return chunks
 }
 
+function replicateEndpoints(
+  values: ReadonlyArray<number>,
+  replication: number,
+): ReadonlyArray<number> {
+  const first = values[0]
+  invariant(typeof first === 'number', 'Values must have at least one element')
+
+  const last = values[values.length - 1] ?? first
+
+  const result: Array<number> = []
+  for (let i = 0; i < replication; i++) {
+    result.push(first)
+  }
+  result.push(...values)
+  for (let i = 0; i < replication; i++) {
+    result.push(last)
+  }
+
+  return result
+}
+
 export function pointsToCoefficients(
   matrix: Matrix4x4,
   parameters: CubicCoefficients,
@@ -115,9 +136,7 @@ export const cardinal = (a: number, duplicateEndpoints = true): Spline => ({
   chunkCoefficients(parameters) {
     const coefficients: Array<CubicCoefficients> = []
     for (const chunk of chunkPointsBy(
-      duplicateEndpoints
-        ? [parameters[0], ...parameters, parameters[parameters.length - 1]]
-        : parameters,
+      duplicateEndpoints ? replicateEndpoints(parameters, 1) : parameters,
       1,
     )) {
       coefficients.push(pointsToCoefficients(this.matrix, chunk))
@@ -136,9 +155,7 @@ export const catmullRom = (duplicateEndpoints = true): Spline => ({
   chunkCoefficients(parameters) {
     const coefficients: Array<CubicCoefficients> = []
     for (const chunk of chunkPointsBy(
-      duplicateEndpoints
-        ? [parameters[0], ...parameters, parameters[parameters.length - 1]]
-        : parameters,
+      duplicateEndpoints ? replicateEndpoints(parameters, 1) : parameters,
       1,
     )) {
       coefficients.push(pointsToCoefficients(this.matrix, chunk))
@@ -159,15 +176,7 @@ export const basis = (triplicateEndpoints = true): Spline => ({
   chunkCoefficients(parameters) {
     const coefficients: Array<CubicCoefficients> = []
     for (const chunk of chunkPointsBy(
-      triplicateEndpoints
-        ? [
-            parameters[0],
-            parameters[0],
-            ...parameters,
-            parameters[parameters.length - 1],
-            parameters[parameters.length - 1],
-          ]
-        : parameters,
+      triplicateEndpoints ? replicateEndpoints(parameters, 2) : parameters,
       1,
     )) {
       coefficients.push(pointsToCoefficients(this.matrix, chunk))

@@ -26,9 +26,12 @@ function getCurveExtrema(lookup: Map<number, number>): ReadonlyArray<number> {
     if (index === 0 || index === extremaCandidates.length - 1) {
       continue
     }
-    const previous = extremaLookup.get(extremaCandidates[index - 1]) as number
+    const previousCandidate = extremaCandidates[index - 1] as number
+    const nextCandidate = extremaCandidates[index + 1] as number
+
+    const previous = extremaLookup.get(previousCandidate) as number
     const current = extremaLookup.get(t) as number
-    const next = extremaLookup.get(extremaCandidates[index + 1]) as number
+    const next = extremaLookup.get(nextCandidate) as number
 
     if (
       (previous <= current && current < next) ||
@@ -53,25 +56,29 @@ export function createCurveAxis(
   const normalizedToCurve = coefficients.length
   const curveToNormalized = 1 / coefficients.length
 
-  for (let i = 0; i < coefficients.length; i++) {
-    const segment = createCubicPolynomial(coefficients[i], UNIT_INTERVAL)
+  for (const [index, coefficient] of coefficients.entries()) {
+    const segment = createCubicPolynomial(coefficient, UNIT_INTERVAL)
     segments.push(segment)
 
-    extremaLookup.set(i * curveToNormalized, segment.solve(0))
+    extremaLookup.set(index * curveToNormalized, segment.solve(0))
     for (const extreme of segment.extrema) {
       extremaLookup.set(
-        (i + extreme) * curveToNormalized,
+        (index + extreme) * curveToNormalized,
         segment.solve(extreme),
       )
     }
 
-    if (i === 0) {
+    if (index === 0) {
       monotonicity = segment.monotonicity
     } else if (monotonicity !== segment.monotonicity) {
       monotonicity = 'none'
     }
   }
-  extremaLookup.set(1, segments[segments.length - 1].solve(1))
+
+  extremaLookup.set(
+    1,
+    (segments[segments.length - 1] as CubicPolynomial).solve(1),
+  )
 
   const extrema = getCurveExtrema(extremaLookup)
 
@@ -80,15 +87,20 @@ export function createCurveAxis(
     Math.max(...extremaLookup.values()),
   ]
 
-  const getSegmentAndInput = (t: number) => {
+  const getSegmentAndInput = (
+    t: number,
+  ): { segment: CubicPolynomial; input: number } => {
     invariant(t >= 0 && t <= 1, 't out of range')
     if (t === 1) {
-      return { segment: segments[segments.length - 1], input: 1 }
+      return {
+        segment: segments[segments.length - 1] as CubicPolynomial,
+        input: 1,
+      }
     }
 
     const curveT = t * normalizedToCurve
     const index = Math.floor(curveT)
-    const segment = segments[index]
+    const segment = segments[index] as CubicPolynomial
     const input = curveT - index
     return { segment, input }
   }
