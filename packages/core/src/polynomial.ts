@@ -1,4 +1,4 @@
-import invariant from 'tiny-invariant'
+import { invariant } from './util'
 
 export type Monotonicity = 'none' | 'increasing' | 'decreasing' | 'constant'
 

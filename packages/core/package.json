@@ -42,21 +42,14 @@
   },
   "scripts": {
     "build": "unbuild",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:ui": "vitest --ui --coverage",
-    "prepublish": "pnpm test:run && pnpm build"
+    "test": "vitest run"
   },
   "bugs": {
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^1.3.1",
-    "@vitest/ui": "^1.3.1",
     "unbuild": "^2.0.0",
-    "vitest": "^1.3.1"
-  },
-  "dependencies": {
-    "tiny-invariant": "^1.3.3"
+    "vitest": "^1.5.2"
   }
 }

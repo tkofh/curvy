@@ -1,5 +1,5 @@
-import invariant from 'tiny-invariant'
 import type { CubicCoefficients } from './polynomial'
+import { invariant } from './util'
 
 export type Matrix4x4 = readonly [
   CubicCoefficients,

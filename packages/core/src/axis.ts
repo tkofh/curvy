@@ -1,4 +1,3 @@
-import invariant from 'tiny-invariant'
 import type {
   CubicCoefficients,
   CubicPolynomial,
@@ -7,6 +6,7 @@ import type {
 } from './polynomial'
 import { UNIT_INTERVAL, createCubicPolynomial } from './polynomial'
 import { splines } from './splines'
+import { invariant } from './util'
 
 export type CurveAxis = {
   readonly domain: Interval
@@ -38,9 +38,7 @@ function getCurveExtrema(lookup: Map<number, number>): ReadonlyArray<number> {
     }
   }
 
-  const extrema = Array.from(extremaLookup.keys())
-
-  return extrema
+  return Array.from(extremaLookup.keys())
 }
 
 export function createCurveAxis(

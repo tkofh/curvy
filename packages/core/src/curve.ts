@@ -1,9 +1,8 @@
-import invariant from 'tiny-invariant'
 import { type CurveAxis, createCurveAxis } from './axis'
 import { createCurveLengthLookups } from './sample'
 import type { Spline } from './splines'
 import { splines } from './splines'
-import { round } from './util'
+import { invariant, round } from './util'
 
 export type Point<Axis extends string | number> = Readonly<{
   [A in Axis]: number

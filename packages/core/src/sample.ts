@@ -1,9 +1,8 @@
-import invariant from 'tiny-invariant'
 import type { CurveAxis } from './axis'
 import type { Point } from './curve'
 import { createIntervalTree } from './interval'
 import { computeCubicAntiderivative } from './polynomial'
-import { remap } from './util'
+import { invariant, remap } from './util'
 
 function collectPointsOfInterest(axis: CurveAxis): Array<number> {
   const samples = new Set<number>(Array.from({ length: 33 }, (_, i) => i / 32))
@@ -228,7 +227,7 @@ export function createCurveLengthLookups<Axis extends string | number>(
   while (sampleBuffer.size > 0) {
     const t = Math.min(...sampleBuffer.keys())
     const point = positionAt(t)
-    length = length + distance(lastPoint, point)
+    length += distance(lastPoint, point)
     lengthLookup.set(length, t)
     lastPoint = point
 

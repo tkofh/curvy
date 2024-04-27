@@ -18,11 +18,11 @@ type TakeCenterIntervalResult = {
 }
 
 function createNode(interval: Interval): Node {
-  return {
-    interval,
-    left: null,
-    right: null,
-  }
+  const node = Object.create(null)
+  node.interval = interval
+  node.left = null
+  node.right = null
+  return node
 }
 
 export function takeCenterInterval(

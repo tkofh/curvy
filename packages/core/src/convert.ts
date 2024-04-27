@@ -1,8 +1,7 @@
-import invariant from 'tiny-invariant'
 import type { CubicCoefficients } from './polynomial'
-import { pointsToCoefficients } from './splines'
 import type { Matrix4x4 } from './splines'
-import { round } from './util'
+import { pointsToCoefficients } from './splines'
+import { invariant, round } from './util'
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: this is a complex algorithm
 function determinant(matrix: ReadonlyArray<ReadonlyArray<number>>) {
@@ -32,8 +31,7 @@ function determinant(matrix: ReadonlyArray<ReadonlyArray<number>>) {
         subMatrix.push(subMatrixRow)
       }
 
-      result =
-        result + (-1) ** (columnIndex + 2) * value * determinant(subMatrix)
+      result += (-1) ** (columnIndex + 2) * value * determinant(subMatrix)
     }
   }
   return result

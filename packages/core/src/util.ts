@@ -16,3 +16,12 @@ export function remap(
 ): number {
   return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
 }
+
+export function invariant(
+  condition: boolean,
+  message: string,
+): asserts condition {
+  if (!condition) {
+    throw new Error(message)
+  }
+}
