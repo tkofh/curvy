@@ -1,4 +1,6 @@
-export function round(value: number, precision = 12): number {
+export const PRECISION = 12
+
+export function round(value: number, precision = PRECISION): number {
   const scale = 10 ** precision
   const result = Math.round(value * scale) / scale
   if (result === 0) {
@@ -17,10 +19,20 @@ export function remap(
   return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
 }
 
+export function minMax(a: number, b: number): [number, number] {
+  return a < b ? [a, b] : [b, a]
+}
+
 export function objectKeys<T extends object>(
   object: T,
 ): ReadonlyArray<keyof T> {
   return Object.keys(object) as Array<keyof T>
+}
+
+export function objectEntries<T extends object>(
+  object: T,
+): ReadonlyArray<[keyof T, T[keyof T]]> {
+  return Object.entries(object) as Array<[keyof T, T[keyof T]]>
 }
 
 export function invariant(

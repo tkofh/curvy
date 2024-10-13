@@ -1,373 +1,667 @@
-import { invariant } from './util'
+import { PRECISION, minMax, round } from './util'
 
-export type Monotonicity = 'none' | 'increasing' | 'decreasing' | 'constant'
+class LinearSolver {
+  constructor(
+    readonly c0: number,
+    readonly c1: number,
+    readonly precision = PRECISION,
+  ) {}
 
-export type Interval = readonly [number, number]
-
-export const UNIT_INTERVAL: Interval = [0, 1]
-
-export type LinearCoefficients = readonly [number, number]
-export type LinearPolynomial = {
-  readonly domain: Interval
-  readonly range: Interval
-  readonly monotonicity: Monotonicity
-  readonly coefficients: LinearCoefficients
-  readonly root: number | null
-  readonly solve: (x: number) => number
-  readonly solveInverse: (y: number) => number
-}
-
-export function createLinearPolynomial(
-  coefficients: LinearCoefficients,
-  domain: Interval = UNIT_INTERVAL,
-): LinearPolynomial {
-  const [a, b] = coefficients
-
-  invariant(domain[0] <= domain[1], 'invalid domain')
-
-  let root = a === 0 ? null : b === 0 ? 0 : -b / a
-  if (root !== null && (root < domain[0] || root > domain[1])) {
-    root = null
-  }
-
-  const range: Interval =
-    a >= 0
-      ? [a * domain[0] + b, a * domain[1] + b]
-      : [a * domain[1] + b, a * domain[0] + b]
-
-  const solve = (x: number) => {
-    invariant(x >= domain[0] && x <= domain[1], 'x out of domain')
-    return a * x + b
-  }
-
-  const solveInverse = (y: number) => {
-    invariant(y >= range[0] && y <= range[1], 'y out of range')
-    return a === 0 ? 0 : (y - b) / a
-  }
-
-  return {
-    domain,
-    range,
-    monotonicity: a === 0 ? 'constant' : a > 0 ? 'increasing' : 'decreasing',
-    coefficients,
-    root,
-    solve,
-    solveInverse,
+  solve(x: number): number {
+    return round(this.c0 + x * this.c1, this.precision)
   }
 }
 
-export type QuadraticCoefficients = readonly [number, number, number]
-export type QuadraticPolynomial = {
-  readonly domain: Interval
-  readonly range: Interval
-  readonly monotonicity: Monotonicity
-  readonly coefficients: QuadraticCoefficients
-  readonly extreme: number | null
-  readonly roots: ReadonlyArray<number>
-  readonly derivative: LinearPolynomial
-  readonly solve: (x: number) => number
-  readonly solveInverse: (y: number, domain?: Interval) => ReadonlyArray<number>
+class InverseLinearSolver {
+  constructor(
+    readonly c0: number,
+    readonly c1: number,
+    readonly precision = PRECISION,
+  ) {}
+
+  solve(y: number): number {
+    return round(this.c1 === 0 ? 0 : (y - this.c0) / this.c1, this.precision)
+  }
 }
 
-function createQuadraticRootSolver(
-  coefficients: QuadraticCoefficients,
-  defaultDomain: Interval,
-  range: Interval,
-): (y: number, domain?: Interval) => ReadonlyArray<number> {
-  const [a, b, c] = coefficients
+class LinearPolynomial {
+  private _root: number | null | undefined
 
-  if (a !== 0) {
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: favoring efficiency over complexity
-    return function solveInverse(y, domain = defaultDomain) {
-      invariant(domain[0] <= domain[1], 'invalid domain')
-      invariant(y >= range[0] && y <= range[1], 'y out of range')
+  constructor(
+    readonly c0: number,
+    readonly c1: number,
+    readonly precision = PRECISION,
+  ) {}
 
-      const discriminant = b ** 2 - 4 * a * (c - y)
+  private _monotonicity: Monotonicity | undefined
 
-      if (discriminant < 0) {
-        return []
-      }
+  get monotonicity(): Monotonicity {
+    this._monotonicity ||=
+      this.c1 === 0 ? 'constant' : this.c1 > 0 ? 'increasing' : 'decreasing'
 
-      if (discriminant === 0) {
-        const root = -b / (2 * a)
-        return root < domain[0] || root > domain[1] ? [] : [root]
-      }
+    return this._monotonicity
+  }
 
-      const sqrtDiscriminant = Math.sqrt(discriminant)
-      const denominator = 2 * a
+  private _solver: LinearSolver | undefined
 
-      const left = (-b - sqrtDiscriminant) / denominator
-      const right = (-b + sqrtDiscriminant) / denominator
+  private get solver(): LinearSolver {
+    this._solver ||= new LinearSolver(this.c0, this.c1, this.precision)
+    return this._solver
+  }
 
-      const leftInDomain = left >= domain[0] && left <= domain[1]
-      const rightInDomain = right >= domain[0] && right <= domain[1]
+  private _inverseSolver: InverseLinearSolver | undefined
 
-      if (leftInDomain && rightInDomain) {
-        return left < right ? [left, right] : [right, left]
-      }
-      if (leftInDomain) {
-        return [left]
-      }
-      if (rightInDomain) {
-        return [right]
-      }
+  private get inverseSolver(): InverseLinearSolver {
+    this._inverseSolver ||= new InverseLinearSolver(
+      this.c0,
+      this.c1,
+      this.precision,
+    )
+    return this._inverseSolver
+  }
+
+  root(
+    start: number = Number.NEGATIVE_INFINITY,
+    end: number = Number.POSITIVE_INFINITY,
+  ): number | null {
+    this._root ||=
+      this.c1 === 0 ? null : round(-this.c0 / this.c1, this.precision)
+
+    if (this._root === null) {
+      return null
+    }
+
+    const [min, max] = minMax(start, end)
+
+    return this._root >= min && this._root <= max ? this._root : null
+  }
+
+  antiderivative(
+    integrationConstant: number,
+  ): readonly [number, number, number] {
+    return [integrationConstant, this.c0, this.c1 / 2]
+  }
+
+  solve(x: number): number
+  solve(x: number, rangeStart?: number, rangeEnd?: number): number | null
+  solve(
+    x: number,
+    rangeStart = Number.NEGATIVE_INFINITY,
+    rangeEnd = Number.POSITIVE_INFINITY,
+  ): number | null {
+    const solution = this.solver.solve(x)
+    const [min, max] = minMax(rangeStart, rangeEnd)
+    return solution >= min && solution <= max ? solution : null
+  }
+
+  solveInverse(y: number): number
+  solveInverse(y: number, rangeStart?: number, rangeEnd?: number): number | null
+  solveInverse(
+    y: number,
+    rangeStart = Number.NEGATIVE_INFINITY,
+    rangeEnd = Number.POSITIVE_INFINITY,
+  ): number | null {
+    const solution = this.inverseSolver.solve(y)
+    const [min, max] = minMax(rangeStart, rangeEnd)
+    return solution >= min && solution <= max ? solution : null
+  }
+}
+
+class QuadraticSolver {
+  constructor(
+    readonly c0: number,
+    readonly c1: number,
+    readonly c2: number,
+    readonly precision = PRECISION,
+  ) {}
+
+  solve(x: number): number {
+    return round(this.c0 + x * this.c1 + x ** 2 * this.c2, this.precision)
+  }
+}
+
+class QuadraticInverseSolver {
+  private readonly root: number
+
+  constructor(
+    readonly c0: number,
+    readonly c1: number,
+    readonly c2: number,
+    readonly precision = PRECISION,
+  ) {
+    this.root = round(-this.c1 / (2 * this.c2), this.precision)
+  }
+
+  solve(
+    y: number,
+  ): readonly [] | readonly [number] | readonly [number, number] {
+    const discriminant = this.c1 ** 2 - 4 * this.c2 * (this.c0 - y)
+
+    if (discriminant < 0) {
       return []
     }
-  }
-  if (b !== 0) {
-    return function solveInverse(y, domain = defaultDomain) {
-      invariant(domain[0] <= domain[1], 'invalid domain')
-      invariant(y >= range[0] && y <= range[1], 'y out of range')
 
-      const root = -(c - y) / b
-
-      return root < domain[0] || root > domain[1] ? [] : [root]
+    if (discriminant === 0) {
+      return [this.root]
     }
+
+    const sqrtDiscriminant = Math.sqrt(discriminant)
+
+    return [
+      round((-this.c1 + sqrtDiscriminant) / (2 * this.c2), this.precision),
+      round((-this.c1 - sqrtDiscriminant) / (2 * this.c2), this.precision),
+    ].toSorted((a, b) => a - b) as [number, number]
   }
-  return function solveInverse() {
-    return []
+}
+
+class QuadraticPolynomial {
+  private _roots:
+    | readonly []
+    | readonly [number]
+    | readonly [number, number]
+    | undefined
+  private _extrema: number | null | undefined
+
+  constructor(
+    readonly c0: number,
+    readonly c1: number,
+    readonly c2: number,
+    readonly precision = PRECISION,
+  ) {}
+
+  private _derivative: LinearPolynomial | undefined
+
+  get derivative(): LinearPolynomial {
+    this._derivative ||= new LinearPolynomial(
+      this.c1,
+      2 * this.c2,
+      this.precision,
+    )
+    return this._derivative
+  }
+
+  private _solver: QuadraticSolver | undefined
+
+  private get solver(): QuadraticSolver {
+    this._solver ||= new QuadraticSolver(
+      this.c0,
+      this.c1,
+      this.c2,
+      this.precision,
+    )
+    return this._solver
+  }
+
+  private _inverseSolver: QuadraticInverseSolver | undefined
+
+  private get inverseSolver(): QuadraticInverseSolver {
+    this._inverseSolver ||= new QuadraticInverseSolver(
+      this.c0,
+      this.c1,
+      this.c2,
+      this.precision,
+    )
+    return this._inverseSolver
+  }
+
+  roots(
+    start: number = Number.NEGATIVE_INFINITY,
+    end: number = Number.POSITIVE_INFINITY,
+  ): readonly [] | readonly [number] | readonly [number, number] {
+    this._roots ||= this.solveInverse(0)
+
+    const result: Array<number> = []
+
+    const [min, max] = minMax(start, end)
+
+    if (this._roots.length > 1) {
+      const first = this._roots[0] as number
+      const second = this._roots[1] as number
+
+      if (first >= min && first <= max) {
+        result.push(first)
+      }
+
+      if (second >= min && second <= max) {
+        result.push(second)
+      }
+    } else if (this._roots.length > 0) {
+      const root = this._roots[0] as number
+
+      if (root >= min && root <= max) {
+        result.push(root)
+      }
+    }
+
+    return result as never
+  }
+
+  extrema(
+    start: number = Number.NEGATIVE_INFINITY,
+    end: number = Number.POSITIVE_INFINITY,
+  ): number | null {
+    this._extrema ||= this.derivative.root() ?? (this.c2 === 0 ? null : 0)
+
+    if (this._extrema === null) {
+      return null
+    }
+
+    const [min, max] = minMax(start, end)
+
+    return this._extrema >= min && this._extrema <= max ? this._extrema : null
+  }
+
+  monotonicity(
+    start: number = Number.NEGATIVE_INFINITY,
+    end: number = Number.POSITIVE_INFINITY,
+  ): Monotonicity {
+    if (this.c1 === 0 && this.c2 === 0) {
+      return 'constant'
+    }
+
+    const [min, max] = minMax(start, end)
+
+    const root = this.derivative.root(min, max)
+
+    if (root === null || root === min || root === max) {
+      const sign =
+        root === min
+          ? Math.sign(this.derivative.solve(max))
+          : Math.sign(this.derivative.solve(min))
+
+      if (sign === 0) {
+        return 'constant'
+      }
+      return sign > 0 ? 'increasing' : 'decreasing'
+    }
+
+    return 'none'
+  }
+
+  antiderivative(
+    integrationConstant: number,
+  ): readonly [number, number, number, number] {
+    return [integrationConstant, this.c0, this.c1 / 2, this.c2 / 3]
+  }
+
+  solve(x: number): number
+  solve(x: number, rangeStart?: number, rangeEnd?: number): number | null
+  solve(
+    x: number,
+    rangeStart = Number.NEGATIVE_INFINITY,
+    rangeEnd = Number.POSITIVE_INFINITY,
+  ): number | null {
+    const solution = this.solver.solve(x)
+    const [min, max] = minMax(rangeStart, rangeEnd)
+    return solution >= min && solution <= max ? solution : null
+  }
+
+  solveInverse(
+    y: number,
+    rangeStart = Number.NEGATIVE_INFINITY,
+    rangeEnd = Number.POSITIVE_INFINITY,
+  ): readonly [] | readonly [number] | readonly [number, number] {
+    const raw = this.inverseSolver.solve(y)
+    const solution: Array<number> = []
+
+    if (raw.length > 0) {
+      const [min, max] = minMax(rangeStart, rangeEnd)
+
+      const first = raw[0] as number
+      if (first >= min && first <= max) {
+        solution.push(first)
+      }
+
+      if (raw.length > 1) {
+        const second = raw[1] as number
+        if (second >= min && second <= max) {
+          solution.push(second)
+        }
+      }
+    }
+
+    return solution as never
   }
 }
 
-export function createQuadraticPolynomial(
-  coefficients: QuadraticCoefficients,
-  domain: Interval = UNIT_INTERVAL,
-): QuadraticPolynomial {
-  const [a, b, c] = coefficients
+class CubicSolver {
+  constructor(
+    readonly c0: number,
+    readonly c1: number,
+    readonly c2: number,
+    readonly c3: number,
+    readonly precision = PRECISION,
+  ) {}
 
-  invariant(domain[0] <= domain[1], 'invalid domain')
-
-  const derivative = createLinearPolynomial([2 * a, b], domain)
-  const extreme = derivative.root
-
-  const solve = (x: number) => {
-    invariant(x >= domain[0] && x <= domain[1], 'x out of domain')
-    return a * x ** 2 + b * x + c
+  solve(x: number): number {
+    return round(
+      this.c0 + x * this.c1 + x ** 2 * this.c2 + x ** 3 * this.c3,
+      this.precision,
+    )
   }
-
-  const rangeCandidates =
-    extreme === null
-      ? [solve(domain[0]), solve(domain[1])]
-      : [solve(domain[0]), solve(extreme), solve(domain[1])]
-  const range: Interval = [
-    Math.min(...rangeCandidates),
-    Math.max(...rangeCandidates),
-  ]
-
-  const solveInverse = createQuadraticRootSolver(coefficients, domain, range)
-  const roots = range[0] > 0 || range[1] < 0 ? [] : solveInverse(0)
-
-  return {
-    domain,
-    range,
-    coefficients,
-    monotonicity:
-      a !== 0
-        ? 'none'
-        : b === 0
-          ? 'constant'
-          : b > 0
-            ? 'increasing'
-            : 'decreasing',
-    extreme,
-    roots,
-    derivative,
-    solve,
-    solveInverse,
-  }
-}
-export type CubicCoefficients = readonly [number, number, number, number]
-export type CubicPolynomial = {
-  readonly domain: Interval
-  readonly range: Interval
-  readonly monotonicity: Monotonicity
-  readonly coefficients: CubicCoefficients
-  readonly extrema: ReadonlyArray<number>
-  readonly roots: ReadonlyArray<number>
-  readonly derivative: QuadraticPolynomial
-  readonly solve: (x: number) => number
-  readonly solveInverse: (y: number, domain?: Interval) => ReadonlyArray<number>
 }
 
 const TWO_THIRDS_PI = (2 * Math.PI) / 3
 
-function createCubicRootSolver(
-  coefficients: CubicCoefficients,
-  defaultDomain: Interval,
-  range: Interval,
-): (y: number, domain?: Interval) => ReadonlyArray<number> {
-  if (coefficients[0] === 0) {
-    return createQuadraticRootSolver(
-      [coefficients[1], coefficients[2], coefficients[3]],
-      defaultDomain,
-      range,
-    )
+class CubicInverseSolver {
+  readonly invC3: number
+  readonly a0: number
+  readonly a1: number
+
+  readonly a2OverThree: number
+
+  readonly q: number
+  readonly r0: number
+
+  constructor(
+    readonly c0: number,
+    readonly c1: number,
+    readonly c2: number,
+    readonly c3: number,
+    readonly precision = PRECISION,
+  ) {
+    this.invC3 = 1 / c3
+
+    this.a0 = c2 * this.invC3
+    this.a1 = c1 * this.invC3
+
+    this.a2OverThree = this.a0 / 3
+
+    this.q = this.a1 / 3 - this.a0 ** 2 / 9
+    this.r0 = (this.a1 * this.a0) / 6 - this.a0 ** 3 / 27
   }
 
-  const oneOverA = 1 / coefficients[0]
+  solve(
+    y: number,
+  ):
+    | readonly []
+    | readonly [number]
+    | readonly [number, number]
+    | readonly [number, number, number] {
+    const a0 = (this.c0 - y) * this.invC3
 
-  const a0 = coefficients[1] * oneOverA
-  const a1 = coefficients[2] * oneOverA
+    const r = this.r0 - a0 * 0.5
 
-  const a2OverThree = a0 / 3
-
-  const q = a1 / 3 - a0 ** 2 / 9
-  const r0 = (a1 * a0) / 6 - a0 ** 3 / 27
-
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: favoring efficiency over complexity
-  return function solveInverse(y, domain = defaultDomain) {
-    invariant(domain[0] <= domain[1], 'invalid domain')
-    invariant(y >= range[0] && y <= range[1], 'y out of range')
-
-    const a0 = (coefficients[3] - y) * oneOverA
-
-    const r = r0 - a0 * 0.5
-
-    const discriminant = q ** 3 + r ** 2
+    const discriminant = this.q ** 3 + r ** 2
 
     if (discriminant > 0) {
       const a = Math.cbrt(Math.abs(r) + Math.sqrt(discriminant))
 
-      /* c8 ignore next */
-      const root = (r < 0 ? q / a - a : a - q / a) - a2OverThree
-      return root < domain[0] || root > domain[1] ? [] : [root]
+      return [(r < 0 ? this.q / a - a : a - this.q / a) - this.a2OverThree]
     }
-    const theta = Math.acos(r / Math.sqrt((-q) ** 3)) / 3
-    const twoRootQ = 2 * Math.sqrt(-q)
 
-    const root1 = twoRootQ * Math.cos(theta - TWO_THIRDS_PI) - a2OverThree
-    const root2 = twoRootQ * Math.cos(theta) - a2OverThree
-    const root3 = twoRootQ * Math.cos(theta + TWO_THIRDS_PI) - a2OverThree
+    const theta = Math.acos(r / Math.sqrt((-this.q) ** 3)) / 3
+    const twoRootQ = 2 * Math.sqrt(-this.q)
 
-    const candidates = [root1, root2, root3]
-    const roots: Array<number> = []
+    const root1 = round(
+      twoRootQ * Math.cos(theta - TWO_THIRDS_PI) - this.a2OverThree,
+      this.precision,
+    )
+    const root2 = round(
+      twoRootQ * Math.cos(theta) - this.a2OverThree,
+      this.precision,
+    )
+    const root3 = round(
+      twoRootQ * Math.cos(theta + TWO_THIRDS_PI) - this.a2OverThree,
+      this.precision,
+    )
 
-    for (const candidate of candidates) {
-      if (
-        candidate >= domain[0] &&
-        candidate <= domain[1] &&
-        !roots.includes(candidate)
-      ) {
-        roots.push(candidate)
-      }
+    const roots = [root1]
+
+    if (root2 !== root1) {
+      roots.push(root2)
+    }
+
+    if (root3 !== root2 && root3 !== root1) {
+      roots.push(root3)
     }
 
     roots.sort((a, b) => a - b)
 
-    return roots
+    return roots as never
   }
 }
 
-function getMonotonicity(
-  extrema: ReadonlyArray<number>,
-  derivative: QuadraticPolynomial,
-  domain: Interval,
-): Monotonicity {
-  if (
-    derivative.coefficients[0] === 0 &&
-    derivative.coefficients[1] === 0 &&
-    derivative.coefficients[2] === 0
-  ) {
-    return 'constant'
+class CubicPolynomial {
+  private _roots:
+    | readonly []
+    | readonly [number]
+    | readonly [number, number]
+    | readonly [number, number, number]
+    | undefined
+
+  constructor(
+    readonly c0: number,
+    readonly c1: number,
+    readonly c2: number,
+    readonly c3: number,
+    readonly precision = PRECISION,
+  ) {}
+
+  private _inverseSolver:
+    | CubicInverseSolver
+    | QuadraticInverseSolver
+    | undefined
+
+  get inverseSolver(): CubicInverseSolver | QuadraticInverseSolver {
+    this._inverseSolver ||=
+      this.c3 === 0
+        ? new QuadraticInverseSolver(this.c0, this.c1, this.c2, this.precision)
+        : new CubicInverseSolver(
+            this.c0,
+            this.c1,
+            this.c2,
+            this.c3,
+            this.precision,
+          )
+    return this._inverseSolver
   }
 
-  let hasInnerExtrema = false
-  for (const extreme of extrema) {
-    if (extreme > domain[0] && extreme > domain[1]) {
-      hasInnerExtrema = true
-      break
+  private _derivative: QuadraticPolynomial | undefined
+
+  get derivative(): QuadraticPolynomial {
+    this._derivative ||= new QuadraticPolynomial(
+      3 * this.c3,
+      2 * this.c2,
+      this.c1,
+      this.precision,
+    )
+    return this._derivative
+  }
+
+  private _solver: CubicSolver | undefined
+
+  private get solver(): CubicSolver {
+    this._solver ||= new CubicSolver(
+      this.c0,
+      this.c1,
+      this.c2,
+      this.c3,
+      this.precision,
+    )
+    return this._solver
+  }
+
+  extrema(
+    start: number = Number.NEGATIVE_INFINITY,
+    end: number = Number.POSITIVE_INFINITY,
+  ): readonly [] | readonly [number] | readonly [number, number] {
+    return this.derivative.roots(start, end)
+  }
+
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: favoring efficiency & collocation over complexity
+  roots(
+    start: number = Number.NEGATIVE_INFINITY,
+    end: number = Number.POSITIVE_INFINITY,
+  ): readonly [] | readonly [number] | readonly [number, number] {
+    this._roots ||= this.solveInverse(0)
+
+    const result: Array<number> = []
+
+    if (this._roots.length > 2) {
+      const first = this._roots[0] as number
+      const second = this._roots[1] as number
+      const third = this._roots[2] as number
+
+      if (first >= start && first <= end) {
+        result.push(first)
+      }
+
+      if (second >= start && second <= end) {
+        result.push(second)
+      }
+
+      if (third >= start && third <= end) {
+        result.push(third)
+      }
+    } else if (this._roots.length > 1) {
+      const first = this._roots[0] as number
+      const second = this._roots[1] as number
+
+      if (first >= start && first <= end) {
+        result.push(first)
+      }
+
+      if (second >= start && second <= end) {
+        result.push(second)
+      }
+    } else if (this._roots.length > 0) {
+      const root = this._roots[0] as number
+
+      if (root >= start && root <= end) {
+        result.push(root)
+      }
     }
+
+    return result as never
   }
 
-  if (hasInnerExtrema) {
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: favoring efficiency & collocation over complexity
+  monotonicity(
+    start: number = Number.NEGATIVE_INFINITY,
+    end: number = Number.POSITIVE_INFINITY,
+  ): Monotonicity {
+    if (this.c1 === 0 && this.c2 === 0 && this.c3 === 0) {
+      return 'constant'
+    }
+
+    const [min, max] = minMax(start, end)
+
+    const roots = this.derivative.roots(min, max)
+
+    if (roots.length === 2 && min === roots[0] && max === roots[1]) {
+      return this.derivative.solve((min + max) / 2) > 0
+        ? 'decreasing'
+        : 'increasing'
+    }
+
+    if (roots.length === 1) {
+      if (min === roots[0]) {
+        return Math.sign(this.derivative.solve(max)) > 0
+          ? 'decreasing'
+          : 'increasing'
+      }
+      if (max === roots[0]) {
+        return Math.sign(this.derivative.solve(min)) > 0
+          ? 'decreasing'
+          : 'increasing'
+      }
+    }
+
     return 'none'
   }
 
-  let test = derivative.solve(domain[0])
-  if (test === 0) {
-    test = derivative.solve((domain[0] + domain[1]) * 0.5)
+  antiderivative(
+    integrationConstant: number,
+  ): readonly [number, number, number, number, number] {
+    return [integrationConstant, this.c0, this.c1 / 2, this.c2 / 3, this.c3 / 4]
   }
 
-  return Math.sign(test) > 0 ? 'increasing' : 'decreasing'
+  solve(x: number): number
+  solve(x: number, rangeStart?: number, rangeEnd?: number): number | null
+  solve(
+    x: number,
+    rangeStart = Number.NEGATIVE_INFINITY,
+    rangeEnd = Number.POSITIVE_INFINITY,
+  ): number | null {
+    const solution = this.solver.solve(x)
+    const [min, max] = minMax(rangeStart, rangeEnd)
+    return solution >= min && solution <= max ? solution : null
+  }
+
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: favoring efficiency & collocation over complexity
+  solveInverse(
+    y: number,
+    rangeStart = Number.NEGATIVE_INFINITY,
+    rangeEnd = Number.POSITIVE_INFINITY,
+  ):
+    | readonly []
+    | readonly [number]
+    | readonly [number, number]
+    | readonly [number, number, number] {
+    const raw = this.inverseSolver.solve(y)
+    const solution: Array<number> = []
+
+    if (raw.length > 0) {
+      const [min, max] = minMax(rangeStart, rangeEnd)
+
+      {
+        const value = raw[0] as number
+        if (value >= min && value <= max) {
+          solution.push(value)
+        }
+      }
+
+      if (raw.length > 1) {
+        const value = raw[1] as number
+        if (value >= min && value <= max) {
+          solution.push(value)
+        }
+      }
+
+      if (raw.length > 2) {
+        const value = raw[2] as number
+        if (value >= min && value <= max) {
+          solution.push(value)
+        }
+      }
+    }
+
+    return solution as never
+  }
+}
+
+export type Monotonicity = 'none' | 'increasing' | 'decreasing' | 'constant'
+
+export type { LinearPolynomial, QuadraticPolynomial, CubicPolynomial }
+
+export type CubicCoefficients = readonly [number, number, number, number]
+export type QuadraticCoefficients = readonly [number, number, number]
+export type LinearCoefficients = readonly [number, number]
+
+export function createLinearPolynomial(
+  c0: number,
+  c1: number,
+  precision = PRECISION,
+): LinearPolynomial {
+  return new LinearPolynomial(c0, c1, precision)
+}
+
+export function createQuadraticPolynomial(
+  c0: number,
+  c1: number,
+  c2: number,
+  precision = PRECISION,
+): QuadraticPolynomial {
+  return new QuadraticPolynomial(c0, c1, c2, precision)
 }
 
 export function createCubicPolynomial(
-  coefficients: CubicCoefficients,
-  domain: Interval = UNIT_INTERVAL,
+  c0: number,
+  c1: number,
+  c2: number,
+  c3: number,
+  precision = PRECISION,
 ): CubicPolynomial {
-  invariant(domain[0] <= domain[1], 'invalid domain')
-
-  const [a, b, c, d] = coefficients
-
-  const derivative = createQuadraticPolynomial([3 * a, 2 * b, c], domain)
-
-  // a single root for the derivative means an inflection point
-  const extrema =
-    derivative.roots.length === 1 && derivative.coefficients[0] !== 0
-      ? []
-      : derivative.roots
-
-  const solve = (x: number) => {
-    invariant(x >= domain[0] && x <= domain[1], 'x out of domain')
-    return a * x ** 3 + b * x ** 2 + c * x + d
-  }
-
-  const rangeCandidates = [
-    solve(domain[0]),
-    ...extrema.map((extreme) => solve(extreme)),
-    solve(domain[1]),
-  ]
-  const range: Interval = [
-    Math.min(...rangeCandidates),
-    Math.max(...rangeCandidates),
-  ]
-
-  const solveInverse = createCubicRootSolver(coefficients, domain, range)
-  const roots = range[0] > 0 || range[1] < 0 ? [] : solveInverse(0, domain)
-
-  const monotonicity = getMonotonicity(extrema, derivative, domain)
-
-  return {
-    domain,
-    range,
-    monotonicity,
-    coefficients,
-    extrema,
-    roots,
-    derivative,
-    solve,
-    solveInverse,
-  }
-}
-
-export function computeLinearAntiderivative(
-  coefficients: LinearCoefficients,
-  integrationConstant: number,
-): QuadraticCoefficients {
-  return [coefficients[0] / 2, coefficients[1], integrationConstant]
-}
-
-export function computeQuadraticAntiderivative(
-  coefficients: QuadraticCoefficients,
-  integrationConstant: number,
-): CubicCoefficients {
-  return [
-    coefficients[0] / 3,
-    coefficients[1] / 2,
-    coefficients[2],
-    integrationConstant,
-  ]
-}
-
-export function computeCubicAntiderivative(
-  coefficients: CubicCoefficients,
-  integrationConstant: number,
-): Readonly<[number, number, number, number, number]> {
-  return [
-    coefficients[0] / 4,
-    coefficients[1] / 3,
-    coefficients[2] / 2,
-    coefficients[3],
-    integrationConstant,
-  ]
+  return new CubicPolynomial(c0, c1, c2, c3, precision)
 }

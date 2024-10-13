@@ -1,13 +1,11 @@
 {
   "formatter": {
-    "external": {
-      "command": "biome",
-      "arguments": [
-        "check",
-        "--apply-unsafe",
-        "--stdin-file-path",
-        "{buffer_path}"
-      ]
+    "language_server": {
+      "name": "biome"
     }
+  },
+  "code_actions_on_format": {
+    "source.fixAll.biome": true,
+    "source.organizeImports.biome": true
   }
 }
