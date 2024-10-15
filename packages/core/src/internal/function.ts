@@ -6,7 +6,8 @@
  * This version is licensed under the MIT license.
  */
 
-type AnyFunction = (...args: Array<unknown>) => unknown
+// biome-ignore lint/suspicious/noExplicitAny: any is used to allow any argument to be passed in
+type AnyFunction = (...args: Array<any>) => any
 
 export const dual: {
   <DataLast extends AnyFunction, DataFirst extends AnyFunction>(

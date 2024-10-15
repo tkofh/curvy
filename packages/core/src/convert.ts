@@ -1,9 +1,9 @@
 // import type { CubicCoefficients } from './polynomial'
-// import type { Matrix4x4 } from './splines'
+// import type { Matrix4x4Internal } from './splines'
 // import { pointsToCoefficients } from './splines'
 // import { invariant, round } from './util'
 
-// // using ReadonlyArray<ReadonlyArray<number>> instead of Matrix4x4 because the algorithm is recursive
+// // using ReadonlyArray<ReadonlyArray<number>> instead of Matrix4x4Internal because the algorithm is recursive
 // // this means there need to be some extra assertions
 
 // // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: this is a complex algorithm
@@ -50,7 +50,7 @@
 // }
 
 // function solveLinearSystem(
-//   coefficients: Matrix4x4,
+//   coefficients: Matrix4x4Internal,
 //   solutions: CubicCoefficients,
 // ): CubicCoefficients {
 //   const coefficientDeterminant = determinant(coefficients)
@@ -82,8 +82,8 @@
 
 // export function convertScalars(
 //   points: CubicCoefficients,
-//   sourceSpline: Matrix4x4,
-//   targetSpline: Matrix4x4,
+//   sourceSpline: Matrix4x4Internal,
+//   targetSpline: Matrix4x4Internal,
 // ): CubicCoefficients {
 //   const solutions = solveLinearSystem(
 //     targetSpline,

@@ -1,5 +1,5 @@
 // import { PRECISION, invariant, round } from './util'
-// import { Vector2, Vector3, Vector4 } from './vector'
+// import { Vector2, Vector3Internal, Vector4 } from './vector'
 
 // /**
 //  * A 2x2 matrix
@@ -146,8 +146,8 @@
 //     )
 //   }
 
-//   matrixVectorProduct(v: Vector3): Vector3 {
-//     return new Vector3(
+//   matrixVectorProduct(v: Vector3Internal): Vector3Internal {
+//     return new Vector3Internal(
 //       this.m00 * v.v0 + this.m01 * v.v1 + this.m02 * v.v2,
 //       this.m10 * v.v0 + this.m11 * v.v1 + this.m12 * v.v2,
 //       this.m20 * v.v0 + this.m21 * v.v1 + this.m22 * v.v2,
@@ -155,8 +155,8 @@
 //     )
 //   }
 
-//   vectorMatrixProduct(v: Vector3): Vector3 {
-//     return new Vector3(
+//   vectorMatrixProduct(v: Vector3Internal): Vector3Internal {
+//     return new Vector3Internal(
 //       this.m00 * v.v0 + this.m10 * v.v1 + this.m20 * v.v2,
 //       this.m01 * v.v0 + this.m11 * v.v1 + this.m21 * v.v2,
 //       this.m02 * v.v0 + this.m12 * v.v1 + this.m22 * v.v2,
@@ -179,7 +179,7 @@
 //     )
 //   }
 
-//   solveSystem(v: Vector3): Vector3 {
+//   solveSystem(v: Vector3Internal): Vector3Internal {
 //     const determinant = this.determinant()
 
 //     invariant(
@@ -202,7 +202,7 @@
 //     s2.m12 = v.v1
 //     s2.m22 = v.v2
 
-//     return new Vector3(
+//     return new Vector3Internal(
 //       s0.determinant() / determinant,
 //       s1.determinant() / determinant,
 //       s2.determinant() / determinant,
@@ -215,7 +215,7 @@
 //  *
 //  * coefficients are stored in row-major order
 //  */
-// export class Matrix4x4 {
+// export class Matrix4x4Internal {
 //   m00: number
 //   m01: number
 //   m02: number
@@ -357,8 +357,8 @@
 //     )
 //   }
 
-//   clone(): Matrix4x4 {
-//     return new Matrix4x4(
+//   clone(): Matrix4x4Internal {
+//     return new Matrix4x4Internal(
 //       this.m00,
 //       this.m01,
 //       this.m02,

@@ -26,7 +26,7 @@
 //   }
 // }
 
-// export class Vector3 {
+// export class Vector3Internal {
 //   v0: number
 //   v1: number
 //   v2: number
@@ -52,7 +52,7 @@
 //     return this._magnitude
 //   }
 
-//   dot(v: Vector3): number {
+//   dot(v: Vector3Internal): number {
 //     return round(
 //       this.v0 * v.v0 + this.v1 * v.v1 + this.v2 * v.v2,
 //       this.precision,

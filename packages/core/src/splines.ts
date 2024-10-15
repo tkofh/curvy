@@ -1,16 +1,16 @@
 // import type { AxisInput } from './axis'
 // import type { Curve } from './curve'
-// import type { Matrix4x4 } from './matrix/matrix4x4'
+// import type { Matrix4x4Internal } from './matrix/matrix4x4'
 // import type { CubicCoefficients } from './polynomial'
 // import { invariant, objectEntries } from './util'
 // import { type Vector4, vector4 } from './vector/vector4'
 
 // class Spline {
-//   readonly matrix: Matrix4x4
+//   readonly matrix: Matrix4x4Internal
 
 //   private readonly stride: number
 
-//   constructor(matrix: Matrix4x4, stride = 1) {
+//   constructor(matrix: Matrix4x4Internal, stride = 1) {
 //     this.matrix = matrix
 //     this.stride = stride
 //   }
@@ -154,7 +154,7 @@
 // }
 
 // export function pointsToCoefficients(
-//   matrix: Matrix4x4,
+//   matrix: Matrix4x4Internal,
 //   parameters: CubicCoefficients,
 // ): CubicCoefficients {
 //   return [

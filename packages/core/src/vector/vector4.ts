@@ -1,69 +1,35 @@
-import { PRECISION, round } from '../util'
+import type { Pipeable } from '../internal/pipeable'
+import * as internal from './vector4.internal'
 
-const TypeBrand: unique symbol = Symbol.for('curvy/vector4')
-type TypeBrand = typeof TypeBrand
+export type Vector4Component = 0 | 1 | 2 | 3
 
-class Vector4 {
-  readonly [TypeBrand]: TypeBrand = TypeBrand
-
+export interface Vector4 extends Pipeable {
   readonly v0: number
   readonly v1: number
   readonly v2: number
   readonly v3: number
 
   readonly precision: number
-
-  constructor(v0 = 0, v1 = 0, v2 = 0, v3 = 0, precision = PRECISION) {
-    this.v0 = round(v0, precision)
-    this.v1 = round(v1, precision)
-    this.v2 = round(v2, precision)
-    this.v3 = round(v3, precision)
-
-    this.precision = precision
-  }
 }
 
-export type { Vector4 }
+export const isVector4: (v: unknown) => v is Vector4 = internal.isVector4
 
-export function isVector4(v: unknown): v is Vector4 {
-  return typeof v === 'object' && v !== null && TypeBrand in v
-}
-
-export function magnitude(vector: Vector4): number {
-  return round(
-    Math.hypot(vector.v0, vector.v1, vector.v2, vector.v3),
-    vector.precision,
-  )
-}
-
-export function dot(a: Vector4, b: Vector4): number {
-  return round(
-    a.v0 * b.v0 + a.v1 * b.v1 + a.v2 * b.v2 + a.v3 * b.v3,
-    Math.min(a.precision, b.precision),
-  )
-}
-
-export function components(v: Vector4): [number, number, number, number] {
-  return [v.v0, v.v1, v.v2, v.v3]
-}
-
-export function softmax(v: Vector4): Vector4 {
-  const c = 1 / Math.exp(v.v0 + v.v1 + v.v2 + v.v3)
-
-  return vector4(
-    c * Math.exp(v.v0),
-    c * Math.exp(v.v1),
-    c * Math.exp(v.v2),
-    c * Math.exp(v.v3),
-  )
-}
-
-export function vector4(
+export const vector4: (
   v0: number,
-  v1 = v0,
-  v2 = v1,
-  v3 = v2,
-  precision = PRECISION,
-): Vector4 {
-  return new Vector4(v0, v1, v2, v3, precision)
-}
+  v1?: number,
+  v2?: number,
+  v3?: number,
+  precision?: number,
+) => Vector4 = internal.make
+
+export const magnitude: (vector: Vector4) => number = internal.magnitude
+
+export const dot: {
+  (a: Vector4, b: Vector4): number
+  (b: Vector4): (a: Vector4) => number
+} = internal.dot
+
+export const components: (v: Vector4) => [number, number, number, number] =
+  internal.components
+
+export const softmax: (v: Vector4) => Vector4 = internal.softmax
