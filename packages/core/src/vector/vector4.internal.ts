@@ -2,11 +2,12 @@ import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
 import { PRECISION, round } from '../util'
 import type { Vector4 } from './vector4'
-const TypeBrand: unique symbol = Symbol.for('curvy/vector4')
-type TypeBrand = typeof TypeBrand
+
+export const Vector4TypeId: unique symbol = Symbol.for('curvy/vector4')
+export type Vector4TypeId = typeof Vector4TypeId
 
 class Vector4Impl extends Pipeable implements Vector4 {
-  readonly [TypeBrand]: TypeBrand = TypeBrand
+  readonly [Vector4TypeId]: Vector4TypeId = Vector4TypeId
 
   readonly v0: number
   readonly v1: number
@@ -40,7 +41,7 @@ class Vector4Impl extends Pipeable implements Vector4 {
 }
 
 export const isVector4 = (v: unknown): v is Vector4 =>
-  typeof v === 'object' && v !== null && TypeBrand in v
+  typeof v === 'object' && v !== null && Vector4TypeId in v
 
 export const magnitude: (vector: Vector4) => number = (vector: Vector4) =>
   round(

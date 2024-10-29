@@ -5,9 +5,11 @@ import type { CubicPolynomial } from './cubic'
 import type { LinearPolynomial } from './linear'
 import type { Monotonicity } from './monotonicity'
 import * as internal from './quadratic.internal'
+import type { QuadraticPolynomialTypeId } from './quadratic.internal.circular'
 import type { ZeroOrOneSolution, ZeroToTwoSolutions } from './types'
 
 export interface QuadraticPolynomial extends Pipeable {
+  readonly [QuadraticPolynomialTypeId]: QuadraticPolynomialTypeId
   readonly c0: number
   readonly c1: number
   readonly c2: number

@@ -1,10 +1,13 @@
 import type { Pipeable } from '../internal/pipeable'
 import type { Vector2 } from '../vector/vector2'
 import * as internal from './matrix2x2.internal'
+import type { Matrix2x2TypeBrand } from './matrix2x2.internal'
 
 export type Matrix2x2Coordinate = 0 | 1
 
 export interface Matrix2x2 extends Pipeable {
+  readonly [Matrix2x2TypeBrand]: Matrix2x2TypeBrand
+
   readonly m00: number
   readonly m01: number
   readonly m10: number

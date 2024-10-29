@@ -2,11 +2,14 @@ import type { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
 import type { Vector4 } from '../vector/vector4'
 import * as internal from './cubic.internal'
+import type { CubicPolynomialTypeId } from './cubic.internal.circular'
 import type { Monotonicity } from './monotonicity'
 import type { QuadraticPolynomial } from './quadratic'
 import type { ZeroToThreeSolutions, ZeroToTwoSolutions } from './types'
 
 export interface CubicPolynomial extends Pipeable {
+  readonly [CubicPolynomialTypeId]: CubicPolynomialTypeId
+
   readonly c0: number
   readonly c1: number
   readonly c2: number

@@ -2,12 +2,10 @@ import { Pipeable } from '../internal/pipeable'
 import { PRECISION, round } from '../util'
 import type { CubicPolynomial } from './cubic'
 
-export const CubicPolynomialSymbolKey = 'curvy/polynomial/cubic'
-
 export const CubicPolynomialTypeId: unique symbol = Symbol.for(
-  CubicPolynomialSymbolKey,
+  'curvy/polynomial/cubic',
 )
-type CubicPolynomialTypeId = typeof CubicPolynomialTypeId
+export type CubicPolynomialTypeId = typeof CubicPolynomialTypeId
 
 export class CubicPolynomialImpl extends Pipeable implements CubicPolynomial {
   readonly [CubicPolynomialTypeId]: CubicPolynomialTypeId =

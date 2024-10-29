@@ -2,10 +2,8 @@ import { Pipeable } from '../internal/pipeable'
 import { PRECISION, round } from '../util'
 import type { QuadraticPolynomial } from './quadratic'
 
-export const QuadraticPolynomialSymbolKey = 'curvy/polynomial/quadratic'
-
 export const QuadraticPolynomialTypeId: unique symbol = Symbol.for(
-  QuadraticPolynomialSymbolKey,
+  'curvy/polynomial/quadratic',
 )
 export type QuadraticPolynomialTypeId = typeof QuadraticPolynomialTypeId
 

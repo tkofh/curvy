@@ -1,9 +1,12 @@
 import type { Pipeable } from '../internal/pipeable'
 import * as internal from './vector2.internal'
+import type { Vector2TypeId } from './vector2.internal'
 
 export type Vector2Component = 0 | 1
 
 export interface Vector2 extends Pipeable {
+  readonly [Vector2TypeId]: Vector2TypeId
+
   readonly v0: number
   readonly v1: number
 

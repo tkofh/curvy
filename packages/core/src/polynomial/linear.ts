@@ -1,11 +1,14 @@
 import type { Pipeable } from '../internal/pipeable'
 import type { Vector2 } from '../vector/vector2'
 import * as internal from './linear.internal'
+import type { LinearPolynomialTypeId } from './linear.internal'
 import type { GuaranteedMonotonicity } from './monotonicity'
 import type { QuadraticPolynomial } from './quadratic'
 import type { ZeroOrOneSolution } from './types'
 
 export interface LinearPolynomial extends Pipeable {
+  readonly [LinearPolynomialTypeId]: LinearPolynomialTypeId
+
   readonly c0: number
   readonly c1: number
   readonly precision: number

@@ -6,11 +6,12 @@ import type { LinearPolynomial } from './linear'
 import { QuadraticPolynomialImpl } from './quadratic.internal.circular'
 import type { ZeroOrOneSolution } from './types'
 
-const TypeBrand: unique symbol = Symbol.for('curvy/linear')
-type TypeBrand = typeof TypeBrand
+export const LinearPolynomialTypeId: unique symbol = Symbol.for('curvy/linear')
+export type LinearPolynomialTypeId = typeof LinearPolynomialTypeId
 
 class LinearPolynomialImpl extends Pipeable implements LinearPolynomial {
-  readonly [TypeBrand]: TypeBrand = TypeBrand
+  readonly [LinearPolynomialTypeId]: LinearPolynomialTypeId =
+    LinearPolynomialTypeId
 
   readonly c0: number
   readonly c1: number
@@ -28,7 +29,7 @@ class LinearPolynomialImpl extends Pipeable implements LinearPolynomial {
 }
 
 export const isLinearPolynomial = (v: unknown): v is LinearPolynomial =>
-  typeof v === 'object' && v !== null && TypeBrand in v
+  typeof v === 'object' && v !== null && LinearPolynomialTypeId in v
 
 export const make = (c0 = 0, c1 = 0, precision = PRECISION): LinearPolynomial =>
   new LinearPolynomialImpl(c0, c1, precision)

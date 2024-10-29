@@ -3,10 +3,11 @@ import { Pipeable } from '../internal/pipeable'
 import { PRECISION, round } from '../util'
 import type { Vector2 } from './vector2'
 
-const TypeBrand = Symbol.for('curvy/vector2')
+export const Vector2TypeId = Symbol.for('curvy/vector2')
+export type Vector2TypeId = typeof Vector2TypeId
 
 class Vector2Impl extends Pipeable implements Vector2 {
-  readonly [TypeBrand] = TypeBrand
+  readonly [Vector2TypeId]: Vector2TypeId = Vector2TypeId
 
   readonly v0: number
   readonly v1: number
@@ -35,7 +36,7 @@ class Vector2Impl extends Pipeable implements Vector2 {
 }
 
 export const isVector2 = (v: unknown): v is Vector2 =>
-  typeof v === 'object' && v !== null && TypeBrand in v
+  typeof v === 'object' && v !== null && Vector2TypeId in v
 
 export const magnitude = (vector: Vector2) =>
   round(Math.hypot(vector.v0, vector.v1), vector.precision)

@@ -6,11 +6,11 @@ import * as vector4 from '../vector/vector4.internal'
 import * as matrix3x3 from './matrix3x3.internal'
 import type { Matrix4x4, Matrix4x4Coordinate } from './matrix4x4'
 
-const TypeBrand: unique symbol = Symbol.for('curvy/matrix4x4')
-type TypeBrand = typeof TypeBrand
+export const Matrix4x4TypeId: unique symbol = Symbol.for('curvy/matrix4x4')
+export type Matrix4x4TypeId = typeof Matrix4x4TypeId
 
 class Matrix4x4Impl extends Pipeable implements Matrix4x4 {
-  readonly [TypeBrand]: TypeBrand = TypeBrand
+  readonly [Matrix4x4TypeId]: Matrix4x4TypeId = Matrix4x4TypeId
 
   readonly m00: number
   readonly m01: number
@@ -89,7 +89,7 @@ class Matrix4x4Impl extends Pipeable implements Matrix4x4 {
 }
 
 export const isMatrix4x4 = (m: unknown): m is Matrix4x4 =>
-  typeof m === 'object' && m !== null && TypeBrand in m
+  typeof m === 'object' && m !== null && Matrix4x4TypeId in m
 
 export const make = (
   m00 = 0,
