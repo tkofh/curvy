@@ -1,5 +1,5 @@
 import type { Pipeable } from '../internal/pipeable'
-import type { Vector2 } from '../vector/vector2.internal'
+import type { Vector2 } from '../vector/vector2'
 import * as internal from './matrix2x2.internal'
 
 export type Matrix2x2Coordinate = 0 | 1
@@ -54,7 +54,7 @@ export const vectorProductLeft: {
 export const vectorProductRight: {
   (m: Matrix2x2, v: Vector2): Vector2
   (v: Vector2): (m: Matrix2x2) => Vector2
-} = internal.vectorProductLeft
+} = internal.vectorProductRight
 
 export const solveSystem: {
   (m: Matrix2x2, v: Vector2): Vector2

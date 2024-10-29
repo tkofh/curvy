@@ -1,8 +1,11 @@
 import type { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
 import type { Vector3 } from '../vector/vector3'
+import type { CubicPolynomial } from './cubic'
 import type { LinearPolynomial } from './linear'
+import type { Monotonicity } from './monotonicity'
 import * as internal from './quadratic.internal'
+import type { ZeroOrOneSolution, ZeroToTwoSolutions } from './types'
 
 export interface QuadraticPolynomial extends Pipeable {
   readonly c0: number
@@ -35,43 +38,29 @@ export const toSolver: (p: QuadraticPolynomial) => (x: number) => number =
   internal.toSolver
 
 export const solveInverse: {
-  (p: QuadraticPolynomial, y: number): number
-  (y: number): (p: QuadraticPolynomial) => number
+  (p: QuadraticPolynomial, y: number): ZeroToTwoSolutions
+  (y: number): (p: QuadraticPolynomial) => ZeroToTwoSolutions
 } = internal.solveInverse
 
 export const toInverseSolver: (
   p: QuadraticPolynomial,
-) => (y: number) => number = internal.toInverseSolver
+) => (y: number) => ZeroToTwoSolutions = internal.toInverseSolver
 
 export const derivative: (p: QuadraticPolynomial) => LinearPolynomial =
   internal.derivative
 
-export const roots: (
-  p: QuadraticPolynomial,
-) => readonly [] | readonly [number] | readonly [number, number] =
-  internal.roots
+export const roots: (p: QuadraticPolynomial) => ZeroToTwoSolutions = (p) =>
+  internal.solveInverse(p, 0)
 
-export const extreme: (p: QuadraticPolynomial) => number | null =
+export const extreme: (p: QuadraticPolynomial) => ZeroOrOneSolution =
   internal.extreme
 
 export const monotonicity: {
-  (
-    p: QuadraticPolynomial,
-    i?: Interval,
-  ): 'none' | 'increasing' | 'decreasing' | 'constant'
-  (
-    i?: Interval,
-  ): (
-    p: QuadraticPolynomial,
-  ) => 'none' | 'increasing' | 'decreasing' | 'constant'
+  (p: QuadraticPolynomial, i?: Interval): Monotonicity
+  (i: Interval): (p: QuadraticPolynomial) => Monotonicity
 } = internal.monotonicity
 
 export const antiderivative: {
-  (
-    p: QuadraticPolynomial,
-    integrationConstant: number,
-  ): readonly [number, number, number, number]
-  (
-    integrationConstant: number,
-  ): (p: QuadraticPolynomial) => readonly [number, number, number, number]
+  (p: QuadraticPolynomial, constant: number): CubicPolynomial
+  (constant: number): (p: QuadraticPolynomial) => CubicPolynomial
 } = internal.antiderivative

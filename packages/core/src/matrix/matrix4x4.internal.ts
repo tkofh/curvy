@@ -1,12 +1,8 @@
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
 import { PRECISION, invariant, round } from '../util'
-import {
-  type Vector4,
-  components,
-  dot,
-  vector4,
-} from '../vector/vector4.internal'
+import type { Vector4 } from '../vector/vector4'
+import * as vector4 from '../vector/vector4.internal'
 import * as matrix3x3 from './matrix3x3.internal'
 import type { Matrix4x4, Matrix4x4Coordinate } from './matrix4x4'
 
@@ -56,7 +52,6 @@ class Matrix4x4Impl extends Pipeable implements Matrix4x4 {
     m32 = m02,
     m33 = m03,
     precision = PRECISION,
-    _immutable = false,
   ) {
     super()
 
@@ -79,9 +74,22 @@ class Matrix4x4Impl extends Pipeable implements Matrix4x4 {
 
     this.precision = precision
   }
+
+  get [Symbol.toStringTag]() {
+    return `Matrix4x4(${this.m00}, ${this.m01}, ${this.m02}, ${this.m03}, ${this.m10}, ${this.m11}, ${this.m12}, ${this.m13}, ${this.m20}, ${this.m21}, ${this.m22}, ${this.m23}, ${this.m30}, ${this.m31}, ${this.m32}, ${this.m33})`
+  }
+
+  get [Symbol.for('nodejs.util.inspect.custom')]() {
+    return `Matrix4x4(${this.m00}, ${this.m01}, ${this.m02}, ${this.m03}, ${this.m10}, ${this.m11}, ${this.m12}, ${this.m13}, ${this.m20}, ${this.m21}, ${this.m22}, ${this.m23}, ${this.m30}, ${this.m31}, ${this.m32}, ${this.m33})`
+  }
+
+  [Symbol.hasInstance](m: unknown): m is Matrix4x4 {
+    return isMatrix4x4(m)
+  }
 }
 
-export const isMatrix4x4 = (m: unknown): m is Matrix4x4 => typeof m === 'object'
+export const isMatrix4x4 = (m: unknown): m is Matrix4x4 =>
+  typeof m === 'object' && m !== null && TypeBrand in m
 
 export const make = (
   m00 = 0,
@@ -200,27 +208,28 @@ export const determinant = (m: Matrix4x4) =>
       m.m01 * matrix3x3.determinant(minor(m, 0, 1)) +
       m.m02 * matrix3x3.determinant(minor(m, 0, 2)) -
       m.m03 * matrix3x3.determinant(minor(m, 0, 3)),
+    m.precision,
   )
 
 export const minor = dual(
   3,
   (m: Matrix4x4, row: Matrix4x4Coordinate, column: Matrix4x4Coordinate) => {
-    const [v0, v1, v2] = toColumns(m).toSpliced(row, 1) as [
+    const [v0, v1, v2] = toRows(m).toSpliced(row, 1) as [
       Vector4,
       Vector4,
       Vector4,
     ]
-    const [m00, m01, m02] = components(v0).toSpliced(column, 1) as [
+    const [m00, m01, m02] = vector4.components(v0).toSpliced(column, 1) as [
       number,
       number,
       number,
     ]
-    const [m10, m11, m12] = components(v1).toSpliced(column, 1) as [
+    const [m10, m11, m12] = vector4.components(v1).toSpliced(column, 1) as [
       number,
       number,
       number,
     ]
-    const [m20, m21, m22] = components(v2).toSpliced(column, 1) as [
+    const [m20, m21, m22] = vector4.components(v2).toSpliced(column, 1) as [
       number,
       number,
       number,
@@ -243,11 +252,11 @@ export const minor = dual(
 
 export const vectorProductLeft = dual(2, (m: Matrix4x4, v: Vector4) => {
   const [v0, v1, v2, v3] = toRows(m) as [Vector4, Vector4, Vector4, Vector4]
-  return vector4(
-    dot(v0, v),
-    dot(v1, v),
-    dot(v2, v),
-    dot(v3, v),
+  return vector4.make(
+    vector4.dot(v0, v),
+    vector4.dot(v1, v),
+    vector4.dot(v2, v),
+    vector4.dot(v3, v),
     Math.min(m.precision, v.precision),
   )
 })
@@ -255,28 +264,14 @@ export const vectorProductLeft = dual(2, (m: Matrix4x4, v: Vector4) => {
 export const vectorProductRight = dual(2, (m: Matrix4x4, v: Vector4) => {
   const [v0, v1, v2, v3] = toColumns(m) as [Vector4, Vector4, Vector4, Vector4]
 
-  return vector4(
-    dot(v, v0),
-    dot(v, v1),
-    dot(v, v2),
-    dot(v, v3),
+  return vector4.make(
+    vector4.dot(v, v0),
+    vector4.dot(v, v1),
+    vector4.dot(v, v2),
+    vector4.dot(v, v3),
     Math.min(m.precision, v.precision),
   )
 })
-
-export const toRows = (m: Matrix4x4) => [
-  vector4(m.m00, m.m01, m.m02, m.m03, m.precision),
-  vector4(m.m10, m.m11, m.m12, m.m13, m.precision),
-  vector4(m.m20, m.m21, m.m22, m.m23, m.precision),
-  vector4(m.m30, m.m31, m.m32, m.m33, m.precision),
-]
-
-export const toColumns = (m: Matrix4x4) => [
-  vector4(m.m00, m.m10, m.m20, m.m30, m.precision),
-  vector4(m.m01, m.m11, m.m21, m.m31, m.precision),
-  vector4(m.m02, m.m12, m.m22, m.m32, m.precision),
-  vector4(m.m03, m.m13, m.m23, m.m33, m.precision),
-]
 
 export const solveSystem = dual(2, (m: Matrix4x4, v: Vector4) => {
   const inverseDeterminant = 1 / determinant(m)
@@ -286,10 +281,34 @@ export const solveSystem = dual(2, (m: Matrix4x4, v: Vector4) => {
     'cannot solve system when coefficient matrix determinant is zero',
   )
 
-  return vector4(
-    determinant(setRow(m, 0, v)) * inverseDeterminant,
-    determinant(setRow(m, 1, v)) * inverseDeterminant,
-    determinant(setRow(m, 2, v)) * inverseDeterminant,
-    determinant(setRow(m, 3, v)) * inverseDeterminant,
+  return vector4.make(
+    determinant(setColumn(m, 0, v)) * inverseDeterminant,
+    determinant(setColumn(m, 1, v)) * inverseDeterminant,
+    determinant(setColumn(m, 2, v)) * inverseDeterminant,
+    determinant(setColumn(m, 3, v)) * inverseDeterminant,
   )
 })
+
+export const toRows = (m: Matrix4x4) => [
+  vector4.make(m.m00, m.m01, m.m02, m.m03, m.precision),
+  vector4.make(m.m10, m.m11, m.m12, m.m13, m.precision),
+  vector4.make(m.m20, m.m21, m.m22, m.m23, m.precision),
+  vector4.make(m.m30, m.m31, m.m32, m.m33, m.precision),
+]
+
+export const toColumns = (m: Matrix4x4) => [
+  vector4.make(m.m00, m.m10, m.m20, m.m30, m.precision),
+  vector4.make(m.m01, m.m11, m.m21, m.m31, m.precision),
+  vector4.make(m.m02, m.m12, m.m22, m.m32, m.precision),
+  vector4.make(m.m03, m.m13, m.m23, m.m33, m.precision),
+]
+
+export const rowVector = dual(
+  2,
+  (m: Matrix4x4, row: Matrix4x4Coordinate) => toRows(m)[row],
+)
+
+export const columnVector = dual(
+  2,
+  (m: Matrix4x4, column: Matrix4x4Coordinate) => toColumns(m)[column],
+)

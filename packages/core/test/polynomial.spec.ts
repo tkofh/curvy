@@ -1,185 +1,282 @@
 import { describe, expect, test } from 'vitest'
-import {
-  createCubicPolynomial,
-  createLinearPolynomial,
-  createQuadraticPolynomial,
-} from '../src/polynomial'
+import * as interval from '../src/interval'
+import * as cubic from '../src/polynomial/cubic'
+import * as linear from '../src/polynomial/linear'
+import * as quadratic from '../src/polynomial/quadratic'
+import * as vector2 from '../src/vector/vector2'
+import * as vector3 from '../src/vector/vector3'
+import * as vector4 from '../src/vector/vector4'
 
-describe('createLinearPolynomial', () => {
-  test('coefficients', () => {
-    expect(createLinearPolynomial(1, 2)).toMatchObject({
-      c0: 1,
-      c1: 2,
+describe('linear', () => {
+  test('make', () => {
+    expect(linear.make(0, 1)).toMatchObject({ c0: 0, c1: 1 })
+    expect(linear.make(0, 1, 2)).toMatchObject({ c0: 0, c1: 1, precision: 2 })
+  })
+  test('fromVector', () => {
+    expect(linear.fromVector(vector2.make(0, 1))).toMatchObject({
+      c0: 0,
+      c1: 1,
+    })
+    expect(linear.fromVector(vector2.make(0, 1, 2))).toMatchObject({
+      c0: 0,
+      c1: 1,
+      precision: 2,
+    })
+    expect(linear.fromVector(vector2.make(0, 1), 2)).toMatchObject({
+      c0: 0,
+      c1: 1,
+      precision: 2,
     })
   })
-
-  test('roots', () => {
-    const line = createLinearPolynomial(0, 1)
-    expect(line.root(-10, 10)).toBeCloseTo(0)
-    expect(line.solve(0)).toBeCloseTo(0)
-
-    expect(line.root(0, 10)).toBeCloseTo(0)
-    expect(line.root(-10, 0)).toBeCloseTo(0)
-
-    expect(line.root(10, 20)).toBeNull()
+  test('isLinear', () => {
+    expect(linear.isLinearPolynomial(linear.make(0, 1))).toBe(true)
+    expect(linear.isLinearPolynomial({ c0: 0, c1: 1 })).toBe(false)
   })
-
-  test('monotonicity', () => {
-    expect(createLinearPolynomial(0, 0).monotonicity).toBe('constant')
-    expect(createLinearPolynomial(0, 1).monotonicity).toBe('increasing')
-  })
-
-  test('antiderivative', () => {
-    expect(createLinearPolynomial(1, 2).antiderivative(0)).toEqual([0, 1, 1])
-  })
-
   test('solve', () => {
-    expect(createLinearPolynomial(1, 2).solve(0)).toBeCloseTo(1)
-    expect(createLinearPolynomial(1, 2).solve(1)).toBeCloseTo(3)
-    expect(createLinearPolynomial(1, 2).solve(2)).toBeCloseTo(5)
-
-    expect(createLinearPolynomial(1, 2).solve(0, 2, 10)).toBeNull()
+    expect(linear.solve(linear.make(0, 1), 0)).toBe(0)
+    expect(linear.solve(linear.make(0, 1), 1)).toBe(1)
+    expect(linear.solve(linear.make(0, 1), 2)).toBe(2)
   })
-
   test('solveInverse', () => {
-    expect(createLinearPolynomial(1, 2).solveInverse(0)).toBeCloseTo(-0.5)
-    expect(createLinearPolynomial(1, 2).solveInverse(1)).toBeCloseTo(0)
-    expect(createLinearPolynomial(1, 2).solveInverse(2)).toBeCloseTo(0.5)
-
-    expect(createLinearPolynomial(1, 2).solveInverse(0, 0, 10)).toBeNull()
+    expect(linear.solveInverse(linear.make(0, -1), 0)).toBe(0)
+    expect(linear.solveInverse(linear.make(0, -1), 1)).toBe(-1)
+    expect(linear.solveInverse(linear.make(0, -1), 2)).toBe(-2)
   })
-})
-
-describe('createQuadraticPolynomial', () => {
-  test('coefficients', () => {
-    expect(createQuadraticPolynomial(1, 2, 3)).toMatchObject({
-      c0: 1,
-      c1: 2,
-      c2: 3,
-    })
+  test('toSolver', () => {
+    const solver = linear.toSolver(linear.make(0, 1))
+    expect(solver(0)).toBe(0)
+    expect(solver(1)).toBe(1)
+    expect(solver(2)).toBe(2)
   })
-
-  test('roots', () => {
-    const parabola = createQuadraticPolynomial(-1, 1, 2)
-    expect(parabola.roots(-10, 10)).toEqual([-1, 0.5])
-    expect(parabola.roots(0, 10)).toEqual([0.5])
-    expect(parabola.roots(-10, 0)).toEqual([-1])
-    expect(parabola.roots(-20, -10)).toEqual([])
-    expect(parabola.roots(10, 20)).toEqual([])
+  test('toInverseSolver', () => {
+    const inverseSolver = linear.toInverseSolver(linear.make(0, -1))
+    expect(inverseSolver(0)).toBe(0)
+    expect(inverseSolver(1)).toBe(-1)
+    expect(inverseSolver(2)).toBe(-2)
   })
-
-  test('extreme', () => {
-    const parabola = createQuadraticPolynomial(-1, 0, 2)
-    expect(parabola.extrema(-10, 10)).toBeCloseTo(0)
-    expect(parabola.extrema(0, 10)).toBeCloseTo(0)
-    expect(parabola.extrema(-10, 0)).toBeCloseTo(0)
-    expect(parabola.extrema(-20, -10)).toBeNull()
-    expect(parabola.extrema(10, 20)).toBeNull()
+  test('root', () => {
+    expect(linear.root(linear.make(1, 1))).toBe(-1)
+    expect(linear.root(linear.make(2, -1))).toBe(2)
   })
-
   test('monotonicity', () => {
-    expect(createQuadraticPolynomial(0, 0, 0).monotonicity()).toBe('constant')
-    expect(createQuadraticPolynomial(-1, 0, 2).monotonicity()).toBe('none')
-    expect(createQuadraticPolynomial(-1, 0, 2).monotonicity(0, 10)).toBe(
-      'increasing',
-    )
-    expect(createQuadraticPolynomial(-1, 0, 2).monotonicity(-10, 0)).toBe(
-      'decreasing',
-    )
+    expect(linear.monotonicity(linear.make(0, 1))).toBe('increasing')
+    expect(linear.monotonicity(linear.make(0, -1))).toBe('decreasing')
+    expect(linear.monotonicity(linear.make(0, 0))).toBe('constant')
   })
-
   test('antiderivative', () => {
-    expect(createQuadraticPolynomial(1, 2, 3).antiderivative(0)).toEqual([
-      0, 1, 1, 1,
-    ])
-  })
-
-  test('solve', () => {
-    expect(createQuadraticPolynomial(-1, 0, 1).solve(-1)).toBeCloseTo(0)
-    expect(createQuadraticPolynomial(-1, 0, 1).solve(-0.5)).toBeCloseTo(-0.75)
-    expect(createQuadraticPolynomial(-1, 0, 1).solve(0)).toBeCloseTo(-1)
-    expect(createQuadraticPolynomial(-1, 0, 1).solve(0.5)).toBeCloseTo(-0.75)
-    expect(createQuadraticPolynomial(-1, 0, 1).solve(1)).toBeCloseTo(0)
-
-    expect(createQuadraticPolynomial(-1, 0, 1).solve(0, 0, 10)).toBeNull()
-  })
-
-  test('solveInverse', () => {
-    expect(createQuadraticPolynomial(-1, 0, 1).solveInverse(-2)).toEqual([])
-    expect(createQuadraticPolynomial(-1, 0, 1).solveInverse(-1)).toEqual([0])
-    expect(createQuadraticPolynomial(-1, 0, 1).solveInverse(0)).toEqual([-1, 1])
-
-    expect(createQuadraticPolynomial(-1, 0, 1).solveInverse(0, 0, 10)).toEqual([
-      1,
-    ])
-    expect(createQuadraticPolynomial(-1, 0, 1).solveInverse(0, -10, 0)).toEqual(
-      [-1],
+    expect(linear.antiderivative(linear.make(0, 1), 2)).toEqual(
+      quadratic.make(2, 0, 0.5),
     )
   })
 })
 
-describe('createCubicPolynomial', () => {
-  test('coefficients', () => {
-    expect(createCubicPolynomial(1, 2, 3, 4)).toMatchObject({
-      c0: 1,
-      c1: 2,
-      c2: 3,
-      c3: 4,
+describe('quadratic', () => {
+  test('make', () => {
+    expect(quadratic.make(0, 1, 2)).toMatchObject({ c0: 0, c1: 1, c2: 2 })
+    expect(quadratic.make(0, 1, 2, 3)).toMatchObject({
+      c0: 0,
+      c1: 1,
+      c2: 2,
+      precision: 3,
     })
   })
 
-  test('roots', () => {
-    const polynomial = createCubicPolynomial(0, -1, 0, 1)
+  test('fromVector', () => {
+    expect(quadratic.fromVector(vector3.make(0, 1, 2))).toMatchObject({
+      c0: 0,
+      c1: 1,
+      c2: 2,
+    })
+    expect(quadratic.fromVector(vector3.make(0, 1, 2, 3))).toMatchObject({
+      c0: 0,
+      c1: 1,
+      c2: 2,
+      precision: 3,
+    })
+    expect(quadratic.fromVector(vector3.make(0, 1, 2), 3)).toMatchObject({
+      c0: 0,
+      c1: 1,
+      c2: 2,
+      precision: 3,
+    })
+  })
 
-    expect(polynomial.roots()).toEqual([-1, 0, 1])
-    expect(polynomial.roots(0, 10)).toEqual([0, 1])
-    expect(polynomial.roots(-10, 0)).toEqual([-1, 0])
+  test('solve', () => {
+    expect(quadratic.solve(quadratic.make(0, 1, 2), 0)).toBe(0)
+    expect(quadratic.solve(quadratic.make(0, 1, 2), 1)).toBe(3)
+    expect(quadratic.solve(quadratic.make(0, 1, 2), 2)).toBe(10)
+  })
+
+  test('toSolver', () => {
+    const solver = quadratic.toSolver(quadratic.make(0, 1, 2))
+    expect(solver(0)).toBe(0)
+    expect(solver(1)).toBe(3)
+    expect(solver(2)).toBe(10)
+  })
+
+  test('solveInverse', () => {
+    expect(quadratic.solveInverse(quadratic.make(0, 1, 2), 0)).toEqual([
+      -0.5, 0,
+    ])
+    expect(quadratic.solveInverse(quadratic.make(0, 1, 2), -0.125)).toEqual([
+      -0.25,
+    ])
+    expect(quadratic.solveInverse(quadratic.make(0, 1, 2), -0.5)).toEqual([])
+  })
+
+  test('toInverseSolver', () => {
+    const inverseSolver = quadratic.toInverseSolver(quadratic.make(0, 1, 2))
+    expect(inverseSolver(0)).toEqual([-0.5, 0])
+    expect(inverseSolver(-0.125)).toEqual([-0.25])
+    expect(inverseSolver(-0.5)).toEqual([])
+  })
+
+  test('derivative', () => {
+    expect(quadratic.derivative(quadratic.make(0, 1, 2))).toEqual(
+      linear.make(1, 4),
+    )
+  })
+
+  test('roots', () => {
+    expect(quadratic.roots(quadratic.make(0, 1, 2))).toEqual([-0.5, 0])
   })
 
   test('monotonicity', () => {
-    expect(createCubicPolynomial(0, -3, 0, 1).monotonicity()).toBe('none')
-    expect(createCubicPolynomial(0, -3, 0, 1).monotonicity(-3, -1)).toBe(
-      'increasing',
-    )
-    expect(createCubicPolynomial(0, -3, 0, 1).monotonicity(-2, 0)).toBe('none')
-    expect(createCubicPolynomial(0, -3, 0, 1).monotonicity(-1, 1)).toBe(
-      'decreasing',
-    )
-    expect(createCubicPolynomial(0, -3, 0, 1).monotonicity(0, 2)).toBe('none')
-    expect(createCubicPolynomial(0, -3, 0, 1).monotonicity(1, 3)).toBe(
-      'increasing',
-    )
+    expect(quadratic.monotonicity(quadratic.make(0, 0, 0))).toBe('constant')
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 0))).toBe('increasing')
+    expect(quadratic.monotonicity(quadratic.make(0, -1, 0))).toBe('decreasing')
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 2))).toBe('none')
+    expect(
+      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(0, 1)),
+    ).toBe('increasing')
+    expect(
+      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-2, -1)),
+    ).toBe('decreasing')
+    expect(
+      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-2, -0.25)),
+    ).toBe('decreasing')
+    expect(
+      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-0.25)),
+    ).toBe('constant')
+    expect(
+      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-0.25, 1)),
+    ).toBe('increasing')
+    expect(
+      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(1, 2)),
+    ).toBe('increasing')
   })
 
+  test('antiderivative', () => {
+    expect(quadratic.antiderivative(quadratic.make(1, 2, 3), 0)).toEqual(
+      cubic.make(0, 1, 1, 1),
+    )
+  })
+})
+
+describe('cubic', () => {
+  test('make', () => {
+    expect(cubic.make(0, 1, 2, 3)).toMatchObject({
+      c0: 0,
+      c1: 1,
+      c2: 2,
+      c3: 3,
+    })
+    expect(cubic.make(0, 1, 2, 3, 4)).toMatchObject({
+      c0: 0,
+      c1: 1,
+      c2: 2,
+      c3: 3,
+      precision: 4,
+    })
+  })
+  test('fromVector', () => {
+    expect(cubic.fromVector(vector4.make(0, 1, 2, 3))).toEqual(
+      cubic.make(0, 1, 2, 3),
+    )
+  })
+  test('solve', () => {
+    expect(cubic.solve(cubic.make(0, 1, 2, 3), 0)).toBe(0)
+    expect(cubic.solve(cubic.make(0, 1, 2, 3), 1)).toBe(6)
+    expect(cubic.solve(cubic.make(0, 1, 2, 3), -1)).toBe(-2)
+  })
+  test('toSolver', () => {
+    const solver = cubic.toSolver(cubic.make(0, 1, 2, 3))
+    expect(solver(0)).toBe(0)
+    expect(solver(1)).toBe(6)
+    expect(solver(-1)).toBe(-2)
+  })
+  test('solveInverse', () => {
+    expect(cubic.solveInverse(cubic.make(0, -1, 0, 1), 0)).toEqual([-1, 0, 1])
+    expect(cubic.solveInverse(cubic.make(0, 0, 1, 1), 0)).toEqual([-1, 0])
+    expect(cubic.solveInverse(cubic.make(3, -5, 1, 1), 0)).toEqual([-3, 1])
+    expect(cubic.solveInverse(cubic.make(4, 0, 1, 1), 0)).toEqual([-2])
+    expect(cubic.solveInverse(cubic.make(0, 0, 1, 1), -4)).toEqual([-2])
+    expect(cubic.solveInverse(cubic.make(0, 0, 0, 1), -1)).toEqual([-1])
+    expect(cubic.solveInverse(cubic.make(0, 0, 0, 1), 0)).toEqual([0])
+    expect(cubic.solveInverse(cubic.make(0, 0, 0, 1), 1)).toEqual([1])
+  })
+  test('toInverseSolver', () => {
+    const inverseSolver = cubic.toInverseSolver(cubic.make(0, -1, 0, 1))
+    expect(inverseSolver(0)).toEqual([-1, 0, 1])
+    expect(inverseSolver(-6)).toEqual([-2])
+    expect(inverseSolver(6)).toEqual([2])
+  })
+  test('derivative', () => {
+    expect(cubic.derivative(cubic.make(0, 1, 2, 3))).toEqual(
+      quadratic.make(1, 4, 9),
+    )
+  })
+  test('roots', () => {
+    expect(cubic.roots(cubic.make(0, -1, 0, 1))).toEqual([-1, 0, 1])
+    expect(cubic.roots(cubic.make(0, 0, 1, 1))).toEqual([-1, 0])
+  })
   test('extrema', () => {
-    expect(createCubicPolynomial(0, -3, 0, 1).extrema()).toEqual([-1, 1])
-    expect(createCubicPolynomial(0, -3, 0, 1).extrema(-4, -2)).toEqual([])
-    expect(createCubicPolynomial(0, -3, 0, 1).extrema(-3, -1)).toEqual([-1])
-    expect(createCubicPolynomial(0, -3, 0, 1).extrema(-2, 0)).toEqual([-1])
-    expect(createCubicPolynomial(0, -3, 0, 1).extrema(-1, 1)).toEqual([-1, 1])
-    expect(createCubicPolynomial(0, -3, 0, 1).extrema(0, 2)).toEqual([1])
-    expect(createCubicPolynomial(0, -3, 0, 1).extrema(1, 3)).toEqual([1])
-    expect(createCubicPolynomial(0, -3, 0, 1).extrema(2, 4)).toEqual([])
+    expect(cubic.extrema(cubic.make(0, 0, 3, 2))).toEqual([-1, 0])
   })
-
-  test('solve', () => {
-    expect(createCubicPolynomial(0, -3, 0, 1).solve(-2)).toBeCloseTo(-2)
-    expect(createCubicPolynomial(0, -3, 0, 1).solve(-1)).toBeCloseTo(2)
-    expect(createCubicPolynomial(0, -3, 0, 1).solve(0)).toBeCloseTo(0)
-    expect(createCubicPolynomial(0, -3, 0, 1).solve(1)).toBeCloseTo(-2)
-    expect(createCubicPolynomial(0, -3, 0, 1).solve(2)).toBeCloseTo(2)
-
-    expect(createCubicPolynomial(0, -3, 0, 1).solve(0, 1, 10)).toBeNull()
-  })
-
-  test('solveInverse', () => {
-    expect(createCubicPolynomial(0, -3, 0, 1).solveInverse(-18)).toEqual([-3])
-    expect(createCubicPolynomial(0, -3, 0, 1).solveInverse(-2)).toEqual([-2, 1])
-    expect(createCubicPolynomial(0, -3, 0, 1).solveInverse(2)).toEqual([-1, 2])
-    expect(createCubicPolynomial(0, -3, 0, 1).solveInverse(18)).toEqual([3])
-
-    expect(createCubicPolynomial(0, -3, 0, 1).solveInverse(-2, 0, 10)).toEqual([
-      1,
-    ])
+  test('monotonicity', () => {
+    expect(cubic.monotonicity(cubic.make(0, 0, 0, 0))).toBe('constant')
+    expect(cubic.monotonicity(cubic.make(0, 1, 0, 0))).toBe('increasing')
+    expect(cubic.monotonicity(cubic.make(0, -1, 0, 0))).toBe('decreasing')
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0))).toBe('none')
+    expect(
+      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(0, 1)),
+    ).toBe('increasing')
+    expect(
+      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-2, -1)),
+    ).toBe('decreasing')
+    expect(
+      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-2, -0.25)),
+    ).toBe('decreasing')
+    expect(
+      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-0.25)),
+    ).toBe('constant')
+    expect(
+      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-0.25, 1)),
+    ).toBe('increasing')
+    expect(
+      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(1, 2)),
+    ).toBe('increasing')
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2))).toBe('none')
+    expect(
+      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-3, -2)),
+    ).toBe('increasing')
+    expect(
+      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-2, -1)),
+    ).toBe('increasing')
+    expect(
+      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-1.5, -0.5)),
+    ).toBe('none')
+    expect(
+      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-1, 0)),
+    ).toBe('decreasing')
+    expect(
+      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-0.5, 0.5)),
+    ).toBe('none')
+    expect(
+      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(0.5, 1)),
+    ).toBe('increasing')
+    expect(
+      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(1, 2)),
+    ).toBe('increasing')
   })
 })

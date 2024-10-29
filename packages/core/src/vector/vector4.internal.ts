@@ -25,6 +25,18 @@ class Vector4Impl extends Pipeable implements Vector4 {
 
     this.precision = precision
   }
+
+  get [Symbol.toStringTag]() {
+    return `Vector4(${this.v0}, ${this.v1}, ${this.v2}, ${this.v3})`
+  }
+
+  get [Symbol.for('nodejs.util.inspect.custom')]() {
+    return `Vector4(${this.v0}, ${this.v1}, ${this.v2}, ${this.v3})`
+  }
+
+  [Symbol.hasInstance](v: unknown): v is Vector4 {
+    return isVector4(v)
+  }
 }
 
 export const isVector4 = (v: unknown): v is Vector4 =>
@@ -48,14 +60,16 @@ export const components: (v: Vector4) => [number, number, number, number] = (
 ) => [v.v0, v.v1, v.v2, v.v3]
 
 export const softmax: (v: Vector4) => Vector4 = (v: Vector4) => {
-  const c = 1 / Math.exp(v.v0 + v.v1 + v.v2 + v.v3)
+  const max = Math.max(v.v0, v.v1, v.v2, v.v3)
 
-  return make(
-    c * Math.exp(v.v0),
-    c * Math.exp(v.v1),
-    c * Math.exp(v.v2),
-    c * Math.exp(v.v3),
-  )
+  const v0 = Math.exp(v.v0 - max)
+  const v1 = Math.exp(v.v1 - max)
+  const v2 = Math.exp(v.v2 - max)
+  const v3 = Math.exp(v.v3 - max)
+
+  const sum = v0 + v1 + v2 + v3
+
+  return make(v0 / sum, v1 / sum, v2 / sum, v3 / sum, v.precision)
 }
 
 export const make = (

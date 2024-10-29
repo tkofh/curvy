@@ -9,7 +9,7 @@
     "publish-packages": "pnpm check:report && turbo run build test:run && changeset version && changeset publish && pnpm check"
   },
   "private": true,
-  "packageManager": "pnpm@9.10.0",
+  "packageManager": "pnpm@9.12.2",
   "devDependencies": {
     "@biomejs/biome": "^1.9.3",
     "@changesets/cli": "^2.27.9",

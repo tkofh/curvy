@@ -23,6 +23,18 @@ class Vector3Impl extends Pipeable implements Vector3 {
 
     this.precision = precision
   }
+
+  get [Symbol.toStringTag]() {
+    return `Vector3(${this.v0}, ${this.v1}, ${this.v2})`
+  }
+
+  get [Symbol.for('nodejs.util.inspect.custom')]() {
+    return `Vector3(${this.v0}, ${this.v1}, ${this.v2})`
+  }
+
+  [Symbol.hasInstance](v: unknown): v is Vector3 {
+    return isVector3(v)
+  }
 }
 
 export const isVector3 = (v: unknown): v is Vector3 =>
@@ -43,9 +55,15 @@ export const components: (v: Vector3) => [number, number, number] = (
 ) => [v.v0, v.v1, v.v2]
 
 export const softmax = (v: Vector3) => {
-  const c = 1 / Math.exp(v.v0 + v.v1 + v.v2)
+  const max = Math.max(v.v0, v.v1, v.v2)
 
-  return make(c * Math.exp(v.v0), c * Math.exp(v.v1), c * Math.exp(v.v2))
+  const v0 = Math.exp(v.v0 - max)
+  const v1 = Math.exp(v.v1 - max)
+  const v2 = Math.exp(v.v2 - max)
+
+  const sum = v0 + v1 + v2
+
+  return make(v0 / sum, v1 / sum, v2 / sum, v.precision)
 }
 
 export const make = (

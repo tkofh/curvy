@@ -1,5 +1,5 @@
 import type { Pipeable } from '../internal/pipeable'
-import type { Vector4 } from '../vector/vector4.internal'
+import type { Vector4 } from '../vector/vector4'
 import type { Matrix3x3 } from './matrix3x3'
 import * as internal from './matrix4x4.internal'
 export type Matrix4x4Coordinate = 0 | 1 | 2 | 3
@@ -104,3 +104,13 @@ export const toRows: (m: Matrix4x4) => [Vector4, Vector4, Vector4, Vector4] =
 
 export const toColumns: (m: Matrix4x4) => [Vector4, Vector4, Vector4, Vector4] =
   internal.toColumns as (m: Matrix4x4) => [Vector4, Vector4, Vector4, Vector4]
+
+export const rowVector: {
+  (m: Matrix4x4, row: Matrix4x4Coordinate): Vector4
+  (row: Matrix4x4Coordinate): (m: Matrix4x4) => Vector4
+} = internal.rowVector
+
+export const columnVector: {
+  (m: Matrix4x4, column: Matrix4x4Coordinate): Vector4
+  (column: Matrix4x4Coordinate): (m: Matrix4x4) => Vector4
+} = internal.columnVector

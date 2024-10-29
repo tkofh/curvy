@@ -1,39 +1,17 @@
 import { dual } from '../internal/function'
-import { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
 import * as interval from '../interval.internal'
 import { PRECISION, round } from '../util'
 import type { Vector4 } from '../vector/vector4'
 import type { CubicPolynomial } from './cubic'
+import {
+  CubicPolynomialImpl,
+  CubicPolynomialTypeId,
+} from './cubic.internal.circular'
+import * as linear from './linear.internal'
+import { guaranteedMonotonicityFromComparison } from './monotonicity'
 import * as quadratic from './quadratic.internal'
-
-const TypeBrand: unique symbol = Symbol.for('curvy/cubic')
-type TypeBrand = typeof TypeBrand
-
-class CubicPolynomialImpl extends Pipeable implements CubicPolynomial {
-  readonly [TypeBrand]: TypeBrand = TypeBrand
-
-  readonly c0: number
-  readonly c1: number
-  readonly c2: number
-  readonly c3: number
-
-  readonly precision: number
-
-  constructor(c0 = 0, c1 = 0, c2 = 0, c3 = 0, precision = PRECISION) {
-    super()
-
-    this.c0 = round(c0, precision)
-    this.c1 = round(c1, precision)
-    this.c2 = round(c2, precision)
-    this.c3 = round(c3, precision)
-
-    this.precision = precision
-  }
-}
-
-export const isCubicPolynomial = (v: unknown): v is CubicPolynomial =>
-  typeof v === 'object' && v !== null && TypeBrand in v
+import type { ZeroToThreeSolutions, ZeroToTwoSolutions } from './types'
 
 export const make = (
   c0 = 0,
@@ -43,113 +21,134 @@ export const make = (
   precision = PRECISION,
 ): CubicPolynomial => new CubicPolynomialImpl(c0, c1, c2, c3, precision)
 
+export const isCubicPolynomial = (v: unknown): v is CubicPolynomial =>
+  typeof v === 'object' && v !== null && CubicPolynomialTypeId in v
+
 export const fromVector = (v: Vector4, precision = PRECISION) =>
   new CubicPolynomialImpl(v.v0, v.v1, v.v2, v.v3, precision)
 
-export const solve = dual(2, (p: CubicPolynomial, x: number) =>
+export const solve = dual<
+  (x: number) => (p: CubicPolynomial) => number,
+  (p: CubicPolynomial, x: number) => number
+>(2, (p: CubicPolynomial, x: number) =>
   round(p.c0 + x * p.c1 + x ** 2 * p.c2 + x ** 3 * p.c3, p.precision),
 )
 
 export const toSolver = (p: CubicPolynomial) => (x: number) => solve(p, x)
 
-export const solveInverse = dual(2, (p: CubicPolynomial, y: number) => {
-  const a2 = p.c2 / p.c3
-  const a2OverThree = a2 / 3
+export const solveInverse = dual<
+  (y: number) => (p: CubicPolynomial) => ZeroToThreeSolutions,
+  (p: CubicPolynomial, y: number) => ZeroToThreeSolutions
+>(2, (self: CubicPolynomial, y: number) => {
+  if (self.c3 === 0) {
+    return quadratic.solveInverse(
+      quadratic.make(self.c0, self.c1, self.c2),
+      0,
+    ) as ZeroToThreeSolutions
+  }
 
-  const q = p.c1 / p.c3 / 3 - a2 ** 2 / 9
-  const r0 = ((p.c1 / p.c3) * a2) / 6 - a2 ** 3 / 27
+  const shift = self.c2 / (3 * self.c3)
 
-  const r = r0 - ((p.c0 - y) / p.c3) * 0.5
+  const d0 = self.c2 ** 2 - 3 * self.c3 * self.c1
+  const d1 =
+    2 * self.c2 ** 3 -
+    9 * self.c3 * self.c2 * self.c1 +
+    27 * self.c3 ** 2 * (self.c0 - y)
 
-  const discriminant = q ** 3 + r ** 2
+  const p = -d0 / (3 * self.c3 ** 2)
+  const q = d1 / (27 * self.c3 ** 3)
+
+  const discriminant = round(-(4 * p ** 3 + 27 * q ** 2), 12)
+
+  const roots = new Set<number>()
 
   if (discriminant > 0) {
-    const a = Math.cbrt(Math.abs(r) + Math.sqrt(discriminant))
+    const r = 2 * Math.sqrt(-p / 3)
+    const theta = Math.acos(((3 * q) / (2 * p)) * Math.sqrt(-3 / p)) / 3
+    const offset = (2 * Math.PI) / 3
 
-    return [
-      round((r < 0 ? q / a - a : a - q / a) - a2OverThree, p.precision),
-    ] as
-      | readonly []
-      | readonly [number]
-      | readonly [number, number]
-      | readonly [number, number, number]
+    roots.add(round(r * Math.cos(theta + offset) - shift, self.precision))
+    roots.add(round(r * Math.cos(theta) - shift, self.precision))
+    roots.add(round(r * Math.cos(theta - offset) - shift, self.precision))
+  } else if (discriminant < 0) {
+    const u = Math.sqrt(q ** 2 / 4 + p ** 3 / 27)
+
+    const u1 = Math.cbrt(-q / 2 + u)
+    const u2 = Math.cbrt(-q / 2 - u)
+
+    roots.add(round(u1 + u2 - shift, self.precision))
+  } else if (d0 === 0) {
+    roots.add(round(-shift, self.precision))
+  } else {
+    roots.add(
+      round(
+        (9 * self.c3 * (self.c0 - y) - self.c2 * self.c1) / (2 * d0),
+        self.precision,
+      ),
+    )
+    roots.add(
+      round(
+        (4 * self.c3 * self.c2 * self.c1 -
+          9 * self.c3 ** 2 * (self.c0 - y) -
+          self.c2 ** 3) /
+          (self.c3 * d0),
+        self.precision,
+      ),
+    )
   }
 
-  const theta = Math.acos(r / Math.sqrt((-q) ** 3)) / 3
-  const twoRootQ = 2 * Math.sqrt(-q)
-
-  const root1 = round(
-    twoRootQ * Math.cos(theta - Math.PI / 3) - a2OverThree,
-    p.precision,
-  )
-  const root2 = round(twoRootQ * Math.cos(theta) - a2OverThree, p.precision)
-  const root3 = round(
-    twoRootQ * Math.cos(theta + Math.PI / 3) - a2OverThree,
-    p.precision,
-  )
-
-  const roots = [root1]
-
-  if (root2 !== root1) {
-    roots.push(root2)
-  }
-
-  if (root3 !== root2 && root3 !== root1) {
-    roots.push(root3)
-  }
-
-  return roots.toSorted((a, b) => a - b) as unknown as
-    | readonly []
-    | readonly [number]
-    | readonly [number, number]
-    | readonly [number, number, number]
+  return Array.from(roots).toSorted(
+    (a, b) => a - b,
+  ) as unknown as ZeroToThreeSolutions
 })
 
 export const toInverseSolver = (p: CubicPolynomial) => (y: number) =>
   solveInverse(p, y)
 
 export const derivative = (p: CubicPolynomial) =>
-  quadratic.make(3 * p.c3, 2 * p.c2, p.c1, p.precision)
+  quadratic.make(p.c1, p.c2 * 2, p.c3 * 3, p.precision)
 
-export const roots = (
-  p: CubicPolynomial,
-):
-  | readonly []
-  | readonly [number]
-  | readonly [number, number]
-  | readonly [number, number, number] => solveInverse(p, 0)
+export const roots = (p: CubicPolynomial): ZeroToThreeSolutions =>
+  solveInverse(p, 0)
 
-export const extrema = (
-  p: CubicPolynomial,
-): readonly [] | readonly [number] | readonly [number, number] =>
+export const extrema = (p: CubicPolynomial): ZeroToTwoSolutions =>
   quadratic.roots(derivative(p))
 
 export const monotonicity = dual(
   (args) => isCubicPolynomial(args[0]),
-  (p: CubicPolynomial, i: Interval = interval.unit) => {
-    if (p.c1 === 0 && p.c2 === 0 && p.c3 === 0) {
+  (p: CubicPolynomial, i?: Interval) => {
+    if (p.c3 === 0 && p.c2 === 0 && p.c1 === 0) {
       return 'constant'
     }
 
-    const min = interval.min(i)
-    const max = interval.max(i)
-
-    const d = derivative(p)
-
-    const root = quadratic.roots(d)
-
-    if (root === null || root === min || root === max) {
-      const sign =
-        root === min
-          ? Math.sign(quadratic.solve(d, max))
-          : Math.sign(quadratic.solve(d, min))
-
-      if (sign === 0) {
-        return 'constant'
-      }
-      return sign > 0 ? 'increasing' : 'decreasing'
+    if (p.c3 === 0 && p.c2 === 0) {
+      return linear.monotonicity(linear.make(p.c0, p.c1, p.precision))
     }
 
-    return 'none'
+    if (i === undefined) {
+      return 'none'
+    }
+
+    if (p.c3 === 0) {
+      return quadratic.monotonicity(
+        quadratic.make(p.c0, p.c1, p.c2, p.precision),
+        i,
+      )
+    }
+
+    const e = i.pipe(
+      interval.startExclusive,
+      interval.endExclusive,
+      interval.filter(extrema(p)),
+    )
+
+    if (e.length > 0) {
+      return 'none'
+    }
+
+    return guaranteedMonotonicityFromComparison(
+      solve(p, interval.min(i)),
+      solve(p, interval.max(i)),
+    )
   },
 )

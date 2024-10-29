@@ -1,7 +1,9 @@
 import type { Pipeable } from '../internal/pipeable'
 import type { Vector2 } from '../vector/vector2'
 import * as internal from './linear.internal'
+import type { GuaranteedMonotonicity } from './monotonicity'
 import type { QuadraticPolynomial } from './quadratic'
+import type { ZeroOrOneSolution } from './types'
 
 export interface LinearPolynomial extends Pipeable {
   readonly c0: number
@@ -12,7 +14,7 @@ export interface LinearPolynomial extends Pipeable {
 export const isLinearPolynomial: (v: unknown) => v is LinearPolynomial =
   internal.isLinearPolynomial
 
-export const linearPolynomial: (
+export const make: (
   c0?: number,
   c1?: number,
   precision?: number,
@@ -30,23 +32,21 @@ export const toSolver: (p: LinearPolynomial) => (x: number) => number =
   internal.toSolver
 
 export const solveInverse: {
-  (p: LinearPolynomial, y: number): number
-  (y: number): (p: LinearPolynomial) => number
+  (p: LinearPolynomial, y: number): ZeroOrOneSolution
+  (y: number): (p: LinearPolynomial) => ZeroOrOneSolution
 } = internal.solveInverse
 
-export const toInverseSolver: (p: LinearPolynomial) => (y: number) => number =
-  internal.toInverseSolver
-
-export const monotonicity: (
+export const toInverseSolver: (
   p: LinearPolynomial,
-) => 'increasing' | 'decreasing' | 'constant' = internal.monotonicity
+) => (y: number) => ZeroOrOneSolution = internal.toInverseSolver
 
-export const root: {
-  (p: LinearPolynomial, start?: number, end?: number): number | null
-  (start?: number, end?: number): (p: LinearPolynomial) => number | null
-} = internal.root
+export const root: (p: LinearPolynomial) => ZeroOrOneSolution = (p) =>
+  internal.solveInverse(p, 0)
 
-export const antiderivative: (
-  p: LinearPolynomial,
-  integrationConstant: number,
-) => QuadraticPolynomial = internal.antiderivative
+export const monotonicity: (p: LinearPolynomial) => GuaranteedMonotonicity =
+  internal.monotonicity
+
+export const antiderivative: {
+  (p: LinearPolynomial, constant?: number): QuadraticPolynomial
+  (constant: number): (p: LinearPolynomial) => QuadraticPolynomial
+} = internal.antiderivative

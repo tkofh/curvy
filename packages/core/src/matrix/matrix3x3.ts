@@ -19,7 +19,7 @@ export interface Matrix3x3 {
 
 export const isMatrix3x3: (m: unknown) => m is Matrix3x3 = internal.isMatrix3x3
 
-export const make: (
+export const matrix3x3: (
   m00?: number,
   m01?: number,
   m02?: number,
@@ -84,3 +84,13 @@ export const toRows: (m: Matrix3x3) => [Vector3, Vector3, Vector3] =
 
 export const toColumns: (m: Matrix3x3) => [Vector3, Vector3, Vector3] =
   internal.toColumns as (m: Matrix3x3) => [Vector3, Vector3, Vector3]
+
+export const rowVector: {
+  (m: Matrix3x3, row: Matrix3x3Coordinate): Vector3
+  (row: Matrix3x3Coordinate): (m: Matrix3x3) => Vector3
+} = internal.rowVector
+
+export const columnVector: {
+  (m: Matrix3x3, column: Matrix3x3Coordinate): Vector3
+  (column: Matrix3x3Coordinate): (m: Matrix3x3) => Vector3
+} = internal.columnVector

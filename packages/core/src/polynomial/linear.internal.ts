@@ -1,9 +1,10 @@
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
-import { PRECISION, minMax, round } from '../util'
+import { PRECISION, round } from '../util'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPolynomial } from './linear'
-import * as quadratic from './quadratic.internal'
+import { QuadraticPolynomialImpl } from './quadratic.internal.circular'
+import type { ZeroOrOneSolution } from './types'
 
 const TypeBrand: unique symbol = Symbol.for('curvy/linear')
 type TypeBrand = typeof TypeBrand
@@ -32,8 +33,8 @@ export const isLinearPolynomial = (v: unknown): v is LinearPolynomial =>
 export const make = (c0 = 0, c1 = 0, precision = PRECISION): LinearPolynomial =>
   new LinearPolynomialImpl(c0, c1, precision)
 
-export const fromVector = (v: Vector2, precision = PRECISION) =>
-  new LinearPolynomialImpl(v.v0, v.v1, precision)
+export const fromVector = (v: Vector2, precision?: number) =>
+  new LinearPolynomialImpl(v.v0, v.v1, precision ?? v.precision)
 
 export const solve = dual<
   (x: number) => (p: LinearPolynomial) => number,
@@ -44,9 +45,15 @@ export const solve = dual<
 
 export const toSolver = (p: LinearPolynomial) => (x: number) => solve(p, x)
 
-export const solveInverse = dual(2, (p: LinearPolynomial, y: number) =>
-  round(p.c1 === 0 ? 0 : (y - p.c0) / p.c1, Math.min(p.precision, y)),
-)
+export const solveInverse = dual<
+  (y: number) => (p: LinearPolynomial) => ZeroOrOneSolution,
+  (p: LinearPolynomial, y: number) => ZeroOrOneSolution
+>(2, (p: LinearPolynomial, y: number) => {
+  if (p.c1 === 0) {
+    return null
+  }
+  return round((y - p.c0) / p.c1, p.precision)
+})
 
 export const toInverseSolver = (p: LinearPolynomial) => (y: number) =>
   solveInverse(p, y)
@@ -54,27 +61,13 @@ export const toInverseSolver = (p: LinearPolynomial) => (y: number) =>
 export const monotonicity = (p: LinearPolynomial) =>
   p.c1 === 0 ? 'constant' : p.c1 > 0 ? 'increasing' : 'decreasing'
 
-export const root = dual(
-  3,
-  (
-    p: LinearPolynomial,
-    start = Number.NEGATIVE_INFINITY,
-    end = Number.POSITIVE_INFINITY,
-  ) => {
-    const root = p.c1 === 0 ? null : round(-p.c0 / p.c1, p.precision)
-
-    if (root === null || root < start || root > end) {
-      return null
-    }
-
-    const [min, max] = minMax(start, end)
-
-    return root >= min && root <= max ? root : null
-  },
-)
-
 export const antiderivative = dual(
-  2,
-  (p: LinearPolynomial, integrationConstant: number) =>
-    quadratic.make(integrationConstant, p.c0, p.c1 / 2),
+  (args) => isLinearPolynomial(args[0]),
+  (p: LinearPolynomial, integrationConstant = 0) =>
+    new QuadraticPolynomialImpl(
+      integrationConstant,
+      p.c0,
+      p.c1 / 2,
+      p.precision,
+    ),
 )
