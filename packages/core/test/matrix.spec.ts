@@ -290,24 +290,7 @@ describe('matrix3x3', () => {
 describe('matrix4x4', () => {
   test('make', () => {
     expect(
-      matrix4x4.matrix4x4(
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-      ),
+      matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
     ).toMatchObject({
       m00: 1,
       m01: 2,
@@ -329,7 +312,7 @@ describe('matrix4x4', () => {
   })
 
   test('isMatrix4x4', () => {
-    expect(matrix4x4.isMatrix4x4(matrix4x4.matrix4x4(0))).toBe(true)
+    expect(matrix4x4.isMatrix4x4(matrix4x4.make(0))).toBe(true)
     expect(
       matrix4x4.isMatrix4x4({
         m00: 0,
@@ -411,24 +394,7 @@ describe('matrix4x4', () => {
   test('determinant', () => {
     expect(
       matrix4x4.determinant(
-        matrix4x4.matrix4x4(
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-        ),
+        matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
       ),
     ).toBe(0)
   })
@@ -436,24 +402,7 @@ describe('matrix4x4', () => {
   test('minor', () => {
     expect(
       matrix4x4.minor(
-        matrix4x4.matrix4x4(
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-        ),
+        matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
         0,
         1,
       ),
@@ -463,24 +412,7 @@ describe('matrix4x4', () => {
   test('vectorProductLeft', () => {
     expect(
       matrix4x4.vectorProductLeft(
-        matrix4x4.matrix4x4(
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-        ),
+        matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
         vector4.make(1, 2, 3, 4),
       ),
     ).toEqual(vector4.make(30, 70, 110, 150))
@@ -489,24 +421,7 @@ describe('matrix4x4', () => {
   test('vectorProductRight', () => {
     expect(
       matrix4x4.vectorProductRight(
-        matrix4x4.matrix4x4(
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-        ),
+        matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
         vector4.make(1, 2, 3, 4),
       ),
     ).toEqual(vector4.make(90, 100, 110, 120))
@@ -514,7 +429,7 @@ describe('matrix4x4', () => {
 
   test('solveSystem', () => {
     const solution = vector4.make(1, 2, 3, 4)
-    const coefficients = matrix4x4.matrix4x4(
+    const coefficients = matrix4x4.make(
       1,
       0,
       0,
@@ -576,24 +491,7 @@ describe('matrix4x4', () => {
   test('toRows', () => {
     expect(
       matrix4x4.toRows(
-        matrix4x4.matrix4x4(
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-        ),
+        matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
       ),
     ).toEqual([
       vector4.make(1, 2, 3, 4),
@@ -606,24 +504,7 @@ describe('matrix4x4', () => {
   test('toColumns', () => {
     expect(
       matrix4x4.toColumns(
-        matrix4x4.matrix4x4(
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-        ),
+        matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
       ),
     ).toEqual([
       vector4.make(1, 5, 9, 13),
@@ -636,24 +517,7 @@ describe('matrix4x4', () => {
   test('rowVector', () => {
     expect(
       matrix4x4.rowVector(
-        matrix4x4.matrix4x4(
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-        ),
+        matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
         0,
       ),
     ).toEqual(vector4.make(1, 2, 3, 4))
@@ -662,24 +526,7 @@ describe('matrix4x4', () => {
   test('columnVector', () => {
     expect(
       matrix4x4.columnVector(
-        matrix4x4.matrix4x4(
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-        ),
+        matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
         0,
       ),
     ).toEqual(vector4.make(1, 5, 9, 13))

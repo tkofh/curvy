@@ -64,7 +64,10 @@ export const min = (i: Interval) => Math.min(i.start, i.end)
 
 export const max = (i: Interval) => Math.max(i.start, i.end)
 
-export const contains = dual(
+export const contains = dual<
+  (value: number) => (interval: Interval) => boolean,
+  (interval: Interval, value: number) => boolean
+>(
   2,
   (interval: Interval, value: number) =>
     (value > min(interval) && value < max(interval)) ||
@@ -132,3 +135,20 @@ export const endExclusive = (interval: Interval) =>
         interval.precision,
       )
     : interval
+
+export const lerp = dual(
+  2,
+  (t: number, interval: Interval) =>
+    (1 - t) * interval.start + t * interval.end,
+)
+
+export const normalize = dual(
+  2,
+  (x: number, interval: Interval) => (x - interval.start) / size(interval),
+)
+
+export const remap = dual(
+  3,
+  (x: number, source: Interval, destination: Interval) =>
+    lerp(normalize(x, source), destination),
+)

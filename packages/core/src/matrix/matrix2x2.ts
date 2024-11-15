@@ -76,3 +76,10 @@ export const columnVector: (
   m: Matrix2x2,
   column: Matrix2x2Coordinate,
 ) => Vector2 = internal.columnVector
+
+export const transpose: (m: Matrix2x2) => Matrix2x2 = internal.transpose
+
+export const reverseRows: (m: Matrix2x2) => Matrix2x2 = internal.reverseRows
+
+export const reverseColumns: (m: Matrix2x2) => Matrix2x2 =
+  internal.reverseColumns

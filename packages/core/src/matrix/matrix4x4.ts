@@ -33,7 +33,7 @@ export interface Matrix4x4 extends Pipeable {
 
 export const isMatrix4x4: (m: unknown) => m is Matrix4x4 = internal.isMatrix4x4
 
-export const matrix4x4: (
+export const make: (
   m00?: number,
   m01?: number,
   m02?: number,
@@ -117,3 +117,10 @@ export const columnVector: {
   (m: Matrix4x4, column: Matrix4x4Coordinate): Vector4
   (column: Matrix4x4Coordinate): (m: Matrix4x4) => Vector4
 } = internal.columnVector
+
+export const transpose: (m: Matrix4x4) => Matrix4x4 = internal.transpose
+
+export const reverseRows: (m: Matrix4x4) => Matrix4x4 = internal.reverseRows
+
+export const reverseColumns: (m: Matrix4x4) => Matrix4x4 =
+  internal.reverseColumns

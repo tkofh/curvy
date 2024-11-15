@@ -96,3 +96,10 @@ export const columnVector: {
   (m: Matrix3x3, column: Matrix3x3Coordinate): Vector3
   (column: Matrix3x3Coordinate): (m: Matrix3x3) => Vector3
 } = internal.columnVector
+
+export const transpose: (m: Matrix3x3) => Matrix3x3 = internal.transpose
+
+export const reverseRows: (m: Matrix3x3) => Matrix3x3 = internal.reverseRows
+
+export const reverseColumns: (m: Matrix3x3) => Matrix3x3 =
+  internal.reverseColumns

@@ -289,19 +289,21 @@ export const solveSystem = dual(2, (m: Matrix4x4, v: Vector4) => {
   )
 })
 
-export const toRows = (m: Matrix4x4) => [
-  vector4.make(m.m00, m.m01, m.m02, m.m03, m.precision),
-  vector4.make(m.m10, m.m11, m.m12, m.m13, m.precision),
-  vector4.make(m.m20, m.m21, m.m22, m.m23, m.precision),
-  vector4.make(m.m30, m.m31, m.m32, m.m33, m.precision),
-]
+export const toRows = (m: Matrix4x4) =>
+  [
+    vector4.make(m.m00, m.m01, m.m02, m.m03, m.precision),
+    vector4.make(m.m10, m.m11, m.m12, m.m13, m.precision),
+    vector4.make(m.m20, m.m21, m.m22, m.m23, m.precision),
+    vector4.make(m.m30, m.m31, m.m32, m.m33, m.precision),
+  ] as const
 
-export const toColumns = (m: Matrix4x4) => [
-  vector4.make(m.m00, m.m10, m.m20, m.m30, m.precision),
-  vector4.make(m.m01, m.m11, m.m21, m.m31, m.precision),
-  vector4.make(m.m02, m.m12, m.m22, m.m32, m.precision),
-  vector4.make(m.m03, m.m13, m.m23, m.m33, m.precision),
-]
+export const toColumns = (m: Matrix4x4) =>
+  [
+    vector4.make(m.m00, m.m10, m.m20, m.m30, m.precision),
+    vector4.make(m.m01, m.m11, m.m21, m.m31, m.precision),
+    vector4.make(m.m02, m.m12, m.m22, m.m32, m.precision),
+    vector4.make(m.m03, m.m13, m.m23, m.m33, m.precision),
+  ] as const
 
 export const rowVector = dual(
   2,
@@ -312,3 +314,16 @@ export const columnVector = dual(
   2,
   (m: Matrix4x4, column: Matrix4x4Coordinate) => toColumns(m)[column],
 )
+
+export const transpose = (m: Matrix4x4) =>
+  fromColumns(...toRows(m)) as Matrix4x4
+
+export const reverseRows = (m: Matrix4x4) => {
+  const [v0, v1, v2, v3] = toRows(m) as [Vector4, Vector4, Vector4, Vector4]
+  return fromRows(v3, v2, v1, v0)
+}
+
+export const reverseColumns = (m: Matrix4x4) => {
+  const [v0, v1, v2, v3] = toColumns(m) as [Vector4, Vector4, Vector4, Vector4]
+  return fromColumns(v3, v2, v1, v0)
+}

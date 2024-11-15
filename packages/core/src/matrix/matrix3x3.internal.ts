@@ -231,3 +231,15 @@ export const columnVector = dual(
   2,
   (m: Matrix3x3, column: Matrix3x3Coordinate) => toColumns(m)[column],
 )
+
+export const transpose = (m: Matrix3x3) => fromColumns(...toRows(m))
+
+export const reverseRows = (m: Matrix3x3) => {
+  const [v0, v1, v2] = toRows(m)
+  return fromRows(v2, v1, v0)
+}
+
+export const reverseColumns = (m: Matrix3x3) => {
+  const [v0, v1, v2] = toColumns(m)
+  return fromColumns(v2, v1, v0)
+}
