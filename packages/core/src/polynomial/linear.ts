@@ -1,10 +1,11 @@
 import type { Pipeable } from '../internal/pipeable'
+import type { Interval } from '../interval'
 import type { Vector2 } from '../vector/vector2'
 import * as internal from './linear.internal'
 import type { LinearPolynomialTypeId } from './linear.internal'
 import type { GuaranteedMonotonicity } from './monotonicity'
 import type { QuadraticPolynomial } from './quadratic'
-import type { ZeroOrOneSolution } from './types'
+import type { ZeroOrOneInterval, ZeroOrOneSolution } from './types'
 
 export interface LinearPolynomial extends Pipeable {
   readonly [LinearPolynomialTypeId]: LinearPolynomialTypeId
@@ -53,3 +54,18 @@ export const antiderivative: {
   (p: LinearPolynomial, constant?: number): QuadraticPolynomial
   (constant: number): (p: LinearPolynomial) => QuadraticPolynomial
 } = internal.antiderivative
+
+export const length: {
+  (p: LinearPolynomial, domain: Interval): number
+  (domain: Interval): (p: LinearPolynomial) => number
+} = internal.length
+
+export const domain: {
+  (p: LinearPolynomial, range: Interval): ZeroOrOneInterval
+  (range: Interval): (p: LinearPolynomial) => ZeroOrOneInterval
+} = internal.domain
+
+export const range: {
+  (p: LinearPolynomial, domain: Interval): Interval
+  (domain: Interval): (p: LinearPolynomial) => Interval
+} = internal.range

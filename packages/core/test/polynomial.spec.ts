@@ -3,6 +3,7 @@ import * as interval from '../src/interval'
 import * as cubic from '../src/polynomial/cubic'
 import * as linear from '../src/polynomial/linear'
 import * as quadratic from '../src/polynomial/quadratic'
+import { round } from '../src/util'
 import * as vector2 from '../src/vector/vector2'
 import * as vector3 from '../src/vector/vector3'
 import * as vector4 from '../src/vector/vector4'
@@ -66,6 +67,38 @@ describe('linear', () => {
   test('antiderivative', () => {
     expect(linear.antiderivative(linear.make(0, 1), 2)).toEqual(
       quadratic.make(2, 0, 0.5),
+    )
+  })
+  test('domain', () => {
+    const line = linear.make(0, 1)
+    expect(linear.domain(line, interval.make(0, 1))).toEqual(
+      interval.make(0, 1),
+    )
+    expect(linear.domain(line, interval.make(1, 0))).toEqual(
+      interval.make(1, 0),
+    )
+    expect(linear.domain(line, interval.makeStartExclusive(0, 1))).toEqual(
+      interval.makeStartExclusive(0, 1),
+    )
+    expect(linear.domain(line, interval.makeEndExclusive(0, 1))).toEqual(
+      interval.makeEndExclusive(0, 1),
+    )
+    expect(linear.domain(line, interval.makeExclusive(0, 1))).toEqual(
+      interval.makeExclusive(0, 1),
+    )
+  })
+  test('range', () => {
+    expect(linear.range(linear.make(0, 1), interval.make(0, 2))).toEqual(
+      interval.make(0, 2),
+    )
+    expect(linear.range(linear.make(0, -1), interval.make(0, 2))).toEqual(
+      interval.make(0, -2),
+    )
+  })
+  test('length', () => {
+    const l = linear.make(0, 2)
+    expect(linear.length(l, interval.make(0, 1))).toEqual(
+      round(Math.sqrt(5), l.precision),
     )
   })
 })
@@ -170,6 +203,93 @@ describe('quadratic', () => {
     expect(quadratic.antiderivative(quadratic.make(1, 2, 3), 0)).toEqual(
       cubic.make(0, 1, 1, 1),
     )
+  })
+
+  test('domain', () => {
+    const p = quadratic.make(0, 0, 1)
+    expect(quadratic.domain(p, interval.make(-2, -1))).toEqual([])
+
+    expect(quadratic.domain(p, interval.makeExclusive(-1, 0))).toEqual([])
+
+    expect(quadratic.domain(p, interval.make(-1, 0))).toEqual([
+      interval.make(0, 0),
+    ])
+    expect(quadratic.domain(p, interval.make(0, -1))).toEqual([
+      interval.make(0, 0),
+    ])
+
+    expect(quadratic.domain(p, interval.make(-1, 1))).toEqual([
+      interval.make(-1, 1),
+    ])
+    expect(quadratic.domain(p, interval.make(1, -1))).toEqual([
+      interval.make(-1, 1),
+    ])
+
+    expect(quadratic.domain(p, interval.makeExclusive(-1, 1))).toEqual([
+      interval.makeExclusive(-1, 1),
+    ])
+    expect(quadratic.domain(p, interval.makeExclusive(1, -1))).toEqual([
+      interval.makeExclusive(-1, 1),
+    ])
+
+    expect(quadratic.domain(p, interval.make(0, 1))).toEqual([
+      interval.make(-1, 1),
+    ])
+    expect(quadratic.domain(p, interval.make(1, 0))).toEqual([
+      interval.make(-1, 1),
+    ])
+
+    expect(quadratic.domain(p, interval.makeStartExclusive(0, 1))).toEqual([
+      interval.makeEndExclusive(-1, 0),
+      interval.makeStartExclusive(0, 1),
+    ])
+    expect(quadratic.domain(p, interval.makeStartExclusive(1, 0))).toEqual([
+      interval.makeExclusive(-1, 1),
+    ])
+
+    expect(quadratic.domain(p, interval.makeEndExclusive(0, 1))).toEqual([
+      interval.makeExclusive(-1, 1),
+    ])
+    expect(quadratic.domain(p, interval.makeStartExclusive(0, 1))).toEqual([
+      interval.makeEndExclusive(-1, 0),
+      interval.makeStartExclusive(0, 1),
+    ])
+
+    expect(quadratic.domain(p, interval.make(1, 4))).toEqual([
+      interval.make(-2, -1),
+      interval.make(1, 2),
+    ])
+    expect(quadratic.domain(p, interval.make(4, 1))).toEqual([
+      interval.make(-2, -1),
+      interval.make(1, 2),
+    ])
+
+    expect(quadratic.domain(p, interval.makeStartExclusive(1, 4))).toEqual([
+      interval.makeEndExclusive(-2, -1),
+      interval.makeStartExclusive(1, 2),
+    ])
+    expect(quadratic.domain(p, interval.makeStartExclusive(4, 1))).toEqual([
+      interval.makeStartExclusive(-2, -1),
+      interval.makeEndExclusive(1, 2),
+    ])
+
+    expect(quadratic.domain(p, interval.makeEndExclusive(1, 4))).toEqual([
+      interval.makeStartExclusive(-2, -1),
+      interval.makeEndExclusive(1, 2),
+    ])
+    expect(quadratic.domain(p, interval.makeEndExclusive(4, 1))).toEqual([
+      interval.makeEndExclusive(-2, -1),
+      interval.makeStartExclusive(1, 2),
+    ])
+
+    expect(quadratic.domain(p, interval.makeExclusive(1, 4))).toEqual([
+      interval.makeExclusive(-2, -1),
+      interval.makeExclusive(1, 2),
+    ])
+    expect(quadratic.domain(p, interval.makeExclusive(4, 1))).toEqual([
+      interval.makeExclusive(-2, -1),
+      interval.makeExclusive(1, 2),
+    ])
   })
 })
 

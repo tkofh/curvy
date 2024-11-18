@@ -1,6 +1,5 @@
 import { dual } from '../internal/function'
-import type { Interval } from '../interval'
-import * as interval from '../interval.internal'
+import * as Interval from '../interval'
 import { PRECISION, round } from '../util'
 import type { Vector4 } from '../vector/vector4'
 import type { CubicPolynomial } from './cubic'
@@ -116,17 +115,25 @@ export const extrema = (p: CubicPolynomial): ZeroToTwoSolutions =>
 
 export const monotonicity = dual(
   (args) => isCubicPolynomial(args[0]),
-  (p: CubicPolynomial, i?: Interval) => {
+  (p: CubicPolynomial, i?: Interval.Interval) => {
+    // shortcut to check for a horizontal line
     if (p.c3 === 0 && p.c2 === 0 && p.c1 === 0) {
       return 'constant'
     }
 
+    // shortcut to check for a non-horizontal line
     if (p.c3 === 0 && p.c2 === 0) {
       return linear.monotonicity(linear.make(p.c0, p.c1, p.precision))
     }
 
+    // without an interval, the monotonicity will be none if c3 or c2 are nonzero
     if (i === undefined) {
       return 'none'
+    }
+
+    // if the interval is a single point, the monotonicity is constant
+    if (Interval.size(i) === 0) {
+      return 'constant'
     }
 
     if (p.c3 === 0) {
@@ -137,9 +144,9 @@ export const monotonicity = dual(
     }
 
     const e = i.pipe(
-      interval.startExclusive,
-      interval.endExclusive,
-      interval.filter(extrema(p)),
+      Interval.startExclusive,
+      Interval.endExclusive,
+      Interval.filter(extrema(p)),
     )
 
     if (e.length > 0) {
@@ -147,8 +154,8 @@ export const monotonicity = dual(
     }
 
     return guaranteedMonotonicityFromComparison(
-      solve(p, interval.min(i)),
-      solve(p, interval.max(i)),
+      solve(p, Interval.min(i)),
+      solve(p, Interval.max(i)),
     )
   },
 )

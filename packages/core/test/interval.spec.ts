@@ -24,12 +24,6 @@ describe('interval', () => {
     })
   })
   test('makeExclusive', () => {
-    expect(interval.makeExclusive(0)).toMatchObject({
-      start: 0,
-      startInclusive: false,
-      end: 0,
-      endInclusive: false,
-    })
     expect(interval.makeExclusive(0, 1)).toMatchObject({
       start: 0,
       startInclusive: false,
@@ -45,12 +39,6 @@ describe('interval', () => {
     })
   })
   test('makeStartExclusive', () => {
-    expect(interval.makeStartExclusive(0)).toMatchObject({
-      start: 0,
-      startInclusive: false,
-      end: 0,
-      endInclusive: true,
-    })
     expect(interval.makeStartExclusive(0, 1)).toMatchObject({
       start: 0,
       startInclusive: false,
@@ -67,12 +55,6 @@ describe('interval', () => {
   })
 
   test('makeEndExclusive', () => {
-    expect(interval.makeEndExclusive(0)).toMatchObject({
-      start: 0,
-      startInclusive: true,
-      end: 0,
-      endInclusive: false,
-    })
     expect(interval.makeEndExclusive(0, 1)).toMatchObject({
       start: 0,
       startInclusive: true,

@@ -1,10 +1,11 @@
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
+import * as Interval from '../interval'
 import { PRECISION, round } from '../util'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPolynomial } from './linear'
 import { QuadraticPolynomialImpl } from './quadratic.internal.circular'
-import type { ZeroOrOneSolution } from './types'
+import type { ZeroOrOneInterval, ZeroOrOneSolution } from './types'
 
 export const LinearPolynomialTypeId: unique symbol = Symbol.for('curvy/linear')
 export type LinearPolynomialTypeId = typeof LinearPolynomialTypeId
@@ -71,4 +72,44 @@ export const antiderivative = dual(
       p.c1 / 2,
       p.precision,
     ),
+)
+
+export const length = dual(
+  2,
+  (p: LinearPolynomial, domain: Interval.Interval) =>
+    round(
+      Math.hypot(
+        Interval.size(domain),
+        solve(p, domain.end) - solve(p, domain.start),
+      ),
+      p.precision,
+    ),
+)
+
+export const domain = dual<
+  (range: Interval.Interval) => (p: LinearPolynomial) => ZeroOrOneInterval,
+  (p: LinearPolynomial, range: Interval.Interval) => ZeroOrOneInterval
+>(2, (p: LinearPolynomial, range: Interval.Interval) => {
+  if (p.c1 === 0) {
+    if (range.start === p.c0 && range.end === p.c0) {
+      return Interval.make(Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY)
+    }
+    return null
+  }
+
+  const start = solveInverse(p, range.start)
+  const end = solveInverse(p, range.end)
+
+  if (start === null || end === null) {
+    return null
+  }
+
+  return Interval.withExclusivityOf(Interval.make(start, end), range)
+})
+
+export const range = dual(2, (p: LinearPolynomial, domain: Interval.Interval) =>
+  Interval.withExclusivityOf(
+    Interval.make(solve(p, domain.start), solve(p, domain.end)),
+    domain,
+  ),
 )

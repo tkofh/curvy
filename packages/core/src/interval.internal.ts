@@ -25,12 +25,24 @@ class IntervalImpl extends Pipeable implements Interval {
   ) {
     super()
 
+    if (start === end && !(startInclusive && endInclusive)) {
+      throw new Error('Invalid interval')
+    }
+
     this.start = round(start, precision)
     this.startInclusive = startInclusive
     this.end = round(end, precision)
     this.endInclusive = endInclusive
 
     this.precision = precision
+  }
+
+  get [Symbol.toStringTag]() {
+    return `Interval ${this.startInclusive ? '[' : '('}${this.start}, ${this.end}${this.endInclusive ? ']' : ')'}`
+  }
+
+  get [Symbol.for('nodejs.util.inspect.custom')]() {
+    return this[Symbol.toStringTag]
   }
 }
 
@@ -40,23 +52,20 @@ export const isInterval = (v: unknown): v is Interval =>
 export const make = (start: number, end?: number, precision?: number) =>
   new IntervalImpl(start, end ?? start, true, true, precision)
 
-export const makeExclusive = (
-  start: number,
-  end?: number,
-  precision?: number,
-) => new IntervalImpl(start, end ?? start, false, false, precision)
+export const makeExclusive = (start: number, end: number, precision?: number) =>
+  new IntervalImpl(start, end, false, false, precision)
 
 export const makeStartExclusive = (
   start: number,
-  end?: number,
+  end: number,
   precision?: number,
-) => new IntervalImpl(start, end ?? start, false, true, precision)
+) => new IntervalImpl(start, end, false, true, precision)
 
 export const makeEndExclusive = (
   start: number,
-  end?: number,
+  end: number,
   precision?: number,
-) => new IntervalImpl(start, end ?? start, true, false, precision)
+) => new IntervalImpl(start, end, true, false, precision)
 
 export const size = (i: Interval) => Math.abs(i.end - i.start)
 
@@ -135,6 +144,21 @@ export const endExclusive = (interval: Interval) =>
         interval.precision,
       )
     : interval
+
+export const withExclusivityOf = dual(
+  2,
+  (interval: Interval, other: Interval) =>
+    interval.startInclusive === other.startInclusive &&
+    interval.endInclusive === other.endInclusive
+      ? interval
+      : new IntervalImpl(
+          interval.start,
+          interval.end,
+          other.startInclusive,
+          other.endInclusive,
+          interval.precision,
+        ),
+)
 
 export const lerp = dual(
   2,

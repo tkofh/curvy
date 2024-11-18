@@ -17,19 +17,16 @@ export const make: {
 } = internal.make
 
 export const makeExclusive: {
-  (point: number): Interval
   (start: number, end: number): Interval
   (start: number, end: number, precision: number): Interval
 } = internal.makeExclusive
 
 export const makeStartExclusive: {
-  (point: number): Interval
   (start: number, end: number): Interval
   (start: number, end: number, precision: number): Interval
 } = internal.makeStartExclusive
 
 export const makeEndExclusive: {
-  (point: number): Interval
   (start: number, end: number): Interval
   (start: number, end: number, precision: number): Interval
 } = internal.makeEndExclusive
@@ -70,6 +67,11 @@ export const startExclusive: (interval: Interval) => Interval =
 
 export const endExclusive: (interval: Interval) => Interval =
   internal.endExclusive
+
+export const withExclusivityOf: {
+  (other: Interval): (interval: Interval) => Interval
+  (interval: Interval, other: Interval): Interval
+} = internal.withExclusivityOf
 
 export const lerp: {
   (interval: Interval): (t: number) => number
