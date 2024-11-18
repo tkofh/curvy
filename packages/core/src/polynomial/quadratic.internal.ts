@@ -206,7 +206,7 @@ const domainsFromSolutionPairs = (
 
 export const domain = dual(
   2,
-  // biome - ignore lint/complexity/noExcessiveCognitiveComplexity: this function deals with many (commented) edge cases
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: this function deals with many different cases
   (p: QuadraticPolynomial, range: Interval.Interval) => {
     if (p.c2 === 0) {
       const result = linear.domain(linear.make(p.c0, p.c1, p.precision), range)
@@ -279,5 +279,39 @@ export const domain = dual(
           start as [number, number],
           range.startInclusive,
         )
+  },
+)
+
+export const range = dual(
+  2,
+  (p: QuadraticPolynomial, domain: Interval.Interval) => {
+    if (p.c2 === 0) {
+      return linear.range(linear.make(p.c0, p.c1, p.precision), domain)
+    }
+
+    const start = solve(p, domain.start)
+    const end = solve(p, domain.end)
+    const e = extreme(p)
+
+    if (e === null || !Interval.contains(domain, e)) {
+      return Interval.withExclusivityOf(Interval.make(start, end), domain)
+    }
+
+    const min = Math.min(start, end, e)
+    const max = Math.max(start, end, e)
+
+    if (start === end) {
+      if (!(domain.startInclusive || domain.endInclusive)) {
+        if (min === start) {
+          return Interval.makeStartExclusive(min, max)
+        }
+        return Interval.makeEndExclusive(min, max)
+      }
+
+      return Interval.make(min, max)
+    }
+
+    if (min === start && !domain.startInclusive) {
+    }
   },
 )

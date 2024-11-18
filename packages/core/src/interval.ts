@@ -68,10 +68,44 @@ export const startExclusive: (interval: Interval) => Interval =
 export const endExclusive: (interval: Interval) => Interval =
   internal.endExclusive
 
+export const exclusive: (interval: Interval) => Interval = internal.exclusive
+
+export const inclusive: (interval: Interval) => Interval = internal.inclusive
+
 export const withExclusivityOf: {
   (other: Interval): (interval: Interval) => Interval
   (interval: Interval, other: Interval): Interval
 } = internal.withExclusivityOf
+
+export const setStartExclusive: {
+  (exclusive: boolean): (interval: Interval) => Interval
+  (interval: Interval, exclusive: boolean): Interval
+} = internal.setStartExclusive
+
+export const setStartInclusive: {
+  (inclusive: boolean): (interval: Interval) => Interval
+  (interval: Interval, inclusive: boolean): Interval
+} = internal.setStartInclusive
+
+export const setEndExclusive: {
+  (exclusive: boolean): (interval: Interval) => Interval
+  (interval: Interval, exclusive: boolean): Interval
+} = internal.setEndExclusive
+
+export const setEndInclusive: {
+  (inclusive: boolean): (interval: Interval) => Interval
+  (interval: Interval, inclusive: boolean): Interval
+} = internal.setEndInclusive
+
+export const setExclusive: {
+  (exclusive: boolean): (interval: Interval) => Interval
+  (interval: Interval, exclusive: boolean): Interval
+} = internal.setExclusive
+
+export const setInclusive: {
+  (inclusive: boolean): (interval: Interval) => Interval
+  (interval: Interval, inclusive: boolean): Interval
+} = internal.setInclusive
 
 export const lerp: {
   (interval: Interval): (t: number) => number

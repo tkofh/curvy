@@ -145,6 +145,28 @@ export const endExclusive = (interval: Interval) =>
       )
     : interval
 
+export const inclusive = (interval: Interval) =>
+  interval.startInclusive && interval.endInclusive
+    ? interval
+    : new IntervalImpl(
+        interval.start,
+        interval.end,
+        true,
+        true,
+        interval.precision,
+      )
+
+export const exclusive = (interval: Interval) =>
+  interval.startInclusive && interval.endInclusive
+    ? new IntervalImpl(
+        interval.start,
+        interval.end,
+        false,
+        false,
+        interval.precision,
+      )
+    : interval
+
 export const withExclusivityOf = dual(
   2,
   (interval: Interval, other: Interval) =>
@@ -158,6 +180,34 @@ export const withExclusivityOf = dual(
           other.endInclusive,
           interval.precision,
         ),
+)
+
+export const setStartExclusive = dual(
+  2,
+  (interval: Interval, exclusive: boolean) =>
+    interval.startInclusive === !exclusive
+      ? interval
+      : startExclusive(interval),
+)
+
+export const setStartInclusive = dual(2, (interval: Interval, i: boolean) =>
+  i ? startInclusive(interval) : startExclusive(interval),
+)
+
+export const setEndExclusive = dual(2, (interval: Interval, e: boolean) =>
+  e ? endExclusive(interval) : endInclusive(interval),
+)
+
+export const setEndInclusive = dual(2, (interval: Interval, i: boolean) =>
+  i ? endInclusive(interval) : endExclusive(interval),
+)
+
+export const setExclusive = dual(2, (interval: Interval, e: boolean) =>
+  e ? exclusive(interval) : inclusive(interval),
+)
+
+export const setInclusive = dual(2, (interval: Interval, i: boolean) =>
+  i ? inclusive(interval) : exclusive(interval),
 )
 
 export const lerp = dual(

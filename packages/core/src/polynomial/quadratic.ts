@@ -75,3 +75,8 @@ export const domain: {
   (p: QuadraticPolynomial, range: Interval): ZeroToTwoIntervals
   (range: Interval): (p: QuadraticPolynomial) => ZeroToTwoIntervals
 } = internal.domain
+
+export const range: {
+  (p: QuadraticPolynomial, domain: Interval): Interval
+  (domain: Interval): (p: QuadraticPolynomial) => Interval
+} = internal.range

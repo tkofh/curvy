@@ -291,6 +291,26 @@ describe('quadratic', () => {
       interval.makeExclusive(1, 2),
     ])
   })
+
+  // test('range', () => {
+  //   const p = quadratic.make(0, 0, 1)
+  //
+  //   expect(quadratic.range(p, interval.make(-2, -1))).toEqual(
+  //     interval.make(4, 1),
+  //   )
+  //   expect(quadratic.range(p, interval.make(-2, 2))).toEqual(
+  //     interval.make(0, 4),
+  //   )
+  //   expect(quadratic.range(p, interval.makeExclusive(-2, 2))).toEqual(
+  //     interval.makeEndExclusive(0, 4),
+  //   )
+  //   expect(quadratic.range(p, interval.makeStartExclusive(-2, 2))).toEqual(
+  //     interval.make(0, 4),
+  //   )
+  //   expect(quadratic.range(p, interval.makeEndExclusive(-2, 2))).toEqual(
+  //     interval.make(0, 4),
+  //   )
+  // })
 })
 
 describe('cubic', () => {
