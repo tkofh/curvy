@@ -143,11 +143,10 @@ export const monotonicity = dual(
       )
     }
 
-    const e = i.pipe(
-      Interval.startExclusive,
-      Interval.endExclusive,
-      Interval.filter(extrema(p)),
-    )
+    const e = Interval.filter(i, extrema(p), {
+      includeStart: false,
+      includeEnd: false,
+    })
 
     if (e.length > 0) {
       return 'none'

@@ -104,12 +104,9 @@ export const domain = dual<
     return null
   }
 
-  return Interval.withExclusivityOf(Interval.make(start, end), range)
+  return Interval.make(start, end)
 })
 
 export const range = dual(2, (p: LinearPolynomial, domain: Interval.Interval) =>
-  Interval.withExclusivityOf(
-    Interval.make(solve(p, domain.start), solve(p, domain.end)),
-    domain,
-  ),
+  Interval.make(solve(p, domain.start), solve(p, domain.end)),
 )

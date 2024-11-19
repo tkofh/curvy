@@ -91,6 +91,7 @@ class Matrix4x4Impl extends Pipeable implements Matrix4x4 {
 export const isMatrix4x4 = (m: unknown): m is Matrix4x4 =>
   typeof m === 'object' && m !== null && Matrix4x4TypeId in m
 
+// first four arguments are the top row
 export const make = (
   m00 = 0,
   m01 = m00,

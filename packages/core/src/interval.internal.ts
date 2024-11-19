@@ -10,35 +10,21 @@ class IntervalImpl extends Pipeable implements Interval {
   readonly [TypeBrand]: TypeBrand = TypeBrand
 
   readonly start: number
-  readonly startInclusive: boolean
   readonly end: number
-  readonly endInclusive: boolean
 
   readonly precision: number
 
-  constructor(
-    start = 0,
-    end = 0,
-    startInclusive = true,
-    endInclusive = true,
-    precision = PRECISION,
-  ) {
+  constructor(start = 0, end = 0, precision = PRECISION) {
     super()
 
-    if (start === end && !(startInclusive && endInclusive)) {
-      throw new Error('Invalid interval')
-    }
-
     this.start = round(start, precision)
-    this.startInclusive = startInclusive
     this.end = round(end, precision)
-    this.endInclusive = endInclusive
 
     this.precision = precision
   }
 
   get [Symbol.toStringTag]() {
-    return `Interval ${this.startInclusive ? '[' : '('}${this.start}, ${this.end}${this.endInclusive ? ']' : ')'}`
+    return `Interval [${this.start}, ${this.end}]`
   }
 
   get [Symbol.for('nodejs.util.inspect.custom')]() {
@@ -50,22 +36,7 @@ export const isInterval = (v: unknown): v is Interval =>
   typeof v === 'object' && v !== null && TypeBrand in v
 
 export const make = (start: number, end?: number, precision?: number) =>
-  new IntervalImpl(start, end ?? start, true, true, precision)
-
-export const makeExclusive = (start: number, end: number, precision?: number) =>
-  new IntervalImpl(start, end, false, false, precision)
-
-export const makeStartExclusive = (
-  start: number,
-  end: number,
-  precision?: number,
-) => new IntervalImpl(start, end, false, true, precision)
-
-export const makeEndExclusive = (
-  start: number,
-  end: number,
-  precision?: number,
-) => new IntervalImpl(start, end, true, false, precision)
+  new IntervalImpl(start, end ?? start, precision)
 
 export const size = (i: Interval) => Math.abs(i.end - i.start)
 
@@ -74,25 +45,46 @@ export const min = (i: Interval) => Math.min(i.start, i.end)
 export const max = (i: Interval) => Math.max(i.start, i.end)
 
 export const contains = dual<
-  (value: number) => (interval: Interval) => boolean,
-  (interval: Interval, value: number) => boolean
+  (
+    value: number,
+    options?: { includeStart?: boolean; includeEnd?: boolean },
+  ) => (interval: Interval) => boolean,
+  (
+    interval: Interval,
+    value: number,
+    options?: { includeStart?: boolean; includeEnd?: boolean },
+  ) => boolean
 >(
-  2,
-  (interval: Interval, value: number) =>
+  (args) => isInterval(args[0]),
+  (interval: Interval, value: number, { includeStart, includeEnd } = {}) =>
     (value > min(interval) && value < max(interval)) ||
-    (interval.startInclusive && value === interval.start) ||
-    (interval.endInclusive && value === interval.end),
+    ((includeStart ?? true) && value === interval.start) ||
+    ((includeEnd ?? true) && value === interval.end),
 )
 
 export const filter = dual<
-  <V extends ReadonlyArray<number>>(value: V) => (interval: Interval) => V,
-  <V extends ReadonlyArray<number>>(interval: Interval, value: V) => V
->(2, <V extends ReadonlyArray<number>>(interval: Interval, value: V): V => {
-  return value.filter((v) => contains(interval, v)) as unknown as V
-})
+  <V extends ReadonlyArray<number>>(
+    value: V,
+    options?: { includeStart?: boolean; includeEnd?: boolean },
+  ) => (interval: Interval) => V,
+  <V extends ReadonlyArray<number>>(
+    interval: Interval,
+    value: V,
+    options?: { includeStart?: boolean; includeEnd?: boolean },
+  ) => V
+>(
+  (args) => isInterval(args[0]),
+  <V extends ReadonlyArray<number>>(
+    interval: Interval,
+    value: V,
+    options?: { includeStart?: boolean; includeEnd?: boolean },
+  ): V => {
+    return value.filter((v) => contains(interval, v, options)) as unknown as V
+  },
+)
 
 export const clamp = dual(2, (interval: Interval, value: number) =>
-  contains(interval.pipe(startInclusive, endInclusive), value)
+  contains(interval, value)
     ? value
     : value < min(interval)
       ? min(interval)
@@ -100,115 +92,6 @@ export const clamp = dual(2, (interval: Interval, value: number) =>
 )
 
 export const unit = make(0, 1)
-
-export const startInclusive = (interval: Interval) =>
-  interval.startInclusive
-    ? interval
-    : new IntervalImpl(
-        interval.start,
-        interval.end,
-        true,
-        interval.endInclusive,
-        interval.precision,
-      )
-
-export const endInclusive = (interval: Interval) =>
-  interval.endInclusive
-    ? interval
-    : new IntervalImpl(
-        interval.start,
-        interval.end,
-        interval.startInclusive,
-        true,
-        interval.precision,
-      )
-
-export const startExclusive = (interval: Interval) =>
-  interval.startInclusive
-    ? new IntervalImpl(
-        interval.start,
-        interval.end,
-        false,
-        interval.endInclusive,
-        interval.precision,
-      )
-    : interval
-
-export const endExclusive = (interval: Interval) =>
-  interval.endInclusive
-    ? new IntervalImpl(
-        interval.start,
-        interval.end,
-        interval.startInclusive,
-        false,
-        interval.precision,
-      )
-    : interval
-
-export const inclusive = (interval: Interval) =>
-  interval.startInclusive && interval.endInclusive
-    ? interval
-    : new IntervalImpl(
-        interval.start,
-        interval.end,
-        true,
-        true,
-        interval.precision,
-      )
-
-export const exclusive = (interval: Interval) =>
-  interval.startInclusive && interval.endInclusive
-    ? new IntervalImpl(
-        interval.start,
-        interval.end,
-        false,
-        false,
-        interval.precision,
-      )
-    : interval
-
-export const withExclusivityOf = dual(
-  2,
-  (interval: Interval, other: Interval) =>
-    interval.startInclusive === other.startInclusive &&
-    interval.endInclusive === other.endInclusive
-      ? interval
-      : new IntervalImpl(
-          interval.start,
-          interval.end,
-          other.startInclusive,
-          other.endInclusive,
-          interval.precision,
-        ),
-)
-
-export const setStartExclusive = dual(
-  2,
-  (interval: Interval, exclusive: boolean) =>
-    interval.startInclusive === !exclusive
-      ? interval
-      : startExclusive(interval),
-)
-
-export const setStartInclusive = dual(2, (interval: Interval, i: boolean) =>
-  i ? startInclusive(interval) : startExclusive(interval),
-)
-
-export const setEndExclusive = dual(2, (interval: Interval, e: boolean) =>
-  e ? endExclusive(interval) : endInclusive(interval),
-)
-
-export const setEndInclusive = dual(2, (interval: Interval, i: boolean) =>
-  i ? endInclusive(interval) : endExclusive(interval),
-)
-
-export const setExclusive = dual(2, (interval: Interval, e: boolean) =>
-  e ? exclusive(interval) : inclusive(interval),
-)
-
-export const setInclusive = dual(2, (interval: Interval, i: boolean) =>
-  i ? inclusive(interval) : exclusive(interval),
-)
 
 export const lerp = dual(
   2,

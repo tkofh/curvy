@@ -2,9 +2,7 @@ import type { Pipeable } from './internal/pipeable'
 import * as internal from './interval.internal'
 export interface Interval extends Pipeable {
   readonly start: number
-  readonly startInclusive: boolean
   readonly end: number
-  readonly endInclusive: boolean
   readonly precision: number
 }
 
@@ -16,30 +14,34 @@ export const make: {
   (start: number, end: number, precision: number): Interval
 } = internal.make
 
-export const makeExclusive: {
-  (start: number, end: number): Interval
-  (start: number, end: number, precision: number): Interval
-} = internal.makeExclusive
-
-export const makeStartExclusive: {
-  (start: number, end: number): Interval
-  (start: number, end: number, precision: number): Interval
-} = internal.makeStartExclusive
-
-export const makeEndExclusive: {
-  (start: number, end: number): Interval
-  (start: number, end: number, precision: number): Interval
-} = internal.makeEndExclusive
-
 export const size: (i: Interval) => number = internal.size
 
 export const min: (i: Interval) => number = internal.min
 
 export const max: (i: Interval) => number = internal.max
 
+export const contains: {
+  (
+    interval: Interval,
+    value: number,
+    options?: { includeStart?: boolean; includeEnd?: boolean },
+  ): boolean
+  (
+    value: number,
+    options?: { includeStart?: boolean; includeEnd?: boolean },
+  ): (interval: Interval) => boolean
+} = internal.contains
+
 export const filter: {
-  <V extends ReadonlyArray<number>>(interval: Interval, value: V): V
-  <V extends ReadonlyArray<number>>(value: V): (interval: Interval) => V
+  <V extends ReadonlyArray<number>>(
+    interval: Interval,
+    value: V,
+    options?: { includeStart?: boolean; includeEnd?: boolean },
+  ): V
+  <V extends ReadonlyArray<number>>(
+    value: V,
+    options?: { includeStart?: boolean; includeEnd?: boolean },
+  ): (interval: Interval) => V
 } = internal.filter
 
 export const clamp: {
@@ -49,63 +51,7 @@ export const clamp: {
   (value: ReadonlyArray<number>): (interval: Interval) => ReadonlyArray<number>
 } = internal.clamp
 
-export const contains: {
-  (interval: Interval, value: number): boolean
-  (value: number): (interval: Interval) => boolean
-} = internal.contains
-
 export const unit: Interval = internal.unit
-
-export const startInclusive: (interval: Interval) => Interval =
-  internal.startInclusive
-
-export const endInclusive: (interval: Interval) => Interval =
-  internal.endInclusive
-
-export const startExclusive: (interval: Interval) => Interval =
-  internal.startExclusive
-
-export const endExclusive: (interval: Interval) => Interval =
-  internal.endExclusive
-
-export const exclusive: (interval: Interval) => Interval = internal.exclusive
-
-export const inclusive: (interval: Interval) => Interval = internal.inclusive
-
-export const withExclusivityOf: {
-  (other: Interval): (interval: Interval) => Interval
-  (interval: Interval, other: Interval): Interval
-} = internal.withExclusivityOf
-
-export const setStartExclusive: {
-  (exclusive: boolean): (interval: Interval) => Interval
-  (interval: Interval, exclusive: boolean): Interval
-} = internal.setStartExclusive
-
-export const setStartInclusive: {
-  (inclusive: boolean): (interval: Interval) => Interval
-  (interval: Interval, inclusive: boolean): Interval
-} = internal.setStartInclusive
-
-export const setEndExclusive: {
-  (exclusive: boolean): (interval: Interval) => Interval
-  (interval: Interval, exclusive: boolean): Interval
-} = internal.setEndExclusive
-
-export const setEndInclusive: {
-  (inclusive: boolean): (interval: Interval) => Interval
-  (interval: Interval, inclusive: boolean): Interval
-} = internal.setEndInclusive
-
-export const setExclusive: {
-  (exclusive: boolean): (interval: Interval) => Interval
-  (interval: Interval, exclusive: boolean): Interval
-} = internal.setExclusive
-
-export const setInclusive: {
-  (inclusive: boolean): (interval: Interval) => Interval
-  (interval: Interval, inclusive: boolean): Interval
-} = internal.setInclusive
 
 export const lerp: {
   (interval: Interval): (t: number) => number
