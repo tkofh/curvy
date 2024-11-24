@@ -74,16 +74,10 @@ describe('linear', () => {
     expect(linear.domain(line, interval.make(0, 1))).toEqual(
       interval.make(0, 1),
     )
-    expect(linear.domain(line, interval.make(1, 0))).toEqual(
-      interval.make(1, 0),
-    )
   })
   test('range', () => {
     expect(linear.range(linear.make(0, 1), interval.make(0, 2))).toEqual(
       interval.make(0, 2),
-    )
-    expect(linear.range(linear.make(0, -1), interval.make(0, 2))).toEqual(
-      interval.make(0, -2),
     )
   })
   test('length', () => {
@@ -203,29 +197,16 @@ describe('quadratic', () => {
     expect(quadratic.domain(p, interval.make(-1, 0))).toEqual([
       interval.make(0, 0),
     ])
-    expect(quadratic.domain(p, interval.make(0, -1))).toEqual([
-      interval.make(0, 0),
-    ])
 
     expect(quadratic.domain(p, interval.make(-1, 1))).toEqual([
-      interval.make(-1, 1),
-    ])
-    expect(quadratic.domain(p, interval.make(1, -1))).toEqual([
       interval.make(-1, 1),
     ])
 
     expect(quadratic.domain(p, interval.make(0, 1))).toEqual([
       interval.make(-1, 1),
     ])
-    expect(quadratic.domain(p, interval.make(1, 0))).toEqual([
-      interval.make(-1, 1),
-    ])
 
     expect(quadratic.domain(p, interval.make(1, 4))).toEqual([
-      interval.make(-2, -1),
-      interval.make(1, 2),
-    ])
-    expect(quadratic.domain(p, interval.make(4, 1))).toEqual([
       interval.make(-2, -1),
       interval.make(1, 2),
     ])
@@ -235,7 +216,7 @@ describe('quadratic', () => {
     const p = quadratic.make(0, 0, 1)
 
     expect(quadratic.range(p, interval.make(-2, -1))).toEqual(
-      interval.make(4, 1),
+      interval.make(1, 4),
     )
   })
 })

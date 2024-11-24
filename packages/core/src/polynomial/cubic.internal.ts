@@ -157,8 +157,8 @@ export const monotonicity = dual(
     }
 
     return guaranteedMonotonicityFromComparison(
-      solve(p, Interval.min(i)),
-      solve(p, Interval.max(i)),
+      solve(p, i.start),
+      solve(p, i.end),
     )
   },
 )

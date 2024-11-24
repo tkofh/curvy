@@ -16,6 +16,7 @@ describe('interval', () => {
       end: 1,
       precision: 2,
     })
+    expect(() => interval.make(0, -1)).toThrowError()
   })
 
   test('isInterval', () => {
@@ -26,17 +27,6 @@ describe('interval', () => {
   test('size', () => {
     expect(interval.size(interval.make(0))).toBe(0)
     expect(interval.size(interval.make(0, 1))).toBe(1)
-    expect(interval.size(interval.make(0, -1))).toBe(1)
-  })
-
-  test('min', () => {
-    expect(interval.min(interval.make(1, 2))).toBe(1)
-    expect(interval.min(interval.make(2, 1))).toBe(1)
-  })
-
-  test('max', () => {
-    expect(interval.max(interval.make(1, 2))).toBe(2)
-    expect(interval.max(interval.make(2, 1))).toBe(2)
   })
 
   test('filter', () => {

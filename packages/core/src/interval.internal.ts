@@ -14,8 +14,12 @@ class IntervalImpl extends Pipeable implements Interval {
 
   readonly precision: number
 
-  constructor(start = 0, end = 0, precision = PRECISION) {
+  constructor(start = 0, end = start, precision = PRECISION) {
     super()
+
+    if (end < start) {
+      throw new Error('Interval end must be greater than or equal to start')
+    }
 
     this.start = round(start, precision)
     this.end = round(end, precision)
@@ -43,10 +47,6 @@ export const fromMinMax = (...values: ReadonlyArray<number>) =>
 
 export const size = (i: Interval) => Math.abs(i.end - i.start)
 
-export const min = (i: Interval) => Math.min(i.start, i.end)
-
-export const max = (i: Interval) => Math.max(i.start, i.end)
-
 export const contains = dual<
   (
     value: number,
@@ -60,7 +60,7 @@ export const contains = dual<
 >(
   (args) => isInterval(args[0]),
   (interval: Interval, value: number, { includeStart, includeEnd } = {}) =>
-    (value > min(interval) && value < max(interval)) ||
+    (value > interval.start && value < interval.end) ||
     ((includeStart ?? true) && value === interval.start) ||
     ((includeEnd ?? true) && value === interval.end),
 )
@@ -89,9 +89,9 @@ export const filter = dual<
 export const clamp = dual(2, (interval: Interval, value: number) =>
   contains(interval, value)
     ? value
-    : value < min(interval)
-      ? min(interval)
-      : max(interval),
+    : value < interval.start
+      ? interval.start
+      : interval.end,
 )
 
 export const unit = make(0, 1)

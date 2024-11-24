@@ -108,8 +108,8 @@ export const monotonicity = dual(
     }
 
     return guaranteedMonotonicityFromComparison(
-      solve(p, Interval.min(i)),
-      solve(p, Interval.max(i)),
+      solve(p, i.start),
+      solve(p, i.end),
     )
   },
 )
@@ -179,6 +179,6 @@ export const range = dual(
 
     return e !== null && Interval.contains(domain, e)
       ? Interval.fromMinMax(solve(p, domain.start), solve(p, domain.end), e)
-      : Interval.make(solve(p, domain.start), solve(p, domain.end))
+      : Interval.fromMinMax(solve(p, domain.start), solve(p, domain.end))
   },
 )

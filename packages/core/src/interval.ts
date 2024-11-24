@@ -19,10 +19,6 @@ export const fromMinMax: (...values: ReadonlyArray<number>) => Interval =
 
 export const size: (i: Interval) => number = internal.size
 
-export const min: (i: Interval) => number = internal.min
-
-export const max: (i: Interval) => number = internal.max
-
 export const contains: {
   (
     interval: Interval,
