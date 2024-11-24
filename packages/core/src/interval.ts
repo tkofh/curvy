@@ -14,6 +14,9 @@ export const make: {
   (start: number, end: number, precision: number): Interval
 } = internal.make
 
+export const fromMinMax: (...values: ReadonlyArray<number>) => Interval =
+  internal.fromMinMax
+
 export const size: (i: Interval) => number = internal.size
 
 export const min: (i: Interval) => number = internal.min

@@ -135,10 +135,9 @@ export const domain = dual(
     }
 
     if (range.start === range.end) {
-      const domain = solveInverse(p, range.start)
-      return domain.length === 0
-        ? []
-        : [Interval.make(Math.min(...domain), Math.max(...domain))]
+      return solveInverse(p, range.start).map((solution) =>
+        Interval.make(solution, solution),
+      )
     }
 
     // the start and end of the range are discrete values. each can have zero, one, or two values
@@ -176,17 +175,10 @@ export const range = dual(
       return linear.range(linear.make(p.c0, p.c1, p.precision), domain)
     }
 
-    const start = solve(p, domain.start)
-    const end = solve(p, domain.end)
     const e = extreme(p)
 
-    if (e === null) {
-      return Interval.make(start, end)
-    }
-
-    const min = Math.min(start, end, e)
-    const max = Math.max(start, end, e)
-
-    return Interval.make(min, max)
+    return e !== null && Interval.contains(domain, e)
+      ? Interval.fromMinMax(solve(p, domain.start), solve(p, domain.end), e)
+      : Interval.make(solve(p, domain.start), solve(p, domain.end))
   },
 )

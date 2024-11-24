@@ -231,25 +231,13 @@ describe('quadratic', () => {
     ])
   })
 
-  // test('range', () => {
-  //   const p = quadratic.make(0, 0, 1)
-  //
-  //   expect(quadratic.range(p, interval.make(-2, -1))).toEqual(
-  //     interval.make(4, 1),
-  //   )
-  //   expect(quadratic.range(p, interval.make(-2, 2))).toEqual(
-  //     interval.make(0, 4),
-  //   )
-  //   expect(quadratic.range(p, interval.makeExclusive(-2, 2))).toEqual(
-  //     interval.makeEndExclusive(0, 4),
-  //   )
-  //   expect(quadratic.range(p, interval.makeStartExclusive(-2, 2))).toEqual(
-  //     interval.make(0, 4),
-  //   )
-  //   expect(quadratic.range(p, interval.makeEndExclusive(-2, 2))).toEqual(
-  //     interval.make(0, 4),
-  //   )
-  // })
+  test('range', () => {
+    const p = quadratic.make(0, 0, 1)
+
+    expect(quadratic.range(p, interval.make(-2, -1))).toEqual(
+      interval.make(4, 1),
+    )
+  })
 })
 
 describe('cubic', () => {
@@ -357,5 +345,14 @@ describe('cubic', () => {
     expect(
       cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(1, 2)),
     ).toBe('increasing')
+  })
+  test('domain', () => {
+    console.log(cubic.domain(cubic.make(0, -3, 0, 1), interval.make(2, 3)))
+    // expect(cubic.domain(cubic.make(0, -1, 0, 1), interval.make(2, 3))).toEqual([
+    //   interval.make(1.521379706805, 1.671699881657)
+    // ])
+    // expect(cubic.domain(cubic.make(0, -3, 0, 1), interval.make(2, 3))).toEqual([
+    //   interval.make(1.521379706805, 1.671699881657)
+    // ])
   })
 })
