@@ -59,10 +59,14 @@ export const contains = dual<
   ) => boolean
 >(
   (args) => isInterval(args[0]),
-  (interval: Interval, value: number, { includeStart, includeEnd } = {}) =>
+  (
+    interval: Interval,
+    value: number,
+    { includeStart = true, includeEnd = true } = {},
+  ) =>
     (value > interval.start && value < interval.end) ||
-    ((includeStart ?? true) && value === interval.start) ||
-    ((includeEnd ?? true) && value === interval.end),
+    (includeStart && value === interval.start) ||
+    (includeEnd && value === interval.end),
 )
 
 export const filter = dual<

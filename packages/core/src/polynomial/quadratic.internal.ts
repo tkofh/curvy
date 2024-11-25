@@ -129,42 +129,17 @@ export const antiderivative = dual(
 export const domain = dual(
   2,
   (p: QuadraticPolynomial, range: Interval.Interval) => {
-    if (p.c2 === 0) {
-      const result = linear.domain(linear.make(p.c0, p.c1, p.precision), range)
-      return result === null ? [] : [result]
-    }
-
-    if (range.start === range.end) {
-      return solveInverse(p, range.start).map((solution) =>
-        Interval.make(solution, solution),
-      )
-    }
-
-    // the start and end of the range are discrete values. each can have zero, one, or two values
     const start = solveInverse(p, range.start)
     const end = solveInverse(p, range.end)
 
-    // if there are no solutions, the range does not intersect the curve at all
     if (start.length === 0 && end.length === 0) {
-      return []
+      return null
     }
 
-    if (start.length < end.length) {
-      return [Interval.make(Math.min(...end), Math.max(...end))]
-    }
-
-    if (end.length < start.length) {
-      return [Interval.make(Math.min(...start), Math.max(...start))]
-    }
-
-    const startMin = Math.min(...start)
-    const startMax = Math.max(...start)
-    const endMin = Math.min(...end)
-    const endMax = Math.max(...end)
-
-    return startMin < endMin
-      ? [Interval.make(startMin, endMin), Interval.make(endMax, startMax)]
-      : [Interval.make(endMin, startMin), Interval.make(startMax, endMax)]
+    return Interval.fromMinMax(
+      ...solveInverse(p, range.start),
+      ...solveInverse(p, range.end),
+    )
   },
 )
 
@@ -178,7 +153,11 @@ export const range = dual(
     const e = extreme(p)
 
     return e !== null && Interval.contains(domain, e)
-      ? Interval.fromMinMax(solve(p, domain.start), solve(p, domain.end), e)
+      ? Interval.fromMinMax(
+          solve(p, domain.start),
+          solve(p, domain.end),
+          solve(p, e),
+        )
       : Interval.fromMinMax(solve(p, domain.start), solve(p, domain.end))
   },
 )

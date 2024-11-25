@@ -5,11 +5,7 @@ import * as internal from './cubic.internal'
 import type { CubicPolynomialTypeId } from './cubic.internal.circular'
 import type { Monotonicity } from './monotonicity'
 import type { QuadraticPolynomial } from './quadratic'
-import type {
-  ZeroToThreeIntervals,
-  ZeroToThreeSolutions,
-  ZeroToTwoSolutions,
-} from './types'
+import type { ZeroToThreeSolutions, ZeroToTwoSolutions } from './types'
 
 export interface CubicPolynomial extends Pipeable {
   readonly [CubicPolynomialTypeId]: CubicPolynomialTypeId
@@ -67,6 +63,11 @@ export const monotonicity: {
 } = internal.monotonicity
 
 export const domain: {
-  (p: CubicPolynomial, range: Interval): ZeroToThreeIntervals
-  (range: Interval): (p: CubicPolynomial) => ZeroToThreeIntervals
+  (p: CubicPolynomial, range: Interval): Interval
+  (range: Interval): (p: CubicPolynomial) => Interval
 } = internal.domain
+
+export const range: {
+  (p: CubicPolynomial, domain: Interval): Interval
+  (domain: Interval): (p: CubicPolynomial) => Interval
+} = internal.range

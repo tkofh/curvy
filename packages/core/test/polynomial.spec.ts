@@ -192,24 +192,23 @@ describe('quadratic', () => {
 
   test('domain', () => {
     const p = quadratic.make(0, 0, 1)
-    expect(quadratic.domain(p, interval.make(-2, -1))).toEqual([])
+    expect(quadratic.domain(p, interval.make(-2, -1))).toEqual(null)
 
-    expect(quadratic.domain(p, interval.make(-1, 0))).toEqual([
+    expect(quadratic.domain(p, interval.make(-1, 0))).toEqual(
       interval.make(0, 0),
-    ])
+    )
 
-    expect(quadratic.domain(p, interval.make(-1, 1))).toEqual([
+    expect(quadratic.domain(p, interval.make(-1, 1))).toEqual(
       interval.make(-1, 1),
-    ])
+    )
 
-    expect(quadratic.domain(p, interval.make(0, 1))).toEqual([
+    expect(quadratic.domain(p, interval.make(0, 1))).toEqual(
       interval.make(-1, 1),
-    ])
+    )
 
-    expect(quadratic.domain(p, interval.make(1, 4))).toEqual([
-      interval.make(-2, -1),
-      interval.make(1, 2),
-    ])
+    expect(quadratic.domain(p, interval.make(1, 4))).toEqual(
+      interval.make(-2, 2),
+    )
   })
 
   test('range', () => {
@@ -328,12 +327,31 @@ describe('cubic', () => {
     ).toBe('increasing')
   })
   test('domain', () => {
-    console.log(cubic.domain(cubic.make(0, -3, 0, 1), interval.make(2, 3)))
-    // expect(cubic.domain(cubic.make(0, -1, 0, 1), interval.make(2, 3))).toEqual([
-    //   interval.make(1.521379706805, 1.671699881657)
-    // ])
-    // expect(cubic.domain(cubic.make(0, -3, 0, 1), interval.make(2, 3))).toEqual([
-    //   interval.make(1.521379706805, 1.671699881657)
-    // ])
+    const p = cubic.make(0, -1.5, 0, 0.5)
+
+    expect(cubic.domain(p, interval.make(-3, -2))).toEqual(
+      interval.make(-2.355301397608, -2.195823345446),
+    )
+    expect(cubic.domain(p, interval.make(-2, -1))).toEqual(
+      interval.make(-2.195823345446, 1),
+    )
+    expect(cubic.domain(p, interval.make(-1, 0))).toEqual(
+      interval.make(-2, 1.732050807569),
+    )
+    expect(cubic.domain(p, interval.make(0, 1))).toEqual(
+      interval.make(-1.732050807569, 2),
+    )
+    expect(cubic.domain(p, interval.make(1, 2))).toEqual(
+      interval.make(-1, 2.195823345446),
+    )
+    expect(cubic.domain(p, interval.make(2, 3))).toEqual(
+      interval.make(2.195823345446, 2.355301397608),
+    )
+  })
+  test('range', () => {
+    const p = cubic.make(0, -1.5, 0, 0.5)
+    expect(cubic.range(p, interval.make(-3, -2))).toEqual(interval.make(-9, -1))
+    expect(cubic.range(p, interval.make(-2, -1))).toEqual(interval.make(-1, 1))
+    expect(cubic.range(p, interval.make(-1, 0))).toEqual(interval.make(0, 1))
   })
 })

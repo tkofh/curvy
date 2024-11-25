@@ -10,11 +10,7 @@ import {
 import * as linear from './linear.internal'
 import { guaranteedMonotonicityFromComparison } from './monotonicity'
 import * as quadratic from './quadratic.internal'
-import type {
-  ZeroToThreeIntervals,
-  ZeroToThreeSolutions,
-  ZeroToTwoSolutions,
-} from './types'
+import type { ZeroToThreeSolutions, ZeroToTwoSolutions } from './types'
 
 export const make = (
   c0 = 0,
@@ -164,36 +160,22 @@ export const monotonicity = dual(
 )
 
 export const domain = dual<
-  (range: Interval.Interval) => (p: CubicPolynomial) => ZeroToThreeIntervals,
-  (p: CubicPolynomial, range: Interval.Interval) => ZeroToThreeIntervals
->(2, (p: CubicPolynomial, range: Interval.Interval) => {
-  if (p.c3 === 0 && p.c2 === 0) {
-    return linear.domain(linear.make(p.c0, p.c1, p.precision), range)
-  }
+  (range: Interval.Interval) => (p: CubicPolynomial) => Interval.Interval,
+  (p: CubicPolynomial, range: Interval.Interval) => Interval.Interval
+>(2, (p: CubicPolynomial, range: Interval.Interval) =>
+  Interval.fromMinMax(
+    ...solveInverse(p, range.start),
+    ...solveInverse(p, range.end),
+  ),
+)
 
-  if (p.c3 === 0) {
-    return quadratic.domain(
-      quadratic.make(p.c0, p.c1, p.c2, p.precision),
-      range,
-    )
-  }
-
-  if (range.start === range.end) {
-    return Array.from(solveInverse(p, range.start), (solution) =>
-      Interval.make(solution),
-    )
-  }
-
-  const start = solveInverse(p, range.start)
-  const end = solveInverse(p, range.end)
-
-  if (start.length === 3 && end.length === 3) {
-    return [
-      Interval.make(start[0], end[0]),
-      Interval.make(start[1], end[1]),
-      Interval.make(start[2], end[2]),
-    ]
-  }
-
-  return [Interval.make(Math.min(...start, ...end), Math.max(...start, ...end))]
-})
+export const range = dual<
+  (domain: Interval.Interval) => (p: CubicPolynomial) => Interval.Interval,
+  (p: CubicPolynomial, domain: Interval.Interval) => Interval.Interval
+>(2, (p: CubicPolynomial, domain: Interval.Interval) =>
+  Interval.fromMinMax(
+    solve(p, domain.start),
+    solve(p, domain.end),
+    ...Interval.filter(domain, extrema(p)).map((e) => solve(p, e)),
+  ),
+)

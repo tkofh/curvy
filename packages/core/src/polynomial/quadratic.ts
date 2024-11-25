@@ -6,11 +6,7 @@ import type { LinearPolynomial } from './linear'
 import type { Monotonicity } from './monotonicity'
 import * as internal from './quadratic.internal'
 import type { QuadraticPolynomialTypeId } from './quadratic.internal.circular'
-import type {
-  ZeroOrOneSolution,
-  ZeroToTwoIntervals,
-  ZeroToTwoSolutions,
-} from './types'
+import type { ZeroOrOneSolution, ZeroToTwoSolutions } from './types'
 
 export interface QuadraticPolynomial extends Pipeable {
   readonly [QuadraticPolynomialTypeId]: QuadraticPolynomialTypeId
@@ -72,8 +68,8 @@ export const antiderivative: {
 } = internal.antiderivative
 
 export const domain: {
-  (p: QuadraticPolynomial, range: Interval): ZeroToTwoIntervals
-  (range: Interval): (p: QuadraticPolynomial) => ZeroToTwoIntervals
+  (p: QuadraticPolynomial, range: Interval): Interval | null
+  (range: Interval): (p: QuadraticPolynomial) => Interval | null
 } = internal.domain
 
 export const range: {

@@ -37,8 +37,10 @@ describe('interval', () => {
 
   test('contains', () => {
     expect(interval.contains(interval.make(0, 1), 0)).toBe(true)
+    expect(
+      interval.contains(interval.make(0, 1), 0, { includeStart: false }),
+    ).toBe(false)
     expect(interval.contains(interval.make(0, 1), 0.5)).toBe(true)
-    expect(interval.contains(1)(interval.make(0, 1))).toBe(true)
     expect(interval.contains(interval.make(0, 1), -0.5)).toBe(false)
   })
 
