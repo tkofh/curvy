@@ -3,7 +3,7 @@ import * as Interval from '../interval'
 import { PRECISION, minMax, round } from '../util'
 import type { Vector3 } from '../vector/vector3'
 import { CubicPolynomialImpl } from './cubic.internal.circular'
-import * as linear from './linear.internal'
+import * as Linear from './linear.internal'
 import { guaranteedMonotonicityFromComparison } from './monotonicity'
 import type { QuadraticPolynomial } from './quadratic'
 import {
@@ -62,7 +62,7 @@ export const toInverseSolver =
     solveInverse(p, y)
 
 export const derivative = (p: QuadraticPolynomial) =>
-  linear.make(p.c1, p.c2 * 2, p.precision)
+  Linear.make(p.c1, p.c2 * 2, p.precision)
 
 export const roots = dual(
   (args) => isQuadraticPolynomial(args[0]),
@@ -77,7 +77,7 @@ export const roots = dual(
 )
 
 export const extreme = (p: QuadraticPolynomial) =>
-  derivative(p).pipe(linear.solveInverse(0)) ?? (p.c2 === 0 ? null : 0)
+  derivative(p).pipe(Linear.solveInverse(0)) ?? (p.c2 === 0 ? null : 0)
 
 export const monotonicity = dual(
   (args) => isQuadraticPolynomial(args[0]),
@@ -87,7 +87,7 @@ export const monotonicity = dual(
     }
 
     if (p.c2 === 0) {
-      return linear.monotonicity(linear.make(p.c0, p.c1, p.precision))
+      return Linear.monotonicity(Linear.make(p.c0, p.c1, p.precision))
     }
 
     // c2 is non-zero, so the extreme is guaranteed to be non-null
@@ -147,7 +147,7 @@ export const range = dual(
   2,
   (p: QuadraticPolynomial, domain: Interval.Interval) => {
     if (p.c2 === 0) {
-      return linear.range(linear.make(p.c0, p.c1, p.precision), domain)
+      return Linear.range(Linear.make(p.c0, p.c1, p.precision), domain)
     }
 
     const e = extreme(p)
@@ -159,5 +159,35 @@ export const range = dual(
           solve(p, e),
         )
       : Interval.fromMinMax(solve(p, domain.start), solve(p, domain.end))
+  },
+)
+
+export const length = dual(
+  2,
+  (p: QuadraticPolynomial, domain: Interval.Interval) => {
+    if (Interval.size(domain) === 0) {
+      return 0
+    }
+
+    if (p.c2 === 0) {
+      return Linear.length(Linear.make(p.c0, p.c1, p.precision), domain)
+    }
+
+    const d = derivative(p)
+
+    const derivativeStart = Linear.solve(d, domain.start)
+    const sqrtStart = Math.sqrt(1 + derivativeStart ** 2)
+    const evalStart =
+      (derivativeStart * sqrtStart +
+        Math.log(Math.abs(derivativeStart + sqrtStart))) /
+      (4 * p.c2)
+
+    const derivativeEnd = Linear.solve(d, domain.end)
+    const sqrtEnd = Math.sqrt(1 + derivativeEnd ** 2)
+    const evalEnd =
+      (derivativeEnd * sqrtEnd + Math.log(Math.abs(derivativeEnd + sqrtEnd))) /
+      (4 * p.c2)
+
+    return round(evalEnd - evalStart, p.precision)
   },
 )

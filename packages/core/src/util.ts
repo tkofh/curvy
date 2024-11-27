@@ -1,6 +1,6 @@
 import { dual } from './internal/function'
 
-export const PRECISION = 12
+export const PRECISION = 8
 
 export function round(value: number, precision = PRECISION): number {
   const scale = 10 ** precision

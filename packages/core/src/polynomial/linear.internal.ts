@@ -41,9 +41,7 @@ export const fromVector = (v: Vector2, precision?: number) =>
 export const solve = dual<
   (x: number) => (p: LinearPolynomial) => number,
   (p: LinearPolynomial, x: number) => number
->(2, (p: LinearPolynomial, x: number) =>
-  round(p.c0 + x * p.c1, Math.min(p.precision, x)),
-)
+>(2, (p: LinearPolynomial, x: number) => round(p.c0 + x * p.c1, p.precision))
 
 export const toSolver = (p: LinearPolynomial) => (x: number) => solve(p, x)
 
@@ -74,18 +72,6 @@ export const antiderivative = dual(
     ),
 )
 
-export const length = dual(
-  2,
-  (p: LinearPolynomial, domain: Interval.Interval) =>
-    round(
-      Math.hypot(
-        Interval.size(domain),
-        solve(p, domain.end) - solve(p, domain.start),
-      ),
-      p.precision,
-    ),
-)
-
 export const domain = dual<
   (range: Interval.Interval) => (p: LinearPolynomial) => ZeroOrOneInterval,
   (p: LinearPolynomial, range: Interval.Interval) => ZeroOrOneInterval
@@ -109,4 +95,19 @@ export const domain = dual<
 
 export const range = dual(2, (p: LinearPolynomial, domain: Interval.Interval) =>
   Interval.make(solve(p, domain.start), solve(p, domain.end)),
+)
+
+export const length = dual(
+  2,
+  (p: LinearPolynomial, domain: Interval.Interval) => {
+    if (Interval.size(domain) === 0) {
+      return 0
+    }
+
+    if (p.c1 === 0) {
+      return round(Interval.size(domain), p.precision)
+    }
+
+    return round(Math.sqrt(1 + p.c1 ** 2) * Interval.size(domain), p.precision)
+  },
 )

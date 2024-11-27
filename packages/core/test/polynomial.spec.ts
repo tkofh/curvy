@@ -88,6 +88,78 @@ describe('linear', () => {
   })
 })
 
+// function legendrePolynomial(n: number, x: number) {
+//   if (n === 0) {
+//     return 1
+//   }
+//   if (n === 1) {
+//     return x
+//   }
+//
+//   let p0 = 1
+//   let p1 = x
+//   let p2
+//   for (let i = 2; i <= n; i++) {
+//     p2 = ((2 * i - 1) * x * p1 - (i - 1) * p0) / i
+//     p0 = p1
+//     p1 = p2
+//   }
+//   return p1
+// }
+//
+// function legendreDerivative(n: number, x: number) {
+//   if (n === 0) {
+//     return 0
+//   }
+//   if (n === 1) {
+//     return 1
+//   }
+//   return (
+//     (n * (x * legendrePolynomial(n, x) - legendrePolynomial(n - 1, x))) /
+//     (x * x - 1)
+//   )
+// }
+//
+// function findLegendreRoots(n: number) {
+//   const roots = []
+//   // Initial guesses for roots based on approximation
+//   for (let i = 1; i <= n; i++) {
+//     let x = Math.cos((Math.PI * (i - 0.25)) / (n + 0.5))
+//
+//     // Newton's method iteration
+//     for (let iter = 0; iter < 10; iter++) {
+//       const delta = -legendrePolynomial(n, x) / legendreDerivative(n, x)
+//       x += delta
+//       if (Math.abs(delta) < 1e-15) {
+//         break
+//       }
+//     }
+//     roots.push(x)
+//   }
+//   return roots
+// }
+//
+// function calculateWeights(n: number, roots: Array<number>) {
+//   return roots.map((x) => {
+//     const deriv = legendreDerivative(n, x)
+//     return 2 / ((1 - x * x) * deriv * deriv)
+//   })
+// }
+//
+// function generateGaussQuadrature(n: number) {
+//   const roots = findLegendreRoots(n)
+//   const weights = calculateWeights(n, roots)
+//
+//   // Sort points and weights from negative to positive
+//   const pairs = roots.map((x, i) => ({ x, w: weights[i] as number }))
+//   pairs.sort((a, b) => a.x - b.x)
+//
+//   return {
+//     points: pairs.map((p) => p.x),
+//     weights: pairs.map((p) => p.w),
+//   }
+// }
+
 describe('quadratic', () => {
   test('make', () => {
     expect(quadratic.make(0, 1, 2)).toMatchObject({ c0: 0, c1: 1, c2: 2 })
@@ -98,7 +170,6 @@ describe('quadratic', () => {
       precision: 3,
     })
   })
-
   test('fromVector', () => {
     expect(quadratic.fromVector(vector3.make(0, 1, 2))).toMatchObject({
       c0: 0,
@@ -118,20 +189,17 @@ describe('quadratic', () => {
       precision: 3,
     })
   })
-
   test('solve', () => {
     expect(quadratic.solve(quadratic.make(0, 1, 2), 0)).toBe(0)
     expect(quadratic.solve(quadratic.make(0, 1, 2), 1)).toBe(3)
     expect(quadratic.solve(quadratic.make(0, 1, 2), 2)).toBe(10)
   })
-
   test('toSolver', () => {
     const solver = quadratic.toSolver(quadratic.make(0, 1, 2))
     expect(solver(0)).toBe(0)
     expect(solver(1)).toBe(3)
     expect(solver(2)).toBe(10)
   })
-
   test('solveInverse', () => {
     expect(quadratic.solveInverse(quadratic.make(0, 1, 2), 0)).toEqual([
       -0.5, 0,
@@ -141,24 +209,20 @@ describe('quadratic', () => {
     ])
     expect(quadratic.solveInverse(quadratic.make(0, 1, 2), -0.5)).toEqual([])
   })
-
   test('toInverseSolver', () => {
     const inverseSolver = quadratic.toInverseSolver(quadratic.make(0, 1, 2))
     expect(inverseSolver(0)).toEqual([-0.5, 0])
     expect(inverseSolver(-0.125)).toEqual([-0.25])
     expect(inverseSolver(-0.5)).toEqual([])
   })
-
   test('derivative', () => {
     expect(quadratic.derivative(quadratic.make(0, 1, 2))).toEqual(
       linear.make(1, 4),
     )
   })
-
   test('roots', () => {
     expect(quadratic.roots(quadratic.make(0, 1, 2))).toEqual([-0.5, 0])
   })
-
   test('monotonicity', () => {
     expect(quadratic.monotonicity(quadratic.make(0, 0, 0))).toBe('constant')
     expect(quadratic.monotonicity(quadratic.make(0, 1, 0))).toBe('increasing')
@@ -183,13 +247,11 @@ describe('quadratic', () => {
       quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(1, 2)),
     ).toBe('increasing')
   })
-
   test('antiderivative', () => {
     expect(quadratic.antiderivative(quadratic.make(1, 2, 3), 0)).toEqual(
       cubic.make(0, 1, 1, 1),
     )
   })
-
   test('domain', () => {
     const p = quadratic.make(0, 0, 1)
     expect(quadratic.domain(p, interval.make(-2, -1))).toEqual(null)
@@ -210,13 +272,22 @@ describe('quadratic', () => {
       interval.make(-2, 2),
     )
   })
-
   test('range', () => {
     const p = quadratic.make(0, 0, 1)
 
     expect(quadratic.range(p, interval.make(-2, -1))).toEqual(
       interval.make(1, 4),
     )
+  })
+  test('length', () => {
+    // Example usage:
+    // const quadrature = generateGaussQuadrature(9)
+    // console.log('Points:', quadrature.points)
+    // console.log('Weights:', quadrature.weights)
+
+    const p = quadratic.make(0, 0, 1)
+
+    expect(quadratic.length(p, interval.unit)).toEqual(1.47894286)
   })
 })
 

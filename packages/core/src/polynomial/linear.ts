@@ -55,11 +55,6 @@ export const antiderivative: {
   (constant: number): (p: LinearPolynomial) => QuadraticPolynomial
 } = internal.antiderivative
 
-export const length: {
-  (p: LinearPolynomial, domain: Interval): number
-  (domain: Interval): (p: LinearPolynomial) => number
-} = internal.length
-
 export const domain: {
   (p: LinearPolynomial, range: Interval): ZeroOrOneInterval
   (range: Interval): (p: LinearPolynomial) => ZeroOrOneInterval
@@ -69,3 +64,8 @@ export const range: {
   (p: LinearPolynomial, domain: Interval): Interval
   (domain: Interval): (p: LinearPolynomial) => Interval
 } = internal.range
+
+export const length: {
+  (p: LinearPolynomial, domain: Interval): number
+  (domain: Interval): (p: LinearPolynomial) => number
+} = internal.length
