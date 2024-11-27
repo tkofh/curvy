@@ -1,5 +1,39 @@
 import { dual } from '../internal/function'
 import * as Interval from '../interval'
+import {
+  GL32_W0,
+  GL32_W1,
+  GL32_W2,
+  GL32_W3,
+  GL32_W4,
+  GL32_W5,
+  GL32_W6,
+  GL32_W7,
+  GL32_W8,
+  GL32_W9,
+  GL32_W10,
+  GL32_W11,
+  GL32_W12,
+  GL32_W13,
+  GL32_W14,
+  GL32_W15,
+  GL32_X0,
+  GL32_X1,
+  GL32_X2,
+  GL32_X3,
+  GL32_X4,
+  GL32_X5,
+  GL32_X6,
+  GL32_X7,
+  GL32_X8,
+  GL32_X9,
+  GL32_X10,
+  GL32_X11,
+  GL32_X12,
+  GL32_X13,
+  GL32_X14,
+  GL32_X15,
+} from '../length'
 import { PRECISION, round } from '../util'
 import type { Vector4 } from '../vector/vector4'
 import type { CubicPolynomial } from './cubic'
@@ -185,3 +219,205 @@ export const range = dual<
     ...Interval.filter(domain, extrema(p)).map((e) => solve(p, e)),
   ),
 )
+
+export const length = dual<
+  (domain: Interval.Interval) => (p: CubicPolynomial) => number,
+  (p: CubicPolynomial, domain: Interval.Interval) => number
+>(2, (p: CubicPolynomial, domain: Interval.Interval) => {
+  if (Interval.size(domain) === 0) {
+    return 0
+  }
+
+  if (p.c3 === 0) {
+    if (p.c2 === 0) {
+      return linear.length(linear.make(p.c0, p.c1, p.precision), domain)
+    }
+
+    return quadratic.length(
+      quadratic.make(p.c0, p.c1, p.c2, p.precision),
+      domain,
+    )
+  }
+
+  const d = derivative(p)
+
+  const scale = (domain.end - domain.start) / 2
+  const shift = (domain.end + domain.start) / 2
+
+  // if (p.precision > 0) {
+  //   return round(
+  //     (GL21_W0 *
+  //       Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X0) ** 2) +
+  //       GL21_W1 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X1) ** 2) +
+  //       GL21_W2 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X2) ** 2) +
+  //       GL21_W3 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X3) ** 2) +
+  //       GL21_W4 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X4) ** 2) +
+  //       GL21_W5 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X5) ** 2) +
+  //       GL21_W6 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X6) ** 2) +
+  //       GL21_W7 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X7) ** 2) +
+  //       GL21_W8 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X8) ** 2) +
+  //       GL21_W9 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X9) ** 2) +
+  //       GL21_W10 * Math.sqrt(1 + quadratic.solve(d, shift) ** 2) +
+  //       GL21_W9 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X9) ** 2) +
+  //       GL21_W8 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X8) ** 2) +
+  //       GL21_W7 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X7) ** 2) +
+  //       GL21_W6 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X6) ** 2) +
+  //       GL21_W5 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X5) ** 2) +
+  //       GL21_W4 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X4) ** 2) +
+  //       GL21_W3 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X3) ** 2) +
+  //       GL21_W2 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X2) ** 2) +
+  //       GL21_W1 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X1) ** 2) +
+  //       GL21_W0 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X0) ** 2)) *
+  //       scale,
+  //     p.precision,
+  //   )
+  // }
+  //
+  // if (p.precision <= 2) {
+  //   return round(
+  //     (GL5_W0 *
+  //       Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL5_X0) ** 2) +
+  //       GL5_W1 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL5_X1) ** 2) +
+  //       GL5_W2 * Math.sqrt(1 + quadratic.solve(d, shift) ** 2) +
+  //       GL5_W1 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL5_X1) ** 2) +
+  //       GL5_W0 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL5_X0) ** 2)) *
+  //       scale,
+  //     p.precision,
+  //   )
+  // }
+  //
+  // if (p.precision <= 5) {
+  //   return round(
+  //     (GL7_W0 *
+  //       Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL7_X0) ** 2) +
+  //       GL7_W1 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL7_X1) ** 2) +
+  //       GL7_W2 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL7_X2) ** 2) +
+  //       GL7_W3 * Math.sqrt(1 + quadratic.solve(d, shift) ** 2) +
+  //       GL7_W2 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL7_X2) ** 2) +
+  //       GL7_W1 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL7_X1) ** 2) +
+  //       GL7_W0 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL7_X0) ** 2)) *
+  //       scale,
+  //     p.precision,
+  //   )
+  // }
+  //
+  // if (p.precision <= 8) {
+  //   return round(
+  //     (GL9_W0 *
+  //       Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL9_X0) ** 2) +
+  //       GL9_W1 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL9_X1) ** 2) +
+  //       GL9_W2 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL9_X2) ** 2) +
+  //       GL9_W3 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL9_X3) ** 2) +
+  //       GL9_W4 * Math.sqrt(1 + quadratic.solve(d, shift) ** 2) +
+  //       GL9_W3 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL9_X3) ** 2) +
+  //       GL9_W2 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL9_X2) ** 2) +
+  //       GL9_W1 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL9_X1) ** 2) +
+  //       GL9_W0 *
+  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL9_X0) ** 2)) *
+  //       scale,
+  //     p.precision,
+  //   )
+  // }
+
+  return round(
+    (GL32_W0 *
+      Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X0) ** 2) +
+      GL32_W0 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X0) ** 2) +
+      GL32_W1 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X1) ** 2) +
+      GL32_W1 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X1) ** 2) +
+      GL32_W2 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X2) ** 2) +
+      GL32_W2 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X2) ** 2) +
+      GL32_W3 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X3) ** 2) +
+      GL32_W3 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X3) ** 2) +
+      GL32_W4 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X4) ** 2) +
+      GL32_W4 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X4) ** 2) +
+      GL32_W5 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X5) ** 2) +
+      GL32_W5 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X5) ** 2) +
+      GL32_W6 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X6) ** 2) +
+      GL32_W6 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X6) ** 2) +
+      GL32_W7 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X7) ** 2) +
+      GL32_W7 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X7) ** 2) +
+      GL32_W8 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X8) ** 2) +
+      GL32_W8 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X8) ** 2) +
+      GL32_W9 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X9) ** 2) +
+      GL32_W9 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X9) ** 2) +
+      GL32_W10 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X10) ** 2) +
+      GL32_W10 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X10) ** 2) +
+      GL32_W11 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X11) ** 2) +
+      GL32_W11 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X11) ** 2) +
+      GL32_W12 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X12) ** 2) +
+      GL32_W12 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X12) ** 2) +
+      GL32_W13 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X13) ** 2) +
+      GL32_W13 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X13) ** 2) +
+      GL32_W14 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X14) ** 2) +
+      GL32_W14 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X14) ** 2) +
+      GL32_W15 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X15) ** 2) +
+      GL32_W15 *
+        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X15) ** 2)) *
+      scale,
+    p.precision,
+  )
+})

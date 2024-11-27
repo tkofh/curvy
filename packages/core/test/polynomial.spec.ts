@@ -88,78 +88,6 @@ describe('linear', () => {
   })
 })
 
-// function legendrePolynomial(n: number, x: number) {
-//   if (n === 0) {
-//     return 1
-//   }
-//   if (n === 1) {
-//     return x
-//   }
-//
-//   let p0 = 1
-//   let p1 = x
-//   let p2
-//   for (let i = 2; i <= n; i++) {
-//     p2 = ((2 * i - 1) * x * p1 - (i - 1) * p0) / i
-//     p0 = p1
-//     p1 = p2
-//   }
-//   return p1
-// }
-//
-// function legendreDerivative(n: number, x: number) {
-//   if (n === 0) {
-//     return 0
-//   }
-//   if (n === 1) {
-//     return 1
-//   }
-//   return (
-//     (n * (x * legendrePolynomial(n, x) - legendrePolynomial(n - 1, x))) /
-//     (x * x - 1)
-//   )
-// }
-//
-// function findLegendreRoots(n: number) {
-//   const roots = []
-//   // Initial guesses for roots based on approximation
-//   for (let i = 1; i <= n; i++) {
-//     let x = Math.cos((Math.PI * (i - 0.25)) / (n + 0.5))
-//
-//     // Newton's method iteration
-//     for (let iter = 0; iter < 10; iter++) {
-//       const delta = -legendrePolynomial(n, x) / legendreDerivative(n, x)
-//       x += delta
-//       if (Math.abs(delta) < 1e-15) {
-//         break
-//       }
-//     }
-//     roots.push(x)
-//   }
-//   return roots
-// }
-//
-// function calculateWeights(n: number, roots: Array<number>) {
-//   return roots.map((x) => {
-//     const deriv = legendreDerivative(n, x)
-//     return 2 / ((1 - x * x) * deriv * deriv)
-//   })
-// }
-//
-// function generateGaussQuadrature(n: number) {
-//   const roots = findLegendreRoots(n)
-//   const weights = calculateWeights(n, roots)
-//
-//   // Sort points and weights from negative to positive
-//   const pairs = roots.map((x, i) => ({ x, w: weights[i] as number }))
-//   pairs.sort((a, b) => a.x - b.x)
-//
-//   return {
-//     points: pairs.map((p) => p.x),
-//     weights: pairs.map((p) => p.w),
-//   }
-// }
-
 describe('quadratic', () => {
   test('make', () => {
     expect(quadratic.make(0, 1, 2)).toMatchObject({ c0: 0, c1: 1, c2: 2 })
@@ -280,14 +208,9 @@ describe('quadratic', () => {
     )
   })
   test('length', () => {
-    // Example usage:
-    // const quadrature = generateGaussQuadrature(9)
-    // console.log('Points:', quadrature.points)
-    // console.log('Weights:', quadrature.weights)
-
-    const p = quadratic.make(0, 0, 1)
-
-    expect(quadratic.length(p, interval.unit)).toEqual(1.47894286)
+    expect(quadratic.length(quadratic.make(0, 0, 1), interval.unit)).toEqual(
+      1.47894286,
+    )
   })
 })
 
@@ -424,5 +347,20 @@ describe('cubic', () => {
     expect(cubic.range(p, interval.make(-3, -2))).toEqual(interval.make(-9, -1))
     expect(cubic.range(p, interval.make(-2, -1))).toEqual(interval.make(-1, 1))
     expect(cubic.range(p, interval.make(-1, 0))).toEqual(interval.make(0, 1))
+  })
+  test('length', () => {
+    const p = cubic.make(0, 100, 200, -300, 8)
+
+    // const steps = 1_000_000
+    // let l = 0
+    // for (let i = 0; i < steps; i++) {
+    //   l += Math.hypot(
+    //     1 / steps,
+    //     cubic.solve(p, (i + 1) / steps) - cubic.solve(p, i / steps),
+    //   )
+    // }
+    // console.log(round(l, p.precision))
+
+    expect(cubic.length(p, interval.unit)).toEqual(134.62077838)
   })
 })

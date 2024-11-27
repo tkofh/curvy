@@ -71,3 +71,8 @@ export const range: {
   (p: CubicPolynomial, domain: Interval): Interval
   (domain: Interval): (p: CubicPolynomial) => Interval
 } = internal.range
+
+export const length: {
+  (p: CubicPolynomial, domain: Interval): number
+  (domain: Interval): (p: CubicPolynomial) => number
+} = internal.length

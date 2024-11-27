@@ -23,13 +23,18 @@ test('putting it all together', () => {
     1,
   )
 
-  const points = Vector4.make(0, 1, 0, 1)
+  const start = 0
+  const end = 10
+  const tangent = 20
+  const points = Vector4.make(start, start + tangent, end - tangent, end)
 
   const coefficients = Matrix4x4.vectorProductLeft(bezier, points)
 
   const polynomial = CubicPolynomial.fromVector(coefficients)
 
-  expect(CubicPolynomial.solve(polynomial, 0)).toBe(0)
-  expect(CubicPolynomial.solve(polynomial, 0.5)).toBe(0.5)
-  expect(CubicPolynomial.solve(polynomial, 1)).toBe(1)
+  console.log(polynomial)
+
+  expect(CubicPolynomial.solve(polynomial, 0)).toBe(start)
+  expect(CubicPolynomial.solve(polynomial, 0.5)).toBe((start + end) / 2)
+  expect(CubicPolynomial.solve(polynomial, 1)).toBe(end)
 })
