@@ -50,18 +50,22 @@ describe('interval', () => {
     expect(interval.clamp(interval.make(0, 1), 0.5)).toBe(0.5)
     expect(interval.clamp(interval.make(0, 1), 1)).toBe(1)
     expect(interval.clamp(interval.make(0, 1), 1.5)).toBe(1)
+
+    expect(interval.clamp(interval.make(0, 1), [-0.5, 0, 0.5, 1, 1.5])).toEqual(
+      [0, 0, 0.5, 1, 1],
+    )
   })
 
   test('lerp', () => {
-    expect(interval.lerp(0.5, interval.make(0, 2))).toBe(1)
+    expect(interval.lerp(interval.make(0, 2), 0.5)).toBe(1)
   })
 
   test('normalize', () => {
-    expect(interval.normalize(5, interval.make(0, 10))).toBe(0.5)
+    expect(interval.normalize(interval.make(0, 10), 5)).toBe(0.5)
   })
 
   test('remap', () => {
-    expect(interval.remap(0.5, interval.make(0, 1), interval.make(0, 2))).toBe(
+    expect(interval.remap(interval.make(0, 1), interval.make(0, 2), 0.5)).toBe(
       1,
     )
   })

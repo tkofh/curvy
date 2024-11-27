@@ -51,8 +51,8 @@ export const toInverseSolver: (
 export const derivative: (p: QuadraticPolynomial) => LinearPolynomial =
   internal.derivative
 
-export const roots: (p: QuadraticPolynomial) => ZeroToTwoSolutions = (p) =>
-  internal.solveInverse(p, 0)
+export const roots: (p: QuadraticPolynomial) => ZeroToTwoSolutions =
+  internal.roots
 
 export const extreme: (p: QuadraticPolynomial) => ZeroOrOneSolution =
   internal.extreme
@@ -63,7 +63,7 @@ export const monotonicity: {
 } = internal.monotonicity
 
 export const antiderivative: {
-  (p: QuadraticPolynomial, constant: number): CubicPolynomial
+  (p: QuadraticPolynomial, constant?: number): CubicPolynomial
   (constant: number): (p: QuadraticPolynomial) => CubicPolynomial
 } = internal.antiderivative
 

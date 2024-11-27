@@ -4,6 +4,7 @@ import * as Interval from '../interval'
 import { PRECISION, round } from '../util'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPolynomial } from './linear'
+import type { QuadraticPolynomial } from './quadratic'
 import { QuadraticPolynomialImpl } from './quadratic.internal.circular'
 import type { ZeroOrOneInterval, ZeroOrOneSolution } from './types'
 
@@ -61,7 +62,10 @@ export const toInverseSolver = (p: LinearPolynomial) => (y: number) =>
 export const monotonicity = (p: LinearPolynomial) =>
   p.c1 === 0 ? 'constant' : p.c1 > 0 ? 'increasing' : 'decreasing'
 
-export const antiderivative = dual(
+export const antiderivative = dual<
+  (integrationConstant: number) => (p: LinearPolynomial) => QuadraticPolynomial,
+  (p: LinearPolynomial, integrationConstant?: number) => QuadraticPolynomial
+>(
   (args) => isLinearPolynomial(args[0]),
   (p: LinearPolynomial, integrationConstant = 0) =>
     new QuadraticPolynomialImpl(
@@ -93,21 +97,24 @@ export const domain = dual<
   return Interval.make(start, end)
 })
 
-export const range = dual(2, (p: LinearPolynomial, domain: Interval.Interval) =>
+export const range = dual<
+  (domain: Interval.Interval) => (p: LinearPolynomial) => Interval.Interval,
+  (p: LinearPolynomial, domain: Interval.Interval) => Interval.Interval
+>(2, (p: LinearPolynomial, domain: Interval.Interval) =>
   Interval.make(solve(p, domain.start), solve(p, domain.end)),
 )
 
-export const length = dual(
-  2,
-  (p: LinearPolynomial, domain: Interval.Interval) => {
-    if (Interval.size(domain) === 0) {
-      return 0
-    }
+export const length = dual<
+  (domain: Interval.Interval) => (p: LinearPolynomial) => number,
+  (p: LinearPolynomial, domain: Interval.Interval) => number
+>(2, (p: LinearPolynomial, domain: Interval.Interval) => {
+  if (Interval.size(domain) === 0) {
+    return 0
+  }
 
-    if (p.c1 === 0) {
-      return round(Interval.size(domain), p.precision)
-    }
+  if (p.c1 === 0) {
+    return round(Interval.size(domain), p.precision)
+  }
 
-    return round(Math.sqrt(1 + p.c1 ** 2) * Interval.size(domain), p.precision)
-  },
-)
+  return round(Math.sqrt(1 + p.c1 ** 2) * Interval.size(domain), p.precision)
+})

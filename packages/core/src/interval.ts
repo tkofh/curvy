@@ -52,17 +52,21 @@ export const clamp: {
 
 export const unit: Interval = internal.unit
 
-export const lerp: {
-  (interval: Interval): (t: number) => number
-  (t: number, interval: Interval): number
-} = internal.lerp
+export const lerp: (interval: Interval, t: number) => number = internal.lerp
 
-export const normalize: {
-  (interval: Interval): (x: number) => number
-  (x: number, interval: Interval): number
-} = internal.normalize
+export const toLerpFn: (interval: Interval) => (t: number) => number =
+  internal.toLerpFn
 
-export const remap: {
-  (source: Interval, target: Interval): (x: number) => number
-  (x: number, source: Interval, target: Interval): number
-} = internal.remap
+export const normalize: (interval: Interval, x: number) => number =
+  internal.normalize
+
+export const toNormalizeFn: (interval: Interval) => (x: number) => number =
+  internal.toNormalizeFn
+
+export const remap: (source: Interval, target: Interval, x: number) => number =
+  internal.remap
+
+export const toRemapFn: (
+  source: Interval,
+  target: Interval,
+) => (x: number) => number = internal.toRemapFn

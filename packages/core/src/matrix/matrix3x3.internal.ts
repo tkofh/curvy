@@ -135,18 +135,18 @@ export const fromColumns = (
     precision ?? Math.min(v0.precision, v1.precision, v2.precision),
   )
 
-export const setRow = dual(
-  3,
-  (m: Matrix3x3, row: Matrix3x3Coordinate, v: Vector3) =>
-    fromRows(...(toRows(m).with(row, v) as [Vector3, Vector3, Vector3])),
+export const setRow = dual<
+  (row: Matrix3x3Coordinate, v: Vector3) => (m: Matrix3x3) => Matrix3x3,
+  (m: Matrix3x3, row: Matrix3x3Coordinate, v: Vector3) => Matrix3x3
+>(3, (m: Matrix3x3, row: Matrix3x3Coordinate, v: Vector3) =>
+  fromRows(...(toRows(m).with(row, v) as [Vector3, Vector3, Vector3])),
 )
 
-export const setColumn = dual(
-  3,
-  (m: Matrix3x3, column: Matrix3x3Coordinate, v: Vector3) =>
-    fromColumns(
-      ...(toColumns(m).with(column, v) as [Vector3, Vector3, Vector3]),
-    ),
+export const setColumn = dual<
+  (column: Matrix3x3Coordinate, v: Vector3) => (m: Matrix3x3) => Matrix3x3,
+  (m: Matrix3x3, column: Matrix3x3Coordinate, v: Vector3) => Matrix3x3
+>(3, (m: Matrix3x3, column: Matrix3x3Coordinate, v: Vector3) =>
+  fromColumns(...(toColumns(m).with(column, v) as [Vector3, Vector3, Vector3])),
 )
 
 export const determinant = (m: Matrix3x3) =>
@@ -157,24 +157,34 @@ export const determinant = (m: Matrix3x3) =>
     m.precision,
   )
 
-export const minor = dual(
-  3,
-  (m: Matrix3x3, row: Matrix3x3Coordinate, column: Matrix3x3Coordinate) => {
-    const [v0, v1] = toRows(m).toSpliced(row, 1) as [Vector3, Vector3]
-    const [m00, m01] = vector3.components(v0).toSpliced(column, 1) as [
-      number,
-      number,
-    ]
-    const [m10, m11] = vector3.components(v1).toSpliced(column, 1) as [
-      number,
-      number,
-    ]
+export const minor = dual<
+  (
+    row: Matrix3x3Coordinate,
+    column: Matrix3x3Coordinate,
+  ) => (m: Matrix3x3) => Matrix2x2,
+  (
+    m: Matrix3x3,
+    row: Matrix3x3Coordinate,
+    column: Matrix3x3Coordinate,
+  ) => Matrix2x2
+>(3, (m: Matrix3x3, row: Matrix3x3Coordinate, column: Matrix3x3Coordinate) => {
+  const [v0, v1] = toRows(m).toSpliced(row, 1) as [Vector3, Vector3]
+  const [m00, m01] = vector3.components(v0).toSpliced(column, 1) as [
+    number,
+    number,
+  ]
+  const [m10, m11] = vector3.components(v1).toSpliced(column, 1) as [
+    number,
+    number,
+  ]
 
-    return matrix2x2.make(m00, m01, m10, m11, m.precision) as Matrix2x2
-  },
-)
+  return matrix2x2.make(m00, m01, m10, m11, m.precision) as Matrix2x2
+})
 
-export const vectorProductLeft = dual(2, (m: Matrix3x3, v: Vector3) => {
+export const vectorProductLeft = dual<
+  (v: Vector3) => (m: Matrix3x3) => Vector3,
+  (m: Matrix3x3, v: Vector3) => Vector3
+>(2, (m: Matrix3x3, v: Vector3) => {
   const [v0, v1, v2] = toRows(m) as [Vector3, Vector3, Vector3]
   return vector3.make(
     vector3.dot(v0, v),
@@ -184,7 +194,10 @@ export const vectorProductLeft = dual(2, (m: Matrix3x3, v: Vector3) => {
   )
 })
 
-export const vectorProductRight = dual(2, (m: Matrix3x3, v: Vector3) => {
+export const vectorProductRight = dual<
+  (v: Vector3) => (m: Matrix3x3) => Vector3,
+  (m: Matrix3x3, v: Vector3) => Vector3
+>(2, (m: Matrix3x3, v: Vector3) => {
   const [v0, v1, v2] = toColumns(m) as [Vector3, Vector3, Vector3]
   return vector3.make(
     vector3.dot(v, v0),
@@ -194,7 +207,10 @@ export const vectorProductRight = dual(2, (m: Matrix3x3, v: Vector3) => {
   )
 })
 
-export const solveSystem = dual(2, (m: Matrix3x3, v: Vector3) => {
+export const solveSystem = dual<
+  (v: Vector3) => (m: Matrix3x3) => Vector3,
+  (m: Matrix3x3, v: Vector3) => Vector3
+>(2, (m: Matrix3x3, v: Vector3) => {
   const inverseDeterminant = 1 / determinant(m)
 
   invariant(
@@ -222,15 +238,15 @@ export const toColumns = (m: Matrix3x3): [Vector3, Vector3, Vector3] => [
   vector3.make(m.m02, m.m12, m.m22, m.precision),
 ]
 
-export const rowVector = dual(
-  2,
-  (m: Matrix3x3, row: Matrix3x3Coordinate) => toRows(m)[row],
-)
+export const rowVector = dual<
+  (row: Matrix3x3Coordinate) => (m: Matrix3x3) => Vector3,
+  (m: Matrix3x3, row: Matrix3x3Coordinate) => Vector3
+>(2, (m: Matrix3x3, row: Matrix3x3Coordinate) => toRows(m)[row])
 
-export const columnVector = dual(
-  2,
-  (m: Matrix3x3, column: Matrix3x3Coordinate) => toColumns(m)[column],
-)
+export const columnVector = dual<
+  (column: Matrix3x3Coordinate) => (m: Matrix3x3) => Vector3,
+  (m: Matrix3x3, column: Matrix3x3Coordinate) => Vector3
+>(2, (m: Matrix3x3, column: Matrix3x3Coordinate) => toColumns(m)[column])
 
 export const transpose = (m: Matrix3x3) => fromColumns(...toRows(m))
 

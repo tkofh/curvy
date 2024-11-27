@@ -71,22 +71,27 @@ export const fromColumns = (v0: Vector2, v1: Vector2, precision?: number) =>
     precision ?? Math.min(v0.precision, v1.precision),
   )
 
-export const setRow = dual(
-  3,
-  (m: Matrix2x2, row: Matrix2x2Coordinate, v: Vector2) =>
-    fromRows(...(toRows(m).with(row, v) as [Vector2, Vector2])),
+export const setRow = dual<
+  (row: Matrix2x2Coordinate, v: Vector2) => (m: Matrix2x2) => Matrix2x2,
+  (m: Matrix2x2, row: Matrix2x2Coordinate, v: Vector2) => Matrix2x2
+>(3, (m: Matrix2x2, row: Matrix2x2Coordinate, v: Vector2) =>
+  fromRows(...(toRows(m).with(row, v) as [Vector2, Vector2])),
 )
 
-export const setColumn = dual(
-  3,
-  (m: Matrix2x2, column: Matrix2x2Coordinate, v: Vector2) =>
-    fromColumns(...(toColumns(m).with(column, v) as [Vector2, Vector2])),
+export const setColumn = dual<
+  (column: Matrix2x2Coordinate, v: Vector2) => (m: Matrix2x2) => Matrix2x2,
+  (m: Matrix2x2, column: Matrix2x2Coordinate, v: Vector2) => Matrix2x2
+>(3, (m: Matrix2x2, column: Matrix2x2Coordinate, v: Vector2) =>
+  fromColumns(...(toColumns(m).with(column, v) as [Vector2, Vector2])),
 )
 
 export const determinant = (m: Matrix2x2): number =>
   round(m.m00 * m.m11 - m.m01 * m.m10, m.precision)
 
-export const vectorProductLeft = dual(2, (m: Matrix2x2, v: Vector2) =>
+export const vectorProductLeft = dual<
+  (v: Vector2) => (m: Matrix2x2) => Vector2,
+  (m: Matrix2x2, v: Vector2) => Vector2
+>(2, (m: Matrix2x2, v: Vector2) =>
   vector2.make(
     vector2.dot(rowVector(m, 0), v),
     vector2.dot(rowVector(m, 1), v),
@@ -94,7 +99,10 @@ export const vectorProductLeft = dual(2, (m: Matrix2x2, v: Vector2) =>
   ),
 )
 
-export const vectorProductRight = dual(2, (m: Matrix2x2, v: Vector2) =>
+export const vectorProductRight = dual<
+  (v: Vector2) => (m: Matrix2x2) => Vector2,
+  (m: Matrix2x2, v: Vector2) => Vector2
+>(2, (m: Matrix2x2, v: Vector2) =>
   vector2.make(
     vector2.dot(columnVector(m, 0), v),
     vector2.dot(columnVector(m, 1), v),
@@ -102,7 +110,10 @@ export const vectorProductRight = dual(2, (m: Matrix2x2, v: Vector2) =>
   ),
 )
 
-export const solveSystem = dual(2, (m: Matrix2x2, v: Vector2) => {
+export const solveSystem = dual<
+  (v: Vector2) => (m: Matrix2x2) => Vector2,
+  (m: Matrix2x2, v: Vector2) => Vector2
+>(2, (m: Matrix2x2, v: Vector2) => {
   const inverseDeterminant = 1 / determinant(m)
 
   invariant(
@@ -127,15 +138,15 @@ export const toColumns = (m: Matrix2x2): [Vector2, Vector2] => [
   vector2.make(m.m01, m.m11, m.precision),
 ]
 
-export const rowVector = dual(
-  2,
-  (m: Matrix2x2, row: Matrix2x2Coordinate) => toRows(m)[row],
-)
+export const rowVector = dual<
+  (row: Matrix2x2Coordinate) => (m: Matrix2x2) => Vector2,
+  (m: Matrix2x2, row: Matrix2x2Coordinate) => Vector2
+>(2, (m: Matrix2x2, row: Matrix2x2Coordinate) => toRows(m)[row])
 
-export const columnVector = dual(
-  2,
-  (m: Matrix2x2, column: Matrix2x2Coordinate) => toColumns(m)[column],
-)
+export const columnVector = dual<
+  (column: Matrix2x2Coordinate) => (m: Matrix2x2) => Vector2,
+  (m: Matrix2x2, column: Matrix2x2Coordinate) => Vector2
+>(2, (m: Matrix2x2, column: Matrix2x2Coordinate) => toColumns(m)[column])
 
 export const transpose = (m: Matrix2x2) => fromColumns(...toRows(m))
 

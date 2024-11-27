@@ -41,7 +41,10 @@ export const isVector2 = (v: unknown): v is Vector2 =>
 export const magnitude = (vector: Vector2) =>
   round(Math.hypot(vector.v0, vector.v1), vector.precision)
 
-export const dot = dual(2, (a: Vector2, b: Vector2) =>
+export const dot = dual<
+  (b: Vector2) => (a: Vector2) => number,
+  (a: Vector2, b: Vector2) => number
+>(2, (a: Vector2, b: Vector2) =>
   round(a.v0 * b.v0 + a.v1 * b.v1, Math.min(a.precision, b.precision)),
 )
 

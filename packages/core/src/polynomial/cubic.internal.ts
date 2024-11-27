@@ -8,7 +8,10 @@ import {
   CubicPolynomialTypeId,
 } from './cubic.internal.circular'
 import * as linear from './linear.internal'
-import { guaranteedMonotonicityFromComparison } from './monotonicity'
+import {
+  type Monotonicity,
+  guaranteedMonotonicityFromComparison,
+} from './monotonicity'
 import * as quadratic from './quadratic.internal'
 import type { ZeroToThreeSolutions, ZeroToTwoSolutions } from './types'
 
@@ -113,7 +116,10 @@ export const roots = (p: CubicPolynomial): ZeroToThreeSolutions =>
 export const extrema = (p: CubicPolynomial): ZeroToTwoSolutions =>
   quadratic.roots(derivative(p))
 
-export const monotonicity = dual(
+export const monotonicity = dual<
+  (i: Interval.Interval) => (p: CubicPolynomial) => Monotonicity,
+  (p: CubicPolynomial, i?: Interval.Interval) => Monotonicity
+>(
   (args) => isCubicPolynomial(args[0]),
   (p: CubicPolynomial, i?: Interval.Interval) => {
     // shortcut to check for a horizontal line

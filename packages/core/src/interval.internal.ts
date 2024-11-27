@@ -90,29 +90,46 @@ export const filter = dual<
   },
 )
 
-export const clamp = dual(2, (interval: Interval, value: number) =>
-  contains(interval, value)
-    ? value
-    : value < interval.start
-      ? interval.start
-      : interval.end,
+export const clamp = dual<
+  <V extends number | ReadonlyArray<number>>(
+    value: V,
+  ) => (interval: Interval) => V,
+  <V extends number | ReadonlyArray<number>>(interval: Interval, value: V) => V
+>(
+  2,
+  <V extends number | ReadonlyArray<number>>(
+    interval: Interval,
+    value: V,
+  ): V => {
+    if (Array.isArray(value)) {
+      return value.map((v) => clamp(interval, v)) as unknown as V
+    }
+
+    return (
+      contains(interval, value as number)
+        ? (value as number)
+        : (value as number) < interval.start
+          ? interval.start
+          : interval.end
+    ) as V
+  },
 )
 
 export const unit = make(0, 1)
 
-export const lerp = dual(
-  2,
-  (t: number, interval: Interval) =>
-    (1 - t) * interval.start + t * interval.end,
-)
+export const lerp = (interval: Interval, t: number) =>
+  (1 - t) * interval.start + t * interval.end
 
-export const normalize = dual(
-  2,
-  (x: number, interval: Interval) => (x - interval.start) / size(interval),
-)
+export const toLerpFn = (interval: Interval) => (t: number) => lerp(interval, t)
 
-export const remap = dual(
-  3,
-  (x: number, source: Interval, destination: Interval) =>
-    lerp(normalize(x, source), destination),
-)
+export const normalize = (interval: Interval, x: number) =>
+  (x - interval.start) / size(interval)
+
+export const toNormalizeFn = (interval: Interval) => (x: number) =>
+  normalize(interval, x)
+
+export const remap = (source: Interval, target: Interval, x: number) =>
+  lerp(target, normalize(source, x))
+
+export const toRemapFn = (source: Interval, target: Interval) => (x: number) =>
+  remap(source, target, x)

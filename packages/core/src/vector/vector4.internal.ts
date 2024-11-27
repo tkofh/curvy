@@ -49,7 +49,10 @@ export const magnitude: (vector: Vector4) => number = (vector: Vector4) =>
     vector.precision,
   )
 
-export const dot = dual(2, (a: Vector4, b: Vector4) =>
+export const dot = dual<
+  (b: Vector4) => (a: Vector4) => number,
+  (a: Vector4, b: Vector4) => number
+>(2, (a: Vector4, b: Vector4) =>
   round(
     a.v0 * b.v0 + a.v1 * b.v1 + a.v2 * b.v2 + a.v3 * b.v3,
     Math.min(a.precision, b.precision),
