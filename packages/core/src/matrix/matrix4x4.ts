@@ -27,8 +27,6 @@ export interface Matrix4x4 extends Pipeable {
   readonly m31: number
   readonly m32: number
   readonly m33: number
-
-  readonly precision: number
 }
 
 export const isMatrix4x4: (m: unknown) => m is Matrix4x4 = internal.isMatrix4x4
@@ -50,7 +48,6 @@ export const make: (
   m31?: number,
   m32?: number,
   m33?: number,
-  precision?: number,
 ) => Matrix4x4 = internal.make
 
 export const fromRows: (
@@ -58,7 +55,6 @@ export const fromRows: (
   v1: Vector4,
   v2: Vector4,
   v3: Vector4,
-  precision?: number,
 ) => Matrix4x4 = internal.fromRows
 
 export const fromColumns: (
@@ -66,7 +62,6 @@ export const fromColumns: (
   v1: Vector4,
   v2: Vector4,
   v3: Vector4,
-  precision?: number,
 ) => Matrix4x4 = internal.fromColumns
 
 export const setRow: {

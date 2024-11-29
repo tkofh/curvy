@@ -3,7 +3,6 @@ import * as internal from './interval.internal'
 export interface Interval extends Pipeable {
   readonly start: number
   readonly end: number
-  readonly precision: number
 }
 
 export const isInterval: (v: unknown) => v is Interval = internal.isInterval
@@ -11,7 +10,7 @@ export const isInterval: (v: unknown) => v is Interval = internal.isInterval
 export const make: {
   (point: number): Interval
   (start: number, end: number): Interval
-  (start: number, end: number, precision: number): Interval
+  (start: number, end: number): Interval
 } = internal.make
 
 export const fromMinMax: (...values: ReadonlyArray<number>) => Interval =

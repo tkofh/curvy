@@ -1,6 +1,6 @@
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
-import { PRECISION, round } from '../util'
+import { round } from '../util'
 import type { Vector3 } from './vector3'
 
 export const Vector3TypeId: unique symbol = Symbol.for('curvy/vector3')
@@ -13,15 +13,11 @@ class Vector3Impl extends Pipeable implements Vector3 {
   readonly v1: number
   readonly v2: number
 
-  readonly precision: number
-
-  constructor(v0 = 0, v1 = 0, v2 = 0, precision = PRECISION) {
+  constructor(v0 = 0, v1 = 0, v2 = 0) {
     super()
-    this.v0 = round(v0, precision)
-    this.v1 = round(v1, precision)
-    this.v2 = round(v2, precision)
-
-    this.precision = precision
+    this.v0 = round(v0)
+    this.v1 = round(v1)
+    this.v2 = round(v2)
   }
 
   get [Symbol.toStringTag]() {
@@ -41,17 +37,12 @@ export const isVector3 = (v: unknown): v is Vector3 =>
   typeof v === 'object' && v !== null && Vector3TypeId in v
 
 export const magnitude = (vector: Vector3) =>
-  round(Math.hypot(vector.v0, vector.v1, vector.v2), vector.precision)
+  round(Math.hypot(vector.v0, vector.v1, vector.v2))
 
 export const dot = dual<
   (b: Vector3) => (a: Vector3) => number,
   (a: Vector3, b: Vector3) => number
->(2, (a: Vector3, b: Vector3) =>
-  round(
-    a.v0 * b.v0 + a.v1 * b.v1 + a.v2 * b.v2,
-    Math.min(a.precision, b.precision),
-  ),
-)
+>(2, (a: Vector3, b: Vector3) => round(a.v0 * b.v0 + a.v1 * b.v1 + a.v2 * b.v2))
 
 export const components: (v: Vector3) => [number, number, number] = (
   v: Vector3,
@@ -66,12 +57,8 @@ export const softmax = (v: Vector3) => {
 
   const sum = v0 + v1 + v2
 
-  return make(v0 / sum, v1 / sum, v2 / sum, v.precision)
+  return make(v0 / sum, v1 / sum, v2 / sum)
 }
 
-export const make = (
-  v0: number,
-  v1 = v0,
-  v2 = v1,
-  precision = PRECISION,
-): Vector3 => new Vector3Impl(v0, v1, v2, precision)
+export const make = (v0: number, v1 = v0, v2 = v1): Vector3 =>
+  new Vector3Impl(v0, v1, v2)

@@ -1,6 +1,6 @@
 import { dual } from '../internal/function'
 import * as Interval from '../interval'
-import { PRECISION, round } from '../util'
+import { round } from '../util'
 import type { Vector3 } from '../vector/vector3'
 import type { CubicPolynomial } from './cubic'
 import { CubicPolynomialImpl } from './cubic.internal.circular'
@@ -16,24 +16,20 @@ import {
 } from './quadratic.internal.circular'
 import type { ZeroToTwoSolutions } from './types'
 
-export const make = (
-  c0 = 0,
-  c1 = 0,
-  c2 = 0,
-  precision = PRECISION,
-): QuadraticPolynomial => new QuadraticPolynomialImpl(c0, c1, c2, precision)
+export const make = (c0 = 0, c1 = 0, c2 = 0): QuadraticPolynomial =>
+  new QuadraticPolynomialImpl(c0, c1, c2)
 
 export const isQuadraticPolynomial = (v: unknown): v is QuadraticPolynomial =>
   typeof v === 'object' && v !== null && QuadraticPolynomialTypeId in v
 
-export const fromVector = (v: Vector3, precision?: number) =>
-  new QuadraticPolynomialImpl(v.v0, v.v1, v.v2, precision ?? v.precision)
+export const fromVector = (v: Vector3) =>
+  new QuadraticPolynomialImpl(v.v0, v.v1, v.v2)
 
 export const solve = dual<
   (x: number) => (p: QuadraticPolynomial) => number,
   (p: QuadraticPolynomial, x: number) => number
 >(2, (p: QuadraticPolynomial, x: number) =>
-  round(p.c0 + x * p.c1 + x ** 2 * p.c2, p.precision),
+  round(p.c0 + x * p.c1 + x ** 2 * p.c2),
 )
 
 export const toSolver = (p: QuadraticPolynomial) => (x: number) => solve(p, x)
@@ -52,14 +48,14 @@ export const solveInverse: {
   }
 
   if (discriminant === 0) {
-    return [round(-p.c1 / (2 * p.c2), p.precision)] as ZeroToTwoSolutions
+    return [round(-p.c1 / (2 * p.c2))] as ZeroToTwoSolutions
   }
 
   const sqrtDiscriminant = Math.sqrt(discriminant)
 
   return [
-    round((-p.c1 + sqrtDiscriminant) / (2 * p.c2), p.precision),
-    round((-p.c1 - sqrtDiscriminant) / (2 * p.c2), p.precision),
+    round((-p.c1 + sqrtDiscriminant) / (2 * p.c2)),
+    round((-p.c1 - sqrtDiscriminant) / (2 * p.c2)),
   ].toSorted((a, b) => a - b) as unknown as ZeroToTwoSolutions
 })
 
@@ -69,7 +65,7 @@ export const toInverseSolver =
     solveInverse(p, y)
 
 export const derivative = (p: QuadraticPolynomial) =>
-  Linear.make(p.c1, p.c2 * 2, p.precision)
+  Linear.make(p.c1, p.c2 * 2)
 
 export const roots = (p: QuadraticPolynomial) => solveInverse(p, 0)
 
@@ -87,7 +83,7 @@ export const monotonicity = dual<
     }
 
     if (p.c2 === 0) {
-      return Linear.monotonicity(Linear.make(p.c0, p.c1, p.precision))
+      return Linear.monotonicity(Linear.make(p.c0, p.c1))
     }
 
     // c2 is non-zero, so the extreme is guaranteed to be non-null
@@ -120,13 +116,7 @@ export const antiderivative = dual<
 >(
   2,
   (p: QuadraticPolynomial, integrationConstant = 0) =>
-    new CubicPolynomialImpl(
-      integrationConstant,
-      p.c0,
-      p.c1 / 2,
-      p.c2 / 3,
-      p.precision,
-    ),
+    new CubicPolynomialImpl(integrationConstant, p.c0, p.c1 / 2, p.c2 / 3),
 )
 
 export const domain = dual<
@@ -153,7 +143,7 @@ export const range = dual<
   (p: QuadraticPolynomial, domain: Interval.Interval) => Interval.Interval
 >(2, (p: QuadraticPolynomial, domain: Interval.Interval) => {
   if (p.c2 === 0) {
-    return Linear.range(Linear.make(p.c0, p.c1, p.precision), domain)
+    return Linear.range(Linear.make(p.c0, p.c1), domain)
   }
 
   const e = extreme(p)
@@ -176,7 +166,7 @@ export const length = dual<
   }
 
   if (p.c2 === 0) {
-    return Linear.length(Linear.make(p.c0, p.c1, p.precision), domain)
+    return Linear.length(Linear.make(p.c0, p.c1), domain)
   }
 
   const d = derivative(p)
@@ -194,5 +184,5 @@ export const length = dual<
     (derivativeEnd * sqrtEnd + Math.log(Math.abs(derivativeEnd + sqrtEnd))) /
     (4 * p.c2)
 
-  return round(evalEnd - evalStart, p.precision)
+  return round(evalEnd - evalStart)
 })

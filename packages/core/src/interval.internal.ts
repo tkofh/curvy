@@ -1,7 +1,7 @@
 import { dual } from './internal/function'
 import { Pipeable } from './internal/pipeable'
 import type { Interval } from './interval'
-import { PRECISION, round } from './util'
+import { round } from './util'
 
 const TypeBrand: unique symbol = Symbol.for('curvy/interval')
 type TypeBrand = typeof TypeBrand
@@ -12,19 +12,15 @@ class IntervalImpl extends Pipeable implements Interval {
   readonly start: number
   readonly end: number
 
-  readonly precision: number
-
-  constructor(start = 0, end = start, precision = PRECISION) {
+  constructor(start = 0, end = start) {
     super()
 
     if (end < start) {
       throw new Error('Interval end must be greater than or equal to start')
     }
 
-    this.start = round(start, precision)
-    this.end = round(end, precision)
-
-    this.precision = precision
+    this.start = round(start)
+    this.end = round(end)
   }
 
   get [Symbol.toStringTag]() {
@@ -39,8 +35,8 @@ class IntervalImpl extends Pipeable implements Interval {
 export const isInterval = (v: unknown): v is Interval =>
   typeof v === 'object' && v !== null && TypeBrand in v
 
-export const make = (start: number, end?: number, precision?: number) =>
-  new IntervalImpl(start, end ?? start, precision)
+export const make = (start: number, end?: number) =>
+  new IntervalImpl(start, end ?? start)
 
 export const fromMinMax = (...values: ReadonlyArray<number>) =>
   new IntervalImpl(Math.min(...values), Math.max(...values))

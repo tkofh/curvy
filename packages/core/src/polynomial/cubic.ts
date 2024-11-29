@@ -14,7 +14,6 @@ export interface CubicPolynomial extends Pipeable {
   readonly c1: number
   readonly c2: number
   readonly c3: number
-  readonly precision: number
 }
 
 export const isCubicPolynomial: (value: unknown) => value is CubicPolynomial =
@@ -25,11 +24,9 @@ export const make: (
   c1: number,
   c2: number,
   c3: number,
-  precision?: number,
 ) => CubicPolynomial = internal.make
 
-export const fromVector: (v: Vector4, precision?: number) => CubicPolynomial =
-  internal.fromVector
+export const fromVector: (v: Vector4) => CubicPolynomial = internal.fromVector
 
 export const solve: {
   (p: CubicPolynomial, x: number): number

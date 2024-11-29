@@ -12,7 +12,6 @@ export interface Matrix2x2 extends Pipeable {
   readonly m01: number
   readonly m10: number
   readonly m11: number
-  readonly precision: number
 }
 
 export const isMatrix2x2: (m: unknown) => m is Matrix2x2 = internal.isMatrix2x2
@@ -22,20 +21,13 @@ export const matrix2x2: (
   m01?: number,
   m10?: number,
   m11?: number,
-  precision?: number,
 ) => Matrix2x2 = internal.make
 
-export const fromRows: (
-  v0: Vector2,
-  v1: Vector2,
-  precision?: number,
-) => Matrix2x2 = internal.fromRows
+export const fromRows: (v0: Vector2, v1: Vector2) => Matrix2x2 =
+  internal.fromRows
 
-export const fromColumns: (
-  v0: Vector2,
-  v1: Vector2,
-  precision?: number,
-) => Matrix2x2 = internal.fromColumns
+export const fromColumns: (v0: Vector2, v1: Vector2) => Matrix2x2 =
+  internal.fromColumns
 
 export const setRow: {
   (m: Matrix2x2, row: Matrix2x2Coordinate, v: Vector2): Matrix2x2

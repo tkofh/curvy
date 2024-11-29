@@ -13,7 +13,6 @@ export interface QuadraticPolynomial extends Pipeable {
   readonly c0: number
   readonly c1: number
   readonly c2: number
-  readonly precision: number
 }
 
 export const isQuadraticPolynomial: (v: unknown) => v is QuadraticPolynomial =
@@ -23,13 +22,10 @@ export const make: (
   c0?: number,
   c1?: number,
   c2?: number,
-  precision?: number,
 ) => QuadraticPolynomial = internal.make
 
-export const fromVector: (
-  v: Vector3,
-  precision?: number,
-) => QuadraticPolynomial = internal.fromVector
+export const fromVector: (v: Vector3) => QuadraticPolynomial =
+  internal.fromVector
 
 export const solve: {
   (p: QuadraticPolynomial, x: number): number

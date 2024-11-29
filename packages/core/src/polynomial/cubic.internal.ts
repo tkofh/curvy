@@ -34,7 +34,7 @@ import {
   GL32_X14,
   GL32_X15,
 } from '../length'
-import { PRECISION, round } from '../util'
+import { round } from '../util'
 import type { Vector4 } from '../vector/vector4'
 import type { CubicPolynomial } from './cubic'
 import {
@@ -49,25 +49,20 @@ import {
 import * as quadratic from './quadratic.internal'
 import type { ZeroToThreeSolutions, ZeroToTwoSolutions } from './types'
 
-export const make = (
-  c0 = 0,
-  c1 = 0,
-  c2 = 0,
-  c3 = 0,
-  precision = PRECISION,
-): CubicPolynomial => new CubicPolynomialImpl(c0, c1, c2, c3, precision)
+export const make = (c0 = 0, c1 = 0, c2 = 0, c3 = 0): CubicPolynomial =>
+  new CubicPolynomialImpl(c0, c1, c2, c3)
 
 export const isCubicPolynomial = (v: unknown): v is CubicPolynomial =>
   typeof v === 'object' && v !== null && CubicPolynomialTypeId in v
 
-export const fromVector = (v: Vector4, precision = PRECISION) =>
-  new CubicPolynomialImpl(v.v0, v.v1, v.v2, v.v3, precision)
+export const fromVector = (v: Vector4) =>
+  new CubicPolynomialImpl(v.v0, v.v1, v.v2, v.v3)
 
 export const solve = dual<
   (x: number) => (p: CubicPolynomial) => number,
   (p: CubicPolynomial, x: number) => number
 >(2, (p: CubicPolynomial, x: number) =>
-  round(p.c0 + x * p.c1 + x ** 2 * p.c2 + x ** 3 * p.c3, p.precision),
+  round(p.c0 + x * p.c1 + x ** 2 * p.c2 + x ** 3 * p.c3),
 )
 
 export const toSolver = (p: CubicPolynomial) => (x: number) => solve(p, x)
@@ -103,24 +98,21 @@ export const solveInverse = dual<
     const theta = Math.acos(((3 * q) / (2 * p)) * Math.sqrt(-3 / p)) / 3
     const offset = (2 * Math.PI) / 3
 
-    roots.add(round(r * Math.cos(theta + offset) - shift, self.precision))
-    roots.add(round(r * Math.cos(theta) - shift, self.precision))
-    roots.add(round(r * Math.cos(theta - offset) - shift, self.precision))
+    roots.add(round(r * Math.cos(theta + offset) - shift))
+    roots.add(round(r * Math.cos(theta) - shift))
+    roots.add(round(r * Math.cos(theta - offset) - shift))
   } else if (discriminant < 0) {
     const u = Math.sqrt(q ** 2 / 4 + p ** 3 / 27)
 
     const u1 = Math.cbrt(-q / 2 + u)
     const u2 = Math.cbrt(-q / 2 - u)
 
-    roots.add(round(u1 + u2 - shift, self.precision))
+    roots.add(round(u1 + u2 - shift))
   } else if (d0 === 0) {
-    roots.add(round(-shift, self.precision))
+    roots.add(round(-shift))
   } else {
     roots.add(
-      round(
-        (9 * self.c3 * (self.c0 - y) - self.c2 * self.c1) / (2 * d0),
-        self.precision,
-      ),
+      round((9 * self.c3 * (self.c0 - y) - self.c2 * self.c1) / (2 * d0)),
     )
     roots.add(
       round(
@@ -128,7 +120,6 @@ export const solveInverse = dual<
           9 * self.c3 ** 2 * (self.c0 - y) -
           self.c2 ** 3) /
           (self.c3 * d0),
-        self.precision,
       ),
     )
   }
@@ -142,7 +133,7 @@ export const toInverseSolver = (p: CubicPolynomial) => (y: number) =>
   solveInverse(p, y)
 
 export const derivative = (p: CubicPolynomial) =>
-  quadratic.make(p.c1, p.c2 * 2, p.c3 * 3, p.precision)
+  quadratic.make(p.c1, p.c2 * 2, p.c3 * 3)
 
 export const roots = (p: CubicPolynomial): ZeroToThreeSolutions =>
   solveInverse(p, 0)
@@ -163,7 +154,7 @@ export const monotonicity = dual<
 
     // shortcut to check for a non-horizontal line
     if (p.c3 === 0 && p.c2 === 0) {
-      return linear.monotonicity(linear.make(p.c0, p.c1, p.precision))
+      return linear.monotonicity(linear.make(p.c0, p.c1))
     }
 
     // without an interval, the monotonicity will be none if c3 or c2 are nonzero
@@ -177,10 +168,7 @@ export const monotonicity = dual<
     }
 
     if (p.c3 === 0) {
-      return quadratic.monotonicity(
-        quadratic.make(p.c0, p.c1, p.c2, p.precision),
-        i,
-      )
+      return quadratic.monotonicity(quadratic.make(p.c0, p.c1, p.c2), i)
     }
 
     const e = Interval.filter(i, extrema(p), {
@@ -230,127 +218,16 @@ export const length = dual<
 
   if (p.c3 === 0) {
     if (p.c2 === 0) {
-      return linear.length(linear.make(p.c0, p.c1, p.precision), domain)
+      return linear.length(linear.make(p.c0, p.c1), domain)
     }
 
-    return quadratic.length(
-      quadratic.make(p.c0, p.c1, p.c2, p.precision),
-      domain,
-    )
+    return quadratic.length(quadratic.make(p.c0, p.c1, p.c2), domain)
   }
 
   const d = derivative(p)
 
   const scale = (domain.end - domain.start) / 2
   const shift = (domain.end + domain.start) / 2
-
-  // if (p.precision > 0) {
-  //   return round(
-  //     (GL21_W0 *
-  //       Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X0) ** 2) +
-  //       GL21_W1 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X1) ** 2) +
-  //       GL21_W2 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X2) ** 2) +
-  //       GL21_W3 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X3) ** 2) +
-  //       GL21_W4 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X4) ** 2) +
-  //       GL21_W5 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X5) ** 2) +
-  //       GL21_W6 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X6) ** 2) +
-  //       GL21_W7 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X7) ** 2) +
-  //       GL21_W8 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X8) ** 2) +
-  //       GL21_W9 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL21_X9) ** 2) +
-  //       GL21_W10 * Math.sqrt(1 + quadratic.solve(d, shift) ** 2) +
-  //       GL21_W9 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X9) ** 2) +
-  //       GL21_W8 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X8) ** 2) +
-  //       GL21_W7 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X7) ** 2) +
-  //       GL21_W6 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X6) ** 2) +
-  //       GL21_W5 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X5) ** 2) +
-  //       GL21_W4 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X4) ** 2) +
-  //       GL21_W3 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X3) ** 2) +
-  //       GL21_W2 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X2) ** 2) +
-  //       GL21_W1 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X1) ** 2) +
-  //       GL21_W0 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL21_X0) ** 2)) *
-  //       scale,
-  //     p.precision,
-  //   )
-  // }
-  //
-  // if (p.precision <= 2) {
-  //   return round(
-  //     (GL5_W0 *
-  //       Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL5_X0) ** 2) +
-  //       GL5_W1 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL5_X1) ** 2) +
-  //       GL5_W2 * Math.sqrt(1 + quadratic.solve(d, shift) ** 2) +
-  //       GL5_W1 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL5_X1) ** 2) +
-  //       GL5_W0 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL5_X0) ** 2)) *
-  //       scale,
-  //     p.precision,
-  //   )
-  // }
-  //
-  // if (p.precision <= 5) {
-  //   return round(
-  //     (GL7_W0 *
-  //       Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL7_X0) ** 2) +
-  //       GL7_W1 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL7_X1) ** 2) +
-  //       GL7_W2 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL7_X2) ** 2) +
-  //       GL7_W3 * Math.sqrt(1 + quadratic.solve(d, shift) ** 2) +
-  //       GL7_W2 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL7_X2) ** 2) +
-  //       GL7_W1 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL7_X1) ** 2) +
-  //       GL7_W0 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL7_X0) ** 2)) *
-  //       scale,
-  //     p.precision,
-  //   )
-  // }
-  //
-  // if (p.precision <= 8) {
-  //   return round(
-  //     (GL9_W0 *
-  //       Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL9_X0) ** 2) +
-  //       GL9_W1 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL9_X1) ** 2) +
-  //       GL9_W2 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL9_X2) ** 2) +
-  //       GL9_W3 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL9_X3) ** 2) +
-  //       GL9_W4 * Math.sqrt(1 + quadratic.solve(d, shift) ** 2) +
-  //       GL9_W3 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL9_X3) ** 2) +
-  //       GL9_W2 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL9_X2) ** 2) +
-  //       GL9_W1 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL9_X1) ** 2) +
-  //       GL9_W0 *
-  //         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL9_X0) ** 2)) *
-  //       scale,
-  //     p.precision,
-  //   )
-  // }
 
   return round(
     (GL32_W0 *
@@ -418,6 +295,5 @@ export const length = dual<
       GL32_W15 *
         Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X15) ** 2)) *
       scale,
-    p.precision,
   )
 })

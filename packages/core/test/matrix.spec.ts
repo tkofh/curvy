@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import * as matrix2x2 from '../src/matrix/matrix2x2'
 import * as matrix3x3 from '../src/matrix/matrix3x3'
 import * as matrix4x4 from '../src/matrix/matrix4x4'
-import { PRECISION, round } from '../src/util'
+import { round } from '../src/util'
 import * as vector2 from '../src/vector/vector2'
 import * as vector3 from '../src/vector/vector3'
 import * as vector4 from '../src/vector/vector4'
@@ -15,13 +15,11 @@ describe('matrix2x2', () => {
       m10: 3,
       m11: 4,
     })
-    expect(matrix2x2.matrix2x2(1.555, 0, 0, 0, 2)).toMatchObject({
+    expect(matrix2x2.matrix2x2(1.555, 0, 0, 0)).toMatchObject({
       m00: 1.56,
       m01: 0,
       m10: 0,
       m11: 0,
-
-      precision: 2,
     })
   })
 
@@ -233,7 +231,6 @@ describe('matrix3x3', () => {
         result.v0 * coefficients.m00 +
           result.v1 * coefficients.m01 +
           result.v2 * coefficients.m02,
-        PRECISION,
       ),
     ).toEqual(solution.v0)
     expect(
@@ -241,7 +238,6 @@ describe('matrix3x3', () => {
         result.v0 * coefficients.m10 +
           result.v1 * coefficients.m11 +
           result.v2 * coefficients.m12,
-        PRECISION,
       ),
     ).toEqual(solution.v1)
     expect(
@@ -249,7 +245,6 @@ describe('matrix3x3', () => {
         result.v0 * coefficients.m20 +
           result.v1 * coefficients.m21 +
           result.v2 * coefficients.m22,
-        PRECISION,
       ),
     ).toEqual(solution.v2)
   })
@@ -456,7 +451,6 @@ describe('matrix4x4', () => {
           result.v1 * coefficients.m01 +
           result.v2 * coefficients.m02 +
           result.v3 * coefficients.m03,
-        PRECISION,
       ),
     ).toEqual(solution.v0)
     expect(
@@ -465,7 +459,6 @@ describe('matrix4x4', () => {
           result.v1 * coefficients.m11 +
           result.v2 * coefficients.m12 +
           result.v3 * coefficients.m13,
-        PRECISION,
       ),
     ).toEqual(solution.v1)
     expect(
@@ -474,7 +467,6 @@ describe('matrix4x4', () => {
           result.v1 * coefficients.m21 +
           result.v2 * coefficients.m22 +
           result.v3 * coefficients.m23,
-        PRECISION,
       ),
     ).toEqual(solution.v2)
     expect(
@@ -483,7 +475,6 @@ describe('matrix4x4', () => {
           result.v1 * coefficients.m31 +
           result.v2 * coefficients.m32 +
           result.v3 * coefficients.m33,
-        PRECISION,
       ),
     ).toEqual(solution.v3)
   })

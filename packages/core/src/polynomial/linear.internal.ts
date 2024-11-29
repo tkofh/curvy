@@ -1,7 +1,7 @@
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
 import * as Interval from '../interval'
-import { PRECISION, round } from '../util'
+import { round } from '../util'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPolynomial } from './linear'
 import type { QuadraticPolynomial } from './quadratic'
@@ -18,31 +18,26 @@ class LinearPolynomialImpl extends Pipeable implements LinearPolynomial {
   readonly c0: number
   readonly c1: number
 
-  readonly precision: number
-
-  constructor(c0 = 0, c1 = 0, precision = PRECISION) {
+  constructor(c0 = 0, c1 = 0) {
     super()
 
-    this.c0 = round(c0, precision)
-    this.c1 = round(c1, precision)
-
-    this.precision = precision
+    this.c0 = round(c0)
+    this.c1 = round(c1)
   }
 }
 
 export const isLinearPolynomial = (v: unknown): v is LinearPolynomial =>
   typeof v === 'object' && v !== null && LinearPolynomialTypeId in v
 
-export const make = (c0 = 0, c1 = 0, precision = PRECISION): LinearPolynomial =>
-  new LinearPolynomialImpl(c0, c1, precision)
+export const make = (c0 = 0, c1 = 0): LinearPolynomial =>
+  new LinearPolynomialImpl(c0, c1)
 
-export const fromVector = (v: Vector2, precision?: number) =>
-  new LinearPolynomialImpl(v.v0, v.v1, precision ?? v.precision)
+export const fromVector = (v: Vector2) => new LinearPolynomialImpl(v.v0, v.v1)
 
 export const solve = dual<
   (x: number) => (p: LinearPolynomial) => number,
   (p: LinearPolynomial, x: number) => number
->(2, (p: LinearPolynomial, x: number) => round(p.c0 + x * p.c1, p.precision))
+>(2, (p: LinearPolynomial, x: number) => round(p.c0 + x * p.c1))
 
 export const toSolver = (p: LinearPolynomial) => (x: number) => solve(p, x)
 
@@ -53,7 +48,7 @@ export const solveInverse = dual<
   if (p.c1 === 0) {
     return null
   }
-  return round((y - p.c0) / p.c1, p.precision)
+  return round((y - p.c0) / p.c1)
 })
 
 export const toInverseSolver = (p: LinearPolynomial) => (y: number) =>
@@ -68,12 +63,7 @@ export const antiderivative = dual<
 >(
   (args) => isLinearPolynomial(args[0]),
   (p: LinearPolynomial, integrationConstant = 0) =>
-    new QuadraticPolynomialImpl(
-      integrationConstant,
-      p.c0,
-      p.c1 / 2,
-      p.precision,
-    ),
+    new QuadraticPolynomialImpl(integrationConstant, p.c0, p.c1 / 2),
 )
 
 export const domain = dual<
@@ -113,8 +103,8 @@ export const length = dual<
   }
 
   if (p.c1 === 0) {
-    return round(Interval.size(domain), p.precision)
+    return round(Interval.size(domain))
   }
 
-  return round(Math.sqrt(1 + p.c1 ** 2) * Interval.size(domain), p.precision)
+  return round(Math.sqrt(1 + p.c1 ** 2) * Interval.size(domain))
 })

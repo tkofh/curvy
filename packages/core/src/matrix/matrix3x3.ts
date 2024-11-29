@@ -16,7 +16,6 @@ export interface Matrix3x3 {
   readonly m20: number
   readonly m21: number
   readonly m22: number
-  readonly precision: number
 }
 
 export const isMatrix3x3: (m: unknown) => m is Matrix3x3 = internal.isMatrix3x3
@@ -31,22 +30,13 @@ export const matrix3x3: (
   m20?: number,
   m21?: number,
   m22?: number,
-  precision?: number,
 ) => Matrix3x3 = internal.make
 
-export const fromRows: (
-  v0: Vector3,
-  v1: Vector3,
-  v2: Vector3,
-  precision?: number,
-) => Matrix3x3 = internal.fromRows
+export const fromRows: (v0: Vector3, v1: Vector3, v2: Vector3) => Matrix3x3 =
+  internal.fromRows
 
-export const fromColumns: (
-  v0: Vector3,
-  v1: Vector3,
-  v2: Vector3,
-  precision?: number,
-) => Matrix3x3 = internal.fromColumns
+export const fromColumns: (v0: Vector3, v1: Vector3, v2: Vector3) => Matrix3x3 =
+  internal.fromColumns
 
 export const setRow: {
   (m: Matrix3x3, row: Matrix3x3Coordinate, v: Vector3): Matrix3x3

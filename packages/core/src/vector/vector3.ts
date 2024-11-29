@@ -9,18 +9,12 @@ export interface Vector3 extends Pipeable {
   readonly v0: number
   readonly v1: number
   readonly v2: number
-
-  readonly precision: number
 }
 
 export const isVector3: (v: unknown) => v is Vector3 = internal.isVector3
 
-export const make: (
-  v0: number,
-  v1?: number,
-  v2?: number,
-  precision?: number,
-) => Vector3 = internal.make
+export const make: (v0: number, v1?: number, v2?: number) => Vector3 =
+  internal.make
 
 export const magnitude: (vector: Vector3) => number = internal.magnitude
 

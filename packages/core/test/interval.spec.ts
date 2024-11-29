@@ -11,11 +11,6 @@ describe('interval', () => {
       start: 0,
       end: 1,
     })
-    expect(interval.make(0, 1, 2)).toMatchObject({
-      start: 0,
-      end: 1,
-      precision: 2,
-    })
     expect(() => interval.make(0, -1)).toThrowError()
   })
 

@@ -11,22 +11,11 @@ import * as vector4 from '../src/vector/vector4'
 describe('linear', () => {
   test('make', () => {
     expect(linear.make(0, 1)).toMatchObject({ c0: 0, c1: 1 })
-    expect(linear.make(0, 1, 2)).toMatchObject({ c0: 0, c1: 1, precision: 2 })
   })
   test('fromVector', () => {
     expect(linear.fromVector(vector2.make(0, 1))).toMatchObject({
       c0: 0,
       c1: 1,
-    })
-    expect(linear.fromVector(vector2.make(0, 1, 2))).toMatchObject({
-      c0: 0,
-      c1: 1,
-      precision: 2,
-    })
-    expect(linear.fromVector(vector2.make(0, 1), 2)).toMatchObject({
-      c0: 0,
-      c1: 1,
-      precision: 2,
     })
   })
   test('isLinear', () => {
@@ -82,39 +71,19 @@ describe('linear', () => {
   })
   test('length', () => {
     const l = linear.make(0, 2)
-    expect(linear.length(l, interval.make(0, 1))).toEqual(
-      round(Math.sqrt(5), l.precision),
-    )
+    expect(linear.length(l, interval.make(0, 1))).toEqual(round(Math.sqrt(5)))
   })
 })
 
 describe('quadratic', () => {
   test('make', () => {
     expect(quadratic.make(0, 1, 2)).toMatchObject({ c0: 0, c1: 1, c2: 2 })
-    expect(quadratic.make(0, 1, 2, 3)).toMatchObject({
-      c0: 0,
-      c1: 1,
-      c2: 2,
-      precision: 3,
-    })
   })
   test('fromVector', () => {
     expect(quadratic.fromVector(vector3.make(0, 1, 2))).toMatchObject({
       c0: 0,
       c1: 1,
       c2: 2,
-    })
-    expect(quadratic.fromVector(vector3.make(0, 1, 2, 3))).toMatchObject({
-      c0: 0,
-      c1: 1,
-      c2: 2,
-      precision: 3,
-    })
-    expect(quadratic.fromVector(vector3.make(0, 1, 2), 3)).toMatchObject({
-      c0: 0,
-      c1: 1,
-      c2: 2,
-      precision: 3,
     })
   })
   test('solve', () => {
@@ -221,13 +190,6 @@ describe('cubic', () => {
       c1: 1,
       c2: 2,
       c3: 3,
-    })
-    expect(cubic.make(0, 1, 2, 3, 4)).toMatchObject({
-      c0: 0,
-      c1: 1,
-      c2: 2,
-      c3: 3,
-      precision: 4,
     })
   })
   test('fromVector', () => {
@@ -349,7 +311,7 @@ describe('cubic', () => {
     expect(cubic.range(p, interval.make(-1, 0))).toEqual(interval.make(0, 1))
   })
   test('length', () => {
-    const p = cubic.make(0, 100, 200, -300, 8)
+    const p = cubic.make(0, 100, 200, -300)
 
     // const steps = 1_000_000
     // let l = 0

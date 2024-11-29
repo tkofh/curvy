@@ -12,20 +12,15 @@ export interface LinearPolynomial extends Pipeable {
 
   readonly c0: number
   readonly c1: number
-  readonly precision: number
 }
 
 export const isLinearPolynomial: (v: unknown) => v is LinearPolynomial =
   internal.isLinearPolynomial
 
-export const make: (
-  c0?: number,
-  c1?: number,
-  precision?: number,
-) => LinearPolynomial = internal.make
+export const make: (c0?: number, c1?: number) => LinearPolynomial =
+  internal.make
 
-export const fromVector: (v: Vector2, precision?: number) => LinearPolynomial =
-  internal.fromVector
+export const fromVector: (v: Vector2) => LinearPolynomial = internal.fromVector
 
 export const solve: {
   (p: LinearPolynomial, x: number): number
