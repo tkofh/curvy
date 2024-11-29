@@ -5,8 +5,11 @@ import type { LinearPolynomial } from '../polynomial/linear'
 import type { QuadraticPolynomial } from '../polynomial/quadratic'
 import type { Vector2 } from '../vector/vector2'
 import * as internal from './curve2d.internal'
+import type { Curve2dTypeId } from './curve2d.internal'
 
 export interface Curve2d<P extends Polynomial> extends Pipeable {
+  readonly [Curve2dTypeId]: Curve2dTypeId
+
   readonly c0: P
   readonly c1: P
 }

@@ -3,11 +3,11 @@ import { Pipeable } from './internal/pipeable'
 import type { Interval } from './interval'
 import { round } from './util'
 
-const TypeBrand: unique symbol = Symbol.for('curvy/interval')
-type TypeBrand = typeof TypeBrand
+const TypeId: unique symbol = Symbol.for('curvy/interval')
+type TypeId = typeof TypeId
 
 class IntervalImpl extends Pipeable implements Interval {
-  readonly [TypeBrand]: TypeBrand = TypeBrand
+  readonly [TypeId]: TypeId = TypeId
 
   readonly start: number
   readonly end: number
@@ -33,7 +33,7 @@ class IntervalImpl extends Pipeable implements Interval {
 }
 
 export const isInterval = (v: unknown): v is Interval =>
-  typeof v === 'object' && v !== null && TypeBrand in v
+  typeof v === 'object' && v !== null && TypeId in v
 
 export const make = (start: number, end?: number) =>
   new IntervalImpl(start, end ?? start)

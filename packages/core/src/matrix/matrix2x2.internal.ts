@@ -5,11 +5,11 @@ import type { Vector2 } from '../vector/vector2'
 import * as vector2 from '../vector/vector2.internal'
 import type { Matrix2x2, Matrix2x2Coordinate } from './matrix2x2'
 
-export const Matrix2x2TypeBrand: unique symbol = Symbol.for('curvy/matrix2x2')
-export type Matrix2x2TypeBrand = typeof Matrix2x2TypeBrand
+export const Matrix2x2TypeId: unique symbol = Symbol.for('curvy/matrix2x2')
+export type Matrix2x2TypeId = typeof Matrix2x2TypeId
 
 class Matrix2x2Impl extends Pipeable implements Matrix2x2 {
-  readonly [Matrix2x2TypeBrand]: Matrix2x2TypeBrand = Matrix2x2TypeBrand
+  readonly [Matrix2x2TypeId]: Matrix2x2TypeId = Matrix2x2TypeId
 
   readonly m00: number
   readonly m01: number
@@ -39,7 +39,7 @@ class Matrix2x2Impl extends Pipeable implements Matrix2x2 {
 }
 
 export const isMatrix2x2 = (m: unknown): m is Matrix2x2 =>
-  typeof m === 'object' && m !== null && Matrix2x2TypeBrand in m
+  typeof m === 'object' && m !== null && Matrix2x2TypeId in m
 
 export const make = (m00 = 0, m01 = m00, m10 = m01, m11 = m10) =>
   new Matrix2x2Impl(m00, m01, m10, m11)
