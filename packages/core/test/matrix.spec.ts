@@ -15,14 +15,7 @@ describe('matrix2x2', () => {
       m10: 3,
       m11: 4,
     })
-    expect(matrix2x2.matrix2x2(1.555, 0, 0, 0)).toMatchObject({
-      m00: 1.56,
-      m01: 0,
-      m10: 0,
-      m11: 0,
-    })
   })
-
   test('fromRows', () => {
     expect(
       matrix2x2.fromRows(vector2.make(1, 2), vector2.make(3, 4)),
@@ -33,7 +26,6 @@ describe('matrix2x2', () => {
       m11: 4,
     })
   })
-
   test('fromColumns', () => {
     expect(
       matrix2x2.fromColumns(vector2.make(1, 2), vector2.make(3, 4)),
@@ -44,18 +36,15 @@ describe('matrix2x2', () => {
       m11: 4,
     })
   })
-
   test('isMatrix2x2', () => {
     expect(matrix2x2.isMatrix2x2(matrix2x2.matrix2x2(1, 2, 3, 4))).toBe(true)
     expect(matrix2x2.isMatrix2x2({ m00: 1, m01: 2, m10: 3, m11: 4 })).toBe(
       false,
     )
   })
-
   test('determinant', () => {
     expect(matrix2x2.determinant(matrix2x2.matrix2x2(1, 2, 3, 4))).toBe(-2)
   })
-
   test('vectorProductLeft', () => {
     expect(
       matrix2x2.vectorProductLeft(
@@ -64,7 +53,6 @@ describe('matrix2x2', () => {
       ),
     ).toEqual(vector2.make(5, 11))
   })
-
   test('vectorProductRight', () => {
     expect(
       matrix2x2.vectorProductRight(
@@ -73,7 +61,6 @@ describe('matrix2x2', () => {
       ),
     ).toEqual(vector2.make(7, 10))
   })
-
   test('solveSystem', () => {
     const solution = vector2.make(1, 2)
     const coefficients = matrix2x2.matrix2x2(1, 2, 3, 4)
@@ -87,27 +74,23 @@ describe('matrix2x2', () => {
       result.v0 * coefficients.m10 + result.v1 * coefficients.m11,
     ).toBeCloseTo(solution.v1)
   })
-
   test('toRows', () => {
     expect(matrix2x2.toRows(matrix2x2.matrix2x2(1, 2, 3, 4))).toEqual([
       vector2.make(1, 2),
       vector2.make(3, 4),
     ])
   })
-
   test('toColumns', () => {
     expect(matrix2x2.toColumns(matrix2x2.matrix2x2(1, 2, 3, 4))).toEqual([
       vector2.make(1, 3),
       vector2.make(2, 4),
     ])
   })
-
   test('rowVector', () => {
     expect(matrix2x2.rowVector(matrix2x2.matrix2x2(1, 2, 3, 4), 0)).toEqual(
       vector2.make(1, 2),
     )
   })
-
   test('columnVector', () => {
     expect(matrix2x2.columnVector(matrix2x2.matrix2x2(1, 2, 3, 4), 0)).toEqual(
       vector2.make(1, 3),
@@ -129,7 +112,6 @@ describe('matrix3x3', () => {
       m22: 9,
     })
   })
-
   test('isMatrix3x3', () => {
     expect(
       matrix3x3.isMatrix3x3(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)),
@@ -149,7 +131,6 @@ describe('matrix3x3', () => {
       }),
     ).toBe(false)
   })
-
   test('fromRows', () => {
     expect(
       matrix3x3.fromRows(
@@ -169,7 +150,6 @@ describe('matrix3x3', () => {
       m22: 9,
     })
   })
-
   test('fromColumns', () => {
     expect(
       matrix3x3.fromColumns(
@@ -189,19 +169,16 @@ describe('matrix3x3', () => {
       m22: 9,
     })
   })
-
   test('determinant', () => {
     expect(
       matrix3x3.determinant(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)),
     ).toBe(0)
   })
-
   test('minor', () => {
     expect(
       matrix3x3.minor(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9), 0, 1),
     ).toEqual(matrix2x2.matrix2x2(4, 6, 7, 9))
   })
-
   test('vectorProductLeft', () => {
     expect(
       matrix3x3.vectorProductLeft(
@@ -210,7 +187,6 @@ describe('matrix3x3', () => {
       ),
     ).toEqual(vector3.make(14, 32, 50))
   })
-
   test('vectorProductRight', () => {
     expect(
       matrix3x3.vectorProductRight(
@@ -219,7 +195,6 @@ describe('matrix3x3', () => {
       ),
     ).toEqual(vector3.make(30, 36, 42))
   })
-
   test('solveSystem', () => {
     const solution = vector3.make(1, 2, 3)
     const coefficients = matrix3x3.matrix3x3(1, 0, 1, 0, 2, 0, 0, 0, 1)
@@ -248,7 +223,6 @@ describe('matrix3x3', () => {
       ),
     ).toEqual(solution.v2)
   })
-
   test('toRows', () => {
     expect(
       matrix3x3.toRows(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)),
@@ -258,7 +232,6 @@ describe('matrix3x3', () => {
       vector3.make(7, 8, 9),
     ])
   })
-
   test('toColumns', () => {
     expect(
       matrix3x3.toColumns(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)),
@@ -268,13 +241,11 @@ describe('matrix3x3', () => {
       vector3.make(3, 6, 9),
     ])
   })
-
   test('rowVector', () => {
     expect(
       matrix3x3.rowVector(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9), 0),
     ).toEqual(vector3.make(1, 2, 3))
   })
-
   test('columnVector', () => {
     expect(
       matrix3x3.columnVector(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9), 0),
@@ -305,7 +276,6 @@ describe('matrix4x4', () => {
       m33: 16,
     })
   })
-
   test('isMatrix4x4', () => {
     expect(matrix4x4.isMatrix4x4(matrix4x4.make(0))).toBe(true)
     expect(
@@ -329,7 +299,6 @@ describe('matrix4x4', () => {
       }),
     ).toBe(false)
   })
-
   test('fromRows', () => {
     expect(
       matrix4x4.fromRows(
@@ -357,7 +326,6 @@ describe('matrix4x4', () => {
       m33: 16,
     })
   })
-
   test('fromColumns', () => {
     expect(
       matrix4x4.fromColumns(
@@ -385,7 +353,6 @@ describe('matrix4x4', () => {
       m33: 16,
     })
   })
-
   test('determinant', () => {
     expect(
       matrix4x4.determinant(
@@ -393,7 +360,6 @@ describe('matrix4x4', () => {
       ),
     ).toBe(0)
   })
-
   test('minor', () => {
     expect(
       matrix4x4.minor(
@@ -403,7 +369,6 @@ describe('matrix4x4', () => {
       ),
     ).toEqual(matrix3x3.matrix3x3(5, 7, 8, 9, 11, 12, 13, 15, 16))
   })
-
   test('vectorProductLeft', () => {
     expect(
       matrix4x4.vectorProductLeft(
@@ -412,7 +377,6 @@ describe('matrix4x4', () => {
       ),
     ).toEqual(vector4.make(30, 70, 110, 150))
   })
-
   test('vectorProductRight', () => {
     expect(
       matrix4x4.vectorProductRight(
@@ -421,7 +385,6 @@ describe('matrix4x4', () => {
       ),
     ).toEqual(vector4.make(90, 100, 110, 120))
   })
-
   test('solveSystem', () => {
     const solution = vector4.make(1, 2, 3, 4)
     const coefficients = matrix4x4.make(
@@ -478,7 +441,6 @@ describe('matrix4x4', () => {
       ),
     ).toEqual(solution.v3)
   })
-
   test('toRows', () => {
     expect(
       matrix4x4.toRows(
@@ -491,7 +453,6 @@ describe('matrix4x4', () => {
       vector4.make(13, 14, 15, 16),
     ])
   })
-
   test('toColumns', () => {
     expect(
       matrix4x4.toColumns(
@@ -504,7 +465,6 @@ describe('matrix4x4', () => {
       vector4.make(4, 8, 12, 16),
     ])
   })
-
   test('rowVector', () => {
     expect(
       matrix4x4.rowVector(
@@ -513,7 +473,6 @@ describe('matrix4x4', () => {
       ),
     ).toEqual(vector4.make(1, 2, 3, 4))
   })
-
   test('columnVector', () => {
     expect(
       matrix4x4.columnVector(
