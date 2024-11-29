@@ -32,8 +32,6 @@ test('putting it all together', () => {
 
   const polynomial = CubicPolynomial.fromVector(coefficients)
 
-  console.log(polynomial)
-
   expect(CubicPolynomial.solve(polynomial, 0)).toBe(start)
   expect(CubicPolynomial.solve(polynomial, 0.5)).toBe((start + end) / 2)
   expect(CubicPolynomial.solve(polynomial, 1)).toBe(end)
