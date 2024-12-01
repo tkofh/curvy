@@ -10,7 +10,6 @@ export const isInterval: (v: unknown) => v is Interval = internal.isInterval
 export const make: {
   (point: number): Interval
   (start: number, end: number): Interval
-  (start: number, end: number): Interval
 } = internal.make
 
 export const fromMinMax: (...values: ReadonlyArray<number>) => Interval =
@@ -51,6 +50,8 @@ export const clamp: {
 
 export const unit: Interval = internal.unit
 
+export const biunit: Interval = internal.biunit
+
 export const lerp: (interval: Interval, t: number) => number = internal.lerp
 
 export const toLerpFn: (interval: Interval) => (t: number) => number =
@@ -69,3 +70,11 @@ export const toRemapFn: (
   source: Interval,
   target: Interval,
 ) => (x: number) => number = internal.toRemapFn
+
+export interface ScaleShift {
+  readonly scale: number
+  readonly shift: number
+}
+
+export const scaleShift: (source: Interval, target: Interval) => ScaleShift =
+  internal.scaleShift

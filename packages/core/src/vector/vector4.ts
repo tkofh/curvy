@@ -24,6 +24,8 @@ export const make: (
 
 export const magnitude: (vector: Vector4) => number = internal.magnitude
 
+export const normalize: (vector: Vector4) => Vector4 = internal.normalize
+
 export const dot: {
   (a: Vector4, b: Vector4): number
   (b: Vector4): (a: Vector4) => number
@@ -33,4 +35,20 @@ export const components: (v: Vector4) => [number, number, number, number] =
   internal.components
 
 export const softmax: (v: Vector4) => Vector4 = internal.softmax
+
 export const zero = make(0)
+
+export const add: {
+  (a: Vector4, b: Vector4): Vector4
+  (b: Vector4): (a: Vector4) => Vector4
+} = internal.add
+
+export const subtract: {
+  (a: Vector4, b: Vector4): Vector4
+  (b: Vector4): (a: Vector4) => Vector4
+} = internal.subtract
+
+export const hadamard: {
+  (a: Vector4, b: Vector4): Vector4
+  (b: Vector4): (a: Vector4) => Vector4
+} = internal.hadamard

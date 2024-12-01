@@ -113,6 +113,8 @@ export const clamp = dual<
 
 export const unit = make(0, 1)
 
+export const biunit = make(-1, 1)
+
 export const lerp = (interval: Interval, t: number) =>
   (1 - t) * interval.start + t * interval.end
 
@@ -124,8 +126,18 @@ export const normalize = (interval: Interval, x: number) =>
 export const toNormalizeFn = (interval: Interval) => (x: number) =>
   normalize(interval, x)
 
-export const remap = (source: Interval, target: Interval, x: number) =>
-  lerp(target, normalize(source, x))
+export const remap = (source: Interval, target: Interval, x: number) => {
+  return target.start + ((x - source.start) * size(target)) / size(source)
+}
 
 export const toRemapFn = (source: Interval, target: Interval) => (x: number) =>
   remap(source, target, x)
+
+export const scaleShift = (source: Interval, target: Interval) => {
+  const scale = size(target) / size(source)
+
+  return {
+    scale,
+    shift: target.start - source.start * scale,
+  }
+}

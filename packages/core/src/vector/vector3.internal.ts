@@ -39,6 +39,12 @@ export const isVector3 = (v: unknown): v is Vector3 =>
 export const magnitude = (vector: Vector3) =>
   round(Math.hypot(vector.v0, vector.v1, vector.v2))
 
+export const normalize = (vector: Vector3) => {
+  const m = magnitude(vector)
+
+  return make(vector.v0 / m, vector.v1 / m, vector.v2 / m)
+}
+
 export const dot = dual<
   (b: Vector3) => (a: Vector3) => number,
   (a: Vector3, b: Vector3) => number
@@ -62,3 +68,18 @@ export const softmax = (v: Vector3) => {
 
 export const make = (v0: number, v1 = v0, v2 = v1): Vector3 =>
   new Vector3Impl(v0, v1, v2)
+
+export const add = dual<
+  (b: Vector3) => (a: Vector3) => Vector3,
+  (a: Vector3, b: Vector3) => Vector3
+>(2, (a: Vector3, b: Vector3) => make(a.v0 + b.v0, a.v1 + b.v1, a.v2 + b.v2))
+
+export const subtract = dual<
+  (b: Vector3) => (a: Vector3) => Vector3,
+  (a: Vector3, b: Vector3) => Vector3
+>(2, (a: Vector3, b: Vector3) => make(a.v0 - b.v0, a.v1 - b.v1, a.v2 - b.v2))
+
+export const hadamard = dual<
+  (b: Vector3) => (a: Vector3) => Vector3,
+  (a: Vector3, b: Vector3) => Vector3
+>(2, (a: Vector3, b: Vector3) => make(a.v0 * b.v0, a.v1 * b.v1, a.v2 * b.v2))

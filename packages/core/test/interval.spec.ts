@@ -63,5 +63,8 @@ describe('interval', () => {
     expect(interval.remap(interval.make(0, 1), interval.make(0, 2), 0.5)).toBe(
       1,
     )
+    expect(
+      interval.remap(interval.make(0, 1), interval.make(0.1, 0.2), 1),
+    ).toBe(0.2)
   })
 })

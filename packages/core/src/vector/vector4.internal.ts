@@ -39,8 +39,17 @@ class Vector4Impl extends Pipeable implements Vector4 {
 export const isVector4 = (v: unknown): v is Vector4 =>
   typeof v === 'object' && v !== null && Vector4TypeId in v
 
+export const make = (v0: number, v1 = v0, v2 = v1, v3 = v2): Vector4 =>
+  new Vector4Impl(v0, v1, v2, v3)
+
 export const magnitude: (vector: Vector4) => number = (vector: Vector4) =>
   round(Math.hypot(vector.v0, vector.v1, vector.v2, vector.v3))
+
+export const normalize: (vector: Vector4) => Vector4 = (vector: Vector4) => {
+  const m = magnitude(vector)
+
+  return make(vector.v0 / m, vector.v1 / m, vector.v2 / m, vector.v3 / m)
+}
 
 export const dot = dual<
   (b: Vector4) => (a: Vector4) => number,
@@ -66,5 +75,23 @@ export const softmax: (v: Vector4) => Vector4 = (v: Vector4) => {
   return make(v0 / sum, v1 / sum, v2 / sum, v3 / sum)
 }
 
-export const make = (v0: number, v1 = v0, v2 = v1, v3 = v2): Vector4 =>
-  new Vector4Impl(v0, v1, v2, v3)
+export const add = dual<
+  (b: Vector4) => (a: Vector4) => Vector4,
+  (a: Vector4, b: Vector4) => Vector4
+>(2, (a: Vector4, b: Vector4) =>
+  make(a.v0 + b.v0, a.v1 + b.v1, a.v2 + b.v2, a.v3 + b.v3),
+)
+
+export const subtract = dual<
+  (b: Vector4) => (a: Vector4) => Vector4,
+  (a: Vector4, b: Vector4) => Vector4
+>(2, (a: Vector4, b: Vector4) =>
+  make(a.v0 - b.v0, a.v1 - b.v1, a.v2 - b.v2, a.v3 - b.v3),
+)
+
+export const hadamard = dual<
+  (b: Vector4) => (a: Vector4) => Vector4,
+  (a: Vector4, b: Vector4) => Vector4
+>(2, (a: Vector4, b: Vector4) =>
+  make(a.v0 * b.v0, a.v1 * b.v1, a.v2 * b.v2, a.v3 * b.v3),
+)

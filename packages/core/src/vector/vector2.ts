@@ -12,12 +12,35 @@ export interface Vector2 extends Pipeable {
 }
 
 export const isVector2: (v: unknown) => v is Vector2 = internal.isVector2
+
 export const make: (v0: number, v1?: number) => Vector2 = internal.make
+
 export const magnitude: (vector: Vector2) => number = internal.magnitude
+
+export const normalize: (vector: Vector2) => Vector2 = internal.normalize
+
 export const dot: {
   (a: Vector2, b: Vector2): number
   (b: Vector2): (a: Vector2) => number
 } = internal.dot
+
 export const components: (v: Vector2) => [number, number] = internal.components
+
 export const softmax: (v: Vector2) => Vector2 = internal.softmax
+
 export const zero = make(0)
+
+export const add: {
+  (a: Vector2, b: Vector2): Vector2
+  (b: Vector2): (a: Vector2) => Vector2
+} = internal.add
+
+export const subtract: {
+  (a: Vector2, b: Vector2): Vector2
+  (b: Vector2): (a: Vector2) => Vector2
+} = internal.subtract
+
+export const hadamard: {
+  (a: Vector2, b: Vector2): Vector2
+  (b: Vector2): (a: Vector2) => Vector2
+} = internal.hadamard

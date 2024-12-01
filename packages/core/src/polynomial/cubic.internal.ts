@@ -41,12 +41,12 @@ import {
   CubicPolynomialImpl,
   CubicPolynomialTypeId,
 } from './cubic.internal.circular'
-import * as linear from './linear.internal'
+import * as Linear from './linear.internal'
 import {
   type Monotonicity,
   guaranteedMonotonicityFromComparison,
 } from './monotonicity'
-import * as quadratic from './quadratic.internal'
+import * as Quadratic from './quadratic.internal'
 import type { ZeroToThreeSolutions, ZeroToTwoSolutions } from './types'
 
 export const make = (c0 = 0, c1 = 0, c2 = 0, c3 = 0): CubicPolynomial =>
@@ -72,8 +72,8 @@ export const solveInverse = dual<
   (p: CubicPolynomial, y: number) => ZeroToThreeSolutions
 >(2, (self: CubicPolynomial, y: number) => {
   if (self.c3 === 0) {
-    return quadratic.solveInverse(
-      quadratic.make(self.c0, self.c1, self.c2),
+    return Quadratic.solveInverse(
+      Quadratic.make(self.c0, self.c1, self.c2),
       0,
     ) as ZeroToThreeSolutions
   }
@@ -133,13 +133,13 @@ export const toInverseSolver = (p: CubicPolynomial) => (y: number) =>
   solveInverse(p, y)
 
 export const derivative = (p: CubicPolynomial) =>
-  quadratic.make(p.c1, p.c2 * 2, p.c3 * 3)
+  Quadratic.make(p.c1, p.c2 * 2, p.c3 * 3)
 
 export const roots = (p: CubicPolynomial): ZeroToThreeSolutions =>
   solveInverse(p, 0)
 
 export const extrema = (p: CubicPolynomial): ZeroToTwoSolutions =>
-  quadratic.roots(derivative(p))
+  Quadratic.roots(derivative(p))
 
 export const monotonicity = dual<
   (i: Interval.Interval) => (p: CubicPolynomial) => Monotonicity,
@@ -154,7 +154,7 @@ export const monotonicity = dual<
 
     // shortcut to check for a non-horizontal line
     if (p.c3 === 0 && p.c2 === 0) {
-      return linear.monotonicity(linear.make(p.c0, p.c1))
+      return Linear.monotonicity(Linear.make(p.c0, p.c1))
     }
 
     // without an interval, the monotonicity will be none if c3 or c2 are nonzero
@@ -168,7 +168,7 @@ export const monotonicity = dual<
     }
 
     if (p.c3 === 0) {
-      return quadratic.monotonicity(quadratic.make(p.c0, p.c1, p.c2), i)
+      return Quadratic.monotonicity(Quadratic.make(p.c0, p.c1, p.c2), i)
     }
 
     const e = Interval.filter(i, extrema(p), {
@@ -218,82 +218,81 @@ export const length = dual<
 
   if (p.c3 === 0) {
     if (p.c2 === 0) {
-      return linear.length(linear.make(p.c0, p.c1), domain)
+      return Linear.length(Linear.make(p.c0, p.c1), domain)
     }
 
-    return quadratic.length(quadratic.make(p.c0, p.c1, p.c2), domain)
+    return Quadratic.length(Quadratic.make(p.c0, p.c1, p.c2), domain)
   }
 
   const d = derivative(p)
 
-  const scale = (domain.end - domain.start) / 2
-  const shift = (domain.end + domain.start) / 2
+  const { scale, shift } = Interval.scaleShift(Interval.biunit, domain)
 
   return round(
     (GL32_W0 *
-      Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X0) ** 2) +
+      Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X0) ** 2) +
       GL32_W0 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X0) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X0) ** 2) +
       GL32_W1 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X1) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X1) ** 2) +
       GL32_W1 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X1) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X1) ** 2) +
       GL32_W2 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X2) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X2) ** 2) +
       GL32_W2 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X2) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X2) ** 2) +
       GL32_W3 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X3) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X3) ** 2) +
       GL32_W3 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X3) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X3) ** 2) +
       GL32_W4 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X4) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X4) ** 2) +
       GL32_W4 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X4) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X4) ** 2) +
       GL32_W5 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X5) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X5) ** 2) +
       GL32_W5 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X5) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X5) ** 2) +
       GL32_W6 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X6) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X6) ** 2) +
       GL32_W6 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X6) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X6) ** 2) +
       GL32_W7 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X7) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X7) ** 2) +
       GL32_W7 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X7) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X7) ** 2) +
       GL32_W8 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X8) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X8) ** 2) +
       GL32_W8 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X8) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X8) ** 2) +
       GL32_W9 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X9) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X9) ** 2) +
       GL32_W9 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X9) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X9) ** 2) +
       GL32_W10 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X10) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X10) ** 2) +
       GL32_W10 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X10) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X10) ** 2) +
       GL32_W11 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X11) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X11) ** 2) +
       GL32_W11 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X11) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X11) ** 2) +
       GL32_W12 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X12) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X12) ** 2) +
       GL32_W12 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X12) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X12) ** 2) +
       GL32_W13 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X13) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X13) ** 2) +
       GL32_W13 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X13) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X13) ** 2) +
       GL32_W14 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X14) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X14) ** 2) +
       GL32_W14 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X14) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X14) ** 2) +
       GL32_W15 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * -GL32_X15) ** 2) +
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X15) ** 2) +
       GL32_W15 *
-        Math.sqrt(1 + quadratic.solve(d, shift + scale * GL32_X15) ** 2)) *
+        Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X15) ** 2)) *
       scale,
   )
 })
