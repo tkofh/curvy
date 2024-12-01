@@ -7,29 +7,54 @@
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
-  "main": "./dist/curve.cjs",
-  "module": "./dist/curve.mjs",
-  "types": "./dist/curve.d.ts",
   "exports": {
-    ".": {
-      "require": "./dist/curve.cjs",
-      "import": "./dist/curve.mjs",
-      "types": "./dist/curve.d.ts"
+    "./vector2": {
+      "types": "./dist/vector/vector2.d.ts",
+      "import": "./dist/vector/vector2.mjs"
     },
-    "./axis": {
-      "require": "./dist/axis.cjs",
-      "import": "./dist/axis.mjs",
-      "types": "./dist/axis.d.ts"
+    "./vector3": {
+      "types": "./dist/vector/vector3.d.ts",
+      "import": "./dist/vector/vector3.mjs"
     },
-    "./convert": {
-      "require": "./dist/convert.cjs",
-      "import": "./dist/convert.mjs",
-      "types": "./dist/convert.d.ts"
+    "./vector4": {
+      "types": "./dist/vector/vector4.d.ts",
+      "import": "./dist/vector/vector4.mjs"
     },
-    "./splines": {
-      "require": "./dist/splines.cjs",
-      "import": "./dist/splines.mjs",
-      "types": "./dist/splines.d.ts"
+    "./matrix2x2": {
+      "types": "./dist/matrix/matrix2x2.d.ts",
+      "import": "./dist/matrix/matrix2x2.mjs"
+    },
+    "./matrix3x3": {
+      "types": "./dist/matrix/matrix3x3.d.ts",
+      "import": "./dist/matrix/matrix3x3.mjs"
+    },
+    "./matrix4x4": {
+      "types": "./dist/matrix/matrix4x4.d.ts",
+      "import": "./dist/matrix/matrix4x4.mjs"
+    },
+    "./curve/linear2d": {
+      "types": "./dist/curve/linear2d.d.ts",
+      "import": "./dist/curve/linear2d.mjs"
+    },
+    "./curve/quadratic2d": {
+      "types": "./dist/curve/quadratic2d.d.ts",
+      "import": "./dist/curve/quadratic2d.mjs"
+    },
+    "./polynomial/linear": {
+      "types": "./dist/polynomial/linear.d.ts",
+      "import": "./dist/polynomial/linear.mjs"
+    },
+    "./polynomial/quadratic": {
+      "types": "./dist/polynomial/quadratic.d.ts",
+      "import": "./dist/polynomial/quadratic.mjs"
+    },
+    "./polynomial/cubic": {
+      "types": "./dist/polynomial/cubic.d.ts",
+      "import": "./dist/polynomial/cubic.mjs"
+    },
+    "./interval": {
+      "types": "./dist/interval.d.ts",
+      "import": "./dist/interval.mjs"
     }
   },
   "files": ["dist"],
@@ -42,14 +67,17 @@
   },
   "scripts": {
     "build": "unbuild",
-    "test": "vitest run"
+    "test": "vitest",
+    "test:watch": "vitest watch",
+    "typecheck": "tsc --noEmit"
   },
   "bugs": {
     "url": "https://github.com/tkofh/curvy/issues"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^1.3.1",
-    "unbuild": "^2.0.0",
-    "vitest": "^1.5.2"
+    "@repo/tsconfig": "workspace:*",
+    "typescript": "^5.7.2",
+    "unbuild": "3.0.0-rc.8",
+    "vitest": "^2.1.6"
   }
 }

@@ -1,25 +1,4 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
-  "compilerOptions": {
-    "declaration": true,
-    "declarationMap": true,
-    "esModuleInterop": true,
-    "incremental": true,
-    "tsBuildInfoFile": ".tsbuildinfo",
-    "isolatedModules": true,
-    "lib": ["ES2023"],
-    "module": "ESNext",
-    "moduleDetection": "force",
-    "moduleResolution": "Bundler",
-    "noImplicitAny": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "strictNullChecks": true,
-    "noUncheckedIndexedAccess": true,
-    "strictPropertyInitialization": true,
-    "target": "ES2022",
-    "verbatimModuleSyntax": true,
-    "composite": true
-  }
+  "extends": "@repo/tsconfig/root.json"
 }

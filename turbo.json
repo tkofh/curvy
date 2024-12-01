@@ -1,14 +1,26 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
-  "pipeline": {
+  "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^transit", "^build"],
       "outputs": ["dist/**"]
     },
     "test": {
-      "dependsOn": ["^build"],
-      "cache": true
+      "dependsOn": ["^transit"]
+    },
+    "test:watch": {
+      "dependsOn": ["^transit"],
+      "cache": false,
+      "persistent": true,
+      "interactive": true
+    },
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
+    "//#check": {},
+    "//#check:fix": {
+      "cache": false
     }
   }
 }
