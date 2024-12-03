@@ -12,8 +12,10 @@ export interface CubicCurve2d extends Pipeable {
   readonly c1: CubicPolynomial
 }
 
-export const make: (c0: CubicPolynomial, c1: CubicPolynomial) => CubicCurve2d =
-  internal.make
+export const fromPolynomials: (
+  c0: CubicPolynomial,
+  c1: CubicPolynomial,
+) => CubicCurve2d = internal.fromPolynomials
 
 export const isCubicCurve2d: (c: unknown) => c is CubicCurve2d =
   internal.isCubicCurve2d

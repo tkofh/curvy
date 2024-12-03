@@ -24,7 +24,7 @@ export class LinearCurve2dImpl extends Pipeable implements LinearCurve2d {
   }
 }
 
-export const make: (
+export const fromPolynomials: (
   c0: LinearPolynomial.LinearPolynomial,
   c1: LinearPolynomial.LinearPolynomial,
 ) => LinearCurve2d = (c0, c1) => new LinearCurve2dImpl(c0, c1)

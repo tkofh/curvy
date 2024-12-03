@@ -13,7 +13,7 @@ describe('linear2d', () => {
     const c0 = linearPolynomial.make(0, 1)
     const c1 = linearPolynomial.make(1, 0)
 
-    expect(linear2d.make(c0, c1)).toMatchObject({
+    expect(linear2d.fromPolynomials(c0, c1)).toMatchObject({
       c0,
       c1,
     })
@@ -21,14 +21,20 @@ describe('linear2d', () => {
   test('isLinearCurve2d', () => {
     expect(
       linear2d.isLinearCurve2d(
-        linear2d.make(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
+        linear2d.fromPolynomials(
+          linearPolynomial.make(0, 1),
+          linearPolynomial.make(1, 0),
+        ),
       ),
     ).toBe(true)
   })
   test('solve', () => {
     expect(
       linear2d.solve(
-        linear2d.make(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
+        linear2d.fromPolynomials(
+          linearPolynomial.make(0, 1),
+          linearPolynomial.make(1, 0),
+        ),
         0.5,
       ),
     ).toEqual(vector2.make(0.5, 1))
@@ -36,7 +42,10 @@ describe('linear2d', () => {
   test('length', () => {
     expect(
       linear2d.length(
-        linear2d.make(linearPolynomial.make(0, 1), linearPolynomial.make(0, 1)),
+        linear2d.fromPolynomials(
+          linearPolynomial.make(0, 1),
+          linearPolynomial.make(0, 1),
+        ),
         interval.make(0, 1),
       ),
     ).toBeCloseTo(Math.sqrt(2))
@@ -48,7 +57,7 @@ describe('quadratic2d', () => {
     const c0 = quadraticPolynomial.make(0, 0, 1)
     const c1 = quadraticPolynomial.make(0, 0, -1)
 
-    expect(quadratic2d.make(c0, c1)).toMatchObject({
+    expect(quadratic2d.fromPolynomials(c0, c1)).toMatchObject({
       c0,
       c1,
     })
@@ -56,7 +65,7 @@ describe('quadratic2d', () => {
   test('isQuadraticCurve2d', () => {
     expect(
       quadratic2d.isQuadraticCurve2d(
-        quadratic2d.make(
+        quadratic2d.fromPolynomials(
           quadraticPolynomial.make(0, 0, 1),
           quadraticPolynomial.make(0, 0, -1),
         ),
@@ -66,7 +75,7 @@ describe('quadratic2d', () => {
   test('solve', () => {
     expect(
       quadratic2d.solve(
-        quadratic2d.make(
+        quadratic2d.fromPolynomials(
           quadraticPolynomial.make(0, 0, 1),
           quadraticPolynomial.make(0, 0, -1),
         ),
@@ -77,7 +86,7 @@ describe('quadratic2d', () => {
   test('length', () => {
     expect(
       quadratic2d.length(
-        quadratic2d.make(
+        quadratic2d.fromPolynomials(
           quadraticPolynomial.make(0, 0, 1),
           quadraticPolynomial.make(0, 0, -1),
         ),
@@ -86,7 +95,7 @@ describe('quadratic2d', () => {
     ).toEqual(vector2.magnitude(vector2.make(1, 1)))
     expect(
       quadratic2d.length(
-        quadratic2d.make(
+        quadratic2d.fromPolynomials(
           quadraticPolynomial.make(0, 0, 1),
           quadraticPolynomial.make(0, 0, -1),
         ),
@@ -101,7 +110,7 @@ describe('cubic2d', () => {
     const c0 = cubicPolynomial.make(0, 0, 0, 1)
     const c1 = cubicPolynomial.make(0, 0, 0, -1)
 
-    expect(cubic2d.make(c0, c1)).toMatchObject({
+    expect(cubic2d.fromPolynomials(c0, c1)).toMatchObject({
       c0,
       c1,
     })
@@ -109,7 +118,7 @@ describe('cubic2d', () => {
   test('isCubicCurve2d', () => {
     expect(
       cubic2d.isCubicCurve2d(
-        cubic2d.make(
+        cubic2d.fromPolynomials(
           cubicPolynomial.make(0, 0, 0, 1),
           cubicPolynomial.make(0, 0, 0, -1),
         ),
@@ -119,7 +128,7 @@ describe('cubic2d', () => {
   test('solve', () => {
     expect(
       cubic2d.solve(
-        cubic2d.make(
+        cubic2d.fromPolynomials(
           cubicPolynomial.make(0, 0, 0, 1),
           cubicPolynomial.make(0, 0, 0, -1),
         ),
@@ -130,7 +139,7 @@ describe('cubic2d', () => {
   test('length', () => {
     expect(
       cubic2d.length(
-        cubic2d.make(
+        cubic2d.fromPolynomials(
           cubicPolynomial.make(0, 0, 0, 1),
           cubicPolynomial.make(0, 0, 0, -1),
         ),
@@ -139,7 +148,7 @@ describe('cubic2d', () => {
     ).toEqual(vector2.magnitude(vector2.make(1, 1)))
     expect(
       cubic2d.length(
-        cubic2d.make(
+        cubic2d.fromPolynomials(
           cubicPolynomial.make(0, 0, 0, 1),
           cubicPolynomial.make(0, 0, 0, -1),
         ),

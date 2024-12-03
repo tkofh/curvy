@@ -64,7 +64,7 @@ export class QuadraticCurve2dImpl extends Pipeable implements QuadraticCurve2d {
   }
 }
 
-export const make: (
+export const fromPolynomials: (
   c0: QuadraticPolynomial.QuadraticPolynomial,
   c1: QuadraticPolynomial.QuadraticPolynomial,
 ) => QuadraticCurve2d = (c0, c1) => new QuadraticCurve2dImpl(c0, c1)
@@ -83,7 +83,7 @@ export const solve = dual<
 )
 
 export const derivative = (c: QuadraticCurve2d) =>
-  LinearCurve2d.make(
+  LinearCurve2d.fromPolynomials(
     QuadraticPolynomial.derivative(c.c0),
     QuadraticPolynomial.derivative(c.c1),
   )
@@ -95,7 +95,7 @@ export const length = dual(2, (c: QuadraticCurve2d, i: Interval.Interval) => {
 
   if (c.c0.c2 === 0 && c.c1.c2 === 0) {
     return LinearCurve2d.length(
-      LinearCurve2d.make(
+      LinearCurve2d.fromPolynomials(
         LinearPolynomial.make(c.c0.c0, c.c0.c1),
         LinearPolynomial.make(c.c1.c0, c.c1.c1),
       ),

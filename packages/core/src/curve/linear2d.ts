@@ -12,10 +12,10 @@ export interface LinearCurve2d extends Pipeable {
   readonly c1: LinearPolynomial
 }
 
-export const make: (
+export const fromPolynomials: (
   c0: LinearPolynomial,
   c1: LinearPolynomial,
-) => LinearCurve2d = internal.make
+) => LinearCurve2d = internal.fromPolynomials
 
 export const isLinearCurve2d: (c: unknown) => c is LinearCurve2d =
   internal.isLinearCurve2d

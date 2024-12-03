@@ -40,6 +40,10 @@
       "types": "./dist/curve/quadratic2d.d.ts",
       "import": "./dist/curve/quadratic2d.mjs"
     },
+    "./curve/cubic2d": {
+      "types": "./dist/curve/cubic2d.d.ts",
+      "import": "./dist/curve/cubic2d.mjs"
+    },
     "./polynomial/linear": {
       "types": "./dist/polynomial/linear.d.ts",
       "import": "./dist/polynomial/linear.mjs"

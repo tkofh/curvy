@@ -12,10 +12,10 @@ export interface QuadraticCurve2d extends Pipeable {
   readonly c1: QuadraticPolynomial
 }
 
-export const make: (
+export const fromPolynomials: (
   c0: QuadraticPolynomial,
   c1: QuadraticPolynomial,
-) => QuadraticCurve2d = internal.make
+) => QuadraticCurve2d = internal.fromPolynomials
 
 export const isQuadraticCurve2d: (c: unknown) => c is QuadraticCurve2d =
   internal.isQuadraticCurve2d
