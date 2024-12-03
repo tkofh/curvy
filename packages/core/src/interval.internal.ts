@@ -38,6 +38,13 @@ export const isInterval = (v: unknown): v is Interval =>
 export const make = (start: number, end?: number) =>
   new IntervalImpl(start, end ?? start)
 
+export const fromSize = (a: number, b?: number) => {
+  if (b === undefined) {
+    return new IntervalImpl(0, a)
+  }
+  return new IntervalImpl(a, a + b)
+}
+
 export const fromMinMax = (...values: ReadonlyArray<number>) =>
   new IntervalImpl(Math.min(...values), Math.max(...values))
 

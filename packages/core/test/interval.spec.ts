@@ -14,6 +14,11 @@ describe('interval', () => {
     expect(() => interval.make(0, -1)).toThrowError()
   })
 
+  test('fromSize', () => {
+    expect(interval.fromSize(10)).toMatchObject(interval.make(0, 10))
+    expect(interval.fromSize(5, 10)).toMatchObject(interval.make(5, 15))
+  })
+
   test('isInterval', () => {
     expect(interval.isInterval(interval.make(0))).toBe(true)
     expect(interval.isInterval({ start: 0, end: 1 })).toBe(false)
