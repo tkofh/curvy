@@ -2,6 +2,7 @@ import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
 import * as LinearPolynomial from '../polynomial/linear'
+import { round } from '../util'
 import * as Vector2 from '../vector/vector2'
 import type { LinearCurve2d } from './linear2d'
 
@@ -47,8 +48,6 @@ export const solve = dual<
   Vector2.make(LinearPolynomial.solve(c.x, t), LinearPolynomial.solve(c.y, t)),
 )
 
-export const length = dual(
-  2,
-  (c: LinearCurve2d, i: Interval) =>
-    Math.sqrt(c.x.c1 ** 2 + c.y.c1 ** 2) * Math.abs(i.end - i.start),
+export const length = dual(2, (c: LinearCurve2d, i: Interval) =>
+  round(Math.sqrt(c.x.c1 ** 2 + c.y.c1 ** 2) * Math.abs(i.end - i.start)),
 )
