@@ -23,7 +23,7 @@ export const isQuadraticPolynomial = (v: unknown): v is QuadraticPolynomial =>
   typeof v === 'object' && v !== null && QuadraticPolynomialTypeId in v
 
 export const fromVector = (v: Vector3) =>
-  new QuadraticPolynomialImpl(v.v0, v.v1, v.v2)
+  new QuadraticPolynomialImpl(v.x, v.y, v.z)
 
 export const solve = dual<
   (x: number) => (p: QuadraticPolynomial) => number,

@@ -1,3 +1,4 @@
+import { toThreeDimensionalIndex } from '../dimensions'
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
 import { invariant, round } from '../util'
@@ -81,43 +82,35 @@ export const make = (
 }
 
 export const fromRows = (v0: Vector3, v1: Vector3, v2: Vector3): Matrix3x3 =>
-  new Matrix3x3Impl(
-    v0.v0,
-    v0.v1,
-    v0.v2,
-    v1.v0,
-    v1.v1,
-    v1.v2,
-    v2.v0,
-    v2.v1,
-    v2.v2,
-  )
+  new Matrix3x3Impl(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z)
 
 export const fromColumns = (v0: Vector3, v1: Vector3, v2: Vector3): Matrix3x3 =>
-  new Matrix3x3Impl(
-    v0.v0,
-    v1.v0,
-    v2.v0,
-    v0.v1,
-    v1.v1,
-    v2.v1,
-    v0.v2,
-    v1.v2,
-    v2.v2,
-  )
+  new Matrix3x3Impl(v0.x, v1.x, v2.x, v0.y, v1.y, v2.y, v0.z, v1.z, v2.z)
 
 export const setRow = dual<
   (row: Matrix3x3Coordinate, v: Vector3) => (m: Matrix3x3) => Matrix3x3,
   (m: Matrix3x3, row: Matrix3x3Coordinate, v: Vector3) => Matrix3x3
 >(3, (m: Matrix3x3, row: Matrix3x3Coordinate, v: Vector3) =>
-  fromRows(...(toRows(m).with(row, v) as [Vector3, Vector3, Vector3])),
+  fromRows(
+    ...(toRows(m).with(toThreeDimensionalIndex(row), v) as [
+      Vector3,
+      Vector3,
+      Vector3,
+    ]),
+  ),
 )
 
 export const setColumn = dual<
   (column: Matrix3x3Coordinate, v: Vector3) => (m: Matrix3x3) => Matrix3x3,
   (m: Matrix3x3, column: Matrix3x3Coordinate, v: Vector3) => Matrix3x3
 >(3, (m: Matrix3x3, column: Matrix3x3Coordinate, v: Vector3) =>
-  fromColumns(...(toColumns(m).with(column, v) as [Vector3, Vector3, Vector3])),
+  fromColumns(
+    ...(toColumns(m).with(toThreeDimensionalIndex(column), v) as [
+      Vector3,
+      Vector3,
+      Vector3,
+    ]),
+  ),
 )
 
 export const determinant = (m: Matrix3x3) =>
@@ -138,12 +131,16 @@ export const minor = dual<
     column: Matrix3x3Coordinate,
   ) => Matrix2x2
 >(3, (m: Matrix3x3, row: Matrix3x3Coordinate, column: Matrix3x3Coordinate) => {
-  const [v0, v1] = toRows(m).toSpliced(row, 1) as [Vector3, Vector3]
-  const [m00, m01] = vector3.components(v0).toSpliced(column, 1) as [
+  const [v0, v1] = toRows(m).toSpliced(toThreeDimensionalIndex(row), 1) as [
+    Vector3,
+    Vector3,
+  ]
+  const columnIndex = toThreeDimensionalIndex(column)
+  const [m00, m01] = vector3.components(v0).toSpliced(columnIndex, 1) as [
     number,
     number,
   ]
-  const [m10, m11] = vector3.components(v1).toSpliced(column, 1) as [
+  const [m10, m11] = vector3.components(v1).toSpliced(columnIndex, 1) as [
     number,
     number,
   ]
@@ -208,12 +205,20 @@ export const toColumns = (m: Matrix3x3): [Vector3, Vector3, Vector3] => [
 export const rowVector = dual<
   (row: Matrix3x3Coordinate) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, row: Matrix3x3Coordinate) => Vector3
->(2, (m: Matrix3x3, row: Matrix3x3Coordinate) => toRows(m)[row])
+>(
+  2,
+  (m: Matrix3x3, row: Matrix3x3Coordinate) =>
+    toRows(m)[toThreeDimensionalIndex(row)],
+)
 
 export const columnVector = dual<
   (column: Matrix3x3Coordinate) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, column: Matrix3x3Coordinate) => Vector3
->(2, (m: Matrix3x3, column: Matrix3x3Coordinate) => toColumns(m)[column])
+>(
+  2,
+  (m: Matrix3x3, column: Matrix3x3Coordinate) =>
+    toColumns(m)[toThreeDimensionalIndex(column)],
+)
 
 export const transpose = (m: Matrix3x3) => fromColumns(...toRows(m))
 

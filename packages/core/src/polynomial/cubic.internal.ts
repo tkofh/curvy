@@ -56,7 +56,7 @@ export const isCubicPolynomial = (v: unknown): v is CubicPolynomial =>
   typeof v === 'object' && v !== null && CubicPolynomialTypeId in v
 
 export const fromVector = (v: Vector4) =>
-  new CubicPolynomialImpl(v.v0, v.v1, v.v2, v.v3)
+  new CubicPolynomialImpl(v.x, v.y, v.z, v.w)
 
 export const solve = dual<
   (x: number) => (p: CubicPolynomial) => number,

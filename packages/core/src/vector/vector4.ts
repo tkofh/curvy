@@ -1,26 +1,20 @@
+import type { FourDimensional } from '../dimensions'
 import type { Pipeable } from '../internal/pipeable'
 import * as internal from './vector4.internal'
 import type { Vector4TypeId } from './vector4.internal'
 
-export type Vector4Component = 0 | 1 | 2 | 3
-
-export interface Vector4 extends Pipeable {
+export interface Vector4 extends Pipeable, FourDimensional<number> {
   readonly [Vector4TypeId]: Vector4TypeId
-
-  readonly v0: number
-  readonly v1: number
-  readonly v2: number
-  readonly v3: number
 }
 
 export const isVector4: (v: unknown) => v is Vector4 = internal.isVector4
 
-export const make: (
-  v0: number,
-  v1?: number,
-  v2?: number,
-  v3?: number,
-) => Vector4 = internal.make
+export const make: {
+  (xyzw: number): Vector4
+  (x: number, yzw: number): Vector4
+  (x: number, y: number, zw: number): Vector4
+  (x: number, y: number, z: number, w: number): Vector4
+} = internal.make
 
 export const magnitude: (vector: Vector4) => number = internal.magnitude
 

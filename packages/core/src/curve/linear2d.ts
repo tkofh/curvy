@@ -1,3 +1,4 @@
+import type { TwoDimensional } from '../dimensions'
 import type { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
 import type { LinearPolynomial } from '../polynomial/linear'
@@ -5,16 +6,15 @@ import type { Vector2 } from '../vector/vector2'
 import type { LinearCurve2dTypeId } from './linear2d.internal'
 import * as internal from './linear2d.internal'
 
-export interface LinearCurve2d extends Pipeable {
+export interface LinearCurve2d
+  extends Pipeable,
+    TwoDimensional<LinearPolynomial> {
   readonly [LinearCurve2dTypeId]: LinearCurve2dTypeId
-
-  readonly c0: LinearPolynomial
-  readonly c1: LinearPolynomial
 }
 
 export const fromPolynomials: (
-  c0: LinearPolynomial,
-  c1: LinearPolynomial,
+  x: LinearPolynomial,
+  y: LinearPolynomial,
 ) => LinearCurve2d = internal.fromPolynomials
 
 export const isLinearCurve2d: (c: unknown) => c is LinearCurve2d =

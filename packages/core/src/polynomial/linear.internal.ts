@@ -32,7 +32,7 @@ export const isLinearPolynomial = (v: unknown): v is LinearPolynomial =>
 export const make = (c0 = 0, c1 = 0): LinearPolynomial =>
   new LinearPolynomialImpl(c0, c1)
 
-export const fromVector = (v: Vector2) => new LinearPolynomialImpl(v.v0, v.v1)
+export const fromVector = (v: Vector2) => new LinearPolynomialImpl(v.x, v.y)
 
 export const solve = dual<
   (x: number) => (p: LinearPolynomial) => number,

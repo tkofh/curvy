@@ -14,8 +14,11 @@ describe('linear2d', () => {
     const c1 = linearPolynomial.make(1, 0)
 
     expect(linear2d.fromPolynomials(c0, c1)).toMatchObject({
-      c0,
-      c1,
+      x: c0,
+      y: c1,
+
+      [0]: c0,
+      [1]: c1,
     })
   })
   test('isLinearCurve2d', () => {
@@ -58,8 +61,10 @@ describe('quadratic2d', () => {
     const c1 = quadraticPolynomial.make(0, 0, -1)
 
     expect(quadratic2d.fromPolynomials(c0, c1)).toMatchObject({
-      c0,
-      c1,
+      x: c0,
+      y: c1,
+      [0]: c0,
+      [1]: c1,
     })
   })
   test('isQuadraticCurve2d', () => {
@@ -111,8 +116,10 @@ describe('cubic2d', () => {
     const c1 = cubicPolynomial.make(0, 0, 0, -1)
 
     expect(cubic2d.fromPolynomials(c0, c1)).toMatchObject({
-      c0,
-      c1,
+      x: c0,
+      y: c1,
+      [0]: c0,
+      [1]: c1,
     })
   })
   test('isCubicCurve2d', () => {

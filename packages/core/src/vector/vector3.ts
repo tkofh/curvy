@@ -1,20 +1,19 @@
+import type { ThreeDimensional } from '../dimensions'
 import type { Pipeable } from '../internal/pipeable'
 import * as internal from './vector3.internal'
 import type { Vector3TypeId } from './vector3.internal'
 
-export type Vector3Component = 0 | 1 | 2
-
-export interface Vector3 extends Pipeable {
+export interface Vector3 extends Pipeable, ThreeDimensional<number> {
   readonly [Vector3TypeId]: Vector3TypeId
-  readonly v0: number
-  readonly v1: number
-  readonly v2: number
 }
 
 export const isVector3: (v: unknown) => v is Vector3 = internal.isVector3
 
-export const make: (v0: number, v1?: number, v2?: number) => Vector3 =
-  internal.make
+export const make: {
+  (xyz: number): Vector3
+  (x: number, yz: number): Vector3
+  (x: number, y: number, z: number): Vector3
+} = internal.make
 
 export const magnitude: (vector: Vector3) => number = internal.magnitude
 

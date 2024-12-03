@@ -1,9 +1,15 @@
+import type {
+  ThreeDimensionalComponent,
+  ThreeDimensionalIndex,
+} from '../dimensions'
 import type { Vector3 } from '../vector/vector3'
 import type { Matrix2x2 } from './matrix2x2'
 import * as internal from './matrix3x3.internal'
 import type { Matrix3x3TypeId } from './matrix3x3.internal'
 
-export type Matrix3x3Coordinate = 0 | 1 | 2
+export type Matrix3x3Coordinate =
+  | ThreeDimensionalIndex
+  | ThreeDimensionalComponent
 
 export interface Matrix3x3 {
   readonly [Matrix3x3TypeId]: Matrix3x3TypeId

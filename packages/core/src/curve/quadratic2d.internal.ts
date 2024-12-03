@@ -51,16 +51,24 @@ export class QuadraticCurve2dImpl extends Pipeable implements QuadraticCurve2d {
   readonly [QuadraticCurve2dTypeId]: QuadraticCurve2dTypeId =
     QuadraticCurve2dTypeId
 
-  readonly c0: QuadraticPolynomial.QuadraticPolynomial
-  readonly c1: QuadraticPolynomial.QuadraticPolynomial
+  readonly x: QuadraticPolynomial.QuadraticPolynomial
+  readonly y: QuadraticPolynomial.QuadraticPolynomial
 
   constructor(
     c0: QuadraticPolynomial.QuadraticPolynomial,
     c1: QuadraticPolynomial.QuadraticPolynomial,
   ) {
     super()
-    this.c0 = c0
-    this.c1 = c1
+    this.x = c0
+    this.y = c1
+  }
+
+  get [0]() {
+    return this.x
+  }
+
+  get [1]() {
+    return this.y
   }
 }
 
@@ -77,15 +85,15 @@ export const solve = dual<
   (c: QuadraticCurve2d, t: number) => Vector2.Vector2
 >(2, (c: QuadraticCurve2d, t: number) =>
   Vector2.make(
-    QuadraticPolynomial.solve(c.c0, t),
-    QuadraticPolynomial.solve(c.c1, t),
+    QuadraticPolynomial.solve(c.x, t),
+    QuadraticPolynomial.solve(c.y, t),
   ),
 )
 
 export const derivative = (c: QuadraticCurve2d) =>
   LinearCurve2d.fromPolynomials(
-    QuadraticPolynomial.derivative(c.c0),
-    QuadraticPolynomial.derivative(c.c1),
+    QuadraticPolynomial.derivative(c.x),
+    QuadraticPolynomial.derivative(c.y),
   )
 
 export const length = dual(2, (c: QuadraticCurve2d, i: Interval.Interval) => {
@@ -93,11 +101,11 @@ export const length = dual(2, (c: QuadraticCurve2d, i: Interval.Interval) => {
     return 0
   }
 
-  if (c.c0.c2 === 0 && c.c1.c2 === 0) {
+  if (c.x.c2 === 0 && c.y.c2 === 0) {
     return LinearCurve2d.length(
       LinearCurve2d.fromPolynomials(
-        LinearPolynomial.make(c.c0.c0, c.c0.c1),
-        LinearPolynomial.make(c.c1.c0, c.c1.c1),
+        LinearPolynomial.make(c.x.c0, c.x.c1),
+        LinearPolynomial.make(c.y.c0, c.y.c1),
       ),
       i,
     )

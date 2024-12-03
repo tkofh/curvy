@@ -1,3 +1,4 @@
+import { toFourDimensionalIndex } from '../dimensions'
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
 import { invariant, round } from '../util'
@@ -127,22 +128,22 @@ export const make = (
 
 export const fromRows = (v0: Vector4, v1: Vector4, v2: Vector4, v3: Vector4) =>
   new Matrix4x4Impl(
-    v0.v0,
-    v0.v1,
-    v0.v2,
-    v0.v3,
-    v1.v0,
-    v1.v1,
-    v1.v2,
-    v1.v3,
-    v2.v0,
-    v2.v1,
-    v2.v2,
-    v2.v3,
-    v3.v0,
-    v3.v1,
-    v3.v2,
-    v3.v3,
+    v0.x,
+    v0.y,
+    v0.z,
+    v0.w,
+    v1.x,
+    v1.y,
+    v1.z,
+    v1.w,
+    v2.x,
+    v2.y,
+    v2.z,
+    v2.w,
+    v3.x,
+    v3.y,
+    v3.z,
+    v3.w,
   )
 
 export const fromColumns = (
@@ -152,29 +153,36 @@ export const fromColumns = (
   v3: Vector4,
 ) =>
   new Matrix4x4Impl(
-    v0.v0,
-    v1.v0,
-    v2.v0,
-    v3.v0,
-    v0.v1,
-    v1.v1,
-    v2.v1,
-    v3.v1,
-    v0.v2,
-    v1.v2,
-    v2.v2,
-    v3.v2,
-    v0.v3,
-    v1.v3,
-    v2.v3,
-    v3.v3,
+    v0.x,
+    v1.x,
+    v2.x,
+    v3.x,
+    v0.y,
+    v1.y,
+    v2.y,
+    v3.y,
+    v0.z,
+    v1.z,
+    v2.z,
+    v3.z,
+    v0.w,
+    v1.w,
+    v2.w,
+    v3.w,
   )
 
 export const setRow = dual<
   (row: Matrix4x4Coordinate, v: Vector4) => (m: Matrix4x4) => Matrix4x4,
   (m: Matrix4x4, row: Matrix4x4Coordinate, v: Vector4) => Matrix4x4
 >(3, (m: Matrix4x4, row: Matrix4x4Coordinate, v: Vector4) =>
-  fromRows(...(toRows(m).with(row, v) as [Vector4, Vector4, Vector4, Vector4])),
+  fromRows(
+    ...(toRows(m).with(toFourDimensionalIndex(row), v) as [
+      Vector4,
+      Vector4,
+      Vector4,
+      Vector4,
+    ]),
+  ),
 )
 
 export const setColumn = dual<
@@ -182,7 +190,12 @@ export const setColumn = dual<
   (m: Matrix4x4, column: Matrix4x4Coordinate, v: Vector4) => Matrix4x4
 >(3, (m: Matrix4x4, column: Matrix4x4Coordinate, v: Vector4) =>
   fromColumns(
-    ...(toColumns(m).with(column, v) as [Vector4, Vector4, Vector4, Vector4]),
+    ...(toColumns(m).with(toFourDimensionalIndex(column), v) as [
+      Vector4,
+      Vector4,
+      Vector4,
+      Vector4,
+    ]),
   ),
 )
 
@@ -205,22 +218,23 @@ export const minor = dual<
     column: Matrix4x4Coordinate,
   ) => Matrix3x3
 >(3, (m: Matrix4x4, row: Matrix4x4Coordinate, column: Matrix4x4Coordinate) => {
-  const [v0, v1, v2] = toRows(m).toSpliced(row, 1) as [
+  const [v0, v1, v2] = toRows(m).toSpliced(toFourDimensionalIndex(row), 1) as [
     Vector4,
     Vector4,
     Vector4,
   ]
-  const [m00, m01, m02] = vector4.components(v0).toSpliced(column, 1) as [
+  const columnIndex = toFourDimensionalIndex(column)
+  const [m00, m01, m02] = vector4.components(v0).toSpliced(columnIndex, 1) as [
     number,
     number,
     number,
   ]
-  const [m10, m11, m12] = vector4.components(v1).toSpliced(column, 1) as [
+  const [m10, m11, m12] = vector4.components(v1).toSpliced(columnIndex, 1) as [
     number,
     number,
     number,
   ]
-  const [m20, m21, m22] = vector4.components(v2).toSpliced(column, 1) as [
+  const [m20, m21, m22] = vector4.components(v2).toSpliced(columnIndex, 1) as [
     number,
     number,
     number,
@@ -294,12 +308,20 @@ export const toColumns = (m: Matrix4x4) =>
 export const rowVector = dual<
   (row: Matrix4x4Coordinate) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, row: Matrix4x4Coordinate) => Vector4
->(2, (m: Matrix4x4, row: Matrix4x4Coordinate) => toRows(m)[row])
+>(
+  2,
+  (m: Matrix4x4, row: Matrix4x4Coordinate) =>
+    toRows(m)[toFourDimensionalIndex(row)],
+)
 
 export const columnVector = dual<
   (column: Matrix4x4Coordinate) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, column: Matrix4x4Coordinate) => Vector4
->(2, (m: Matrix4x4, column: Matrix4x4Coordinate) => toColumns(m)[column])
+>(
+  2,
+  (m: Matrix4x4, column: Matrix4x4Coordinate) =>
+    toColumns(m)[toFourDimensionalIndex(column)],
+)
 
 export const transpose = (m: Matrix4x4) =>
   fromColumns(...toRows(m)) as Matrix4x4

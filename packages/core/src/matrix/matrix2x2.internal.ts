@@ -1,3 +1,4 @@
+import { toTwoDimensionalIndex } from '../dimensions'
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
 import { invariant, round } from '../util'
@@ -45,23 +46,30 @@ export const make = (m00 = 0, m01 = m00, m10 = m01, m11 = m10) =>
   new Matrix2x2Impl(m00, m01, m10, m11)
 
 export const fromRows = (v0: Vector2, v1: Vector2) =>
-  new Matrix2x2Impl(v0.v0, v0.v1, v1.v0, v1.v1)
+  new Matrix2x2Impl(v0.x, v0.y, v1.x, v1.y)
 
 export const fromColumns = (v0: Vector2, v1: Vector2) =>
-  new Matrix2x2Impl(v0.v0, v1.v0, v0.v1, v1.v1)
+  new Matrix2x2Impl(v0.x, v1.x, v0.y, v1.y)
 
 export const setRow = dual<
   (row: Matrix2x2Coordinate, v: Vector2) => (m: Matrix2x2) => Matrix2x2,
   (m: Matrix2x2, row: Matrix2x2Coordinate, v: Vector2) => Matrix2x2
 >(3, (m: Matrix2x2, row: Matrix2x2Coordinate, v: Vector2) =>
-  fromRows(...(toRows(m).with(row, v) as [Vector2, Vector2])),
+  fromRows(
+    ...(toRows(m).with(toTwoDimensionalIndex(row), v) as [Vector2, Vector2]),
+  ),
 )
 
 export const setColumn = dual<
   (column: Matrix2x2Coordinate, v: Vector2) => (m: Matrix2x2) => Matrix2x2,
   (m: Matrix2x2, column: Matrix2x2Coordinate, v: Vector2) => Matrix2x2
 >(3, (m: Matrix2x2, column: Matrix2x2Coordinate, v: Vector2) =>
-  fromColumns(...(toColumns(m).with(column, v) as [Vector2, Vector2])),
+  fromColumns(
+    ...(toColumns(m).with(toTwoDimensionalIndex(column), v) as [
+      Vector2,
+      Vector2,
+    ]),
+  ),
 )
 
 export const determinant = (m: Matrix2x2): number =>
@@ -117,12 +125,20 @@ export const toColumns = (m: Matrix2x2): [Vector2, Vector2] => [
 export const rowVector = dual<
   (row: Matrix2x2Coordinate) => (m: Matrix2x2) => Vector2,
   (m: Matrix2x2, row: Matrix2x2Coordinate) => Vector2
->(2, (m: Matrix2x2, row: Matrix2x2Coordinate) => toRows(m)[row])
+>(
+  2,
+  (m: Matrix2x2, row: Matrix2x2Coordinate) =>
+    toRows(m)[toTwoDimensionalIndex(row)],
+)
 
 export const columnVector = dual<
   (column: Matrix2x2Coordinate) => (m: Matrix2x2) => Vector2,
   (m: Matrix2x2, column: Matrix2x2Coordinate) => Vector2
->(2, (m: Matrix2x2, column: Matrix2x2Coordinate) => toColumns(m)[column])
+>(
+  2,
+  (m: Matrix2x2, column: Matrix2x2Coordinate) =>
+    toColumns(m)[toTwoDimensionalIndex(column)],
+)
 
 export const transpose = (m: Matrix2x2) => fromColumns(...toRows(m))
 

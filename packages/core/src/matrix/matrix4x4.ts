@@ -1,9 +1,16 @@
+import type {
+  FourDimensionalComponent,
+  FourDimensionalIndex,
+} from '../dimensions'
 import type { Pipeable } from '../internal/pipeable'
 import type { Vector4 } from '../vector/vector4'
 import type { Matrix3x3 } from './matrix3x3'
 import * as internal from './matrix4x4.internal'
 import type { Matrix4x4TypeId } from './matrix4x4.internal'
-export type Matrix4x4Coordinate = 0 | 1 | 2 | 3
+
+export type Matrix4x4Coordinate =
+  | FourDimensionalIndex
+  | FourDimensionalComponent
 
 export interface Matrix4x4 extends Pipeable {
   readonly [Matrix4x4TypeId]: Matrix4x4TypeId

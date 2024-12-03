@@ -68,11 +68,11 @@ describe('matrix2x2', () => {
     const result = matrix2x2.solveSystem(coefficients, solution)
 
     expect(
-      result.v0 * coefficients.m00 + result.v1 * coefficients.m01,
-    ).toBeCloseTo(solution.v0)
+      result.x * coefficients.m00 + result.y * coefficients.m01,
+    ).toBeCloseTo(solution.x)
     expect(
-      result.v0 * coefficients.m10 + result.v1 * coefficients.m11,
-    ).toBeCloseTo(solution.v1)
+      result.x * coefficients.m10 + result.y * coefficients.m11,
+    ).toBeCloseTo(solution.y)
   })
   test('toRows', () => {
     expect(matrix2x2.toRows(matrix2x2.matrix2x2(1, 2, 3, 4))).toEqual([
@@ -203,25 +203,25 @@ describe('matrix3x3', () => {
 
     expect(
       round(
-        result.v0 * coefficients.m00 +
-          result.v1 * coefficients.m01 +
-          result.v2 * coefficients.m02,
+        result.x * coefficients.m00 +
+          result.y * coefficients.m01 +
+          result.z * coefficients.m02,
       ),
-    ).toEqual(solution.v0)
+    ).toEqual(solution.x)
     expect(
       round(
-        result.v0 * coefficients.m10 +
-          result.v1 * coefficients.m11 +
-          result.v2 * coefficients.m12,
+        result.x * coefficients.m10 +
+          result.y * coefficients.m11 +
+          result.z * coefficients.m12,
       ),
-    ).toEqual(solution.v1)
+    ).toEqual(solution.y)
     expect(
       round(
-        result.v0 * coefficients.m20 +
-          result.v1 * coefficients.m21 +
-          result.v2 * coefficients.m22,
+        result.x * coefficients.m20 +
+          result.y * coefficients.m21 +
+          result.z * coefficients.m22,
       ),
-    ).toEqual(solution.v2)
+    ).toEqual(solution.z)
   })
   test('toRows', () => {
     expect(
@@ -410,36 +410,36 @@ describe('matrix4x4', () => {
 
     expect(
       round(
-        result.v0 * coefficients.m00 +
-          result.v1 * coefficients.m01 +
-          result.v2 * coefficients.m02 +
-          result.v3 * coefficients.m03,
+        result.x * coefficients.m00 +
+          result.y * coefficients.m01 +
+          result.z * coefficients.m02 +
+          result.w * coefficients.m03,
       ),
-    ).toEqual(solution.v0)
+    ).toEqual(solution.x)
     expect(
       round(
-        result.v0 * coefficients.m10 +
-          result.v1 * coefficients.m11 +
-          result.v2 * coefficients.m12 +
-          result.v3 * coefficients.m13,
+        result.x * coefficients.m10 +
+          result.y * coefficients.m11 +
+          result.z * coefficients.m12 +
+          result.w * coefficients.m13,
       ),
-    ).toEqual(solution.v1)
+    ).toEqual(solution.y)
     expect(
       round(
-        result.v0 * coefficients.m20 +
-          result.v1 * coefficients.m21 +
-          result.v2 * coefficients.m22 +
-          result.v3 * coefficients.m23,
+        result.x * coefficients.m20 +
+          result.y * coefficients.m21 +
+          result.z * coefficients.m22 +
+          result.w * coefficients.m23,
       ),
-    ).toEqual(solution.v2)
+    ).toEqual(solution.z)
     expect(
       round(
-        result.v0 * coefficients.m30 +
-          result.v1 * coefficients.m31 +
-          result.v2 * coefficients.m32 +
-          result.v3 * coefficients.m33,
+        result.x * coefficients.m30 +
+          result.y * coefficients.m31 +
+          result.z * coefficients.m32 +
+          result.w * coefficients.m33,
       ),
-    ).toEqual(solution.v3)
+    ).toEqual(solution.w)
   })
   test('toRows', () => {
     expect(

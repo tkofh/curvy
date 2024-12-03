@@ -48,16 +48,24 @@ export type CubicCurve2dTypeId = typeof CubicCurve2dTypeId
 export class CubicCurve2dImpl extends Pipeable implements CubicCurve2d {
   readonly [CubicCurve2dTypeId]: CubicCurve2dTypeId = CubicCurve2dTypeId
 
-  readonly c0: CubicPolynomial.CubicPolynomial
-  readonly c1: CubicPolynomial.CubicPolynomial
+  readonly x: CubicPolynomial.CubicPolynomial
+  readonly y: CubicPolynomial.CubicPolynomial
 
   constructor(
     c0: CubicPolynomial.CubicPolynomial,
     c1: CubicPolynomial.CubicPolynomial,
   ) {
     super()
-    this.c0 = c0
-    this.c1 = c1
+    this.x = c0
+    this.y = c1
+  }
+
+  get [0]() {
+    return this.x
+  }
+
+  get [1]() {
+    return this.y
   }
 }
 
@@ -73,13 +81,13 @@ export const solve = dual<
   (t: number) => (c: CubicCurve2d) => Vector2.Vector2,
   (c: CubicCurve2d, t: number) => Vector2.Vector2
 >(2, (c: CubicCurve2d, t: number) =>
-  Vector2.make(CubicPolynomial.solve(c.c0, t), CubicPolynomial.solve(c.c1, t)),
+  Vector2.make(CubicPolynomial.solve(c.x, t), CubicPolynomial.solve(c.y, t)),
 )
 
 export const derivative = (c: CubicCurve2d) =>
   QuadraticCurve2d.fromPolynomials(
-    CubicPolynomial.derivative(c.c0),
-    CubicPolynomial.derivative(c.c1),
+    CubicPolynomial.derivative(c.x),
+    CubicPolynomial.derivative(c.y),
   )
 
 export const length = dual(2, (c: CubicCurve2d, i: Interval.Interval) => {
@@ -87,11 +95,11 @@ export const length = dual(2, (c: CubicCurve2d, i: Interval.Interval) => {
     return 0
   }
 
-  if (c.c0.c3 === 0 && c.c1.c3 === 0) {
+  if (c.x.c3 === 0 && c.y.c3 === 0) {
     return QuadraticCurve2d.length(
       QuadraticCurve2d.fromPolynomials(
-        QuadraticPolynomial.make(c.c0.c0, c.c0.c1, c.c0.c2),
-        QuadraticPolynomial.make(c.c1.c0, c.c1.c1, c.c1.c2),
+        QuadraticPolynomial.make(c.x.c0, c.x.c1, c.x.c2),
+        QuadraticPolynomial.make(c.y.c0, c.y.c1, c.y.c2),
       ),
       i,
     )

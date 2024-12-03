@@ -9,27 +9,35 @@ export type Vector3TypeId = typeof Vector3TypeId
 class Vector3Impl extends Pipeable implements Vector3 {
   readonly [Vector3TypeId]: Vector3TypeId = Vector3TypeId
 
-  readonly v0: number
-  readonly v1: number
-  readonly v2: number
+  readonly x: number
+  readonly y: number
+  readonly z: number
 
   constructor(v0 = 0, v1 = 0, v2 = 0) {
     super()
-    this.v0 = round(v0)
-    this.v1 = round(v1)
-    this.v2 = round(v2)
+    this.x = round(v0)
+    this.y = round(v1)
+    this.z = round(v2)
+  }
+
+  get [0]() {
+    return this.x
+  }
+
+  get [1]() {
+    return this.y
+  }
+
+  get [2]() {
+    return this.z
   }
 
   get [Symbol.toStringTag]() {
-    return `Vector3(${this.v0}, ${this.v1}, ${this.v2})`
+    return `Vector3(${this.x}, ${this.y}, ${this.z})`
   }
 
   get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return `Vector3(${this.v0}, ${this.v1}, ${this.v2})`
-  }
-
-  [Symbol.hasInstance](v: unknown): v is Vector3 {
-    return isVector3(v)
+    return this[Symbol.toStringTag]
   }
 }
 
@@ -37,29 +45,29 @@ export const isVector3 = (v: unknown): v is Vector3 =>
   typeof v === 'object' && v !== null && Vector3TypeId in v
 
 export const magnitude = (vector: Vector3) =>
-  round(Math.hypot(vector.v0, vector.v1, vector.v2))
+  round(Math.hypot(vector.x, vector.y, vector.z))
 
 export const normalize = (vector: Vector3) => {
   const m = magnitude(vector)
 
-  return make(vector.v0 / m, vector.v1 / m, vector.v2 / m)
+  return make(vector.x / m, vector.y / m, vector.z / m)
 }
 
 export const dot = dual<
   (b: Vector3) => (a: Vector3) => number,
   (a: Vector3, b: Vector3) => number
->(2, (a: Vector3, b: Vector3) => round(a.v0 * b.v0 + a.v1 * b.v1 + a.v2 * b.v2))
+>(2, (a: Vector3, b: Vector3) => round(a.x * b.x + a.y * b.y + a.z * b.z))
 
 export const components: (v: Vector3) => [number, number, number] = (
   v: Vector3,
-) => [v.v0, v.v1, v.v2]
+) => [v.x, v.y, v.z]
 
 export const softmax = (v: Vector3) => {
-  const max = Math.max(v.v0, v.v1, v.v2)
+  const max = Math.max(v.x, v.y, v.z)
 
-  const v0 = Math.exp(v.v0 - max)
-  const v1 = Math.exp(v.v1 - max)
-  const v2 = Math.exp(v.v2 - max)
+  const v0 = Math.exp(v.x - max)
+  const v1 = Math.exp(v.y - max)
+  const v2 = Math.exp(v.z - max)
 
   const sum = v0 + v1 + v2
 
@@ -72,14 +80,14 @@ export const make = (v0: number, v1 = v0, v2 = v1): Vector3 =>
 export const add = dual<
   (b: Vector3) => (a: Vector3) => Vector3,
   (a: Vector3, b: Vector3) => Vector3
->(2, (a: Vector3, b: Vector3) => make(a.v0 + b.v0, a.v1 + b.v1, a.v2 + b.v2))
+>(2, (a: Vector3, b: Vector3) => make(a.x + b.x, a.y + b.y, a.z + b.z))
 
 export const subtract = dual<
   (b: Vector3) => (a: Vector3) => Vector3,
   (a: Vector3, b: Vector3) => Vector3
->(2, (a: Vector3, b: Vector3) => make(a.v0 - b.v0, a.v1 - b.v1, a.v2 - b.v2))
+>(2, (a: Vector3, b: Vector3) => make(a.x - b.x, a.y - b.y, a.z - b.z))
 
 export const hadamard = dual<
   (b: Vector3) => (a: Vector3) => Vector3,
   (a: Vector3, b: Vector3) => Vector3
->(2, (a: Vector3, b: Vector3) => make(a.v0 * b.v0, a.v1 * b.v1, a.v2 * b.v2))
+>(2, (a: Vector3, b: Vector3) => make(a.x * b.x, a.y * b.y, a.z * b.z))

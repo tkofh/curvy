@@ -11,16 +11,24 @@ export type LinearCurve2dTypeId = typeof LinearCurve2dTypeId
 export class LinearCurve2dImpl extends Pipeable implements LinearCurve2d {
   readonly [LinearCurve2dTypeId]: LinearCurve2dTypeId = LinearCurve2dTypeId
 
-  readonly c0: LinearPolynomial.LinearPolynomial
-  readonly c1: LinearPolynomial.LinearPolynomial
+  readonly x: LinearPolynomial.LinearPolynomial
+  readonly y: LinearPolynomial.LinearPolynomial
 
   constructor(
     c0: LinearPolynomial.LinearPolynomial,
     c1: LinearPolynomial.LinearPolynomial,
   ) {
     super()
-    this.c0 = c0
-    this.c1 = c1
+    this.x = c0
+    this.y = c1
+  }
+
+  get [0]() {
+    return this.x
+  }
+
+  get [1]() {
+    return this.y
   }
 }
 
@@ -36,14 +44,11 @@ export const solve = dual<
   (t: number) => (c: LinearCurve2d) => Vector2.Vector2,
   (c: LinearCurve2d, t: number) => Vector2.Vector2
 >(2, (c: LinearCurve2d, t: number) =>
-  Vector2.make(
-    LinearPolynomial.solve(c.c0, t),
-    LinearPolynomial.solve(c.c1, t),
-  ),
+  Vector2.make(LinearPolynomial.solve(c.x, t), LinearPolynomial.solve(c.y, t)),
 )
 
 export const length = dual(
   2,
   (c: LinearCurve2d, i: Interval) =>
-    Math.sqrt(c.c0.c1 ** 2 + c.c1.c1 ** 2) * Math.abs(i.end - i.start),
+    Math.sqrt(c.x.c1 ** 2 + c.y.c1 ** 2) * Math.abs(i.end - i.start),
 )

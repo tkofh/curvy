@@ -1,3 +1,4 @@
+import type { TwoDimensional } from '../dimensions'
 import type { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
 import type { QuadraticPolynomial } from '../polynomial/quadratic'
@@ -5,11 +6,10 @@ import type { Vector2 } from '../vector/vector2'
 import type { QuadraticCurve2dTypeId } from './quadratic2d.internal'
 import * as internal from './quadratic2d.internal'
 
-export interface QuadraticCurve2d extends Pipeable {
+export interface QuadraticCurve2d
+  extends Pipeable,
+    TwoDimensional<QuadraticPolynomial> {
   readonly [QuadraticCurve2dTypeId]: QuadraticCurve2dTypeId
-
-  readonly c0: QuadraticPolynomial
-  readonly c1: QuadraticPolynomial
 }
 
 export const fromPolynomials: (

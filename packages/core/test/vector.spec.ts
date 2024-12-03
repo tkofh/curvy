@@ -6,13 +6,15 @@ import * as vector4 from '../src/vector/vector4'
 describe('vector2', () => {
   test('make', () => {
     expect(vector2.make(1, 2)).toMatchObject({
-      v0: 1,
-      v1: 2,
+      x: 1,
+      y: 2,
+      [0]: 1,
+      [1]: 2,
     })
   })
   test('isVector2', () => {
     expect(vector2.isVector2(vector2.make(1, 2))).toBe(true)
-    expect(vector2.isVector2({ v0: 1, v1: 2 })).toBe(false)
+    expect(vector2.isVector2({ x: 1, y: 2, [0]: 1, [1]: 2 })).toBe(false)
   })
   test('magnitude', () => {
     expect(vector2.magnitude(vector2.make(2, 2))).toBe(2.82842712)
@@ -53,14 +55,19 @@ describe('vector2', () => {
 describe('vector3', () => {
   test('make', () => {
     expect(vector3.make(1, 2, 3)).toMatchObject({
-      v0: 1,
-      v1: 2,
-      v2: 3,
+      x: 1,
+      y: 2,
+      z: 3,
+      [0]: 1,
+      [1]: 2,
+      [2]: 3,
     })
   })
   test('isVector3', () => {
     expect(vector3.isVector3(vector3.make(1, 2, 3))).toBe(true)
-    expect(vector3.isVector3({ v0: 1, v1: 2, v2: 3 })).toBe(false)
+    expect(
+      vector3.isVector3({ x: 1, y: 2, z: 3, [0]: 1, [1]: 2, [2]: 3 }),
+    ).toBe(false)
   })
   test('magnitude', () => {
     expect(vector3.magnitude(vector3.make(2, 2, 2))).toBe(3.46410162)
@@ -101,15 +108,30 @@ describe('vector3', () => {
 describe('vector4', () => {
   test('make', () => {
     expect(vector4.make(1, 2, 3, 4)).toMatchObject({
-      v0: 1,
-      v1: 2,
-      v2: 3,
-      v3: 4,
+      x: 1,
+      y: 2,
+      z: 3,
+      w: 4,
+      [0]: 1,
+      [1]: 2,
+      [2]: 3,
+      [3]: 4,
     })
   })
   test('isVector4', () => {
     expect(vector4.isVector4(vector4.make(1, 2, 3, 4))).toBe(true)
-    expect(vector4.isVector4({ v0: 1, v1: 2, v2: 3, v3: 4 })).toBe(false)
+    expect(
+      vector4.isVector4({
+        x: 1,
+        y: 2,
+        z: 3,
+        w: 4,
+        [0]: 1,
+        [1]: 2,
+        [2]: 3,
+        [3]: 4,
+      }),
+    ).toBe(false)
   })
   test('magnitude', () => {
     expect(vector4.magnitude(vector4.make(2, 2, 2, 2))).toBe(4)
