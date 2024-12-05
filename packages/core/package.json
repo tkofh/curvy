@@ -87,8 +87,8 @@
   },
   "scripts": {
     "build": "unbuild",
-    "test": "vitest",
-    "test:watch": "vitest watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "bugs": {
