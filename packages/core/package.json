@@ -59,6 +59,22 @@
     "./interval": {
       "types": "./dist/interval.d.ts",
       "import": "./dist/interval.mjs"
+    },
+    "./path/linear2d": {
+      "types": "./dist/path/linear2d.d.ts",
+      "import": "./dist/path/linear2d.mjs"
+    },
+    "./path/quadratic2d": {
+      "types": "./dist/path/quadratic2d.d.ts",
+      "import": "./dist/path/quadratic2d.mjs"
+    },
+    "./path/cubic2d": {
+      "types": "./dist/path/cubic2d.d.ts",
+      "import": "./dist/path/cubic2d.mjs"
+    },
+    "./splines/bezier2d": {
+      "types": "./dist/splines/bezier2d.d.ts",
+      "import": "./dist/splines/bezier2d.mjs"
     }
   },
   "files": ["dist"],
