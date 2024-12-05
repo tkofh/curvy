@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.4.0
+
+### Minor Changes
+
+- 01b22cc: completely rework API to be functional operations on immutable data structures, modeled after the Effect library
+
 ## 0.3.3
 
 ### Patch Changes
