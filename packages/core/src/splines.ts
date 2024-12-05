@@ -177,7 +177,7 @@
 //   ]
 // }
 
-// export const bezier: Spline = {
+// export const splines: Spline = {
 //   matrix: [
 //     [-1, 3, -3, 1],
 //     [3, -6, 3, 0],
@@ -270,7 +270,7 @@
 
 // export const splines = {
 //   basis,
-//   bezier,
+//   splines,
 //   cardinal,
 //   catmullRom,
 //   hermite,
