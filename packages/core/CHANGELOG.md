@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.0
+
+### Major Changes
+
+- aa5d726: stable release of new API
+
 ## 0.5.0
 
 ### Minor Changes
