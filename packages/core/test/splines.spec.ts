@@ -1,88 +1,31 @@
 import { describe, expect, test } from 'vitest'
-import { splines } from '../src/splines'
+import * as CubicPath2d from '../src/path/cubic2d'
+import * as CubicBezier2d from '../src/splines/bezier2d'
+import * as Vector2 from '../src/vector/vector2'
 
-describe('splines.basis.chunkCoefficients', () => {
-  test('it makes basis coefficients with triplicated points', () => {
-    const coefficients = splines.basis(true).chunkCoefficients([0, 1, 2, 3])
-    expect(coefficients).toHaveLength(5)
-  })
+describe('bezier', () => {
+  test('makes a path', () => {
+    const path = CubicBezier2d.make(
+      Vector2.make(0, 0),
+      Vector2.make(0, 1),
+      Vector2.make(1, 0),
+      Vector2.make(1, 1),
+    ).pipe(
+      CubicBezier2d.append(
+        Vector2.make(1, 2),
+        Vector2.make(2, 1),
+        Vector2.make(2, 2),
+      ),
+      CubicBezier2d.toPath,
+    )
 
-  test('it makes basis coefficients with non-triplicated points', () => {
-    const coefficients = splines.basis(false).chunkCoefficients([0, 1, 2, 3])
-    expect(coefficients).toHaveLength(1)
-  })
+    expect(CubicPath2d.solve(path, 0)).toMatchObject(Vector2.make(0, 0))
+    expect(CubicPath2d.solve(path, 0.5)).toMatchObject(Vector2.make(1, 1))
+    expect(CubicPath2d.solve(path, 1)).toMatchObject(Vector2.make(2, 2))
 
-  test('it throws for an invalid number of non-triplicated points', () => {
-    expect(() => splines.basis(false).chunkCoefficients([0, 1, 2])).toThrow()
-  })
-})
-
-describe('splines.bezier.chunkCoefficients', () => {
-  test('it makes bezier coefficients', () => {
-    const coefficients = splines.bezier.chunkCoefficients([0, 0, 0, 0, 0, 0, 0])
-    expect(coefficients).toHaveLength(2)
-  })
-
-  test('it throws for an invalid number of points (6)', () => {
-    expect(() => splines.bezier.chunkCoefficients([0, 0, 0, 0, 0, 0])).toThrow()
-  })
-  test('it throws for an invalid number of points (3)', () => {
-    expect(() => splines.bezier.chunkCoefficients([0, 0, 0])).toThrow()
-  })
-})
-
-describe('splines.cardinal.chunkCoefficients', () => {
-  test('it makes cardinal coefficients with duplicated points', () => {
-    const coefficients = splines
-      .cardinal(0.5, true)
-      .chunkCoefficients([0, 0, 0, 0])
-    expect(coefficients).toHaveLength(3)
-  })
-  test('it makes cardinal coefficients with non-duplicated points', () => {
-    const coefficients = splines
-      .cardinal(0.5, false)
-      .chunkCoefficients([0, 0, 0, 0])
-    expect(coefficients).toHaveLength(1)
-  })
-  test('it throws for an invalid number of duplicated points', () => {
-    expect(() => splines.cardinal(0.5, true).chunkCoefficients([0])).toThrow()
-  })
-  test('it throws for an invalid number of non-duplicated points', () => {
-    expect(() =>
-      splines.cardinal(0.5, false).chunkCoefficients([0, 0, 0]),
-    ).toThrow()
-  })
-})
-
-describe('splines.catmullRom.chunkCoefficients', () => {
-  test('it makes catmull-rom coefficients with duplicated points', () => {
-    const coefficients = splines
-      .catmullRom(true)
-      .chunkCoefficients([0, 0, 0, 0])
-    expect(coefficients).toHaveLength(3)
-  })
-  test('it makes catmull-rom coefficients with non-duplicated points', () => {
-    const coefficients = splines
-      .catmullRom(false)
-      .chunkCoefficients([0, 0, 0, 0])
-    expect(coefficients).toHaveLength(1)
-  })
-  test('it throws for an invalid number of duplicated points', () => {
-    expect(() => splines.catmullRom(true).chunkCoefficients([0])).toThrow()
-  })
-  test('it throws for an invalid number of non-duplicated points', () => {
-    expect(() =>
-      splines.catmullRom(false).chunkCoefficients([0, 0, 0]),
-    ).toThrow()
-  })
-})
-
-describe('splines.hermite.chunkCoefficients', () => {
-  test('it makes hermite coefficients', () => {
-    const coefficients = splines.hermite.chunkCoefficients([0, 0, 0, 0])
-    expect(coefficients).toHaveLength(1)
-  })
-  test('it throws for an invalid number of points', () => {
-    expect(() => splines.hermite.chunkCoefficients([0, 0, 0])).toThrow()
+    // for (let i = 0; i <= 100; i++) {
+    //   const t = i / 100
+    //   console.log(CubicPath2d.solve(path, t).toString())
+    // }
   })
 })

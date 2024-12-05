@@ -1,33 +1,4 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
-  "compilerOptions": {
-    "incremental": false,
-    "lib": ["es2023"],
-    "moduleResolution": "Bundler",
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
-
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "target": "es2022",
-    "allowJs": true,
-    "resolveJsonModule": true,
-    "moduleDetection": "force",
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-
-    "module": "NodeNext",
-    "outDir": "dist",
-    "sourceMap": true,
-
-    "declaration": true,
-
-    "composite": true,
-    "declarationMap": true
-  }
+  "extends": "@repo/tsconfig/root.json"
 }

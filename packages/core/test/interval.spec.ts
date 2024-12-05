@@ -1,62 +1,75 @@
 import { describe, expect, test } from 'vitest'
-import { createIntervalTree, takeCenterInterval } from '../src/interval'
+import * as interval from '../src/interval'
 
-describe('takeCenterInterval', () => {
-  test('takes the center interval for a large enough array', () => {
-    expect(takeCenterInterval([0, 1, 2, 3, 4, 5])).toStrictEqual({
-      center: [2, 3],
-      left: [0, 1, 2],
-      right: [3, 4, 5],
+describe('interval', () => {
+  test('make', () => {
+    expect(interval.make(0)).toMatchObject({
+      start: 0,
+      end: 0,
     })
-  })
-
-  test('handles one remaining interval', () => {
-    expect(takeCenterInterval([0, 1])).toStrictEqual({
-      center: [0, 1],
-      left: null,
-      right: null,
+    expect(interval.make(0, 1)).toMatchObject({
+      start: 0,
+      end: 1,
     })
+    expect(() => interval.make(0, -1)).toThrowError()
   })
 
-  test('handles two remaining intervals', () => {
-    expect(takeCenterInterval([0, 1, 2])).toStrictEqual({
-      center: [1, 2],
-      left: [0, 1],
-      right: null,
-    })
+  test('fromSize', () => {
+    expect(interval.fromSize(10)).toMatchObject(interval.make(0, 10))
+    expect(interval.fromSize(5, 10)).toMatchObject(interval.make(5, 15))
   })
 
-  test('handles three remaining intervals', () => {
-    expect(takeCenterInterval([0, 1, 2, 3])).toStrictEqual({
-      center: [1, 2],
-      left: [0, 1],
-      right: [2, 3],
-    })
-  })
-})
-
-describe('createIntervalTree', () => {
-  const intervals = Array.from({ length: 101 }, (_, i) => i)
-
-  const tree = createIntervalTree(intervals)
-
-  test('finds intervals that are present (0)', () => {
-    expect(tree.search(0)).toStrictEqual([0, 1])
+  test('isInterval', () => {
+    expect(interval.isInterval(interval.make(0))).toBe(true)
+    expect(interval.isInterval({ start: 0, end: 1 })).toBe(false)
   })
 
-  test('finds intervals that are present (500.5)', () => {
-    expect(tree.search(50.5)).toStrictEqual([50, 51])
+  test('size', () => {
+    expect(interval.size(interval.make(0))).toBe(0)
+    expect(interval.size(interval.make(0, 1))).toBe(1)
   })
 
-  test('finds intervals that are present (100)', () => {
-    expect(tree.search(100)).toStrictEqual([99, 100])
+  test('filter', () => {
+    expect(
+      interval.filter(interval.make(0, 1), [-0.5, 0, 0.5, 1, 1.5]),
+    ).toEqual([0, 0.5, 1])
   })
 
-  test('does not find intervals that are not present (-1)', () => {
-    expect(tree.search(-1)).toStrictEqual(null)
+  test('contains', () => {
+    expect(interval.contains(interval.make(0, 1), 0)).toBe(true)
+    expect(
+      interval.contains(interval.make(0, 1), 0, { includeStart: false }),
+    ).toBe(false)
+    expect(interval.contains(interval.make(0, 1), 0.5)).toBe(true)
+    expect(interval.contains(interval.make(0, 1), -0.5)).toBe(false)
   })
 
-  test('does not find intervals that are not present (1001.5)', () => {
-    expect(tree.search(101.5)).toStrictEqual(null)
+  test('clamp', () => {
+    expect(interval.clamp(interval.make(0, 1), -0.5)).toBe(0)
+    expect(interval.clamp(interval.make(0, 1), 0)).toBe(0)
+    expect(interval.clamp(interval.make(0, 1), 0.5)).toBe(0.5)
+    expect(interval.clamp(interval.make(0, 1), 1)).toBe(1)
+    expect(interval.clamp(interval.make(0, 1), 1.5)).toBe(1)
+
+    expect(interval.clamp(interval.make(0, 1), [-0.5, 0, 0.5, 1, 1.5])).toEqual(
+      [0, 0, 0.5, 1, 1],
+    )
+  })
+
+  test('lerp', () => {
+    expect(interval.lerp(interval.make(0, 2), 0.5)).toBe(1)
+  })
+
+  test('normalize', () => {
+    expect(interval.normalize(interval.make(0, 10), 5)).toBe(0.5)
+  })
+
+  test('remap', () => {
+    expect(interval.remap(interval.make(0, 1), interval.make(0, 2), 0.5)).toBe(
+      1,
+    )
+    expect(
+      interval.remap(interval.make(0, 1), interval.make(0.1, 0.2), 1),
+    ).toBe(0.2)
   })
 })

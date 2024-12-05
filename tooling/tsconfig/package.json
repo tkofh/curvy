@@ -1,0 +1,8 @@
+{
+  "name": "@repo/tsconfig",
+  "private": true,
+  "exports": {
+    "./root.json": "./root.json",
+    "./workspace.json": "./workspace.json"
+  }
+}
