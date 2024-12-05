@@ -18,6 +18,20 @@ describe('linear', () => {
       c1: 1,
     })
   })
+  test('fromPointSlope', () => {
+    expect(linear.fromPointSlope(vector2.make(1, 1), 1)).toMatchObject({
+      c0: 0,
+      c1: 1,
+    })
+  })
+  test('fromPoints', () => {
+    expect(
+      linear.fromPoints(vector2.make(-1, -1), vector2.make(1, 1)),
+    ).toMatchObject({
+      c0: 0,
+      c1: 1,
+    })
+  })
   test('isLinear', () => {
     expect(linear.isLinearPolynomial(linear.make(0, 1))).toBe(true)
     expect(linear.isLinearPolynomial({ c0: 0, c1: 1 })).toBe(false)
