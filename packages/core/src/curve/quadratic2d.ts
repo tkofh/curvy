@@ -17,6 +17,12 @@ export const fromPolynomials: (
   c1: QuadraticPolynomial,
 ) => QuadraticCurve2d = internal.fromPolynomials
 
+export const fromPoints: (
+  p0: Vector2,
+  p1: Vector2,
+  p2: Vector2,
+) => QuadraticCurve2d = internal.fromPoints
+
 export const isQuadraticCurve2d: (c: unknown) => c is QuadraticCurve2d =
   internal.isQuadraticCurve2d
 

@@ -74,6 +74,17 @@ export const fromPolynomials: (
   c1: CubicPolynomial.CubicPolynomial,
 ) => CubicCurve2d = (c0, c1) => new CubicCurve2dImpl(c0, c1)
 
+export const fromPoints: (
+  p0: Vector2.Vector2,
+  p1: Vector2.Vector2,
+  p2: Vector2.Vector2,
+  p3: Vector2.Vector2,
+) => CubicCurve2d = (p0, p1, p2, p3) =>
+  new CubicCurve2dImpl(
+    CubicPolynomial.make(p0.x, p1.x, p2.x, p3.x),
+    CubicPolynomial.make(p0.y, p1.y, p2.y, p3.y),
+  )
+
 export const isCubicCurve2d = (c: unknown): c is CubicCurve2d =>
   typeof c === 'object' && c !== null && CubicCurve2dTypeId in c
 

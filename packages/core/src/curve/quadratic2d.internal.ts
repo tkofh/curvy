@@ -77,6 +77,16 @@ export const fromPolynomials: (
   c1: QuadraticPolynomial.QuadraticPolynomial,
 ) => QuadraticCurve2d = (c0, c1) => new QuadraticCurve2dImpl(c0, c1)
 
+export const fromPoints: (
+  p0: Vector2.Vector2,
+  p1: Vector2.Vector2,
+  p2: Vector2.Vector2,
+) => QuadraticCurve2d = (p0, p1, p2) =>
+  new QuadraticCurve2dImpl(
+    QuadraticPolynomial.make(p0.x, p1.x, p2.x),
+    QuadraticPolynomial.make(p0.y, p1.y, p2.y),
+  )
+
 export const isQuadraticCurve2d = (c: unknown): c is QuadraticCurve2d =>
   typeof c === 'object' && c !== null && QuadraticCurve2dTypeId in c
 

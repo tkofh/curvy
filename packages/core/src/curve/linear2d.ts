@@ -17,6 +17,9 @@ export const fromPolynomials: (
   y: LinearPolynomial,
 ) => LinearCurve2d = internal.fromPolynomials
 
+export const fromPoints: (p0: Vector2, p1: Vector2) => LinearCurve2d =
+  internal.fromPoints
+
 export const isLinearCurve2d: (c: unknown) => c is LinearCurve2d =
   internal.isLinearCurve2d
 

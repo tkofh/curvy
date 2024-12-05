@@ -17,6 +17,13 @@ export const fromPolynomials: (
   y: CubicPolynomial,
 ) => CubicCurve2d = internal.fromPolynomials
 
+export const fromPoints: (
+  p0: Vector2,
+  p1: Vector2,
+  p2: Vector2,
+  p3: Vector2,
+) => CubicCurve2d = internal.fromPoints
+
 export const isCubicCurve2d: (c: unknown) => c is CubicCurve2d =
   internal.isCubicCurve2d
 
