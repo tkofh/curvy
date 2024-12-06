@@ -36,3 +36,8 @@ export const length: {
   (c: CubicCurve2d, i: Interval): number
   (i: Interval): (c: CubicCurve2d) => number
 } = internal.length
+
+export const curvature: {
+  (c: CubicCurve2d, t: number): number
+  (t: number): (c: CubicCurve2d) => number
+} = internal.curvature

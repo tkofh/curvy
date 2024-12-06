@@ -34,6 +34,12 @@ export const make = (c0 = 0, c1 = 0): LinearPolynomial =>
 
 export const fromVector = (v: Vector2) => new LinearPolynomialImpl(v.x, v.y)
 
+export const fromPointSlope = (p: Vector2, slope: number) =>
+  new LinearPolynomialImpl(p.y - slope * p.x, slope)
+
+export const fromPoints = (p1: Vector2, p2: Vector2) =>
+  fromPointSlope(p1, (p2.y - p1.y) / (p2.x - p1.x))
+
 export const solve = dual<
   (x: number) => (p: LinearPolynomial) => number,
   (p: LinearPolynomial, x: number) => number
@@ -56,6 +62,8 @@ export const toInverseSolver = (p: LinearPolynomial) => (y: number) =>
 
 export const monotonicity = (p: LinearPolynomial) =>
   p.c1 === 0 ? 'constant' : p.c1 > 0 ? 'increasing' : 'decreasing'
+
+export const derivative = (p: LinearPolynomial) => p.c1
 
 export const antiderivative = dual<
   (integrationConstant: number) => (p: LinearPolynomial) => QuadraticPolynomial,

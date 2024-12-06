@@ -193,3 +193,17 @@ export const length = dual(2, (c: QuadraticCurve2d, i: Interval.Interval) => {
       scale,
   )
 })
+
+export const curvature = dual(2, (c: QuadraticCurve2d, t: number) => {
+  const d = derivative(c)
+  const v = LinearCurve2d.solve(d, t)
+  const a = LinearCurve2d.derivative(d)
+
+  const vMag = Vector2.magnitude(v)
+
+  if (vMag === 0) {
+    return 0
+  }
+
+  return round(Math.abs(Vector2.cross(v, a)) / vMag ** 3)
+})

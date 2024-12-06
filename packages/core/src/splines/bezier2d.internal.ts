@@ -89,33 +89,61 @@ export const append = dual<
     ),
 )
 
-export const appendAligned = dual<
+export const appendTangentAligned = dual<
   (
-    ratio: number,
+    a: number,
     p5: Vector2.Vector2,
     p6: Vector2.Vector2,
   ) => (p: Bezier2d) => Bezier2d,
-  (
-    p: Bezier2d,
-    ratio: number,
-    p5: Vector2.Vector2,
-    p6: Vector2.Vector2,
-  ) => Bezier2d
->(4, (p: Bezier2d, ratio: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => {
+  (p: Bezier2d, a: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => Bezier2d
+>(4, (p: Bezier2d, a: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => {
   const points = p instanceof Bezier2dImpl ? p.points : Array.from(p)
   const p2 = points[points.length - 2] as Vector2.Vector2
   const p3 = points[points.length - 1] as Vector2.Vector2
-  const p4 = Vector2.make((1 + ratio) * p3.x - p2.x, (1 + ratio) * p3.y - p2.y)
+  const p4 = Vector2.make(p3.x + (p3.x - p2.x) * a, p3.y + (p3.y - p2.y) * a)
 
   return append(p, p4, p5, p6)
 })
 
-export const appendMirrored = dual<
+export const appendCurvatureAligned = dual(
+  4,
+  (p: Bezier2d, a: number, b: number, p6: Vector2.Vector2) => {
+    const points = p instanceof Bezier2dImpl ? p.points : Array.from(p)
+    const p1 = points[points.length - 3] as Vector2.Vector2
+    const p2 = points[points.length - 2] as Vector2.Vector2
+    const p3 = points[points.length - 1] as Vector2.Vector2
+
+    const p4 = Vector2.make(p3.x + (p3.x - p2.x) * a, p3.y + (p3.y - p2.y) * a)
+    const p5 = Vector2.make(
+      p3.x + (p3.x - p2.x) * (2 * a + a ** 2 + b / 2) + (p1.x - p2.x) * a ** 2,
+      p3.y + (p3.y - p2.y) * (2 * a + a ** 2 + b / 2) + (p1.y - p2.y) * a ** 2,
+    )
+
+    return append(p, p4, p5, p6)
+  },
+)
+
+export const appendVelocityAligned = dual<
   (p5: Vector2.Vector2, p6: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
   (p: Bezier2d, p5: Vector2.Vector2, p6: Vector2.Vector2) => Bezier2d
 >(3, (p: Bezier2d, p5: Vector2.Vector2, p6: Vector2.Vector2) =>
-  appendAligned(p, 1, p5, p6),
+  appendTangentAligned(p, 1, p5, p6),
 )
+
+export const appendAccelerationAligned = dual<
+  (p6: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
+  (p: Bezier2d, p6: Vector2.Vector2) => Bezier2d
+>(2, (p: Bezier2d, p6: Vector2.Vector2) => {
+  const points = p instanceof Bezier2dImpl ? p.points : Array.from(p)
+  const p1 = points[points.length - 3] as Vector2.Vector2
+  const p2 = points[points.length - 2] as Vector2.Vector2
+  const p3 = points[points.length - 1] as Vector2.Vector2
+
+  const p4 = Vector2.make(2 * p3.x - p2.x, 2 * p3.y - p2.y)
+  const p5 = Vector2.make(p1.x + 4 * (p3.x - p2.x), p1.y + 4 * (p3.y - p2.y))
+
+  return append(p, p4, p5, p6)
+})
 
 function* toCurves(points: Iterable<Vector2.Vector2>) {
   let p0: Vector2.Vector2 | undefined

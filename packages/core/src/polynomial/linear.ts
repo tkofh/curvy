@@ -22,6 +22,12 @@ export const make: (c0?: number, c1?: number) => LinearPolynomial =
 
 export const fromVector: (v: Vector2) => LinearPolynomial = internal.fromVector
 
+export const fromPointSlope: (p: Vector2, slope: number) => LinearPolynomial =
+  internal.fromPointSlope
+
+export const fromPoints: (p1: Vector2, p2: Vector2) => LinearPolynomial =
+  internal.fromPoints
+
 export const solve: {
   (p: LinearPolynomial, x: number): number
   (x: number): (p: LinearPolynomial) => number
@@ -44,6 +50,8 @@ export const root: (p: LinearPolynomial) => ZeroOrOneSolution = (p) =>
 
 export const monotonicity: (p: LinearPolynomial) => GuaranteedMonotonicity =
   internal.monotonicity
+
+export const derivative: (p: LinearPolynomial) => number = internal.derivative
 
 export const antiderivative: {
   (p: LinearPolynomial, constant?: number): QuadraticPolynomial

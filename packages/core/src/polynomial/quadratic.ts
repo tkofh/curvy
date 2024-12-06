@@ -77,3 +77,8 @@ export const length: {
   (p: QuadraticPolynomial, i: Interval): number
   (i: Interval): (p: QuadraticPolynomial) => number
 } = internal.length
+
+export const curvature: {
+  (p: QuadraticPolynomial, x: number): number
+  (x: number): (p: QuadraticPolynomial) => number
+} = internal.curvature

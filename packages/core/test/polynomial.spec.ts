@@ -18,6 +18,20 @@ describe('linear', () => {
       c1: 1,
     })
   })
+  test('fromPointSlope', () => {
+    expect(linear.fromPointSlope(vector2.make(1, 1), 1)).toMatchObject({
+      c0: 0,
+      c1: 1,
+    })
+  })
+  test('fromPoints', () => {
+    expect(
+      linear.fromPoints(vector2.make(-1, -1), vector2.make(1, 1)),
+    ).toMatchObject({
+      c0: 0,
+      c1: 1,
+    })
+  })
   test('isLinear', () => {
     expect(linear.isLinearPolynomial(linear.make(0, 1))).toBe(true)
     expect(linear.isLinearPolynomial({ c0: 0, c1: 1 })).toBe(false)
@@ -181,6 +195,9 @@ describe('quadratic', () => {
       1.47894286,
     )
   })
+  test('curvature', () => {
+    expect(quadratic.curvature(quadratic.make(0, 0, 1), 0)).toBe(2)
+  })
 })
 
 describe('cubic', () => {
@@ -324,5 +341,8 @@ describe('cubic', () => {
     // console.log(round(l, p.precision))
 
     expect(cubic.length(p, interval.unit)).toEqual(134.62077838)
+  })
+  test('curvature', () => {
+    expect(cubic.curvature(cubic.make(0, 0, 0, 1), 0)).toBe(0)
   })
 })

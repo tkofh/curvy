@@ -73,3 +73,8 @@ export const length: {
   (p: CubicPolynomial, domain: Interval): number
   (domain: Interval): (p: CubicPolynomial) => number
 } = internal.length
+
+export const curvature: {
+  (p: CubicPolynomial, x: number): number
+  (x: number): (p: CubicPolynomial) => number
+} = internal.curvature

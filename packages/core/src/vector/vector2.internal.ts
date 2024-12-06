@@ -61,6 +61,11 @@ export const dot = dual<
   (a: Vector2, b: Vector2) => number
 >(2, (a: Vector2, b: Vector2) => round(a.x * b.x + a.y * b.y))
 
+export const cross = dual<
+  (b: Vector2) => (a: Vector2) => number,
+  (a: Vector2, b: Vector2) => number
+>(2, (a: Vector2, b: Vector2) => round(a.x * b.y - a.y * b.x))
+
 export const softmax = (v: Vector2) => {
   const max = Math.max(v.x, v.y)
 

@@ -23,6 +23,11 @@ export const dot: {
   (b: Vector2): (a: Vector2) => number
 } = internal.dot
 
+export const cross: {
+  (a: Vector2, b: Vector2): number
+  (b: Vector2): (a: Vector2) => number
+} = internal.cross
+
 export const components: (v: Vector2) => [number, number] = internal.components
 
 export const softmax: (v: Vector2) => Vector2 = internal.softmax
