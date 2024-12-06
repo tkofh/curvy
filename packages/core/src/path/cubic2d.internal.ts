@@ -2,7 +2,7 @@ import * as CubicCurve2d from '../curve/cubic2d'
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
 import * as Interval from '../interval'
-import { round } from '../util'
+import { invariant, round } from '../util'
 import type { Vector2 } from '../vector/vector2'
 import type { CubicPath2d } from './cubic2d'
 
@@ -15,6 +15,7 @@ export class CubicPath2dImpl extends Pipeable implements CubicPath2d {
   readonly curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>
 
   constructor(curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>) {
+    invariant(curves.length > 0, 'cubic path requires at least one curve')
     super()
     this.curves = curves
   }
