@@ -50,6 +50,8 @@ export const fromPoints: (
 export const isLinearCurve2d = (c: unknown): c is LinearCurve2d =>
   typeof c === 'object' && c !== null && LinearCurve2dTypeId in c
 
+export const derivative = (c: LinearCurve2d) => Vector2.make(c.x.c1, c.y.c1)
+
 export const solve = dual<
   (t: number) => (c: LinearCurve2d) => Vector2.Vector2,
   (c: LinearCurve2d, t: number) => Vector2.Vector2

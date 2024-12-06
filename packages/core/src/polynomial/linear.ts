@@ -51,6 +51,8 @@ export const root: (p: LinearPolynomial) => ZeroOrOneSolution = (p) =>
 export const monotonicity: (p: LinearPolynomial) => GuaranteedMonotonicity =
   internal.monotonicity
 
+export const derivative: (p: LinearPolynomial) => number = internal.derivative
+
 export const antiderivative: {
   (p: LinearPolynomial, constant?: number): QuadraticPolynomial
   (constant: number): (p: LinearPolynomial) => QuadraticPolynomial

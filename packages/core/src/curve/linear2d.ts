@@ -23,6 +23,8 @@ export const fromPoints: (p0: Vector2, p1: Vector2) => LinearCurve2d =
 export const isLinearCurve2d: (c: unknown) => c is LinearCurve2d =
   internal.isLinearCurve2d
 
+export const derivative: (c: LinearCurve2d) => Vector2 = internal.derivative
+
 export const solve: {
   (t: number): (c: LinearCurve2d) => Vector2
   (c: LinearCurve2d, t: number): Vector2

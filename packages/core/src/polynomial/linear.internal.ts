@@ -63,6 +63,8 @@ export const toInverseSolver = (p: LinearPolynomial) => (y: number) =>
 export const monotonicity = (p: LinearPolynomial) =>
   p.c1 === 0 ? 'constant' : p.c1 > 0 ? 'increasing' : 'decreasing'
 
+export const derivative = (p: LinearPolynomial) => p.c1
+
 export const antiderivative = dual<
   (integrationConstant: number) => (p: LinearPolynomial) => QuadraticPolynomial,
   (p: LinearPolynomial, integrationConstant?: number) => QuadraticPolynomial

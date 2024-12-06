@@ -91,21 +91,16 @@ export const append = dual<
 
 export const appendAligned = dual<
   (
-    ratio: number,
+    a: number,
     p5: Vector2.Vector2,
     p6: Vector2.Vector2,
   ) => (p: Bezier2d) => Bezier2d,
-  (
-    p: Bezier2d,
-    ratio: number,
-    p5: Vector2.Vector2,
-    p6: Vector2.Vector2,
-  ) => Bezier2d
->(4, (p: Bezier2d, ratio: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => {
+  (p: Bezier2d, a: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => Bezier2d
+>(4, (p: Bezier2d, a: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => {
   const points = p instanceof Bezier2dImpl ? p.points : Array.from(p)
   const p2 = points[points.length - 2] as Vector2.Vector2
   const p3 = points[points.length - 1] as Vector2.Vector2
-  const p4 = Vector2.make((1 + ratio) * p3.x - p2.x, (1 + ratio) * p3.y - p2.y)
+  const p4 = Vector2.make(p3.x + (p3.x - p2.x) * a, p3.y + (p3.y - p2.y) * a)
 
   return append(p, p4, p5, p6)
 })

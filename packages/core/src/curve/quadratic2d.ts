@@ -3,6 +3,7 @@ import type { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
 import type { QuadraticPolynomial } from '../polynomial/quadratic'
 import type { Vector2 } from '../vector/vector2'
+import type { LinearCurve2d } from './linear2d'
 import type { QuadraticCurve2dTypeId } from './quadratic2d.internal'
 import * as internal from './quadratic2d.internal'
 
@@ -35,3 +36,11 @@ export const length: {
   (c: QuadraticCurve2d, i: Interval): number
   (i: Interval): (c: QuadraticCurve2d) => number
 } = internal.length
+
+export const derivative: (c: QuadraticCurve2d) => LinearCurve2d =
+  internal.derivative
+
+export const curvature: {
+  (c: QuadraticCurve2d, t: number): number
+  (t: number): (c: QuadraticCurve2d) => number
+} = internal.curvature

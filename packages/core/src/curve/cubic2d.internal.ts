@@ -40,6 +40,7 @@ import * as QuadraticPolynomial from '../polynomial/quadratic'
 import { round } from '../util'
 import * as Vector2 from '../vector/vector2'
 import type { CubicCurve2d } from './cubic2d'
+import * as LinearCurve2d from './linear2d'
 import * as QuadraticCurve2d from './quadratic2d'
 
 export const CubicCurve2dTypeId: unique symbol = Symbol('curvy/curve/cubic2d')
@@ -201,4 +202,13 @@ export const length = dual(2, (c: CubicCurve2d, i: Interval.Interval) => {
         )) *
       scale,
   )
+})
+
+export const curvature = dual(2, (c: CubicCurve2d, t: number) => {
+  const d = derivative(c)
+
+  const v = QuadraticCurve2d.solve(d, t)
+  const a = LinearCurve2d.solve(QuadraticCurve2d.derivative(d), t)
+
+  return round(Math.abs(Vector2.cross(v, a)) / Vector2.magnitude(v) ** 3)
 })
