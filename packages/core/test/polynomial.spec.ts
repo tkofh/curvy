@@ -195,6 +195,9 @@ describe('quadratic', () => {
       1.47894286,
     )
   })
+  test('curvature', () => {
+    expect(quadratic.curvature(quadratic.make(0, 0, 1), 0)).toBe(2)
+  })
 })
 
 describe('cubic', () => {
@@ -338,5 +341,8 @@ describe('cubic', () => {
     // console.log(round(l, p.precision))
 
     expect(cubic.length(p, interval.unit)).toEqual(134.62077838)
+  })
+  test('curvature', () => {
+    expect(cubic.curvature(cubic.make(0, 0, 0, 1), 0)).toBe(0)
   })
 })

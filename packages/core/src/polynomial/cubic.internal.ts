@@ -296,3 +296,12 @@ export const length = dual<
       scale,
   )
 })
+
+export const curvature = dual(2, (p: CubicPolynomial, x: number) => {
+  const d = derivative(p)
+  const dd = Quadratic.derivative(d)
+
+  return round(
+    Math.abs(Linear.solve(dd, x)) / (1 + Quadratic.solve(d, x) ** 2) ** 1.5,
+  )
+})

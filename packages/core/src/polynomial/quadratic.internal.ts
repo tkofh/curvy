@@ -186,3 +186,12 @@ export const length = dual<
 
   return round(evalEnd - evalStart)
 })
+
+export const curvature = dual<
+  (x: number) => (p: QuadraticPolynomial) => number,
+  (p: QuadraticPolynomial, x: number) => number
+>(2, (p: QuadraticPolynomial, x: number) =>
+  round(
+    Math.abs(2 * p.c2) / (1 + (Linear.solve(derivative(p), x) ** 2) ** 1.5),
+  ),
+)
