@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.0.1
+
+### Patch Changes
+
+- 1b14680: add `curvature` for linear, quadratic, and cubic curves
+- 1b14680: add `Bezier2d.appendTangentAligned` (G1 continuity), `Bezier2d.appendCurvatureAligned` (G2 continuity), `Bezier2d.appendVelocityAligned` (C1 continuity), and `Bezier2d.appendAccelerationAligned` (C2 continuity)
+- 1b14680: add `LinearPolynomial.fromPoints(p1: Vector2, p2: Vector2)`
+- 1b14680: add `curvature` for `CubicPolynomial`s and `QuadraticPolynomial`s
+- 1b14680: add `LinearPolynomial.fromPointSlope(point: Vector2, slope: number)`
+- 1b14680: add `Vector2.cross(a, b)`
+
 ## 1.0.0
 
 ### Major Changes
