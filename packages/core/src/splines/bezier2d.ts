@@ -27,14 +27,24 @@ export const append: {
   (p: Bezier2d, p1: Vector2, p2: Vector2, p3: Vector2): Bezier2d
 } = internal.append
 
-export const appendAligned: {
+export const appendTangentAligned: {
   (ratio: number, p2: Vector2, p3: Vector2): (p: Bezier2d) => Bezier2d
   (p: Bezier2d, ratio: number, p2: Vector2, p3: Vector2): Bezier2d
-} = internal.appendAligned
+} = internal.appendTangentAligned
 
-export const appendMirrored: {
+export const appendCurvatureMirrored: {
+  (a: number, b: number, p6: Vector2): (p: Bezier2d) => Bezier2d
+  (p: Bezier2d, a: number, b: number, p6: Vector2): Bezier2d
+} = internal.appendCurvatureAligned
+
+export const appendVelocityAligned: {
   (p2: Vector2, p3: Vector2): (p: Bezier2d) => Bezier2d
   (p: Bezier2d, p2: Vector2, p3: Vector2): Bezier2d
-} = internal.appendMirrored
+} = internal.appendVelocityAligned
+
+export const appendAccelerationAligned: {
+  (p3: Vector2): (p: Bezier2d) => Bezier2d
+  (p: Bezier2d, p3: Vector2): Bezier2d
+} = internal.appendAccelerationAligned
 
 export const toPath: (p: Bezier2d) => CubicPath2d = internal.toPath

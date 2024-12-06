@@ -210,5 +210,11 @@ export const curvature = dual(2, (c: CubicCurve2d, t: number) => {
   const v = QuadraticCurve2d.solve(d, t)
   const a = LinearCurve2d.solve(QuadraticCurve2d.derivative(d), t)
 
-  return round(Math.abs(Vector2.cross(v, a)) / Vector2.magnitude(v) ** 3)
+  const vMag = Vector2.magnitude(v)
+
+  if (vMag === 0) {
+    return 0
+  }
+
+  return round(Math.abs(Vector2.cross(v, a)) / vMag ** 3)
 })
