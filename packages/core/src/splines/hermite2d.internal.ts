@@ -1,13 +1,11 @@
-import * as CubicCurve2d from '../curve/cubic2d'
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
 import * as Matrix4x4 from '../matrix/matrix4x4'
 import * as CubicPath2d from '../path/cubic2d'
-import * as CubicPolynomial from '../polynomial/cubic'
 import { invariant } from '../util'
 import type * as Vector2 from '../vector/vector2'
-import * as Vector4 from '../vector/vector4'
 import type { Hermite2d } from './hermite2d'
+import { toCurves } from './util'
 
 export const characteristic = Matrix4x4.make(
   1,
@@ -73,43 +71,5 @@ export const append = dual<
   return new Hermite2dImpl(points.concat(p1, v1))
 })
 
-function* toCurves(points: Iterable<Vector2.Vector2>) {
-  let p0: Vector2.Vector2 | undefined
-  let v0: Vector2.Vector2 | undefined
-  let p1: Vector2.Vector2 | undefined
-  let v1: Vector2.Vector2 | undefined
-
-  for (const p of points) {
-    if (p0 === undefined) {
-      p0 = p
-    } else if (v0 === undefined) {
-      v0 = p
-    } else if (p1 === undefined) {
-      p1 = p
-    } else {
-      v1 = p
-
-      yield CubicCurve2d.fromPolynomials(
-        CubicPolynomial.fromVector(
-          Matrix4x4.vectorProductLeft(
-            characteristic,
-            Vector4.make(p0.x, v0.x, p1.x, v1.x),
-          ),
-        ),
-        CubicPolynomial.fromVector(
-          Matrix4x4.vectorProductLeft(
-            characteristic,
-            Vector4.make(p0.y, v0.y, p1.y, v1.y),
-          ),
-        ),
-      )
-
-      p0 = p1
-      v0 = v1
-      p1 = undefined
-      v1 = undefined
-    }
-  }
-}
-
-export const toPath = (p: Hermite2d) => CubicPath2d.fromCurves(...toCurves(p))
+export const toPath = (p: Hermite2d) =>
+  CubicPath2d.fromCurves(...toCurves(p, characteristic, 2))

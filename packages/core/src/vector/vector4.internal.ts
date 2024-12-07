@@ -107,3 +107,9 @@ export const hadamard = dual<
 >(2, (a: Vector4, b: Vector4) =>
   make(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w),
 )
+export const scale = dual<
+  (s: number) => (v: Vector4) => Vector4,
+  (v: Vector4, s: number) => Vector4
+>(2, (v: Vector4, s: number) =>
+  s === 1 ? v : make(v.x * s, v.y * s, v.z * s, v.w * s),
+)

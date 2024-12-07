@@ -48,3 +48,8 @@ export const hadamard: {
   (a: Vector2, b: Vector2): Vector2
   (b: Vector2): (a: Vector2) => Vector2
 } = internal.hadamard
+
+export const scale: {
+  (s: number): (v: Vector2) => Vector2
+  (v: Vector2, s: number): Vector2
+} = internal.scale

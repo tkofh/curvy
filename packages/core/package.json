@@ -79,6 +79,10 @@
     "./splines/hermite2d": {
       "types": "./dist/splines/hermite2d.d.ts",
       "import": "./dist/splines/hermite2d.mjs"
+    },
+    "./splines/cardinal2d": {
+      "types": "./dist/splines/cardinal2d.d.ts",
+      "import": "./dist/splines/cardinal2d.mjs"
     }
   },
   "files": ["dist"],
