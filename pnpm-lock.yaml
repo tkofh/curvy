@@ -42,6 +42,25 @@ importers:
         specifier: ^2.1.6
         version: 2.1.6(jiti@2.4.1)
 
+  packages/svg:
+    dependencies:
+      curvy:
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@repo/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
+      typescript:
+        specifier: ^5.7.2
+        version: 5.7.2
+      unbuild:
+        specifier: 3.0.0-rc.8
+        version: 3.0.0-rc.8(typescript@5.7.2)
+      vitest:
+        specifier: ^2.1.6
+        version: 2.1.6(jiti@2.4.1)
+
   tooling/tsconfig: {}
 
 packages:
