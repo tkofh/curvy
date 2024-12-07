@@ -75,6 +75,10 @@
     "./splines/bezier2d": {
       "types": "./dist/splines/bezier2d.d.ts",
       "import": "./dist/splines/bezier2d.mjs"
+    },
+    "./splines/hermite2d": {
+      "types": "./dist/splines/hermite2d.d.ts",
+      "import": "./dist/splines/hermite2d.mjs"
     }
   },
   "files": ["dist"],

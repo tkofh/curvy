@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import * as CubicCurve2d from '../src/curve/cubic2d'
 import * as CubicPath2d from '../src/path/cubic2d'
 import * as Bezier2d from '../src/splines/bezier2d'
+import * as Hermite2d from '../src/splines/hermite2d'
 import * as Vector2 from '../src/vector/vector2'
 
 describe('bezier', () => {
@@ -45,5 +46,22 @@ describe('bezier', () => {
     ]
 
     expect(CubicCurve2d.curvature(a, 1)).toBe(CubicCurve2d.curvature(b, 0))
+  })
+})
+
+describe('hermite', () => {
+  test('makes a path', () => {
+    const points = Hermite2d.make(
+      Vector2.zero,
+      Vector2.make(1, 1),
+      Vector2.make(1, 0),
+      Vector2.make(1, -1),
+    )
+    const path = Hermite2d.toPath(points)
+
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10
+      console.log(CubicPath2d.solve(path, t).toString())
+    }
   })
 })
