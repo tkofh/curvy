@@ -83,6 +83,10 @@
     "./splines/cardinal2d": {
       "types": "./dist/splines/cardinal2d.d.ts",
       "import": "./dist/splines/cardinal2d.mjs"
+    },
+    "./splines/basis2d": {
+      "types": "./dist/splines/basis2d.d.ts",
+      "import": "./dist/splines/basis2d.mjs"
     }
   },
   "files": ["dist"],
