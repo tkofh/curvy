@@ -1,5 +1,14 @@
 # Change Log
 
+## 1.0.2
+
+### Patch Changes
+
+- 27ec055: add `Cardinal2d` spline
+- cf4f4c0: add `Hermite2d` spline
+- 27ec055: add `scale` to `Vector2`, `Vector3`, and `Vector4`
+- 46e533e: add `Basis2d` spline
+
 ## 1.0.1
 
 ### Patch Changes

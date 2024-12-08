@@ -1,6 +1,6 @@
 {
   "name": "@curvy/svg",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Spline and Curve utilities for SVG",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
