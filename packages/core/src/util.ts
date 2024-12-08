@@ -11,6 +11,15 @@ export function round(value: number, precision = PRECISION): number {
   return result
 }
 
+export function roundDown(value: number, precision = PRECISION): number {
+  const scale = 10 ** precision
+  const result = Math.floor(value * scale) / scale
+  if (result === 0) {
+    return 0
+  }
+  return result
+}
+
 export const remap: {
   (x: number, x1: number, x2: number, y1: number, y2: number): number
   (x1: number, x2: number, y1: number, y2: number): (x: number) => number

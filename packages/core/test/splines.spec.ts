@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import * as CubicCurve2d from '../src/curve/cubic2d'
 import * as CubicPath2d from '../src/path/cubic2d'
+import * as Basis2d from '../src/splines/basis2d'
 import * as Bezier2d from '../src/splines/bezier2d'
 import * as Cardinal2d from '../src/splines/cardinal2d'
 import * as Hermite2d from '../src/splines/hermite2d'
@@ -83,9 +84,39 @@ describe('cardinal', () => {
 
     expect(CubicPath2d.solve(path, 0)).toMatchObject(Vector2.make(0, 0))
 
-    for (let i = 0; i <= 50; i++) {
-      const t = i / 50
-      console.log(CubicPath2d.solve(path, t).toString())
-    }
+    // for (let i = 0; i <= 50; i++) {
+    //   const t = i / 50
+    //   console.log(CubicPath2d.solve(path, t).toString())
+    // }
+  })
+})
+
+describe('basis', () => {
+  test('makes a path', () => {
+    const points = Basis2d.fromArray([
+      Vector2.zero,
+      Vector2.zero,
+      Vector2.zero,
+      Vector2.make(0, 1),
+      Vector2.make(0, 1),
+      Vector2.make(0, 1),
+      Vector2.make(1, 1),
+      Vector2.make(1, 1),
+      Vector2.make(1, 1),
+      Vector2.make(1, 0),
+      Vector2.make(1, 0),
+      Vector2.make(1, 0),
+    ])
+    const path = points.pipe(
+      // Basis2d.withTriplicatedEndpoints,
+      Basis2d.toPath,
+    )
+
+    expect(CubicPath2d.solve(path, 0)).toMatchObject(Vector2.make(0, 0))
+
+    // for (let i = 0; i <= 50; i++) {
+    //   const t = i / 50
+    //   console.log(CubicPath2d.solve(path, t).toString())
+    // }
   })
 })
