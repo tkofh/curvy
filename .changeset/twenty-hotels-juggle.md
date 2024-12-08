@@ -2,4 +2,4 @@
 "curvy": patch
 ---
 
-add `reflect` to `Vector2`, `Vector3`, and `Vector4`
+add `scale` to `Vector2`, `Vector3`, and `Vector4`
