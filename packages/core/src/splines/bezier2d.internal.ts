@@ -4,8 +4,9 @@ import * as Matrix4x4 from '../matrix/matrix4x4'
 import * as CubicPath2d from '../path/cubic2d'
 import { invariant } from '../util'
 import * as Vector2 from '../vector/vector2'
+import * as Vector4 from '../vector/vector4'
 import type { Bezier2d } from './bezier2d'
-import { toCurves } from './util'
+import { toCurves, toPointQuads } from './util'
 
 export const characteristic = Matrix4x4.make(
   1,
@@ -86,6 +87,41 @@ export const append = dual<
       (p instanceof Bezier2dImpl ? p.points : Array.from(p)).concat(p1, p2, p3),
     ),
 )
+
+export const fromSpline = (
+  p: Iterable<Vector2.Vector2>,
+  matrix: Matrix4x4.Matrix4x4,
+  stride: 1 | 2 | 3,
+) => {
+  const points: Array<Vector2.Vector2> = []
+
+  let x: Vector4.Vector4 | undefined
+  let y: Vector4.Vector4 | undefined
+
+  for (const [p0, p1, p2, p3] of toPointQuads(p, stride)) {
+    x = Matrix4x4.solveSystem(
+      characteristic,
+      Matrix4x4.vectorProductLeft(matrix, Vector4.make(p0.x, p1.x, p2.x, p3.x)),
+    )
+
+    y = Matrix4x4.solveSystem(
+      characteristic,
+      Matrix4x4.vectorProductLeft(matrix, Vector4.make(p0.y, p1.y, p2.y, p3.y)),
+    )
+
+    points.push(
+      Vector2.make(x.x, y.x),
+      Vector2.make(x.y, y.y),
+      Vector2.make(x.z, y.z),
+    )
+  }
+
+  if (x && y) {
+    points.push(Vector2.make(x.w, y.w))
+  }
+
+  return fromArray(points)
+}
 
 export const appendTangentAligned = dual<
   (

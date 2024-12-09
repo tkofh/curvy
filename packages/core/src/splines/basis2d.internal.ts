@@ -5,6 +5,7 @@ import * as CubicPath2d from '../path/cubic2d'
 import { invariant, roundDown } from '../util'
 import type * as Vector2 from '../vector/vector2'
 import type { Basis2d } from './basis2d'
+import * as Bezier2d from './bezier2d'
 import { toCurves } from './util'
 
 export const characteristic = Matrix4x4.make(
@@ -89,3 +90,6 @@ export const withTriplicatedEndpoints = (p: Basis2d) => {
 
 export const toPath = (p: Basis2d) =>
   CubicPath2d.fromCurves(...toCurves(p, characteristic, 1))
+
+export const toBezier = (p: Basis2d) =>
+  Bezier2d.fromSpline(p, characteristic, 1)

@@ -2,6 +2,7 @@ import type { Pipeable } from '../internal/pipeable'
 import type { Matrix4x4 } from '../matrix/matrix4x4'
 import type { CubicPath2d } from '../path/cubic2d'
 import type { Vector2 } from '../vector/vector2'
+import type { Bezier2d } from './bezier2d'
 import type { Cardinal2dTypeId } from './cardinal2d.internal'
 import * as internal from './cardinal2d.internal'
 
@@ -49,3 +50,8 @@ export const toPath: {
   (scale: number): (c: Cardinal2d) => CubicPath2d
   (c: Cardinal2d, scale?: number): CubicPath2d
 } = internal.toPath
+
+export const toBezier: {
+  (p: Cardinal2d): Bezier2d
+  (p: Cardinal2d, scale: number): Bezier2d
+} = internal.toBezier

@@ -4,11 +4,7 @@ import * as CubicPolynomial from '../polynomial/cubic'
 import type { Vector2 } from '../vector/vector2'
 import * as Vector4 from '../vector/vector4'
 
-export function* toCurves(
-  points: Iterable<Vector2>,
-  matrix: Matrix4x4.Matrix4x4,
-  stride: 1 | 2 | 3,
-) {
+export function* toPointQuads(points: Iterable<Vector2>, stride: 1 | 2 | 3) {
   let p0: Vector2 | undefined
   let p1: Vector2 | undefined
   let p2: Vector2 | undefined
@@ -32,20 +28,7 @@ export function* toCurves(
 
     p3 = point
 
-    yield CubicCurve2d.fromPolynomials(
-      CubicPolynomial.fromVector(
-        Matrix4x4.vectorProductLeft(
-          matrix,
-          Vector4.make(p0.x, p1.x, p2.x, p3.x),
-        ),
-      ),
-      CubicPolynomial.fromVector(
-        Matrix4x4.vectorProductLeft(
-          matrix,
-          Vector4.make(p0.y, p1.y, p2.y, p3.y),
-        ),
-      ),
-    )
+    yield [p0, p1, p2, p3] as const
 
     if (stride === 1) {
       p0 = p1
@@ -60,5 +43,28 @@ export function* toCurves(
       p1 = undefined
       p2 = undefined
     }
+  }
+}
+
+export function* toCurves(
+  points: Iterable<Vector2>,
+  matrix: Matrix4x4.Matrix4x4,
+  stride: 1 | 2 | 3,
+) {
+  for (const [p0, p1, p2, p3] of toPointQuads(points, stride)) {
+    yield CubicCurve2d.fromPolynomials(
+      CubicPolynomial.fromVector(
+        Matrix4x4.vectorProductLeft(
+          matrix,
+          Vector4.make(p0.x, p1.x, p2.x, p3.x),
+        ),
+      ),
+      CubicPolynomial.fromVector(
+        Matrix4x4.vectorProductLeft(
+          matrix,
+          Vector4.make(p0.y, p1.y, p2.y, p3.y),
+        ),
+      ),
+    )
   }
 }

@@ -1,4 +1,5 @@
 import type { Pipeable } from '../internal/pipeable'
+import type { Matrix4x4 } from '../matrix/matrix4x4'
 import type { CubicPath2d } from '../path/cubic2d'
 import type { Vector2 } from '../vector/vector2'
 import type { Bezier2dTypeId } from './bezier2d.internal'
@@ -9,6 +10,8 @@ export interface Bezier2d extends Pipeable {
   [Symbol.iterator](): IterableIterator<Vector2>
 }
 
+export const characteristic: Matrix4x4 = internal.characteristic
+
 export const make: (
   p0: Vector2,
   p1: Vector2,
@@ -18,6 +21,12 @@ export const make: (
 
 export const fromArray: (points: ReadonlyArray<Vector2>) => Bezier2d =
   internal.fromArray
+
+export const fromSpline: (
+  points: Iterable<Vector2>,
+  matrix: Matrix4x4,
+  stride: 1 | 2 | 3,
+) => Bezier2d = internal.fromSpline
 
 export const isCubicBezier2d: (p: unknown) => p is Bezier2d =
   internal.isCubicBezier2d
