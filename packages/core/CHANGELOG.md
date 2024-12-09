@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.0.3
+
+### Patch Changes
+
+- 395dbcd: add `Basis2d.toBezier`, `Cardinal2d.toBezier`, and `Hermite2d.toBezier`
+- 395dbcd: add `Bezier2d.fromSpline`
+
 ## 1.0.2
 
 ### Patch Changes
