@@ -119,4 +119,35 @@ describe('basis', () => {
     //   console.log(CubicPath2d.solve(path, t).toString())
     // }
   })
+
+  test('to bezier', () => {
+    const points = Basis2d.fromArray([
+      Vector2.zero,
+      Vector2.make(0, 1),
+      Vector2.make(1, 1),
+      Vector2.make(1, 0),
+    ]).pipe(Basis2d.withTriplicatedEndpoints)
+
+    const bezier = Basis2d.toBezier(points)
+
+    const basisPath = Basis2d.toPath(points)
+    const bezierPath = Bezier2d.toPath(bezier)
+
+    // for (const curve of basisPath) {
+    //   console.log(curve)
+    // }
+    // console.log('------------------------------')
+    // for (const curve of bezierPath) {
+    //   console.log(curve)
+    // }
+
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10
+
+      const { x: x1, y: y1 } = CubicPath2d.solve(basisPath, t)
+      const { x: x2, y: y2 } = CubicPath2d.solve(bezierPath, t)
+      expect(x1).toBeCloseTo(x2)
+      expect(y1).toBeCloseTo(y2)
+    }
+  })
 })

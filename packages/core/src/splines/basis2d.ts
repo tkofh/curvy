@@ -4,6 +4,7 @@ import type { CubicPath2d } from '../path/cubic2d'
 import type { Vector2 } from '../vector/vector2'
 import type { Basis2dTypeId } from './basis2d.internal'
 import * as internal from './basis2d.internal'
+import type { Bezier2d } from './bezier2d'
 
 export const characteristic: Matrix4x4 = internal.characteristic
 
@@ -38,3 +39,5 @@ export const withTriplicatedEndpoints: (p: Basis2d) => Basis2d =
   internal.withTriplicatedEndpoints
 
 export const toPath: (p: Basis2d) => CubicPath2d = internal.toPath
+
+export const toBezier: (p: Basis2d) => Bezier2d = internal.toBezier

@@ -4,6 +4,7 @@ import * as Matrix4x4 from '../matrix/matrix4x4'
 import * as CubicPath2d from '../path/cubic2d'
 import { invariant } from '../util'
 import * as Vector2 from '../vector/vector2'
+import * as Bezier2d from './bezier2d'
 import type { Cardinal2d } from './cardinal2d'
 import { toCurves } from './util'
 
@@ -119,3 +120,10 @@ export const toPath = dual(
       ),
     ),
 )
+
+export const toBezier = (p: Cardinal2d, scale = 0.5) =>
+  Bezier2d.fromSpline(
+    p,
+    scale === 0.5 ? catRomCharacteristic : characteristic(scale),
+    1,
+  )

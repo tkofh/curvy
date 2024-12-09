@@ -1,6 +1,6 @@
 import { dual } from '../internal/function'
 import { Pipeable } from '../internal/pipeable'
-import { PRECISION, round } from '../util'
+import { round } from '../util'
 import type { Vector2 } from './vector2'
 
 export const Vector2TypeId = Symbol.for('curvy/vector2')
@@ -12,14 +12,10 @@ class Vector2Impl extends Pipeable implements Vector2 {
   readonly x: number
   readonly y: number
 
-  readonly precision: number
-
-  constructor(v0 = 0, v1 = 0, precision = PRECISION) {
+  constructor(v0 = 0, v1 = 0) {
     super()
-    this.x = round(v0, precision)
-    this.y = round(v1, precision)
-
-    this.precision = precision
+    this.x = round(v0)
+    this.y = round(v1)
   }
 
   get [0]() {
@@ -42,8 +38,7 @@ class Vector2Impl extends Pipeable implements Vector2 {
 export const isVector2 = (v: unknown): v is Vector2 =>
   typeof v === 'object' && v !== null && Vector2TypeId in v
 
-export const make = (v0: number, v1 = v0, precision = PRECISION): Vector2 =>
-  new Vector2Impl(v0, v1, precision)
+export const make = (v0: number, v1 = v0): Vector2 => new Vector2Impl(v0, v1)
 
 export const components = (v: Vector2): [number, number] => [v.x, v.y]
 
