@@ -1,5 +1,5 @@
 import type { QuadraticCurve2d } from '../curve/quadratic2d'
-import type { Pipeable } from '../internal/pipeable'
+import type { Pipeable } from '../pipe'
 import type { Vector2 } from '../vector/vector2'
 import type { QuadraticPath2dTypeId } from './quadratic2d.internal'
 import * as internal from './quadratic2d.internal'

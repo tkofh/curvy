@@ -1,6 +1,6 @@
-import { dual } from '../internal/function'
 import * as Interval from '../interval'
-import { round } from '../util'
+import { dual } from '../pipe'
+import { round } from '../utils'
 import type { Vector3 } from '../vector/vector3'
 import type { CubicPolynomial } from './cubic'
 import { CubicPolynomialImpl } from './cubic.internal.circular'

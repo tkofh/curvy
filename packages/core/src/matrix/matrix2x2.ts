@@ -2,7 +2,7 @@ import type {
   TwoDimensionalComponent,
   TwoDimensionalIndex,
 } from '../dimensions'
-import type { Pipeable } from '../internal/pipeable'
+import type { Pipeable } from '../pipe'
 import type { Vector2 } from '../vector/vector2'
 import * as internal from './matrix2x2.internal'
 import type { Matrix2x2TypeId } from './matrix2x2.internal'

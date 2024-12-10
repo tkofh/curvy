@@ -1,5 +1,5 @@
 import type { LinearCurve2d } from '../curve/linear2d'
-import type { Pipeable } from '../internal/pipeable'
+import type { Pipeable } from '../pipe'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPath2dTypeId } from './linear2d.internal'
 import * as internal from './linear2d.internal'

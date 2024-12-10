@@ -1,5 +1,5 @@
-import type { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
+import type { Pipeable } from '../pipe'
 import type { Vector3 } from '../vector/vector3'
 import type { CubicPolynomial } from './cubic'
 import type { LinearPolynomial } from './linear'

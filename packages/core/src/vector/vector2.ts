@@ -1,5 +1,5 @@
 import type { TwoDimensional } from '../dimensions'
-import type { Pipeable } from '../internal/pipeable'
+import type { Pipeable } from '../pipe'
 import * as internal from './vector2.internal'
 import type { Vector2TypeId } from './vector2.internal'
 

@@ -1,4 +1,3 @@
-import { dual } from '../internal/function'
 import * as Interval from '../interval'
 import {
   GL32_W0,
@@ -34,7 +33,8 @@ import {
   GL32_X14,
   GL32_X15,
 } from '../length'
-import { round } from '../util'
+import { dual } from '../pipe'
+import { round } from '../utils'
 import type { Vector4 } from '../vector/vector4'
 import type { CubicPolynomial } from './cubic'
 import {

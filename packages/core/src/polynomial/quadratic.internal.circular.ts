@@ -1,5 +1,5 @@
-import { Pipeable } from '../internal/pipeable'
-import { round } from '../util'
+import { Pipeable } from '../pipe'
+import { round } from '../utils'
 import type { QuadraticPolynomial } from './quadratic'
 
 export const QuadraticPolynomialTypeId: unique symbol = Symbol.for(

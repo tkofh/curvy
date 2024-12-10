@@ -1,5 +1,5 @@
-import type { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
+import type { Pipeable } from '../pipe'
 import type { Vector2 } from '../vector/vector2'
 import * as internal from './linear.internal'
 import type { LinearPolynomialTypeId } from './linear.internal'

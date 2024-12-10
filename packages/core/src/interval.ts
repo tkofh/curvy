@@ -1,5 +1,5 @@
-import type { Pipeable } from './internal/pipeable'
 import * as internal from './interval.internal'
+import type { Pipeable } from './pipe'
 export interface Interval extends Pipeable {
   readonly start: number
   readonly end: number

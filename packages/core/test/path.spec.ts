@@ -8,7 +8,7 @@ import * as quadraticPath2d from '../src/path/quadratic2d'
 import * as cubicPolynomial from '../src/polynomial/cubic'
 import * as linearPolynomial from '../src/polynomial/linear'
 import * as quadraticPolynomial from '../src/polynomial/quadratic'
-import { round } from '../src/util'
+import { round } from '../src/utils'
 import * as vector2 from '../src/vector/vector2'
 
 describe('linear2d', () => {

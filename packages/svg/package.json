@@ -7,7 +7,12 @@
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
-  "exports": {},
+  "exports": {
+    "./path": {
+      "types": "./dist/path.d.ts",
+      "import": "./dist/path.mjs"
+    }
+  },
   "files": ["dist"],
   "publishConfig": {
     "access": "public"

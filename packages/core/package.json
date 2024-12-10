@@ -87,6 +87,14 @@
     "./splines/basis2d": {
       "types": "./dist/splines/basis2d.d.ts",
       "import": "./dist/splines/basis2d.mjs"
+    },
+    "./pipe": {
+      "types": "./dist/pipe.d.ts",
+      "import": "./dist/pipe.mjs"
+    },
+    "./utils": {
+      "types": "./dist/utils.d.ts",
+      "import": "./dist/utils.mjs"
     }
   },
   "files": ["dist"],

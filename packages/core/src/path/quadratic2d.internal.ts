@@ -1,8 +1,8 @@
 import * as QuadraticCurve2d from '../curve/quadratic2d'
-import { dual } from '../internal/function'
-import { Pipeable } from '../internal/pipeable'
 import * as Interval from '../interval'
-import { round } from '../util'
+import { Pipeable } from '../pipe'
+import { dual } from '../pipe'
+import { round } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { QuadraticPath2d } from './quadratic2d'
 

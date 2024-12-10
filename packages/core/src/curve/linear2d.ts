@@ -1,6 +1,6 @@
 import type { TwoDimensional } from '../dimensions'
-import type { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
+import type { Pipeable } from '../pipe'
 import type { LinearPolynomial } from '../polynomial/linear'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearCurve2dTypeId } from './linear2d.internal'

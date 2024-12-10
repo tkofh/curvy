@@ -1,8 +1,8 @@
-import { dual } from '../internal/function'
-import { Pipeable } from '../internal/pipeable'
 import type { Interval } from '../interval'
+import { Pipeable } from '../pipe'
+import { dual } from '../pipe'
 import * as LinearPolynomial from '../polynomial/linear'
-import { round } from '../util'
+import { round } from '../utils'
 import * as Vector2 from '../vector/vector2'
 import type { LinearCurve2d } from './linear2d'
 

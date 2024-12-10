@@ -1,7 +1,7 @@
-import { dual } from './internal/function'
-import { Pipeable } from './internal/pipeable'
 import type { Interval } from './interval'
-import { round } from './util'
+import { Pipeable } from './pipe'
+import { dual } from './pipe'
+import { round } from './utils'
 
 const TypeId: unique symbol = Symbol.for('curvy/interval')
 type TypeId = typeof TypeId

@@ -1,6 +1,6 @@
-import { dual } from '../internal/function'
-import { Pipeable } from '../internal/pipeable'
-import { round } from '../util'
+import { Pipeable } from '../pipe'
+import { dual } from '../pipe'
+import { round } from '../utils'
 import type { Vector4 } from './vector4'
 
 export const Vector4TypeId: unique symbol = Symbol.for('curvy/vector4')

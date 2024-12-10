@@ -1,4 +1,4 @@
-import { dual } from './internal/function'
+import { dual } from './pipe'
 
 export const PRECISION = 8
 
@@ -19,6 +19,20 @@ export function roundDown(value: number, precision = PRECISION): number {
   }
   return result
 }
+
+export const lerp: {
+  (t: number, a: number, b: number): number
+  (a: number, b: number): (t: number) => number
+} = dual(3, (t: number, a: number, b: number): number => {
+  return b * t + a * (1 - t)
+})
+
+export const normalize: {
+  (x: number, a: number, b: number): number
+  (a: number, b: number): (x: number) => number
+} = dual(3, (x: number, a: number, b: number): number => {
+  return (x - a) / (b - a)
+})
 
 export const remap: {
   (x: number, x1: number, x2: number, y1: number, y2: number): number
@@ -46,18 +60,6 @@ export const clip: {
 
 export function minMax(a: number, b: number): [number, number] {
   return a < b ? [a, b] : [b, a]
-}
-
-export function objectKeys<T extends object>(
-  object: T,
-): ReadonlyArray<keyof T> {
-  return Object.keys(object) as Array<keyof T>
-}
-
-export function objectEntries<T extends object>(
-  object: T,
-): ReadonlyArray<[keyof T, T[keyof T]]> {
-  return Object.entries(object) as Array<[keyof T, T[keyof T]]>
 }
 
 export function invariant(

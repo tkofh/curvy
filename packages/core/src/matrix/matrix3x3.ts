@@ -2,6 +2,7 @@ import type {
   ThreeDimensionalComponent,
   ThreeDimensionalIndex,
 } from '../dimensions'
+import type { Pipeable } from '../pipe'
 import type { Vector3 } from '../vector/vector3'
 import type { Matrix2x2 } from './matrix2x2'
 import * as internal from './matrix3x3.internal'
@@ -11,7 +12,7 @@ export type Matrix3x3Coordinate =
   | ThreeDimensionalIndex
   | ThreeDimensionalComponent
 
-export interface Matrix3x3 {
+export interface Matrix3x3 extends Pipeable {
   readonly [Matrix3x3TypeId]: Matrix3x3TypeId
   readonly m00: number
   readonly m01: number
