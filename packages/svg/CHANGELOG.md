@@ -1,5 +1,13 @@
 # @curvy/svg
 
+## 0.0.3
+
+### Patch Changes
+
+- 1844bde: implement basic path rendering
+- Updated dependencies [1844bde]
+  - curvy@1.0.4
+
 ## 0.0.2
 
 ### Patch Changes
