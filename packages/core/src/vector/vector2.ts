@@ -14,6 +14,9 @@ export const make: {
   (x: number, y: number): Vector2
 } = internal.make
 
+export const fromPolar: (r: number, theta: number) => Vector2 =
+  internal.fromPolar
+
 export const magnitude: (vector: Vector2) => number = internal.magnitude
 
 export const normalize: (vector: Vector2) => Vector2 = internal.normalize

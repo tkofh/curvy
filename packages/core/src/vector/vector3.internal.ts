@@ -44,6 +44,16 @@ class Vector3Impl extends Pipeable implements Vector3 {
 export const isVector3 = (v: unknown): v is Vector3 =>
   typeof v === 'object' && v !== null && Vector3TypeId in v
 
+export const make = (v0: number, v1 = v0, v2 = v1): Vector3 =>
+  new Vector3Impl(v0, v1, v2)
+
+export const fromSpherical = (r: number, theta: number, phi: number) =>
+  make(
+    r * Math.sin(phi) * Math.cos(theta),
+    r * Math.sin(phi) * Math.sin(theta),
+    r * Math.cos(phi),
+  )
+
 export const magnitude = (vector: Vector3) =>
   round(Math.hypot(vector.x, vector.y, vector.z))
 
@@ -73,9 +83,6 @@ export const softmax = (v: Vector3) => {
 
   return make(v0 / sum, v1 / sum, v2 / sum)
 }
-
-export const make = (v0: number, v1 = v0, v2 = v1): Vector3 =>
-  new Vector3Impl(v0, v1, v2)
 
 export const add = dual<
   (b: Vector3) => (a: Vector3) => Vector3,

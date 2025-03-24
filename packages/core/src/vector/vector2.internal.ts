@@ -40,6 +40,9 @@ export const isVector2 = (v: unknown): v is Vector2 =>
 
 export const make = (v0: number, v1 = v0): Vector2 => new Vector2Impl(v0, v1)
 
+export const fromPolar = (r: number, theta: number) =>
+  make(r * Math.cos(theta), r * Math.sin(theta))
+
 export const components = (v: Vector2): [number, number] => [v.x, v.y]
 
 export const magnitude = (vector: Vector2) =>

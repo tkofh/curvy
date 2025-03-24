@@ -1,5 +1,18 @@
 # Change Log
 
+## 1.0.6
+
+### Patch Changes
+
+- add `Vector2.fromPolar` and `Vector3.fromSpherical`
+
+## 1.0.5
+
+### Patch Changes
+
+- c1c2018: Add getters for `x`, `y`, `z`, `r`, `theta`, and `phi` in the form of `Vector3.getPhi` etc
+- c1c2018: add getters for `x`, `y`, `r`, and `theta` in the form of `Vector2.getTheta` etc
+
 ## 1.0.4
 
 ### Patch Changes
