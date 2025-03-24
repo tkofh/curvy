@@ -91,3 +91,29 @@ export const scale = dual<
   (s: number) => (v: Vector2) => Vector2,
   (v: Vector2, s: number) => Vector2
 >(2, (v: Vector2, s: number) => (s === 1 ? v : make(v.x * s, v.y * s)))
+
+export const getX = (v: Vector2) => v.x
+export const setX = dual<
+  (x: number) => (v: Vector2) => Vector2,
+  (v: Vector2, x: number) => Vector2
+>(2, (v: Vector2, x: number) => make(x, v.y))
+
+export const getY = (v: Vector2) => v.y
+export const setY = dual<
+  (y: number) => (v: Vector2) => Vector2,
+  (v: Vector2, y: number) => Vector2
+>(2, (v: Vector2, y: number) => make(v.x, y))
+
+export const setR = dual<
+  (r: number) => (v: Vector2) => Vector2,
+  (v: Vector2, r: number) => Vector2
+>(2, (v: Vector2, r: number) => scale(r / magnitude(v))(v))
+
+export const getTheta = (v: Vector2) => round(Math.atan2(v.y, v.x))
+export const setTheta = dual<
+  (theta: number) => (v: Vector2) => Vector2,
+  (v: Vector2, theta: number) => Vector2
+>(2, (v: Vector2, theta: number) => {
+  const r = magnitude(v)
+  return make(r * Math.cos(theta), r * Math.sin(theta))
+})

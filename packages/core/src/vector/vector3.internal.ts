@@ -96,3 +96,49 @@ export const scale = dual<
   (s: number) => (v: Vector3) => Vector3,
   (v: Vector3, s: number) => Vector3
 >(2, (v: Vector3, s: number) => (s === 1 ? v : make(v.x * s, v.y * s, v.z * s)))
+
+export const getX: (v: Vector3) => number = (v: Vector3) => v.x
+export const setX = dual<
+  (x: number) => (v: Vector3) => Vector3,
+  (v: Vector3, x: number) => Vector3
+>(2, (v: Vector3, x: number) => make(x, v.y, v.z))
+
+export const getY: (v: Vector3) => number = (v: Vector3) => v.y
+export const setY = dual<
+  (y: number) => (v: Vector3) => Vector3,
+  (v: Vector3, y: number) => Vector3
+>(2, (v: Vector3, y: number) => make(v.x, y, v.z))
+
+export const getZ: (v: Vector3) => number = (v: Vector3) => v.z
+export const setZ = dual<
+  (z: number) => (v: Vector3) => Vector3,
+  (v: Vector3, z: number) => Vector3
+>(2, (v: Vector3, z: number) => make(v.x, v.y, z))
+
+export const setR = dual<
+  (r: number) => (v: Vector3) => Vector3,
+  (v: Vector3, r: number) => Vector3
+>(2, (v: Vector3, r: number) => scale(r / magnitude(v))(v))
+
+export const getPhi = (v: Vector3) => Math.acos(v.z / magnitude(v))
+export const setPhi = dual<
+  (phi: number) => (v: Vector3) => Vector3,
+  (v: Vector3, phi: number) => Vector3
+>(2, (v: Vector3, phi: number) => {
+  const m = magnitude(v)
+  const sinPhi = Math.sin(phi)
+  return make(
+    m * sinPhi * Math.cos(v.y),
+    m * sinPhi * Math.sin(v.y),
+    m * Math.cos(phi),
+  )
+})
+
+export const getTheta = (v: Vector3) => round(Math.atan2(v.y, v.x))
+export const setTheta = dual<
+  (theta: number) => (v: Vector3) => Vector3,
+  (v: Vector3, theta: number) => Vector3
+>(2, (v: Vector3, theta: number) => {
+  const m = magnitude(v)
+  return make(m * Math.cos(theta), m * Math.sin(theta), v.z)
+})

@@ -50,3 +50,39 @@ export const scale: {
   (s: number): (v: Vector3) => Vector3
   (v: Vector3, s: number): Vector3
 } = internal.scale
+
+export const getX: (v: Vector3) => number = internal.getX
+export const setX: {
+  (v: Vector3, x: number): Vector3
+  (x: number): (v: Vector3) => Vector3
+} = internal.setX
+
+export const getY: (v: Vector3) => number = internal.getY
+export const setY: {
+  (v: Vector3, y: number): Vector3
+  (y: number): (v: Vector3) => Vector3
+} = internal.setY
+
+export const getZ: (v: Vector3) => number = internal.getZ
+export const setZ: {
+  (v: Vector3, z: number): Vector3
+  (z: number): (v: Vector3) => Vector3
+} = internal.setZ
+
+export const getR: (v: Vector3) => number = magnitude
+export const setR: {
+  (v: Vector3, r: number): Vector3
+  (r: number): (v: Vector3) => Vector3
+} = internal.setR
+
+export const getTheta: (v: Vector3) => number = internal.getTheta
+export const setTheta: {
+  (v: Vector3, theta: number): Vector3
+  (theta: number): (v: Vector3) => Vector3
+} = internal.setTheta
+
+export const getPhi: (v: Vector3) => number = internal.getPhi
+export const setPhi: {
+  (v: Vector3, phi: number): Vector3
+  (phi: number): (v: Vector3) => Vector3
+} = internal.setPhi

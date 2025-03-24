@@ -53,3 +53,27 @@ export const scale: {
   (s: number): (v: Vector2) => Vector2
   (v: Vector2, s: number): Vector2
 } = internal.scale
+
+export const getX: (v: Vector2) => number = internal.getX
+export const setX: {
+  (v: Vector2, x: number): Vector2
+  (x: number): (v: Vector2) => Vector2
+} = internal.setX
+
+export const getY: (v: Vector2) => number = internal.getY
+export const setY: {
+  (v: Vector2, y: number): Vector2
+  (y: number): (v: Vector2) => Vector2
+} = internal.setY
+
+export const getR: (v: Vector2) => number = magnitude
+export const setR: {
+  (v: Vector2, r: number): Vector2
+  (r: number): (v: Vector2) => Vector2
+} = internal.setR
+
+export const getTheta: (v: Vector2) => number = internal.getTheta
+export const setTheta: {
+  (v: Vector2, theta: number): Vector2
+  (theta: number): (v: Vector2) => Vector2
+} = internal.setTheta
