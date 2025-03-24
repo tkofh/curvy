@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.7
+
+### Patch Changes
+
+- fix missing export for `Vector3.fromSpherical`
+
 ## 1.0.6
 
 ### Patch Changes

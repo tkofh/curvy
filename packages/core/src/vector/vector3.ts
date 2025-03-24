@@ -15,6 +15,9 @@ export const make: {
   (x: number, y: number, z: number): Vector3
 } = internal.make
 
+export const fromSpherical: (r: number, theta: number, phi: number) => Vector3 =
+  internal.fromSpherical
+
 export const magnitude: (vector: Vector3) => number = internal.magnitude
 
 export const normalize: (vector: Vector3) => Vector3 = internal.normalize
