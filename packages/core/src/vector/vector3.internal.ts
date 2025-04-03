@@ -68,6 +68,17 @@ export const dot = dual<
   (a: Vector3, b: Vector3) => number
 >(2, (a: Vector3, b: Vector3) => round(a.x * b.x + a.y * b.y + a.z * b.z))
 
+export const cross = dual<
+  (b: Vector3) => (a: Vector3) => Vector3,
+  (a: Vector3, b: Vector3) => Vector3
+>(2, (a: Vector3, b: Vector3) => {
+  const x = a.y * b.z - a.z * b.y
+  const y = a.z * b.x - a.x * b.z
+  const z = a.x * b.y - a.y * b.x
+
+  return make(x, y, z)
+})
+
 export const components: (v: Vector3) => [number, number, number] = (
   v: Vector3,
 ) => [v.x, v.y, v.z]
@@ -127,22 +138,22 @@ export const setR = dual<
   (v: Vector3, r: number) => Vector3
 >(2, (v: Vector3, r: number) => scale(r / magnitude(v))(v))
 
-export const getPhi = (v: Vector3) => Math.acos(v.z / magnitude(v))
-export const setPhi = dual<
+export const getTheta = (v: Vector3) => Math.acos(v.z / magnitude(v))
+export const setTheta = dual<
   (phi: number) => (v: Vector3) => Vector3,
   (v: Vector3, phi: number) => Vector3
 >(2, (v: Vector3, phi: number) => {
   const m = magnitude(v)
-  const sinPhi = Math.sin(phi)
+  const sinTheta = Math.sin(phi)
   return make(
-    m * sinPhi * Math.cos(v.y),
-    m * sinPhi * Math.sin(v.y),
+    m * sinTheta * Math.cos(v.y),
+    m * sinTheta * Math.sin(v.y),
     m * Math.cos(phi),
   )
 })
 
-export const getTheta = (v: Vector3) => round(Math.atan2(v.y, v.x))
-export const setTheta = dual<
+export const getPhi = (v: Vector3) => round(Math.atan2(v.y, v.x))
+export const setPhi = dual<
   (theta: number) => (v: Vector3) => Vector3,
   (v: Vector3, theta: number) => Vector3
 >(2, (v: Vector3, theta: number) => {

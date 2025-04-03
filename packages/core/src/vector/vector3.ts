@@ -27,6 +27,11 @@ export const dot: {
   (b: Vector3): (a: Vector3) => number
 } = internal.dot
 
+export const cross: {
+  (a: Vector3, b: Vector3): Vector3
+  (b: Vector3): (a: Vector3) => Vector3
+} = internal.cross
+
 export const components: (v: Vector3) => [number, number, number] =
   internal.components
 
