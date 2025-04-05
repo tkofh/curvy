@@ -1,6 +1,6 @@
 {
   "name": "curvy",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Spline and Curve utilities",
   "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
@@ -97,7 +97,9 @@
       "import": "./dist/utils.mjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -116,8 +118,8 @@
   },
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",
-    "typescript": "^5.7.2",
-    "unbuild": "3.0.0-rc.8",
-    "vitest": "^2.1.6"
+    "typescript": "^5.8.3",
+    "unbuild": "3.5.0",
+    "vitest": "^3.1.1"
   }
 }

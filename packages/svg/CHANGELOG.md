@@ -1,5 +1,13 @@
 # @curvy/svg
 
+## 0.0.7
+
+### Patch Changes
+
+- Updated dependencies [18a8435]
+- Updated dependencies [18a8435]
+  - curvy@1.0.8
+
 ## 0.0.6
 
 ### Patch Changes
