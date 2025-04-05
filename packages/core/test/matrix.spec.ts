@@ -9,7 +9,7 @@ import * as vector4 from '../src/vector/vector4'
 
 describe('matrix2x2', () => {
   test('make', () => {
-    expect(matrix2x2.matrix2x2(1, 2, 3, 4)).toMatchObject({
+    expect(matrix2x2.make(1, 2, 3, 4)).toMatchObject({
       m00: 1,
       m01: 2,
       m10: 3,
@@ -33,25 +33,25 @@ describe('matrix2x2', () => {
     })
   })
   test('isMatrix2x2', () => {
-    expect(matrix2x2.isMatrix2x2(matrix2x2.matrix2x2(1, 2, 3, 4))).toBe(true)
+    expect(matrix2x2.isMatrix2x2(matrix2x2.make(1, 2, 3, 4))).toBe(true)
     expect(matrix2x2.isMatrix2x2({ m00: 1, m01: 2, m10: 3, m11: 4 })).toBe(false)
   })
   test('determinant', () => {
-    expect(matrix2x2.determinant(matrix2x2.matrix2x2(1, 2, 3, 4))).toBe(-2)
+    expect(matrix2x2.determinant(matrix2x2.make(1, 2, 3, 4))).toBe(-2)
   })
   test('vectorProductLeft', () => {
-    expect(
-      matrix2x2.vectorProductLeft(matrix2x2.matrix2x2(1, 2, 3, 4), vector2.make(1, 2)),
-    ).toEqual(vector2.make(5, 11))
+    expect(matrix2x2.vectorProductLeft(matrix2x2.make(1, 2, 3, 4), vector2.make(1, 2))).toEqual(
+      vector2.make(5, 11),
+    )
   })
   test('vectorProductRight', () => {
-    expect(
-      matrix2x2.vectorProductRight(matrix2x2.matrix2x2(1, 2, 3, 4), vector2.make(1, 2)),
-    ).toEqual(vector2.make(7, 10))
+    expect(matrix2x2.vectorProductRight(matrix2x2.make(1, 2, 3, 4), vector2.make(1, 2))).toEqual(
+      vector2.make(7, 10),
+    )
   })
   test('solveSystem', () => {
     const solution = vector2.make(1, 2)
-    const coefficients = matrix2x2.matrix2x2(1, 2, 3, 4)
+    const coefficients = matrix2x2.make(1, 2, 3, 4)
 
     const result = matrix2x2.solveSystem(coefficients, solution)
 
@@ -59,22 +59,22 @@ describe('matrix2x2', () => {
     expect(result.x * coefficients.m10 + result.y * coefficients.m11).toBeCloseTo(solution.y)
   })
   test('toRows', () => {
-    expect(matrix2x2.toRows(matrix2x2.matrix2x2(1, 2, 3, 4))).toEqual([
+    expect(matrix2x2.toRows(matrix2x2.make(1, 2, 3, 4))).toEqual([
       vector2.make(1, 2),
       vector2.make(3, 4),
     ])
   })
   test('toColumns', () => {
-    expect(matrix2x2.toColumns(matrix2x2.matrix2x2(1, 2, 3, 4))).toEqual([
+    expect(matrix2x2.toColumns(matrix2x2.make(1, 2, 3, 4))).toEqual([
       vector2.make(1, 3),
       vector2.make(2, 4),
     ])
   })
   test('rowVector', () => {
-    expect(matrix2x2.rowVector(matrix2x2.matrix2x2(1, 2, 3, 4), 0)).toEqual(vector2.make(1, 2))
+    expect(matrix2x2.rowVector(matrix2x2.make(1, 2, 3, 4), 0)).toEqual(vector2.make(1, 2))
   })
   test('columnVector', () => {
-    expect(matrix2x2.columnVector(matrix2x2.matrix2x2(1, 2, 3, 4), 0)).toEqual(vector2.make(1, 3))
+    expect(matrix2x2.columnVector(matrix2x2.make(1, 2, 3, 4), 0)).toEqual(vector2.make(1, 3))
   })
 })
 
@@ -144,7 +144,7 @@ describe('matrix3x3', () => {
   })
   test('minor', () => {
     expect(matrix3x3.minor(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9), 0, 1)).toEqual(
-      matrix2x2.matrix2x2(4, 6, 7, 9),
+      matrix2x2.make(4, 6, 7, 9),
     )
   })
   test('vectorProductLeft', () => {
