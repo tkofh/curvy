@@ -23,18 +23,33 @@ export interface Vector3 extends Pipeable, ThreeDimensional<number> {
  */
 export const isVector3: (v: unknown) => v is Vector3 = internal.isVector3
 
-/**
- * Creates a new `Vector3` instance.
- *
- * @param x - The x component of the vector.
- * @param y - The y component of the vector.
- * @param z - The z component of the vector.
- * @returns A new `Vector3` instance.
- * @since 1.0.0
- */
 export const make: {
+  /**
+   * Creates a new `Vector3` instance.
+   *
+   * @param xyz - The x, y, and z components of the vector.
+   * @returns A new `Vector3` instance.
+   * @since 1.0.0
+   */
   (xyz: number): Vector3
+  /**
+   * Creates a new `Vector3` instance.
+   *
+   * @param x - The x component of the vector.
+   * @param yz - The y and z components of the vector.
+   * @returns A new `Vector3` instance.
+   * @since 1.0.0
+   */
   (x: number, yz: number): Vector3
+  /**
+   * Creates a new `Vector3` instance.
+   *
+   * @param x - The x component of the vector.
+   * @param y - The y component of the vector.
+   * @param z - The z component of the vector.
+   * @returns A new `Vector3` instance.
+   * @since 1.0.0
+   */
   (x: number, y: number, z: number): Vector3
 } = internal.make
 
@@ -78,29 +93,43 @@ export const length: (vector: Vector3) => number = magnitude
  */
 export const normalize: (vector: Vector3) => Vector3 = internal.normalize
 
-/**
- * Calculates the dot product of two `Vector3` instances.
- *
- * @param a - The first vector.
- * @param b - The second vector.
- * @returns The dot product of the two vectors.
- * @since 1.0.0
- */
 export const dot: {
+  /**
+   * Calculates the dot product of two `Vector3` instances.
+   *
+   * @param a - The first vector.
+   * @param b - The second vector.
+   * @returns The dot product of the two vectors.
+   * @since 1.0.0
+   */
   (a: Vector3, b: Vector3): number
+  /**
+   * Calculates the dot product of two `Vector3` instances.
+   *
+   * @param b - The second vector.
+   * @returns A function that takes the first vector and returns the dot product.
+   * @since 1.0.0
+   */
   (b: Vector3): (a: Vector3) => number
 } = internal.dot
 
-/**
- * Calculates the cross product of two `Vector3` instances.
- *
- * @param a - The first vector.
- * @param b - The second vector.
- * @returns A new `Vector3` instance representing the cross product of the two vectors.
- * @since 1.0.0
- */
 export const cross: {
+  /**
+   * Calculates the cross product of two `Vector3` instances.
+   *
+   * @param a - The first vector.
+   * @param b - The second vector.
+   * @returns A new `Vector3` instance representing the cross product of the two vectors.
+   * @since 1.0.0
+   */
   (a: Vector3, b: Vector3): Vector3
+  /**
+   * Calculates the cross product of two `Vector3` instances.
+   *
+   * @param b - The second vector.
+   * @returns A function that takes the first vector and returns the cross product.
+   * @since 1.0.0
+   */
   (b: Vector3): (a: Vector3) => Vector3
 } = internal.cross
 
@@ -111,8 +140,7 @@ export const cross: {
  * @returns An array containing the x, y, and z components of the vector.
  * @since 1.0.0
  */
-export const components: (v: Vector3) => [number, number, number] =
-  internal.components
+export const components: (v: Vector3) => [number, number, number] = internal.components
 
 /**
  * Calculates the softmax of a `Vector3`.
@@ -158,64 +186,87 @@ export const unitY = make(0, 1, 0)
  */
 export const unitZ = make(0, 0, 1)
 
-/**
- * Adds two `Vector3` instances.
- *
- * @param a - The first vector.
- * @param b - The second vector.
- * @returns A new `Vector3` instance representing the sum of the two vectors.
- * @since 1.0.0
- */
 export const add: {
+  /**
+   * Adds two `Vector3` instances.
+   *
+   * @param a - The first vector.
+   * @param b - The second vector.
+   * @returns A new `Vector3` instance representing the sum of the two vectors.
+   * @since 1.0.0
+   */
   (a: Vector3, b: Vector3): Vector3
+  /**
+   * Adds two `Vector3` instances.
+   *
+   * @param b - The second vector.
+   * @returns A function that takes the first vector and returns the sum.
+   * @since 1.0.0
+   */
   (b: Vector3): (a: Vector3) => Vector3
 } = internal.add
 
-/**
- * Subtracts one `Vector3` instance from another.
- *
- * @param a - The vector to subtract from.
- * @param b - The vector to subtract.
- * @returns A new `Vector3` instance representing the difference of the two vectors.
- * @since 1.0.0
- */
 export const subtract: {
+  /**
+   * Subtracts one `Vector3` instance from another.
+   *
+   * @param a - The vector to subtract from.
+   * @param b - The vector to subtract.
+   * @returns A new `Vector3` instance representing the difference of the two vectors.
+   * @since 1.0.0
+   */
   (a: Vector3, b: Vector3): Vector3
+  /**
+   * Subtracts one `Vector3` instance from another.
+   *
+   * @param b - The vector to subtract.
+   * @returns A function that takes the first vector and returns the difference.
+   * @since 1.0.0
+   */
   (b: Vector3): (a: Vector3) => Vector3
 } = internal.subtract
 
-/**
- * Calculates the Hadamard product of two `Vector3` instances.
- *
- * The Hadamard product is an element-wise multiplication of two vectors.
- *
- * @example
- * ```ts
- * import { hadamard, make } from 'curvy/vector3'
- * const result = hadamard(make(1, 2, 3), make(4, 5, 6))
- * // result is a new Vector3 instance with components (4, 10, 18)
- * ```
- *
- * @param a - The first vector.
- * @param b - The second vector.
- * @returns A new `Vector3` instance representing the Hadamard product of the two vectors.
- * @since 1.0.0
- */
 export const hadamard: {
+  /**
+   * Calculates the Hadamard product of two `Vector3` instances.
+   *
+   * The Hadamard product is an element-wise multiplication of two vectors.
+   *
+   * @param a - The first vector.
+   * @param b - The second vector.
+   * @returns A new `Vector3` instance representing the Hadamard product of the two vectors.
+   * @since 1.0.0
+   */
   (a: Vector3, b: Vector3): Vector3
+  /**
+   * Calculates the Hadamard product of two `Vector3` instances.
+   *
+   * The Hadamard product is an element-wise multiplication of two vectors.
+   *
+   * @param b - The second vector.
+   * @returns A function that takes the first vector and returns the Hadamard product.
+   * @since 1.0.0
+   */
   (b: Vector3): (a: Vector3) => Vector3
 } = internal.hadamard
 
-/**
- * Scales a `Vector3` instance by a scalar value.
- *
- * @param s - The scalar value to scale by.
- * @param v - The vector to scale.
- * @returns A new `Vector3` instance representing the scaled vector.
- * @since 1.0.0
- */
 export const scale: {
+  /**
+   * Scales a `Vector3` instance by a scalar value.
+   *
+   * @param s - The scalar value to scale by.
+   * @return A function that takes a vector and returns the scaled vector.
+   * @since 1.0.0
+   */
   (s: number): (v: Vector3) => Vector3
+  /**
+   * Scales a `Vector3` instance by a scalar value.
+   *
+   * @param s - The scalar value to scale by.
+   * @param v - The vector to scale.
+   * @returns A new `Vector3` instance representing the scaled vector.
+   * @since 1.0.0
+   */
   (v: Vector3, s: number): Vector3
 } = internal.scale
 
@@ -228,16 +279,23 @@ export const scale: {
  */
 export const getX: (v: Vector3) => number = internal.getX
 
-/**
- * Sets the x component of a `Vector3`.
- *
- * @param v - The vector to set the x component of.
- * @param x - The new x component.
- * @returns A new `Vector3` instance with the updated x component.
- * @since 1.0.0
- */
 export const setX: {
+  /**
+   * Sets the x component of a `Vector3`.
+   *
+   * @param v - The vector to set the x component of.
+   * @param x - The new x component.
+   * @returns A new `Vector3` instance with the updated x component.
+   * @since 1.0.0
+   */
   (v: Vector3, x: number): Vector3
+  /**
+   * Sets the x component of a `Vector3`.
+   *
+   * @param x - The new x component.
+   * @returns A function that takes the vector and returns a new `Vector3` instance with the updated x component.
+   * @since 1.0.0
+   */
   (x: number): (v: Vector3) => Vector3
 } = internal.setX
 
@@ -250,16 +308,23 @@ export const setX: {
  */
 export const getY: (v: Vector3) => number = internal.getY
 
-/**
- * Sets the y component of a `Vector3`.
- *
- * @param v - The vector of which to set the y component.
- * @param y - The new y component.
- * @returns A new `Vector3` instance with the updated y component.
- * @since 1.0.0
- */
 export const setY: {
+  /**
+   * Sets the y component of a `Vector3`.
+   *
+   * @param v - The vector of which to set the y component.
+   * @param y - The new y component.
+   * @returns A new `Vector3` instance with the updated y component.
+   * @since 1.0.0
+   */
   (v: Vector3, y: number): Vector3
+  /**
+   * Sets the y component of a `Vector3`.
+   *
+   * @param y - The new y component.
+   * @returns A function that takes the vector and returns a new `Vector3` instance with the updated y component.
+   * @since 1.0.0
+   */
   (y: number): (v: Vector3) => Vector3
 } = internal.setY
 
@@ -272,16 +337,23 @@ export const setY: {
  */
 export const getZ: (v: Vector3) => number = internal.getZ
 
-/**
- * Sets the z component of a `Vector3`.
- *
- * @param v - The vector of which to set the z component.
- * @param z - The new z component.
- * @returns A new `Vector3` instance with the updated z component.
- * @since 1.0.0
- */
 export const setZ: {
+  /**
+   * Sets the z component of a `Vector3`.
+   *
+   * @param v - The vector of which to set the z component.
+   * @param z - The new z component.
+   * @returns A new `Vector3` instance with the updated z component.
+   * @since 1.0.0
+   */
   (v: Vector3, z: number): Vector3
+  /**
+   * Sets the z component of a `Vector3`.
+   *
+   * @param z - The new z component.
+   * @returns A function that takes the vector and returns a new `Vector3` instance with the updated z component.
+   * @since 1.0.0
+   */
   (z: number): (v: Vector3) => Vector3
 } = internal.setZ
 
@@ -294,16 +366,23 @@ export const setZ: {
  */
 export const getR: (v: Vector3) => number = magnitude
 
-/**
- * Sets the radius of a `Vector3`.
- *
- * @param v - The vector of which to set the radius.
- * @param r - The new radius.
- * @returns A new `Vector3` instance with the updated radius.
- * @since 1.0.0
- */
 export const setR: {
+  /**
+   * Sets the radius of a `Vector3`.
+   *
+   * @param v - The vector of which to set the radius.
+   * @param r - The new radius.
+   * @returns A new `Vector3` instance with the updated radius.
+   * @since 1.0.0
+   */
   (v: Vector3, r: number): Vector3
+  /**
+   * Sets the radius of a `Vector3`.
+   *
+   * @param r - The new radius.
+   * @returns A function that takes the vector and returns the updated vector.
+   * @since 1.0.0
+   */
   (r: number): (v: Vector3) => Vector3
 } = internal.setR
 
@@ -316,16 +395,23 @@ export const setR: {
  */
 export const getTheta: (v: Vector3) => number = internal.getTheta
 
-/**
- * Sets the polar angle (theta) of a `Vector3`.
- *
- * @param v - The vector of which to set the polar angle.
- * @param theta - The new polar angle.
- * @returns A new `Vector3` instance with the updated polar angle.
- * @since 1.0.0
- */
 export const setTheta: {
+  /**
+   * Sets the polar angle (theta) of a `Vector3`.
+   *
+   * @param v - The vector of which to set the polar angle.
+   * @param theta - The new polar angle.
+   * @returns A new `Vector3` instance with the updated polar angle.
+   * @since 1.0.0
+   */
   (v: Vector3, theta: number): Vector3
+  /**
+   * Sets the polar angle (theta) of a `Vector3`.
+   *
+   * @param theta - The new polar angle.
+   * @returns A function that takes the vector and returns the updated vector.
+   * @since 1.0.0
+   */
   (theta: number): (v: Vector3) => Vector3
 } = internal.setTheta
 
@@ -338,15 +424,22 @@ export const setTheta: {
  */
 export const getPhi: (v: Vector3) => number = internal.getPhi
 
-/**
- * Sets the azimuthal angle (phi) of a `Vector3`.
- *
- * @param v - The vector of which to set the azimuthal angle.
- * @param phi - The new azimuthal angle.
- * @returns A new `Vector3` instance with the updated azimuthal angle.
- * @since 1.0.0
- */
 export const setPhi: {
+  /**
+   * Sets the azimuthal angle (phi) of a `Vector3`.
+   *
+   * @param v - The vector of which to set the azimuthal angle.
+   * @param phi - The new azimuthal angle.
+   * @returns A new `Vector3` instance with the updated azimuthal angle.
+   * @since 1.0.0
+   */
   (v: Vector3, phi: number): Vector3
+  /**
+   * Sets the azimuthal angle (phi) of a `Vector3`.
+   *
+   * @param phi - The new azimuthal angle.
+   * @returns A function that takes the vector and returns the updated vector.
+   * @since 1.0.0
+   */
   (phi: number): (v: Vector3) => Vector3
 } = internal.setPhi

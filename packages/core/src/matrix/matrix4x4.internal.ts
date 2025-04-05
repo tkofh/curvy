@@ -107,24 +107,7 @@ export const make = (
   m32 = m02,
   m33 = m03,
 ) =>
-  new Matrix4x4Impl(
-    m00,
-    m01,
-    m02,
-    m03,
-    m10,
-    m11,
-    m12,
-    m13,
-    m20,
-    m21,
-    m22,
-    m23,
-    m30,
-    m31,
-    m32,
-    m33,
-  )
+  new Matrix4x4Impl(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33)
 
 export const fromRows = (v0: Vector4, v1: Vector4, v2: Vector4, v3: Vector4) =>
   new Matrix4x4Impl(
@@ -146,12 +129,7 @@ export const fromRows = (v0: Vector4, v1: Vector4, v2: Vector4, v3: Vector4) =>
     v3.w,
   )
 
-export const fromColumns = (
-  v0: Vector4,
-  v1: Vector4,
-  v2: Vector4,
-  v3: Vector4,
-) =>
+export const fromColumns = (v0: Vector4, v1: Vector4, v2: Vector4, v3: Vector4) =>
   new Matrix4x4Impl(
     v0.x,
     v1.x,
@@ -176,12 +154,7 @@ export const setRow = dual<
   (m: Matrix4x4, row: Matrix4x4Coordinate, v: Vector4) => Matrix4x4
 >(3, (m: Matrix4x4, row: Matrix4x4Coordinate, v: Vector4) =>
   fromRows(
-    ...(toRows(m).with(toFourDimensionalIndex(row), v) as [
-      Vector4,
-      Vector4,
-      Vector4,
-      Vector4,
-    ]),
+    ...(toRows(m).with(toFourDimensionalIndex(row), v) as [Vector4, Vector4, Vector4, Vector4]),
   ),
 )
 
@@ -208,15 +181,8 @@ export const determinant = (m: Matrix4x4) =>
   )
 
 export const minor = dual<
-  (
-    row: Matrix4x4Coordinate,
-    column: Matrix4x4Coordinate,
-  ) => (m: Matrix4x4) => Matrix3x3,
-  (
-    m: Matrix4x4,
-    row: Matrix4x4Coordinate,
-    column: Matrix4x4Coordinate,
-  ) => Matrix3x3
+  (row: Matrix4x4Coordinate, column: Matrix4x4Coordinate) => (m: Matrix4x4) => Matrix3x3,
+  (m: Matrix4x4, row: Matrix4x4Coordinate, column: Matrix4x4Coordinate) => Matrix3x3
 >(3, (m: Matrix4x4, row: Matrix4x4Coordinate, column: Matrix4x4Coordinate) => {
   const [v0, v1, v2] = toRows(m).toSpliced(toFourDimensionalIndex(row), 1) as [
     Vector4,
@@ -308,23 +274,14 @@ export const toColumns = (m: Matrix4x4) =>
 export const rowVector = dual<
   (row: Matrix4x4Coordinate) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, row: Matrix4x4Coordinate) => Vector4
->(
-  2,
-  (m: Matrix4x4, row: Matrix4x4Coordinate) =>
-    toRows(m)[toFourDimensionalIndex(row)],
-)
+>(2, (m: Matrix4x4, row: Matrix4x4Coordinate) => toRows(m)[toFourDimensionalIndex(row)])
 
 export const columnVector = dual<
   (column: Matrix4x4Coordinate) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, column: Matrix4x4Coordinate) => Vector4
->(
-  2,
-  (m: Matrix4x4, column: Matrix4x4Coordinate) =>
-    toColumns(m)[toFourDimensionalIndex(column)],
-)
+>(2, (m: Matrix4x4, column: Matrix4x4Coordinate) => toColumns(m)[toFourDimensionalIndex(column)])
 
-export const transpose = (m: Matrix4x4) =>
-  fromColumns(...toRows(m)) as Matrix4x4
+export const transpose = (m: Matrix4x4) => fromColumns(...toRows(m)) as Matrix4x4
 
 export const reverseRows = (m: Matrix4x4) => {
   const [v0, v1, v2, v3] = toRows(m) as [Vector4, Vector4, Vector4, Vector4]

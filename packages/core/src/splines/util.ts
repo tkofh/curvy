@@ -54,16 +54,10 @@ export function* toCurves(
   for (const [p0, p1, p2, p3] of toPointQuads(points, stride)) {
     yield CubicCurve2d.fromPolynomials(
       CubicPolynomial.fromVector(
-        Matrix4x4.vectorProductLeft(
-          matrix,
-          Vector4.make(p0.x, p1.x, p2.x, p3.x),
-        ),
+        Matrix4x4.vectorProductLeft(matrix, Vector4.make(p0.x, p1.x, p2.x, p3.x)),
       ),
       CubicPolynomial.fromVector(
-        Matrix4x4.vectorProductLeft(
-          matrix,
-          Vector4.make(p0.y, p1.y, p2.y, p3.y),
-        ),
+        Matrix4x4.vectorProductLeft(matrix, Vector4.make(p0.y, p1.y, p2.y, p3.y)),
       ),
     )
   }

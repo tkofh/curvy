@@ -97,9 +97,7 @@
       "import": "./dist/utils.mjs"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "publishConfig": {
     "access": "public"
   },

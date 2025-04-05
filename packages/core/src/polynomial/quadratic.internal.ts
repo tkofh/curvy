@@ -1,20 +1,15 @@
 import * as Interval from '../interval'
 import { dual } from '../pipe'
 import { round } from '../utils'
+import * as Vector2 from '../vector/vector2'
 import type { Vector3 } from '../vector/vector3'
 import type { CubicPolynomial } from './cubic'
 import { CubicPolynomialImpl } from './cubic.internal.circular'
 import * as Linear from './linear.internal'
-import {
-  type Monotonicity,
-  guaranteedMonotonicityFromComparison,
-} from './monotonicity'
+import { type Monotonicity, guaranteedMonotonicityFromComparison } from './monotonicity'
 import type { QuadraticPolynomial } from './quadratic'
-import {
-  QuadraticPolynomialImpl,
-  QuadraticPolynomialTypeId,
-} from './quadratic.internal.circular'
-import type { ZeroToTwoSolutions } from './types'
+import { QuadraticPolynomialImpl, QuadraticPolynomialTypeId } from './quadratic.internal.circular'
+import type { ZeroToTwo } from './types'
 
 export const make = (c0 = 0, c1 = 0, c2 = 0): QuadraticPolynomial =>
   new QuadraticPolynomialImpl(c0, c1, c2)
@@ -22,33 +17,30 @@ export const make = (c0 = 0, c1 = 0, c2 = 0): QuadraticPolynomial =>
 export const isQuadraticPolynomial = (v: unknown): v is QuadraticPolynomial =>
   typeof v === 'object' && v !== null && QuadraticPolynomialTypeId in v
 
-export const fromVector = (v: Vector3) =>
-  new QuadraticPolynomialImpl(v.x, v.y, v.z)
+export const fromVector = (v: Vector3) => new QuadraticPolynomialImpl(v.x, v.y, v.z)
 
 export const solve = dual<
   (x: number) => (p: QuadraticPolynomial) => number,
   (p: QuadraticPolynomial, x: number) => number
->(2, (p: QuadraticPolynomial, x: number) =>
-  round(p.c0 + x * p.c1 + x ** 2 * p.c2),
-)
+>(2, (p: QuadraticPolynomial, x: number) => round(p.c0 + x * p.c1 + x ** 2 * p.c2))
 
 export const toSolver = (p: QuadraticPolynomial) => (x: number) => solve(p, x)
 
 export const solveInverse: {
-  (p: QuadraticPolynomial, y: number): ZeroToTwoSolutions
-  (y: number): (p: QuadraticPolynomial) => ZeroToTwoSolutions
+  (p: QuadraticPolynomial, y: number): ZeroToTwo
+  (y: number): (p: QuadraticPolynomial) => ZeroToTwo
 } = dual<
-  (y: number) => (p: QuadraticPolynomial) => ZeroToTwoSolutions,
-  (p: QuadraticPolynomial, y: number) => ZeroToTwoSolutions
+  (y: number) => (p: QuadraticPolynomial) => ZeroToTwo,
+  (p: QuadraticPolynomial, y: number) => ZeroToTwo
 >(2, (p: QuadraticPolynomial, y: number) => {
   const discriminant = p.c1 ** 2 - 4 * p.c2 * (p.c0 - y)
 
   if (discriminant < 0) {
-    return [] as ZeroToTwoSolutions
+    return [] as ZeroToTwo
   }
 
   if (discriminant === 0) {
-    return [round(-p.c1 / (2 * p.c2))] as ZeroToTwoSolutions
+    return [round(-p.c1 / (2 * p.c2))] as ZeroToTwo
   }
 
   const sqrtDiscriminant = Math.sqrt(discriminant)
@@ -56,21 +48,23 @@ export const solveInverse: {
   return [
     round((-p.c1 + sqrtDiscriminant) / (2 * p.c2)),
     round((-p.c1 - sqrtDiscriminant) / (2 * p.c2)),
-  ].toSorted((a, b) => a - b) as unknown as ZeroToTwoSolutions
+  ].toSorted((a, b) => a - b) as unknown as ZeroToTwo
 })
 
 export const toInverseSolver =
   (p: QuadraticPolynomial) =>
-  (y: number): ZeroToTwoSolutions =>
+  (y: number): ZeroToTwo =>
     solveInverse(p, y)
 
-export const derivative = (p: QuadraticPolynomial) =>
-  Linear.make(p.c1, p.c2 * 2)
+export const derivative = (p: QuadraticPolynomial) => Linear.make(p.c1, p.c2 * 2)
 
 export const roots = (p: QuadraticPolynomial) => solveInverse(p, 0)
 
-export const extreme = (p: QuadraticPolynomial) =>
-  derivative(p).pipe(Linear.solveInverse(0)) ?? (p.c2 === 0 ? null : 0)
+export const extreme = (p: QuadraticPolynomial) => {
+  const result = derivative(p).pipe(Linear.solveInverse(0)) ?? (p.c2 === 0 ? null : 0)
+
+  return result === null ? null : Vector2.make(result, solve(p, result))
+}
 
 export const monotonicity = dual<
   (i: Interval.Interval) => (p: QuadraticPolynomial) => Monotonicity,
@@ -87,7 +81,7 @@ export const monotonicity = dual<
     }
 
     // c2 is non-zero, so the extreme is guaranteed to be non-null
-    const e = extreme(p) as number
+    const e = extreme(p) as Vector2.Vector2
 
     // if the interval is a single point, the monotonicity is constant
     if (i && Interval.size(i) === 0) {
@@ -96,17 +90,11 @@ export const monotonicity = dual<
 
     // if there is no interval, or the extreme is within the interval,
     // the monotonicity is none
-    if (
-      i === undefined ||
-      Interval.contains(i, e, { includeStart: false, includeEnd: false })
-    ) {
+    if (i === undefined || Interval.contains(i, e.x, { includeStart: false, includeEnd: false })) {
       return 'none'
     }
 
-    return guaranteedMonotonicityFromComparison(
-      solve(p, i.start),
-      solve(p, i.end),
-    )
+    return guaranteedMonotonicityFromComparison(solve(p, i.start), solve(p, i.end))
   },
 )
 
@@ -120,9 +108,7 @@ export const antiderivative = dual<
 )
 
 export const domain = dual<
-  (
-    range: Interval.Interval,
-  ) => (p: QuadraticPolynomial) => Interval.Interval | null,
+  (range: Interval.Interval) => (p: QuadraticPolynomial) => Interval.Interval | null,
   (p: QuadraticPolynomial, range: Interval.Interval) => Interval.Interval | null
 >(2, (p: QuadraticPolynomial, range: Interval.Interval) => {
   const start = solveInverse(p, range.start)
@@ -132,10 +118,7 @@ export const domain = dual<
     return null
   }
 
-  return Interval.fromMinMax(
-    ...solveInverse(p, range.start),
-    ...solveInverse(p, range.end),
-  )
+  return Interval.fromMinMax(...solveInverse(p, range.start), ...solveInverse(p, range.end))
 })
 
 export const range = dual<
@@ -148,12 +131,8 @@ export const range = dual<
 
   const e = extreme(p)
 
-  return e !== null && Interval.contains(domain, e)
-    ? Interval.fromMinMax(
-        solve(p, domain.start),
-        solve(p, domain.end),
-        solve(p, e),
-      )
+  return e !== null && Interval.contains(domain, e.x)
+    ? Interval.fromMinMax(solve(p, domain.start), solve(p, domain.end), e.y)
     : Interval.fromMinMax(solve(p, domain.start), solve(p, domain.end))
 })
 
@@ -174,15 +153,12 @@ export const length = dual<
   const derivativeStart = Linear.solve(d, domain.start)
   const sqrtStart = Math.sqrt(1 + derivativeStart ** 2)
   const evalStart =
-    (derivativeStart * sqrtStart +
-      Math.log(Math.abs(derivativeStart + sqrtStart))) /
-    (4 * p.c2)
+    (derivativeStart * sqrtStart + Math.log(Math.abs(derivativeStart + sqrtStart))) / (4 * p.c2)
 
   const derivativeEnd = Linear.solve(d, domain.end)
   const sqrtEnd = Math.sqrt(1 + derivativeEnd ** 2)
   const evalEnd =
-    (derivativeEnd * sqrtEnd + Math.log(Math.abs(derivativeEnd + sqrtEnd))) /
-    (4 * p.c2)
+    (derivativeEnd * sqrtEnd + Math.log(Math.abs(derivativeEnd + sqrtEnd))) / (4 * p.c2)
 
   return round(evalEnd - evalStart)
 })
@@ -191,7 +167,5 @@ export const curvature = dual<
   (x: number) => (p: QuadraticPolynomial) => number,
   (p: QuadraticPolynomial, x: number) => number
 >(2, (p: QuadraticPolynomial, x: number) =>
-  round(
-    Math.abs(2 * p.c2) / (1 + (Linear.solve(derivative(p), x) ** 2) ** 1.5),
-  ),
+  round(Math.abs(2 * p.c2) / (1 + (Linear.solve(derivative(p), x) ** 2) ** 1.5)),
 )

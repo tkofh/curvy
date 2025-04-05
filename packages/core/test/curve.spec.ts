@@ -24,20 +24,14 @@ describe('linear2d', () => {
   test('isLinearCurve2d', () => {
     expect(
       linear2d.isLinearCurve2d(
-        linear2d.fromPolynomials(
-          linearPolynomial.make(0, 1),
-          linearPolynomial.make(1, 0),
-        ),
+        linear2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
       ),
     ).toBe(true)
   })
   test('solve', () => {
     expect(
       linear2d.solve(
-        linear2d.fromPolynomials(
-          linearPolynomial.make(0, 1),
-          linearPolynomial.make(1, 0),
-        ),
+        linear2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
         0.5,
       ),
     ).toEqual(vector2.make(0.5, 1))
@@ -45,10 +39,7 @@ describe('linear2d', () => {
   test('length', () => {
     expect(
       linear2d.length(
-        linear2d.fromPolynomials(
-          linearPolynomial.make(0, 1),
-          linearPolynomial.make(0, 1),
-        ),
+        linear2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(0, 1)),
         interval.make(0, 1),
       ),
     ).toBeCloseTo(Math.sqrt(2))

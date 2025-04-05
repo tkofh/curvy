@@ -25,9 +25,7 @@ describe('linear', () => {
     })
   })
   test('fromPoints', () => {
-    expect(
-      linear.fromPoints(vector2.make(-1, -1), vector2.make(1, 1)),
-    ).toMatchObject({
+    expect(linear.fromPoints(vector2.make(-1, -1), vector2.make(1, 1))).toMatchObject({
       c0: 0,
       c1: 1,
     })
@@ -68,20 +66,14 @@ describe('linear', () => {
     expect(linear.monotonicity(linear.make(0, 0))).toBe('constant')
   })
   test('antiderivative', () => {
-    expect(linear.antiderivative(linear.make(0, 1), 2)).toEqual(
-      quadratic.make(2, 0, 0.5),
-    )
+    expect(linear.antiderivative(linear.make(0, 1), 2)).toEqual(quadratic.make(2, 0, 0.5))
   })
   test('domain', () => {
     const line = linear.make(0, 1)
-    expect(linear.domain(line, interval.make(0, 1))).toEqual(
-      interval.make(0, 1),
-    )
+    expect(linear.domain(line, interval.make(0, 1))).toEqual(interval.make(0, 1))
   })
   test('range', () => {
-    expect(linear.range(linear.make(0, 1), interval.make(0, 2))).toEqual(
-      interval.make(0, 2),
-    )
+    expect(linear.range(linear.make(0, 1), interval.make(0, 2))).toEqual(interval.make(0, 2))
   })
   test('length', () => {
     const l = linear.make(0, 2)
@@ -112,12 +104,8 @@ describe('quadratic', () => {
     expect(solver(2)).toBe(10)
   })
   test('solveInverse', () => {
-    expect(quadratic.solveInverse(quadratic.make(0, 1, 2), 0)).toEqual([
-      -0.5, 0,
-    ])
-    expect(quadratic.solveInverse(quadratic.make(0, 1, 2), -0.125)).toEqual([
-      -0.25,
-    ])
+    expect(quadratic.solveInverse(quadratic.make(0, 1, 2), 0)).toEqual([-0.5, 0])
+    expect(quadratic.solveInverse(quadratic.make(0, 1, 2), -0.125)).toEqual([-0.25])
     expect(quadratic.solveInverse(quadratic.make(0, 1, 2), -0.5)).toEqual([])
   })
   test('toInverseSolver', () => {
@@ -127,9 +115,7 @@ describe('quadratic', () => {
     expect(inverseSolver(-0.5)).toEqual([])
   })
   test('derivative', () => {
-    expect(quadratic.derivative(quadratic.make(0, 1, 2))).toEqual(
-      linear.make(1, 4),
-    )
+    expect(quadratic.derivative(quadratic.make(0, 1, 2))).toEqual(linear.make(1, 4))
   })
   test('roots', () => {
     expect(quadratic.roots(quadratic.make(0, 1, 2))).toEqual([-0.5, 0])
@@ -139,61 +125,41 @@ describe('quadratic', () => {
     expect(quadratic.monotonicity(quadratic.make(0, 1, 0))).toBe('increasing')
     expect(quadratic.monotonicity(quadratic.make(0, -1, 0))).toBe('decreasing')
     expect(quadratic.monotonicity(quadratic.make(0, 1, 2))).toBe('none')
-    expect(
-      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(0, 1)),
-    ).toBe('increasing')
-    expect(
-      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-2, -1)),
-    ).toBe('decreasing')
-    expect(
-      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-2, -0.25)),
-    ).toBe('decreasing')
-    expect(
-      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-0.25)),
-    ).toBe('constant')
-    expect(
-      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-0.25, 1)),
-    ).toBe('increasing')
-    expect(
-      quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(1, 2)),
-    ).toBe('increasing')
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(0, 1))).toBe('increasing')
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-2, -1))).toBe(
+      'decreasing',
+    )
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-2, -0.25))).toBe(
+      'decreasing',
+    )
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-0.25))).toBe('constant')
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-0.25, 1))).toBe(
+      'increasing',
+    )
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(1, 2))).toBe('increasing')
   })
   test('antiderivative', () => {
-    expect(quadratic.antiderivative(quadratic.make(1, 2, 3), 0)).toEqual(
-      cubic.make(0, 1, 1, 1),
-    )
+    expect(quadratic.antiderivative(quadratic.make(1, 2, 3), 0)).toEqual(cubic.make(0, 1, 1, 1))
   })
   test('domain', () => {
     const p = quadratic.make(0, 0, 1)
     expect(quadratic.domain(p, interval.make(-2, -1))).toEqual(null)
 
-    expect(quadratic.domain(p, interval.make(-1, 0))).toEqual(
-      interval.make(0, 0),
-    )
+    expect(quadratic.domain(p, interval.make(-1, 0))).toEqual(interval.make(0, 0))
 
-    expect(quadratic.domain(p, interval.make(-1, 1))).toEqual(
-      interval.make(-1, 1),
-    )
+    expect(quadratic.domain(p, interval.make(-1, 1))).toEqual(interval.make(-1, 1))
 
-    expect(quadratic.domain(p, interval.make(0, 1))).toEqual(
-      interval.make(-1, 1),
-    )
+    expect(quadratic.domain(p, interval.make(0, 1))).toEqual(interval.make(-1, 1))
 
-    expect(quadratic.domain(p, interval.make(1, 4))).toEqual(
-      interval.make(-2, 2),
-    )
+    expect(quadratic.domain(p, interval.make(1, 4))).toEqual(interval.make(-2, 2))
   })
   test('range', () => {
     const p = quadratic.make(0, 0, 1)
 
-    expect(quadratic.range(p, interval.make(-2, -1))).toEqual(
-      interval.make(1, 4),
-    )
+    expect(quadratic.range(p, interval.make(-2, -1))).toEqual(interval.make(1, 4))
   })
   test('length', () => {
-    expect(quadratic.length(quadratic.make(0, 0, 1), interval.unit)).toEqual(
-      1.47894286,
-    )
+    expect(quadratic.length(quadratic.make(0, 0, 1), interval.unit)).toEqual(1.47894286)
   })
   test('curvature', () => {
     expect(quadratic.curvature(quadratic.make(0, 0, 1), 0)).toBe(2)
@@ -210,9 +176,7 @@ describe('cubic', () => {
     })
   })
   test('fromVector', () => {
-    expect(cubic.fromVector(vector4.make(0, 1, 2, 3))).toEqual(
-      cubic.make(0, 1, 2, 3),
-    )
+    expect(cubic.fromVector(vector4.make(0, 1, 2, 3))).toEqual(cubic.make(0, 1, 2, 3))
   })
   test('solve', () => {
     expect(cubic.solve(cubic.make(0, 1, 2, 3), 0)).toBe(0)
@@ -242,9 +206,7 @@ describe('cubic', () => {
     expect(inverseSolver(6)).toEqual([2])
   })
   test('derivative', () => {
-    expect(cubic.derivative(cubic.make(0, 1, 2, 3))).toEqual(
-      quadratic.make(1, 4, 9),
-    )
+    expect(cubic.derivative(cubic.make(0, 1, 2, 3))).toEqual(quadratic.make(1, 4, 9))
   })
   test('roots', () => {
     expect(cubic.roots(cubic.make(0, -1, 0, 1))).toEqual([-1, 0, 1])
@@ -258,46 +220,20 @@ describe('cubic', () => {
     expect(cubic.monotonicity(cubic.make(0, 1, 0, 0))).toBe('increasing')
     expect(cubic.monotonicity(cubic.make(0, -1, 0, 0))).toBe('decreasing')
     expect(cubic.monotonicity(cubic.make(0, 1, 2, 0))).toBe('none')
-    expect(
-      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(0, 1)),
-    ).toBe('increasing')
-    expect(
-      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-2, -1)),
-    ).toBe('decreasing')
-    expect(
-      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-2, -0.25)),
-    ).toBe('decreasing')
-    expect(
-      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-0.25)),
-    ).toBe('constant')
-    expect(
-      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-0.25, 1)),
-    ).toBe('increasing')
-    expect(
-      cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(1, 2)),
-    ).toBe('increasing')
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(0, 1))).toBe('increasing')
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-2, -1))).toBe('decreasing')
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-2, -0.25))).toBe('decreasing')
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-0.25))).toBe('constant')
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-0.25, 1))).toBe('increasing')
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(1, 2))).toBe('increasing')
     expect(cubic.monotonicity(cubic.make(0, 0, 3, 2))).toBe('none')
-    expect(
-      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-3, -2)),
-    ).toBe('increasing')
-    expect(
-      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-2, -1)),
-    ).toBe('increasing')
-    expect(
-      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-1.5, -0.5)),
-    ).toBe('none')
-    expect(
-      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-1, 0)),
-    ).toBe('decreasing')
-    expect(
-      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-0.5, 0.5)),
-    ).toBe('none')
-    expect(
-      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(0.5, 1)),
-    ).toBe('increasing')
-    expect(
-      cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(1, 2)),
-    ).toBe('increasing')
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-3, -2))).toBe('increasing')
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-2, -1))).toBe('increasing')
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-1.5, -0.5))).toBe('none')
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-1, 0))).toBe('decreasing')
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-0.5, 0.5))).toBe('none')
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(0.5, 1))).toBe('increasing')
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(1, 2))).toBe('increasing')
   })
   test('domain', () => {
     const p = cubic.make(0, -1.5, 0, 0.5)
@@ -305,18 +241,10 @@ describe('cubic', () => {
     expect(cubic.domain(p, interval.make(-3, -2))).toEqual(
       interval.make(-2.355301397608, -2.195823345446),
     )
-    expect(cubic.domain(p, interval.make(-2, -1))).toEqual(
-      interval.make(-2.195823345446, 1),
-    )
-    expect(cubic.domain(p, interval.make(-1, 0))).toEqual(
-      interval.make(-2, 1.732050807569),
-    )
-    expect(cubic.domain(p, interval.make(0, 1))).toEqual(
-      interval.make(-1.732050807569, 2),
-    )
-    expect(cubic.domain(p, interval.make(1, 2))).toEqual(
-      interval.make(-1, 2.195823345446),
-    )
+    expect(cubic.domain(p, interval.make(-2, -1))).toEqual(interval.make(-2.195823345446, 1))
+    expect(cubic.domain(p, interval.make(-1, 0))).toEqual(interval.make(-2, 1.732050807569))
+    expect(cubic.domain(p, interval.make(0, 1))).toEqual(interval.make(-1.732050807569, 2))
+    expect(cubic.domain(p, interval.make(1, 2))).toEqual(interval.make(-1, 2.195823345446))
     expect(cubic.domain(p, interval.make(2, 3))).toEqual(
       interval.make(2.195823345446, 2.355301397608),
     )

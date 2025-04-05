@@ -30,9 +30,7 @@ export const characteristic = (scale: number) =>
 
 export const catRomCharacteristic = characteristic(0.5)
 
-export const Cardinal2dTypeId: unique symbol = Symbol.for(
-  'curvy/splines/cardinal2d',
-)
+export const Cardinal2dTypeId: unique symbol = Symbol.for('curvy/splines/cardinal2d')
 export type Cardinal2dTypeId = typeof Cardinal2dTypeId
 
 export class Cardinal2dImpl extends Pipeable {
@@ -54,11 +52,9 @@ export class Cardinal2dImpl extends Pipeable {
 export const isCardinal2d = (p: unknown): p is Cardinal2d =>
   typeof p === 'object' && p !== null && Cardinal2dTypeId in p
 
-export const make = (...points: ReadonlyArray<Vector2.Vector2>) =>
-  new Cardinal2dImpl(points)
+export const make = (...points: ReadonlyArray<Vector2.Vector2>) => new Cardinal2dImpl(points)
 
-export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) =>
-  new Cardinal2dImpl(points)
+export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) => new Cardinal2dImpl(points)
 
 export const append = dual<
   (...points: ReadonlyArray<Vector2.Vector2>) => (p: Cardinal2d) => Cardinal2d,
@@ -113,17 +109,9 @@ export const toPath = dual(
   (args) => isCardinal2d(args[0]),
   (p: Cardinal2d, scale = 0.5) =>
     CubicPath2d.fromCurves(
-      ...toCurves(
-        p,
-        scale === 0.5 ? catRomCharacteristic : characteristic(scale),
-        1,
-      ),
+      ...toCurves(p, scale === 0.5 ? catRomCharacteristic : characteristic(scale), 1),
     ),
 )
 
 export const toBezier = (p: Cardinal2d, scale = 0.5) =>
-  Bezier2d.fromSpline(
-    p,
-    scale === 0.5 ? catRomCharacteristic : characteristic(scale),
-    1,
-  )
+  Bezier2d.fromSpline(p, scale === 0.5 ? catRomCharacteristic : characteristic(scale), 1)

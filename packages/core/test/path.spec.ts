@@ -15,28 +15,16 @@ describe('linear2d', () => {
   test('fromCurves', () => {
     expect(
       linearPath2d.fromCurves(
-        linearCurve2d.fromPolynomials(
-          linearPolynomial.make(0, 1),
-          linearPolynomial.make(1, 0),
-        ),
-        linearCurve2d.fromPolynomials(
-          linearPolynomial.make(1, 1),
-          linearPolynomial.make(1, -1),
-        ),
+        linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
+        linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
       ),
     ).toBeDefined()
   })
   test('fromCurveArray', () => {
     expect(
       linearPath2d.fromCurveArray([
-        linearCurve2d.fromPolynomials(
-          linearPolynomial.make(0, 1),
-          linearPolynomial.make(1, 0),
-        ),
-        linearCurve2d.fromPolynomials(
-          linearPolynomial.make(1, 1),
-          linearPolynomial.make(1, -1),
-        ),
+        linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
+        linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
       ]),
     ).toBeDefined()
   })
@@ -44,14 +32,8 @@ describe('linear2d', () => {
     expect(
       linearPath2d.isLinearPath2d(
         linearPath2d.fromCurves(
-          linearCurve2d.fromPolynomials(
-            linearPolynomial.make(0, 1),
-            linearPolynomial.make(1, 0),
-          ),
-          linearCurve2d.fromPolynomials(
-            linearPolynomial.make(1, 1),
-            linearPolynomial.make(1, -1),
-          ),
+          linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
+          linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
         ),
       ),
     ).toBe(true)
@@ -79,14 +61,8 @@ describe('linear2d', () => {
   })
   test('solve', () => {
     const p = linearPath2d.fromCurves(
-      linearCurve2d.fromPolynomials(
-        linearPolynomial.make(0, 1),
-        linearPolynomial.make(1, 0),
-      ),
-      linearCurve2d.fromPolynomials(
-        linearPolynomial.make(1, 1),
-        linearPolynomial.make(1, -1),
-      ),
+      linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
+      linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
     )
 
     expect(linearPath2d.solve(p, 0)).toEqual(vector2.make(0, 1))
@@ -97,14 +73,8 @@ describe('linear2d', () => {
     expect(
       linearPath2d.length(
         linearPath2d.fromCurves(
-          linearCurve2d.fromPolynomials(
-            linearPolynomial.make(0, 1),
-            linearPolynomial.make(1, 0),
-          ),
-          linearCurve2d.fromPolynomials(
-            linearPolynomial.make(1, 1),
-            linearPolynomial.make(1, -1),
-          ),
+          linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
+          linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
         ),
       ),
     ).toBe(round(1 + Math.sqrt(2)))

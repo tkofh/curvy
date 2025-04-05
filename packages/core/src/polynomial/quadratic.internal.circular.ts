@@ -2,17 +2,11 @@ import { Pipeable } from '../pipe'
 import { round } from '../utils'
 import type { QuadraticPolynomial } from './quadratic'
 
-export const QuadraticPolynomialTypeId: unique symbol = Symbol.for(
-  'curvy/polynomial/quadratic',
-)
+export const QuadraticPolynomialTypeId: unique symbol = Symbol.for('curvy/polynomial/quadratic')
 export type QuadraticPolynomialTypeId = typeof QuadraticPolynomialTypeId
 
-export class QuadraticPolynomialImpl
-  extends Pipeable
-  implements QuadraticPolynomial
-{
-  readonly [QuadraticPolynomialTypeId]: QuadraticPolynomialTypeId =
-    QuadraticPolynomialTypeId
+export class QuadraticPolynomialImpl extends Pipeable implements QuadraticPolynomial {
+  readonly [QuadraticPolynomialTypeId]: QuadraticPolynomialTypeId = QuadraticPolynomialTypeId
 
   readonly c0: number
   readonly c1: number

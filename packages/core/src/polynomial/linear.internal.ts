@@ -6,14 +6,13 @@ import type { Vector2 } from '../vector/vector2'
 import type { LinearPolynomial } from './linear'
 import type { QuadraticPolynomial } from './quadratic'
 import { QuadraticPolynomialImpl } from './quadratic.internal.circular'
-import type { ZeroOrOneInterval, ZeroOrOneSolution } from './types'
+import type { ZeroOrOne } from './types'
 
 export const LinearPolynomialTypeId: unique symbol = Symbol.for('curvy/linear')
 export type LinearPolynomialTypeId = typeof LinearPolynomialTypeId
 
 class LinearPolynomialImpl extends Pipeable implements LinearPolynomial {
-  readonly [LinearPolynomialTypeId]: LinearPolynomialTypeId =
-    LinearPolynomialTypeId
+  readonly [LinearPolynomialTypeId]: LinearPolynomialTypeId = LinearPolynomialTypeId
 
   readonly c0: number
   readonly c1: number
@@ -29,8 +28,7 @@ class LinearPolynomialImpl extends Pipeable implements LinearPolynomial {
 export const isLinearPolynomial = (v: unknown): v is LinearPolynomial =>
   typeof v === 'object' && v !== null && LinearPolynomialTypeId in v
 
-export const make = (c0 = 0, c1 = 0): LinearPolynomial =>
-  new LinearPolynomialImpl(c0, c1)
+export const make = (c0 = 0, c1 = 0): LinearPolynomial => new LinearPolynomialImpl(c0, c1)
 
 export const fromVector = (v: Vector2) => new LinearPolynomialImpl(v.x, v.y)
 
@@ -48,8 +46,8 @@ export const solve = dual<
 export const toSolver = (p: LinearPolynomial) => (x: number) => solve(p, x)
 
 export const solveInverse = dual<
-  (y: number) => (p: LinearPolynomial) => ZeroOrOneSolution,
-  (p: LinearPolynomial, y: number) => ZeroOrOneSolution
+  (y: number) => (p: LinearPolynomial) => ZeroOrOne,
+  (p: LinearPolynomial, y: number) => ZeroOrOne
 >(2, (p: LinearPolynomial, y: number) => {
   if (p.c1 === 0) {
     return null
@@ -57,8 +55,7 @@ export const solveInverse = dual<
   return round((y - p.c0) / p.c1)
 })
 
-export const toInverseSolver = (p: LinearPolynomial) => (y: number) =>
-  solveInverse(p, y)
+export const toInverseSolver = (p: LinearPolynomial) => (y: number) => solveInverse(p, y)
 
 export const monotonicity = (p: LinearPolynomial) =>
   p.c1 === 0 ? 'constant' : p.c1 > 0 ? 'increasing' : 'decreasing'
@@ -75,8 +72,8 @@ export const antiderivative = dual<
 )
 
 export const domain = dual<
-  (range: Interval.Interval) => (p: LinearPolynomial) => ZeroOrOneInterval,
-  (p: LinearPolynomial, range: Interval.Interval) => ZeroOrOneInterval
+  (range: Interval.Interval) => (p: LinearPolynomial) => ZeroOrOne<Interval.Interval>,
+  (p: LinearPolynomial, range: Interval.Interval) => ZeroOrOne<Interval.Interval>
 >(2, (p: LinearPolynomial, range: Interval.Interval) => {
   if (p.c1 === 0) {
     if (range.start === p.c0 && range.end === p.c0) {

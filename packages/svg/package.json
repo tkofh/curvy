@@ -13,9 +13,7 @@
       "import": "./dist/path.mjs"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "publishConfig": {
     "access": "public"
   },

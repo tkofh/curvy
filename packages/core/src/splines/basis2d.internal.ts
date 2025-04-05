@@ -56,16 +56,14 @@ export const make = (
   p3: Vector2.Vector2,
 ) => new Basis2dImpl([p0, p1, p2, p3])
 
-export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) =>
-  new Basis2dImpl(points)
+export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) => new Basis2dImpl(points)
 
 export const append = dual<
   (...points: ReadonlyArray<Vector2.Vector2>) => (p: Basis2d) => Basis2d,
   (p: Basis2d, ...points: ReadonlyArray<Vector2.Vector2>) => Basis2d
 >(
   (args) => isBasis2d(args[0]),
-  (p: Basis2d, ...points: ReadonlyArray<Vector2.Vector2>) =>
-    new Basis2dImpl([...p, ...points]),
+  (p: Basis2d, ...points: ReadonlyArray<Vector2.Vector2>) => new Basis2dImpl([...p, ...points]),
 )
 
 export const prepend = dual<
@@ -73,8 +71,7 @@ export const prepend = dual<
   (p: Basis2d, ...points: ReadonlyArray<Vector2.Vector2>) => Basis2d
 >(
   (args) => isBasis2d(args[0]),
-  (p: Basis2d, ...points: ReadonlyArray<Vector2.Vector2>) =>
-    new Basis2dImpl([...points, ...p]),
+  (p: Basis2d, ...points: ReadonlyArray<Vector2.Vector2>) => new Basis2dImpl([...points, ...p]),
 )
 
 export const withTriplicatedEndpoints = (p: Basis2d) => {
@@ -88,8 +85,6 @@ export const withTriplicatedEndpoints = (p: Basis2d) => {
   ])
 }
 
-export const toPath = (p: Basis2d) =>
-  CubicPath2d.fromCurves(...toCurves(p, characteristic, 1))
+export const toPath = (p: Basis2d) => CubicPath2d.fromCurves(...toCurves(p, characteristic, 1))
 
-export const toBezier = (p: Basis2d) =>
-  Bezier2d.fromSpline(p, characteristic, 1)
+export const toBezier = (p: Basis2d) => Bezier2d.fromSpline(p, characteristic, 1)

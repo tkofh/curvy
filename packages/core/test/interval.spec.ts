@@ -30,16 +30,12 @@ describe('interval', () => {
   })
 
   test('filter', () => {
-    expect(
-      interval.filter(interval.make(0, 1), [-0.5, 0, 0.5, 1, 1.5]),
-    ).toEqual([0, 0.5, 1])
+    expect(interval.filter(interval.make(0, 1), [-0.5, 0, 0.5, 1, 1.5])).toEqual([0, 0.5, 1])
   })
 
   test('contains', () => {
     expect(interval.contains(interval.make(0, 1), 0)).toBe(true)
-    expect(
-      interval.contains(interval.make(0, 1), 0, { includeStart: false }),
-    ).toBe(false)
+    expect(interval.contains(interval.make(0, 1), 0, { includeStart: false })).toBe(false)
     expect(interval.contains(interval.make(0, 1), 0.5)).toBe(true)
     expect(interval.contains(interval.make(0, 1), -0.5)).toBe(false)
   })
@@ -51,9 +47,7 @@ describe('interval', () => {
     expect(interval.clamp(interval.make(0, 1), 1)).toBe(1)
     expect(interval.clamp(interval.make(0, 1), 1.5)).toBe(1)
 
-    expect(interval.clamp(interval.make(0, 1), [-0.5, 0, 0.5, 1, 1.5])).toEqual(
-      [0, 0, 0.5, 1, 1],
-    )
+    expect(interval.clamp(interval.make(0, 1), [-0.5, 0, 0.5, 1, 1.5])).toEqual([0, 0, 0.5, 1, 1])
   })
 
   test('lerp', () => {
@@ -65,11 +59,7 @@ describe('interval', () => {
   })
 
   test('remap', () => {
-    expect(interval.remap(interval.make(0, 1), interval.make(0, 2), 0.5)).toBe(
-      1,
-    )
-    expect(
-      interval.remap(interval.make(0, 1), interval.make(0.1, 0.2), 1),
-    ).toBe(0.2)
+    expect(interval.remap(interval.make(0, 1), interval.make(0, 2), 0.5)).toBe(1)
+    expect(interval.remap(interval.make(0, 1), interval.make(0.1, 0.2), 1)).toBe(0.2)
   })
 })

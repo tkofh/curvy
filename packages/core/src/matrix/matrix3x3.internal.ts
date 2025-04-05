@@ -26,17 +26,7 @@ class Matrix3x3Impl extends Pipeable implements Matrix3x3 {
   readonly m21: number
   readonly m22: number
 
-  constructor(
-    m00 = 0,
-    m01 = 0,
-    m02 = 0,
-    m10 = 0,
-    m11 = 0,
-    m12 = 0,
-    m20 = 0,
-    m21 = 0,
-    m22 = 0,
-  ) {
+  constructor(m00 = 0, m01 = 0, m02 = 0, m10 = 0, m11 = 0, m12 = 0, m20 = 0, m21 = 0, m22 = 0) {
     super()
     this.m00 = round(m00)
     this.m01 = round(m01)
@@ -91,13 +81,7 @@ export const setRow = dual<
   (row: Matrix3x3Coordinate, v: Vector3) => (m: Matrix3x3) => Matrix3x3,
   (m: Matrix3x3, row: Matrix3x3Coordinate, v: Vector3) => Matrix3x3
 >(3, (m: Matrix3x3, row: Matrix3x3Coordinate, v: Vector3) =>
-  fromRows(
-    ...(toRows(m).with(toThreeDimensionalIndex(row), v) as [
-      Vector3,
-      Vector3,
-      Vector3,
-    ]),
-  ),
+  fromRows(...(toRows(m).with(toThreeDimensionalIndex(row), v) as [Vector3, Vector3, Vector3])),
 )
 
 export const setColumn = dual<
@@ -105,11 +89,7 @@ export const setColumn = dual<
   (m: Matrix3x3, column: Matrix3x3Coordinate, v: Vector3) => Matrix3x3
 >(3, (m: Matrix3x3, column: Matrix3x3Coordinate, v: Vector3) =>
   fromColumns(
-    ...(toColumns(m).with(toThreeDimensionalIndex(column), v) as [
-      Vector3,
-      Vector3,
-      Vector3,
-    ]),
+    ...(toColumns(m).with(toThreeDimensionalIndex(column), v) as [Vector3, Vector3, Vector3]),
   ),
 )
 
@@ -121,29 +101,13 @@ export const determinant = (m: Matrix3x3) =>
   )
 
 export const minor = dual<
-  (
-    row: Matrix3x3Coordinate,
-    column: Matrix3x3Coordinate,
-  ) => (m: Matrix3x3) => Matrix2x2,
-  (
-    m: Matrix3x3,
-    row: Matrix3x3Coordinate,
-    column: Matrix3x3Coordinate,
-  ) => Matrix2x2
+  (row: Matrix3x3Coordinate, column: Matrix3x3Coordinate) => (m: Matrix3x3) => Matrix2x2,
+  (m: Matrix3x3, row: Matrix3x3Coordinate, column: Matrix3x3Coordinate) => Matrix2x2
 >(3, (m: Matrix3x3, row: Matrix3x3Coordinate, column: Matrix3x3Coordinate) => {
-  const [v0, v1] = toRows(m).toSpliced(toThreeDimensionalIndex(row), 1) as [
-    Vector3,
-    Vector3,
-  ]
+  const [v0, v1] = toRows(m).toSpliced(toThreeDimensionalIndex(row), 1) as [Vector3, Vector3]
   const columnIndex = toThreeDimensionalIndex(column)
-  const [m00, m01] = vector3.components(v0).toSpliced(columnIndex, 1) as [
-    number,
-    number,
-  ]
-  const [m10, m11] = vector3.components(v1).toSpliced(columnIndex, 1) as [
-    number,
-    number,
-  ]
+  const [m00, m01] = vector3.components(v0).toSpliced(columnIndex, 1) as [number, number]
+  const [m10, m11] = vector3.components(v1).toSpliced(columnIndex, 1) as [number, number]
 
   return matrix2x2.make(m00, m01, m10, m11) as Matrix2x2
 })
@@ -153,11 +117,7 @@ export const vectorProductLeft = dual<
   (m: Matrix3x3, v: Vector3) => Vector3
 >(2, (m: Matrix3x3, v: Vector3) => {
   const [v0, v1, v2] = toRows(m) as [Vector3, Vector3, Vector3]
-  return vector3.make(
-    vector3.dot(v0, v),
-    vector3.dot(v1, v),
-    vector3.dot(v2, v),
-  )
+  return vector3.make(vector3.dot(v0, v), vector3.dot(v1, v), vector3.dot(v2, v))
 })
 
 export const vectorProductRight = dual<
@@ -165,11 +125,7 @@ export const vectorProductRight = dual<
   (m: Matrix3x3, v: Vector3) => Vector3
 >(2, (m: Matrix3x3, v: Vector3) => {
   const [v0, v1, v2] = toColumns(m) as [Vector3, Vector3, Vector3]
-  return vector3.make(
-    vector3.dot(v, v0),
-    vector3.dot(v, v1),
-    vector3.dot(v, v2),
-  )
+  return vector3.make(vector3.dot(v, v0), vector3.dot(v, v1), vector3.dot(v, v2))
 })
 
 export const solveSystem = dual<
@@ -205,20 +161,12 @@ export const toColumns = (m: Matrix3x3): [Vector3, Vector3, Vector3] => [
 export const rowVector = dual<
   (row: Matrix3x3Coordinate) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, row: Matrix3x3Coordinate) => Vector3
->(
-  2,
-  (m: Matrix3x3, row: Matrix3x3Coordinate) =>
-    toRows(m)[toThreeDimensionalIndex(row)],
-)
+>(2, (m: Matrix3x3, row: Matrix3x3Coordinate) => toRows(m)[toThreeDimensionalIndex(row)])
 
 export const columnVector = dual<
   (column: Matrix3x3Coordinate) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, column: Matrix3x3Coordinate) => Vector3
->(
-  2,
-  (m: Matrix3x3, column: Matrix3x3Coordinate) =>
-    toColumns(m)[toThreeDimensionalIndex(column)],
-)
+>(2, (m: Matrix3x3, column: Matrix3x3Coordinate) => toColumns(m)[toThreeDimensionalIndex(column)])
 
 export const transpose = (m: Matrix3x3) => fromColumns(...toRows(m))
 

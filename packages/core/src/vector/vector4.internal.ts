@@ -63,16 +63,17 @@ export const normalize: (vector: Vector4) => Vector4 = (vector: Vector4) => {
   return make(vector.x / m, vector.y / m, vector.z / m, vector.w / m)
 }
 
-export const dot = dual<
-  (b: Vector4) => (a: Vector4) => number,
-  (a: Vector4, b: Vector4) => number
->(2, (a: Vector4, b: Vector4) =>
-  round(a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w),
+export const dot = dual<(b: Vector4) => (a: Vector4) => number, (a: Vector4, b: Vector4) => number>(
+  2,
+  (a: Vector4, b: Vector4) => round(a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w),
 )
 
-export const components: (v: Vector4) => [number, number, number, number] = (
-  v: Vector4,
-) => [v.x, v.y, v.z, v.w]
+export const components: (v: Vector4) => [number, number, number, number] = (v: Vector4) => [
+  v.x,
+  v.y,
+  v.z,
+  v.w,
+]
 
 export const softmax: (v: Vector4) => Vector4 = (v: Vector4) => {
   const max = Math.max(v.x, v.y, v.z, v.w)
@@ -90,26 +91,18 @@ export const softmax: (v: Vector4) => Vector4 = (v: Vector4) => {
 export const add = dual<
   (b: Vector4) => (a: Vector4) => Vector4,
   (a: Vector4, b: Vector4) => Vector4
->(2, (a: Vector4, b: Vector4) =>
-  make(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w),
-)
+>(2, (a: Vector4, b: Vector4) => make(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w))
 
 export const subtract = dual<
   (b: Vector4) => (a: Vector4) => Vector4,
   (a: Vector4, b: Vector4) => Vector4
->(2, (a: Vector4, b: Vector4) =>
-  make(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w),
-)
+>(2, (a: Vector4, b: Vector4) => make(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w))
 
 export const hadamard = dual<
   (b: Vector4) => (a: Vector4) => Vector4,
   (a: Vector4, b: Vector4) => Vector4
->(2, (a: Vector4, b: Vector4) =>
-  make(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w),
-)
+>(2, (a: Vector4, b: Vector4) => make(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w))
 export const scale = dual<
   (s: number) => (v: Vector4) => Vector4,
   (v: Vector4, s: number) => Vector4
->(2, (v: Vector4, s: number) =>
-  s === 1 ? v : make(v.x * s, v.y * s, v.z * s, v.w * s),
-)
+>(2, (v: Vector4, s: number) => (s === 1 ? v : make(v.x * s, v.y * s, v.z * s, v.w * s)))

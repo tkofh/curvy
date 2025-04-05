@@ -65,9 +65,7 @@ export const fromBezier2d = (bezier: Bezier2d.Bezier2d): Path => {
 
 export const render = (path: Path): string => {
   if (!(path instanceof PathImpl)) {
-    throw new Error(
-      'Custom path implementations are not supported at this time',
-    )
+    throw new Error('Custom path implementations are not supported at this time')
   }
 
   const commands = path.commands

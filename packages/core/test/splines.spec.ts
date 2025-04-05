@@ -15,11 +15,7 @@ describe('bezier', () => {
       Vector2.make(1, 0),
       Vector2.make(1, 1),
     ).pipe(
-      Bezier2d.append(
-        Vector2.make(1, 2),
-        Vector2.make(2, 1),
-        Vector2.make(2, 2),
-      ),
+      Bezier2d.append(Vector2.make(1, 2), Vector2.make(2, 1), Vector2.make(2, 2)),
       Bezier2d.toPath,
     )
 
@@ -42,10 +38,7 @@ describe('bezier', () => {
 
     const path = Bezier2d.toPath(points)
 
-    const [a, b] = [...path] as [
-      CubicCurve2d.CubicCurve2d,
-      CubicCurve2d.CubicCurve2d,
-    ]
+    const [a, b] = [...path] as [CubicCurve2d.CubicCurve2d, CubicCurve2d.CubicCurve2d]
 
     expect(CubicCurve2d.curvature(a, 1)).toBe(CubicCurve2d.curvature(b, 0))
   })
@@ -78,9 +71,7 @@ describe('cardinal', () => {
       Vector2.make(1, 1),
       Vector2.make(1, 0),
     )
-    const path = Cardinal2d.toPath(
-      points.pipe(Cardinal2d.withDuplicatedEndpoints),
-    )
+    const path = Cardinal2d.toPath(points.pipe(Cardinal2d.withDuplicatedEndpoints))
 
     expect(CubicPath2d.solve(path, 0)).toMatchObject(Vector2.make(0, 0))
 

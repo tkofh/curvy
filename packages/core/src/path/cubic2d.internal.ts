@@ -28,20 +28,16 @@ export class CubicPath2dImpl extends Pipeable implements CubicPath2d {
 export const isCubicPath2d = (p: unknown): p is CubicPath2d =>
   typeof p === 'object' && p !== null && CubicPath2dTypeId in p
 
-export const fromCurves = (
-  ...curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>
-): CubicPath2d => new CubicPath2dImpl(curves)
+export const fromCurves = (...curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d =>
+  new CubicPath2dImpl(curves)
 
-export const fromCurveArray = (
-  curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>,
-): CubicPath2d => new CubicPath2dImpl(curves)
+export const fromCurveArray = (curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d =>
+  new CubicPath2dImpl(curves)
 
 export const append = dual<
   (c: CubicCurve2d.CubicCurve2d) => (p: CubicPath2d) => CubicPath2d,
   (p: CubicPath2d, c: CubicCurve2d.CubicCurve2d) => CubicPath2d
->(2, (p: CubicPath2d, c: CubicCurve2d.CubicCurve2d) =>
-  fromCurveArray([...p, c]),
-)
+>(2, (p: CubicPath2d, c: CubicCurve2d.CubicCurve2d) => fromCurveArray([...p, c]))
 
 export const length = (p: CubicPath2d) => {
   let length = 0

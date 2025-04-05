@@ -44,18 +44,12 @@ class Vector3Impl extends Pipeable implements Vector3 {
 export const isVector3 = (v: unknown): v is Vector3 =>
   typeof v === 'object' && v !== null && Vector3TypeId in v
 
-export const make = (v0: number, v1 = v0, v2 = v1): Vector3 =>
-  new Vector3Impl(v0, v1, v2)
+export const make = (v0: number, v1 = v0, v2 = v1): Vector3 => new Vector3Impl(v0, v1, v2)
 
 export const fromSpherical = (r: number, theta: number, phi: number) =>
-  make(
-    r * Math.sin(phi) * Math.cos(theta),
-    r * Math.sin(phi) * Math.sin(theta),
-    r * Math.cos(phi),
-  )
+  make(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi))
 
-export const magnitude = (vector: Vector3) =>
-  round(Math.hypot(vector.x, vector.y, vector.z))
+export const magnitude = (vector: Vector3) => round(Math.hypot(vector.x, vector.y, vector.z))
 
 export const normalize = (vector: Vector3) => {
   const m = magnitude(vector)
@@ -63,10 +57,10 @@ export const normalize = (vector: Vector3) => {
   return make(vector.x / m, vector.y / m, vector.z / m)
 }
 
-export const dot = dual<
-  (b: Vector3) => (a: Vector3) => number,
-  (a: Vector3, b: Vector3) => number
->(2, (a: Vector3, b: Vector3) => round(a.x * b.x + a.y * b.y + a.z * b.z))
+export const dot = dual<(b: Vector3) => (a: Vector3) => number, (a: Vector3, b: Vector3) => number>(
+  2,
+  (a: Vector3, b: Vector3) => round(a.x * b.x + a.y * b.y + a.z * b.z),
+)
 
 export const cross = dual<
   (b: Vector3) => (a: Vector3) => Vector3,
@@ -79,9 +73,7 @@ export const cross = dual<
   return make(x, y, z)
 })
 
-export const components: (v: Vector3) => [number, number, number] = (
-  v: Vector3,
-) => [v.x, v.y, v.z]
+export const components: (v: Vector3) => [number, number, number] = (v: Vector3) => [v.x, v.y, v.z]
 
 export const softmax = (v: Vector3) => {
   const max = Math.max(v.x, v.y, v.z)
@@ -145,11 +137,7 @@ export const setTheta = dual<
 >(2, (v: Vector3, phi: number) => {
   const m = magnitude(v)
   const sinTheta = Math.sin(phi)
-  return make(
-    m * sinTheta * Math.cos(v.y),
-    m * sinTheta * Math.sin(v.y),
-    m * Math.cos(phi),
-  )
+  return make(m * sinTheta * Math.cos(v.y), m * sinTheta * Math.sin(v.y), m * Math.cos(phi))
 })
 
 export const getPhi = (v: Vector3) => round(Math.atan2(v.y, v.x))

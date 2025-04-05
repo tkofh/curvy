@@ -1,27 +1,9 @@
-import type { Interval } from '../interval'
+export type ZeroOrOne<T = number> = T | null
 
-export type ZeroOrOneSolution = number | null
+export type ZeroToTwo<T = number> = readonly [] | readonly [T] | readonly [T, T]
 
-export type ZeroOrOneInterval = Interval | null
-
-export type ZeroToTwoSolutions =
+export type ZeroToThree<T = number> =
   | readonly []
-  | readonly [number]
-  | readonly [number, number]
-
-export type ZeroToTwoIntervals =
-  | readonly []
-  | readonly [Interval]
-  | readonly [Interval, Interval]
-
-export type ZeroToThreeSolutions =
-  | readonly []
-  | readonly [number]
-  | readonly [number, number]
-  | readonly [number, number, number]
-
-export type ZeroToThreeIntervals =
-  | readonly []
-  | readonly [Interval]
-  | readonly [Interval, Interval]
-  | readonly [Interval, Interval, Interval]
+  | readonly [T]
+  | readonly [T, T]
+  | readonly [T, T, T]

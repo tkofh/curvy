@@ -27,20 +27,16 @@ export class LinearPath2dImpl extends Pipeable implements LinearPath2d {
 export const isLinearPath2d = (p: unknown): p is LinearPath2d =>
   typeof p === 'object' && p !== null && LinearPath2dTypeId in p
 
-export const fromCurves = (
-  ...curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>
-): LinearPath2d => new LinearPath2dImpl(curves)
+export const fromCurves = (...curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>): LinearPath2d =>
+  new LinearPath2dImpl(curves)
 
-export const fromCurveArray = (
-  curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>,
-) => new LinearPath2dImpl(curves)
+export const fromCurveArray = (curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>) =>
+  new LinearPath2dImpl(curves)
 
 export const append = dual<
   (c: LinearCurve2d.LinearCurve2d) => (p: LinearPath2d) => LinearPath2d,
   (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) => LinearPath2d
->(2, (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) =>
-  fromCurveArray([...p, c]),
-)
+>(2, (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) => fromCurveArray([...p, c]))
 
 export const length = (p: LinearPath2d) => {
   let length = 0

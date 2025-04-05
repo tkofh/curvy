@@ -86,11 +86,7 @@ export const dual: {
 
 export function pipe<A>(a: A): A
 export function pipe<A, B = never>(a: A, ab: (a: A) => B): B
-export function pipe<A, B = never, C = never>(
-  a: A,
-  ab: (a: A) => B,
-  bc: (b: B) => C,
-): C
+export function pipe<A, B = never, C = never>(a: A, ab: (a: A) => B, bc: (b: B) => C): C
 export function pipe<A, B = never, C = never, D = never>(
   a: A,
   ab: (a: A) => B,
@@ -112,15 +108,7 @@ export function pipe<A, B = never, C = never, D = never, E = never, F = never>(
   de: (d: D) => E,
   ef: (e: E) => F,
 ): F
-export function pipe<
-  A,
-  B = never,
-  C = never,
-  D = never,
-  E = never,
-  F = never,
-  G = never,
->(
+export function pipe<A, B = never, C = never, D = never, E = never, F = never, G = never>(
   a: A,
   ab: (a: A) => B,
   bc: (b: B) => C,
@@ -608,16 +596,7 @@ export class Pipeable {
     ef: (_: E) => F,
     fg: (_: F) => G,
   ): G
-  pipe<
-    A,
-    B = never,
-    C = never,
-    D = never,
-    E = never,
-    F = never,
-    G = never,
-    H = never,
-  >(
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never>(
     this: A,
     ab: (_: A) => B,
     bc: (_: B) => C,
@@ -627,17 +606,7 @@ export class Pipeable {
     fg: (_: F) => G,
     gh: (_: G) => H,
   ): H
-  pipe<
-    A,
-    B = never,
-    C = never,
-    D = never,
-    E = never,
-    F = never,
-    G = never,
-    H = never,
-    I = never,
-  >(
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never>(
     this: A,
     ab: (_: A) => B,
     bc: (_: B) => C,

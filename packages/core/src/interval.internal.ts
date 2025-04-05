@@ -35,8 +35,7 @@ class IntervalImpl extends Pipeable implements Interval {
 export const isInterval = (v: unknown): v is Interval =>
   typeof v === 'object' && v !== null && TypeId in v
 
-export const make = (start: number, end?: number) =>
-  new IntervalImpl(start, end ?? start)
+export const make = (start: number, end?: number) => new IntervalImpl(start, end ?? start)
 
 export const fromSize = (a: number, b?: number) => {
   if (b === undefined) {
@@ -62,11 +61,7 @@ export const contains = dual<
   ) => boolean
 >(
   (args) => isInterval(args[0]),
-  (
-    interval: Interval,
-    value: number,
-    { includeStart = true, includeEnd = true } = {},
-  ) =>
+  (interval: Interval, value: number, { includeStart = true, includeEnd = true } = {}) =>
     (value > interval.start && value < interval.end) ||
     (includeStart && value === interval.start) ||
     (includeEnd && value === interval.end),
@@ -94,44 +89,33 @@ export const filter = dual<
 )
 
 export const clamp = dual<
-  <V extends number | ReadonlyArray<number>>(
-    value: V,
-  ) => (interval: Interval) => V,
+  <V extends number | ReadonlyArray<number>>(value: V) => (interval: Interval) => V,
   <V extends number | ReadonlyArray<number>>(interval: Interval, value: V) => V
->(
-  2,
-  <V extends number | ReadonlyArray<number>>(
-    interval: Interval,
-    value: V,
-  ): V => {
-    if (Array.isArray(value)) {
-      return value.map((v) => clamp(interval, v)) as unknown as V
-    }
+>(2, <V extends number | ReadonlyArray<number>>(interval: Interval, value: V): V => {
+  if (Array.isArray(value)) {
+    return value.map((v) => clamp(interval, v)) as unknown as V
+  }
 
-    return (
-      contains(interval, value as number)
-        ? (value as number)
-        : (value as number) < interval.start
-          ? interval.start
-          : interval.end
-    ) as V
-  },
-)
+  return (
+    contains(interval, value as number)
+      ? (value as number)
+      : (value as number) < interval.start
+        ? interval.start
+        : interval.end
+  ) as V
+})
 
 export const unit = make(0, 1)
 
 export const biunit = make(-1, 1)
 
-export const lerp = (interval: Interval, t: number) =>
-  (1 - t) * interval.start + t * interval.end
+export const lerp = (interval: Interval, t: number) => (1 - t) * interval.start + t * interval.end
 
 export const toLerpFn = (interval: Interval) => (t: number) => lerp(interval, t)
 
-export const normalize = (interval: Interval, x: number) =>
-  (x - interval.start) / size(interval)
+export const normalize = (interval: Interval, x: number) => (x - interval.start) / size(interval)
 
-export const toNormalizeFn = (interval: Interval) => (x: number) =>
-  normalize(interval, x)
+export const toNormalizeFn = (interval: Interval) => (x: number) => normalize(interval, x)
 
 export const remap = (source: Interval, target: Interval, x: number) => {
   return target.start + ((x - source.start) * size(target)) / size(source)

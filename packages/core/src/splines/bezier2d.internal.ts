@@ -8,24 +8,7 @@ import * as Vector4 from '../vector/vector4'
 import type { Bezier2d } from './bezier2d'
 import { toCurves, toPointQuads } from './util'
 
-export const characteristic = Matrix4x4.make(
-  1,
-  0,
-  0,
-  0,
-  -3,
-  3,
-  0,
-  0,
-  3,
-  -6,
-  3,
-  0,
-  -1,
-  3,
-  -3,
-  1,
-)
+export const characteristic = Matrix4x4.make(1, 0, 0, 0, -3, 3, 0, 0, 3, -6, 3, 0, -1, 3, -3, 1)
 
 export const Bezier2dTypeId = Symbol('curvy/splines/bezier2d')
 export type Bezier2dTypeId = typeof Bezier2dTypeId
@@ -37,10 +20,7 @@ class Bezier2dImpl extends Pipeable implements Bezier2d {
 
   constructor(points: ReadonlyArray<Vector2.Vector2>) {
     invariant(points.length >= 4, 'cubic splines requires 4 or more points')
-    invariant(
-      points.length % 3 === 1,
-      'cubic splines requires (n * 3) + 1 points',
-    )
+    invariant(points.length % 3 === 1, 'cubic splines requires (n * 3) + 1 points')
     super()
     this.points = points
   }
@@ -60,32 +40,15 @@ export const make = (
   p3: Vector2.Vector2,
 ) => new Bezier2dImpl([p0, p1, p2, p3])
 
-export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) =>
-  new Bezier2dImpl(points)
+export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) => new Bezier2dImpl(points)
 
 export const append = dual<
-  (
-    p1: Vector2.Vector2,
-    p2: Vector2.Vector2,
-    p3: Vector2.Vector2,
-  ) => (p: Bezier2d) => Bezier2d,
-  (
-    p: Bezier2d,
-    p1: Vector2.Vector2,
-    p2: Vector2.Vector2,
-    p3: Vector2.Vector2,
-  ) => Bezier2d
+  (p1: Vector2.Vector2, p2: Vector2.Vector2, p3: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
+  (p: Bezier2d, p1: Vector2.Vector2, p2: Vector2.Vector2, p3: Vector2.Vector2) => Bezier2d
 >(
   4,
-  (
-    p: Bezier2d,
-    p1: Vector2.Vector2,
-    p2: Vector2.Vector2,
-    p3: Vector2.Vector2,
-  ) =>
-    new Bezier2dImpl(
-      (p instanceof Bezier2dImpl ? p.points : Array.from(p)).concat(p1, p2, p3),
-    ),
+  (p: Bezier2d, p1: Vector2.Vector2, p2: Vector2.Vector2, p3: Vector2.Vector2) =>
+    new Bezier2dImpl((p instanceof Bezier2dImpl ? p.points : Array.from(p)).concat(p1, p2, p3)),
 )
 
 export const fromSpline = (
@@ -109,11 +72,7 @@ export const fromSpline = (
       Matrix4x4.vectorProductLeft(matrix, Vector4.make(p0.y, p1.y, p2.y, p3.y)),
     )
 
-    points.push(
-      Vector2.make(x.x, y.x),
-      Vector2.make(x.y, y.y),
-      Vector2.make(x.z, y.z),
-    )
+    points.push(Vector2.make(x.x, y.x), Vector2.make(x.y, y.y), Vector2.make(x.z, y.z))
   }
 
   if (x && y) {
@@ -124,11 +83,7 @@ export const fromSpline = (
 }
 
 export const appendTangentAligned = dual<
-  (
-    a: number,
-    p5: Vector2.Vector2,
-    p6: Vector2.Vector2,
-  ) => (p: Bezier2d) => Bezier2d,
+  (a: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
   (p: Bezier2d, a: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => Bezier2d
 >(4, (p: Bezier2d, a: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => {
   const points = p instanceof Bezier2dImpl ? p.points : Array.from(p)
@@ -160,9 +115,7 @@ export const appendCurvatureAligned = dual(
 export const appendVelocityAligned = dual<
   (p5: Vector2.Vector2, p6: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
   (p: Bezier2d, p5: Vector2.Vector2, p6: Vector2.Vector2) => Bezier2d
->(3, (p: Bezier2d, p5: Vector2.Vector2, p6: Vector2.Vector2) =>
-  appendTangentAligned(p, 1, p5, p6),
-)
+>(3, (p: Bezier2d, p5: Vector2.Vector2, p6: Vector2.Vector2) => appendTangentAligned(p, 1, p5, p6))
 
 export const appendAccelerationAligned = dual<
   (p6: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
@@ -179,5 +132,4 @@ export const appendAccelerationAligned = dual<
   return append(p, p4, p5, p6)
 })
 
-export const toPath = (p: Bezier2d) =>
-  CubicPath2d.fromCurves(...toCurves(p, characteristic, 3))
+export const toPath = (p: Bezier2d) => CubicPath2d.fromCurves(...toCurves(p, characteristic, 3))
