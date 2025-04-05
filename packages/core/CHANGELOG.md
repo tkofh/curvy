@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.9
+
+### Patch Changes
+
+- 819cc5c: added jsdoc comments to all public members
+
 ## 1.0.8
 
 ### Patch Changes
