@@ -47,7 +47,11 @@ export const isVector3 = (v: unknown): v is Vector3 =>
 export const make = (v0: number, v1 = v0, v2 = v1): Vector3 => new Vector3Impl(v0, v1, v2)
 
 export const fromSpherical = (r: number, theta: number, phi: number) =>
-  make(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi))
+  new Vector3Impl(
+    r * Math.sin(theta) * Math.cos(phi),
+    r * Math.sin(theta) * Math.sin(phi),
+    r * Math.cos(theta),
+  )
 
 export const magnitude = (vector: Vector3) => round(Math.hypot(vector.x, vector.y, vector.z))
 
