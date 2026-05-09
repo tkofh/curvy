@@ -9,6 +9,13 @@
 // biome-ignore lint/suspicious/noExplicitAny: any is used to allow any argument to be passed in
 type AnyFunction = (...args: Array<any>) => any
 
+// Per-arity helpers use `function` (not arrow) so they can read `arguments`
+// directly. V8 keeps `arguments` virtualized when only `arguments.length`
+// and individual `arguments[i]` accesses are used — no rest-args array
+// allocation per call. The generic / predicate paths fall back to materializing
+// the args because they need to forward an unknown number to either `apply`
+// or a deferred closure.
+
 export const dual: {
   <DataLast extends AnyFunction, DataFirst extends AnyFunction>(
     arity: Parameters<DataFirst>['length'],
@@ -18,15 +25,16 @@ export const dual: {
     isDataFirst: (args: IArguments) => boolean,
     body: DataFirst,
   ): DataLast & DataFirst
-} = (arity, body) => {
+  // biome-ignore lint/suspicious/noExplicitAny: dual erases its types at runtime
+} = (arity: any, body: any): any => {
   if (typeof arity === 'function') {
-    return function (...args: Array<unknown>) {
-      if (arity(args as unknown as IArguments)) {
-        // @ts-expect-error
-        return body.apply(this, args)
+    const isDataFirst = arity
+    return function (this: unknown) {
+      if (isDataFirst(arguments)) {
+        return body.apply(this, arguments)
       }
-      // biome-ignore lint/suspicious/noExplicitAny: any is used to allow any argument to be passed in
-      return ((self: any) => body(self, ...args)) as any
+      const args = Array.prototype.slice.call(arguments)
+      return (self: unknown) => body(self, ...args)
     }
   }
 
@@ -36,49 +44,53 @@ export const dual: {
       throw new RangeError(`Invalid arity ${arity}`)
 
     case 2:
-      return (...args: Array<unknown>) => {
-        const [a, b] = args
-        if (args.length >= 2) {
-          return body(a, b)
+      return function () {
+        if (arguments.length >= 2) {
+          return body(arguments[0], arguments[1])
         }
+        const a = arguments[0]
         return (self: unknown) => body(self, a)
       }
 
     case 3:
-      return (...args: Array<unknown>) => {
-        const [a, b, c] = args
-        if (args.length >= 3) {
-          return body(a, b, c)
+      return function () {
+        if (arguments.length >= 3) {
+          return body(arguments[0], arguments[1], arguments[2])
         }
+        const a = arguments[0]
+        const b = arguments[1]
         return (self: unknown) => body(self, a, b)
       }
 
     case 4:
-      return (...args: Array<unknown>) => {
-        const [a, b, c, d] = args
-        if (args.length >= 4) {
-          return body(a, b, c, d)
+      return function () {
+        if (arguments.length >= 4) {
+          return body(arguments[0], arguments[1], arguments[2], arguments[3])
         }
-
+        const a = arguments[0]
+        const b = arguments[1]
+        const c = arguments[2]
         return (self: unknown) => body(self, a, b, c)
       }
 
     case 5:
-      return (...args: Array<unknown>) => {
-        const [a, b, c, d, e] = args
-        if (args.length >= 5) {
-          return body(a, b, c, d, e)
+      return function () {
+        if (arguments.length >= 5) {
+          return body(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4])
         }
-
+        const a = arguments[0]
+        const b = arguments[1]
+        const c = arguments[2]
+        const d = arguments[3]
         return (self: unknown) => body(self, a, b, c, d)
       }
 
     default:
-      return function (...args: Array<unknown>) {
-        if (args.length >= arity) {
-          // @ts-expect-error
-          return body.apply(this, args)
+      return function (this: unknown) {
+        if (arguments.length >= arity) {
+          return body.apply(this, arguments)
         }
+        const args = Array.prototype.slice.call(arguments)
         return (self: unknown) => body(self, ...args)
       }
   }

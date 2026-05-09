@@ -88,6 +88,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/pipe.ts"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noArguments": "off"
+          }
+        }
+      }
     }
   ]
 }
