@@ -36,7 +36,6 @@ import {
 import { dual, Pipeable } from '../pipe'
 import * as LinearPolynomial from '../polynomial/linear'
 import * as QuadraticPolynomial from '../polynomial/quadratic'
-import { round } from '../utils'
 import * as Vector2 from '../vector/vector2'
 import * as LinearCurve2d from './linear2d'
 import type { QuadraticCurve2d } from './quadratic2d'
@@ -118,7 +117,7 @@ export const length = dual(2, (c: QuadraticCurve2d, i: Interval.Interval) => {
 
   const { scale, shift } = Interval.scaleShift(Interval.biunit, i)
 
-  return round(
+  return (
     (GL32_W0 * Vector2.magnitude(LinearCurve2d.solve(d, shift + scale * -GL32_X0)) +
       GL32_W0 * Vector2.magnitude(LinearCurve2d.solve(d, shift + scale * GL32_X0)) +
       GL32_W1 * Vector2.magnitude(LinearCurve2d.solve(d, shift + scale * -GL32_X1)) +
@@ -151,7 +150,7 @@ export const length = dual(2, (c: QuadraticCurve2d, i: Interval.Interval) => {
       GL32_W14 * Vector2.magnitude(LinearCurve2d.solve(d, shift + scale * GL32_X14)) +
       GL32_W15 * Vector2.magnitude(LinearCurve2d.solve(d, shift + scale * -GL32_X15)) +
       GL32_W15 * Vector2.magnitude(LinearCurve2d.solve(d, shift + scale * GL32_X15))) *
-      scale,
+    scale
   )
 })
 
@@ -166,5 +165,5 @@ export const curvature = dual(2, (c: QuadraticCurve2d, t: number) => {
     return 0
   }
 
-  return round(Math.abs(Vector2.cross(v, a)) / vMag ** 3)
+  return Math.abs(Vector2.cross(v, a)) / vMag ** 3
 })

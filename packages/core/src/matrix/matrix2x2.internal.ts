@@ -1,6 +1,6 @@
 import { toTwoDimensionalIndex } from '../dimensions'
 import { dual, Pipeable } from '../pipe'
-import { invariant, round } from '../utils'
+import { epsEquals, invariant } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import * as vector2 from '../vector/vector2.internal'
 import type { Matrix2x2, Matrix2x2Coordinate } from './matrix2x2'
@@ -19,10 +19,10 @@ class Matrix2x2Impl extends Pipeable implements Matrix2x2 {
 
   constructor(m00 = 0, m01 = 0, m10 = 0, m11 = 0) {
     super()
-    this.m00 = round(m00)
-    this.m01 = round(m01)
-    this.m10 = round(m10)
-    this.m11 = round(m11)
+    this.m00 = m00
+    this.m01 = m01
+    this.m10 = m10
+    this.m11 = m11
   }
 
   get [Symbol.toStringTag]() {
@@ -40,6 +40,18 @@ class Matrix2x2Impl extends Pipeable implements Matrix2x2 {
 
 export const isMatrix2x2 = (m: unknown): m is Matrix2x2 =>
   typeof m === 'object' && m !== null && Matrix2x2TypeId in m
+
+export const equals = dual<
+  (b: Matrix2x2, eps?: number) => (a: Matrix2x2) => boolean,
+  (a: Matrix2x2, b: Matrix2x2, eps?: number) => boolean
+>(
+  (args) => isMatrix2x2(args[0]) && isMatrix2x2(args[1]),
+  (a: Matrix2x2, b: Matrix2x2, eps?: number) =>
+    epsEquals(a.m00, b.m00, eps) &&
+    epsEquals(a.m01, b.m01, eps) &&
+    epsEquals(a.m10, b.m10, eps) &&
+    epsEquals(a.m11, b.m11, eps),
+)
 
 export const make = (m00 = 0, m01 = m00, m10 = m01, m11 = m10) =>
   new Matrix2x2Impl(m00, m01, m10, m11)
@@ -62,7 +74,7 @@ export const setColumn = dual<
   fromColumns(...(toColumns(m).with(toTwoDimensionalIndex(column), v) as [Vector2, Vector2])),
 )
 
-export const determinant = (m: Matrix2x2): number => round(m.m00 * m.m11 - m.m01 * m.m10)
+export const determinant = (m: Matrix2x2): number => m.m00 * m.m11 - m.m01 * m.m10
 
 //   (a: Vector2, b: Vector2) => a.x * b.x + a.y * b.y
 

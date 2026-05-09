@@ -19,9 +19,9 @@ describe('bezier', () => {
       Bezier2d.toPath,
     )
 
-    expect(CubicPath2d.solve(path, 0)).toMatchObject(Vector2.make(0, 0))
-    expect(CubicPath2d.solve(path, 0.5)).toMatchObject(Vector2.make(1, 1))
-    expect(CubicPath2d.solve(path, 1)).toMatchObject(Vector2.make(2, 2))
+    expect(CubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, 0))
+    expect(CubicPath2d.solve(path, 0.5)).toBeCloseToValue(Vector2.make(1, 1))
+    expect(CubicPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(2, 2))
 
     // for (let i = 0; i <= 100; i++) {
     //   const t = i / 100
@@ -40,7 +40,7 @@ describe('bezier', () => {
 
     const [a, b] = [...path] as [CubicCurve2d.CubicCurve2d, CubicCurve2d.CubicCurve2d]
 
-    expect(CubicCurve2d.curvature(a, 1)).toBe(CubicCurve2d.curvature(b, 0))
+    expect(CubicCurve2d.curvature(a, 1)).toBeCloseTo(CubicCurve2d.curvature(b, 0), 10)
   })
 })
 
@@ -54,7 +54,7 @@ describe('hermite', () => {
     )
     const path = Hermite2d.toPath(points)
 
-    expect(CubicPath2d.solve(path, 0)).toMatchObject(Vector2.make(0, 0))
+    expect(CubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, 0))
 
     // for (let i = 0; i <= 10; i++) {
     //   const t = i / 10
@@ -73,7 +73,7 @@ describe('cardinal', () => {
     )
     const path = Cardinal2d.toPath(points.pipe(Cardinal2d.withDuplicatedEndpoints))
 
-    expect(CubicPath2d.solve(path, 0)).toMatchObject(Vector2.make(0, 0))
+    expect(CubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, 0))
 
     // for (let i = 0; i <= 50; i++) {
     //   const t = i / 50
@@ -103,7 +103,7 @@ describe('basis', () => {
       Basis2d.toPath,
     )
 
-    expect(CubicPath2d.solve(path, 0)).toMatchObject(Vector2.make(0, 0))
+    expect(CubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, 0))
 
     // for (let i = 0; i <= 50; i++) {
     //   const t = i / 50

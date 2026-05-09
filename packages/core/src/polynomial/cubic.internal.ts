@@ -34,7 +34,7 @@ import {
   GL32_X15,
 } from '../length'
 import { dual } from '../pipe'
-import { round } from '../utils'
+import { clampToZero, epsEquals } from '../utils'
 import type { Vector4 } from '../vector/vector4'
 import type { CubicPolynomial } from './cubic'
 import { CubicPolynomialImpl, CubicPolynomialTypeId } from './cubic.internal.circular'
@@ -49,12 +49,24 @@ export const make = (c0 = 0, c1 = 0, c2 = 0, c3 = 0): CubicPolynomial =>
 export const isCubicPolynomial = (v: unknown): v is CubicPolynomial =>
   typeof v === 'object' && v !== null && CubicPolynomialTypeId in v
 
+export const equals = dual<
+  (b: CubicPolynomial, eps?: number) => (a: CubicPolynomial) => boolean,
+  (a: CubicPolynomial, b: CubicPolynomial, eps?: number) => boolean
+>(
+  (args) => isCubicPolynomial(args[0]) && isCubicPolynomial(args[1]),
+  (a: CubicPolynomial, b: CubicPolynomial, eps?: number) =>
+    epsEquals(a.c0, b.c0, eps) &&
+    epsEquals(a.c1, b.c1, eps) &&
+    epsEquals(a.c2, b.c2, eps) &&
+    epsEquals(a.c3, b.c3, eps),
+)
+
 export const fromVector = (v: Vector4) => new CubicPolynomialImpl(v.x, v.y, v.z, v.w)
 
 export const solve = dual<
   (x: number) => (p: CubicPolynomial) => number,
   (p: CubicPolynomial, x: number) => number
->(2, (p: CubicPolynomial, x: number) => round(p.c0 + x * p.c1 + x ** 2 * p.c2 + x ** 3 * p.c3))
+>(2, (p: CubicPolynomial, x: number) => p.c0 + x * p.c1 + x ** 2 * p.c2 + x ** 3 * p.c3)
 
 export const toSolver = (p: CubicPolynomial) => (x: number) => solve(p, x)
 
@@ -74,7 +86,7 @@ export const solveInverse = dual<
   const p = -d0 / (3 * self.c3 ** 2)
   const q = d1 / (27 * self.c3 ** 3)
 
-  const discriminant = round(-(4 * p ** 3 + 27 * q ** 2), 12)
+  const discriminant = clampToZero(-(4 * p ** 3 + 27 * q ** 2), 1e-12)
 
   const roots = new Set<number>()
 
@@ -83,25 +95,23 @@ export const solveInverse = dual<
     const theta = Math.acos(((3 * q) / (2 * p)) * Math.sqrt(-3 / p)) / 3
     const offset = (2 * Math.PI) / 3
 
-    roots.add(round(r * Math.cos(theta + offset) - shift))
-    roots.add(round(r * Math.cos(theta) - shift))
-    roots.add(round(r * Math.cos(theta - offset) - shift))
+    roots.add(r * Math.cos(theta + offset) - shift)
+    roots.add(r * Math.cos(theta) - shift)
+    roots.add(r * Math.cos(theta - offset) - shift)
   } else if (discriminant < 0) {
     const u = Math.sqrt(q ** 2 / 4 + p ** 3 / 27)
 
     const u1 = Math.cbrt(-q / 2 + u)
     const u2 = Math.cbrt(-q / 2 - u)
 
-    roots.add(round(u1 + u2 - shift))
+    roots.add(u1 + u2 - shift)
   } else if (d0 === 0) {
-    roots.add(round(-shift))
+    roots.add(-shift)
   } else {
-    roots.add(round((9 * self.c3 * (self.c0 - y) - self.c2 * self.c1) / (2 * d0)))
+    roots.add((9 * self.c3 * (self.c0 - y) - self.c2 * self.c1) / (2 * d0))
     roots.add(
-      round(
-        (4 * self.c3 * self.c2 * self.c1 - 9 * self.c3 ** 2 * (self.c0 - y) - self.c2 ** 3) /
-          (self.c3 * d0),
-      ),
+      (4 * self.c3 * self.c2 * self.c1 - 9 * self.c3 ** 2 * (self.c0 - y) - self.c2 ** 3) /
+        (self.c3 * d0),
     )
   }
 
@@ -197,7 +207,7 @@ export const length = dual<
 
   const { scale, shift } = Interval.scaleShift(Interval.biunit, domain)
 
-  return round(
+  return (
     (GL32_W0 * Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X0) ** 2) +
       GL32_W0 * Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X0) ** 2) +
       GL32_W1 * Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X1) ** 2) +
@@ -230,7 +240,7 @@ export const length = dual<
       GL32_W14 * Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X14) ** 2) +
       GL32_W15 * Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X15) ** 2) +
       GL32_W15 * Math.sqrt(1 + Quadratic.solve(d, shift + scale * GL32_X15) ** 2)) *
-      scale,
+    scale
   )
 })
 
@@ -238,5 +248,5 @@ export const curvature = dual(2, (p: CubicPolynomial, x: number) => {
   const d = derivative(p)
   const dd = Quadratic.derivative(d)
 
-  return round(Math.abs(Linear.solve(dd, x)) / (1 + Quadratic.solve(d, x) ** 2) ** 1.5)
+  return Math.abs(Linear.solve(dd, x)) / (1 + Quadratic.solve(d, x) ** 2) ** 1.5
 })

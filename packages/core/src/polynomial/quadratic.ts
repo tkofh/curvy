@@ -43,6 +43,28 @@ export interface QuadraticPolynomial extends Pipeable {
 export const isQuadraticPolynomial: (v: unknown) => v is QuadraticPolynomial =
   internal.isQuadraticPolynomial
 
+export const equals: {
+  /**
+   * Checks if two `QuadraticPolynomial` instances are approximately equal within an absolute tolerance.
+   *
+   * @param a - The first polynomial.
+   * @param b - The second polynomial.
+   * @param eps - Maximum allowed absolute difference per coefficient. Defaults to `1e-10`.
+   * @returns `true` when each pair of coefficients is within `eps`.
+   * @since 1.1.0
+   */
+  (a: QuadraticPolynomial, b: QuadraticPolynomial, eps?: number): boolean
+  /**
+   * Checks if two `QuadraticPolynomial` instances are approximately equal within an absolute tolerance.
+   *
+   * @param b - The second polynomial.
+   * @param eps - Maximum allowed absolute difference per coefficient. Defaults to `1e-10`.
+   * @returns A function that takes the first polynomial and returns the comparison result.
+   * @since 1.1.0
+   */
+  (b: QuadraticPolynomial, eps?: number): (a: QuadraticPolynomial) => boolean
+} = internal.equals
+
 /**
  * Creates a new `QuadraticPolynomial` instance.
  *

@@ -6,6 +6,38 @@ import { dual } from './pipe'
 export const PRECISION = 8
 
 /**
+ * Default tolerance for approximate equality between floating-point numbers.
+ *
+ * @since 1.1.0
+ */
+export const EPSILON = 1e-10
+
+/**
+ * Approximate equality between two numbers, within an absolute tolerance.
+ *
+ * @param a - The first value.
+ * @param b - The second value.
+ * @param eps - The maximum allowed absolute difference. Defaults to {@link EPSILON}.
+ * @returns `true` when `|a - b| <= eps`.
+ * @since 1.1.0
+ */
+export function epsEquals(a: number, b: number, eps: number = EPSILON): boolean {
+  return Math.abs(a - b) <= eps
+}
+
+/**
+ * Snaps near-zero values to exactly zero for stable sign tests.
+ *
+ * @param value - The value to test.
+ * @param eps - The threshold below which `value` is considered zero.
+ * @returns `0` when `|value| < eps`, otherwise `value` unchanged.
+ * @since 1.1.0
+ */
+export function clampToZero(value: number, eps: number): number {
+  return Math.abs(value) < eps ? 0 : value
+}
+
+/**
  * Rounding function that rounds a number to a specified precision.
  *
  * @param value - The number to round.

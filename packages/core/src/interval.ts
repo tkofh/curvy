@@ -22,6 +22,28 @@ export interface Interval extends Pipeable {
  */
 export const isInterval: (v: unknown) => v is Interval = internal.isInterval
 
+export const equals: {
+  /**
+   * Checks if two `Interval` instances are approximately equal within an absolute tolerance.
+   *
+   * @param a - The first interval.
+   * @param b - The second interval.
+   * @param eps - Maximum allowed absolute difference per endpoint. Defaults to `1e-10`.
+   * @returns `true` when both endpoints are within `eps`.
+   * @since 1.1.0
+   */
+  (a: Interval, b: Interval, eps?: number): boolean
+  /**
+   * Checks if two `Interval` instances are approximately equal within an absolute tolerance.
+   *
+   * @param b - The second interval.
+   * @param eps - Maximum allowed absolute difference per endpoint. Defaults to `1e-10`.
+   * @returns A function that takes the first interval and returns the comparison result.
+   * @since 1.1.0
+   */
+  (b: Interval, eps?: number): (a: Interval) => boolean
+} = internal.equals
+
 export const make: {
   /**
    * Creates a new `Interval` instance.

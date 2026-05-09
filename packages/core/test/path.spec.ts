@@ -8,7 +8,6 @@ import * as quadraticPath2d from '../src/path/quadratic2d'
 import * as cubicPolynomial from '../src/polynomial/cubic'
 import * as linearPolynomial from '../src/polynomial/linear'
 import * as quadraticPolynomial from '../src/polynomial/quadratic'
-import { round } from '../src/utils'
 import * as vector2 from '../src/vector/vector2'
 
 describe('linear2d', () => {
@@ -77,7 +76,7 @@ describe('linear2d', () => {
           linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
         ),
       ),
-    ).toBe(round(1 + Math.sqrt(2)))
+    ).toBeCloseTo(1 + Math.sqrt(2), 10)
   })
 })
 

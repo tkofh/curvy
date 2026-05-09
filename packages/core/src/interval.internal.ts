@@ -1,6 +1,6 @@
 import type { Interval } from './interval'
 import { dual, Pipeable } from './pipe'
-import { round } from './utils'
+import { epsEquals } from './utils'
 
 const TypeId: unique symbol = Symbol.for('curvy/interval')
 type TypeId = typeof TypeId
@@ -18,8 +18,8 @@ class IntervalImpl extends Pipeable implements Interval {
       throw new Error('Interval end must be greater than or equal to start')
     }
 
-    this.start = round(start)
-    this.end = round(end)
+    this.start = start
+    this.end = end
   }
 
   get [Symbol.toStringTag]() {
@@ -33,6 +33,15 @@ class IntervalImpl extends Pipeable implements Interval {
 
 export const isInterval = (v: unknown): v is Interval =>
   typeof v === 'object' && v !== null && TypeId in v
+
+export const equals = dual<
+  (b: Interval, eps?: number) => (a: Interval) => boolean,
+  (a: Interval, b: Interval, eps?: number) => boolean
+>(
+  (args) => isInterval(args[0]) && isInterval(args[1]),
+  (a: Interval, b: Interval, eps?: number) =>
+    epsEquals(a.start, b.start, eps) && epsEquals(a.end, b.end, eps),
+)
 
 export const make = (start: number, end?: number) => new IntervalImpl(start, end ?? start)
 

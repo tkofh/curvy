@@ -23,6 +23,28 @@ export interface Vector4 extends Pipeable, FourDimensional<number> {
  */
 export const isVector4: (v: unknown) => v is Vector4 = internal.isVector4
 
+export const equals: {
+  /**
+   * Checks if two `Vector4` instances are approximately equal within an absolute tolerance.
+   *
+   * @param a - The first vector.
+   * @param b - The second vector.
+   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
+   * @returns `true` when each pair of components is within `eps`.
+   * @since 1.1.0
+   */
+  (a: Vector4, b: Vector4, eps?: number): boolean
+  /**
+   * Checks if two `Vector4` instances are approximately equal within an absolute tolerance.
+   *
+   * @param b - The second vector.
+   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
+   * @returns A function that takes the first vector and returns the comparison result.
+   * @since 1.1.0
+   */
+  (b: Vector4, eps?: number): (a: Vector4) => boolean
+} = internal.equals
+
 export const make: {
   /**
    * Creates a new `Vector4` instance.

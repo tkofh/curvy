@@ -1,7 +1,7 @@
 import * as CubicCurve2d from '../curve/cubic2d'
 import * as Interval from '../interval'
 import { dual, Pipeable } from '../pipe'
-import { invariant, round } from '../utils'
+import { invariant } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { CubicPath2d } from './cubic2d'
 
@@ -44,7 +44,7 @@ export const length = (p: CubicPath2d) => {
     length += CubicCurve2d.length(curve, Interval.unit)
   }
 
-  return round(length)
+  return length
 }
 
 export const solve = dual<

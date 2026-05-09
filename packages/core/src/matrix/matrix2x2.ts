@@ -48,6 +48,28 @@ export interface Matrix2x2 extends Pipeable {
  */
 export const isMatrix2x2: (m: unknown) => m is Matrix2x2 = internal.isMatrix2x2
 
+export const equals: {
+  /**
+   * Checks if two `Matrix2x2` instances are approximately equal within an absolute tolerance.
+   *
+   * @param a - The first matrix.
+   * @param b - The second matrix.
+   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
+   * @returns `true` when each pair of components is within `eps`.
+   * @since 1.1.0
+   */
+  (a: Matrix2x2, b: Matrix2x2, eps?: number): boolean
+  /**
+   * Checks if two `Matrix2x2` instances are approximately equal within an absolute tolerance.
+   *
+   * @param b - The second matrix.
+   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
+   * @returns A function that takes the first matrix and returns the comparison result.
+   * @since 1.1.0
+   */
+  (b: Matrix2x2, eps?: number): (a: Matrix2x2) => boolean
+} = internal.equals
+
 /**
  * Creates a new `Matrix2x2` instance.
  *

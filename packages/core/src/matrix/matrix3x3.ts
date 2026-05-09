@@ -68,6 +68,28 @@ export interface Matrix3x3 extends Pipeable {
  */
 export const isMatrix3x3: (m: unknown) => m is Matrix3x3 = internal.isMatrix3x3
 
+export const equals: {
+  /**
+   * Checks if two `Matrix3x3` instances are approximately equal within an absolute tolerance.
+   *
+   * @param a - The first matrix.
+   * @param b - The second matrix.
+   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
+   * @returns `true` when each pair of components is within `eps`.
+   * @since 1.1.0
+   */
+  (a: Matrix3x3, b: Matrix3x3, eps?: number): boolean
+  /**
+   * Checks if two `Matrix3x3` instances are approximately equal within an absolute tolerance.
+   *
+   * @param b - The second matrix.
+   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
+   * @returns A function that takes the first matrix and returns the comparison result.
+   * @since 1.1.0
+   */
+  (b: Matrix3x3, eps?: number): (a: Matrix3x3) => boolean
+} = internal.equals
+
 /**
  * Creates a new `Matrix3x3` instance.
  *

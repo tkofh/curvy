@@ -1,5 +1,5 @@
 import { dual, Pipeable } from '../pipe'
-import { round } from '../utils'
+import { epsEquals } from '../utils'
 import type { Vector4 } from './vector4'
 
 export const Vector4TypeId: unique symbol = Symbol.for('curvy/vector4')
@@ -16,10 +16,10 @@ class Vector4Impl extends Pipeable implements Vector4 {
   constructor(v0 = 0, v1 = 0, v2 = 0, v3 = 0) {
     super()
 
-    this.x = round(v0)
-    this.y = round(v1)
-    this.z = round(v2)
-    this.w = round(v3)
+    this.x = v0
+    this.y = v1
+    this.z = v2
+    this.w = v3
   }
 
   get [0]() {
@@ -50,11 +50,23 @@ class Vector4Impl extends Pipeable implements Vector4 {
 export const isVector4 = (v: unknown): v is Vector4 =>
   typeof v === 'object' && v !== null && Vector4TypeId in v
 
+export const equals = dual<
+  (b: Vector4, eps?: number) => (a: Vector4) => boolean,
+  (a: Vector4, b: Vector4, eps?: number) => boolean
+>(
+  (args) => isVector4(args[0]) && isVector4(args[1]),
+  (a: Vector4, b: Vector4, eps?: number) =>
+    epsEquals(a.x, b.x, eps) &&
+    epsEquals(a.y, b.y, eps) &&
+    epsEquals(a.z, b.z, eps) &&
+    epsEquals(a.w, b.w, eps),
+)
+
 export const make = (v0: number, v1 = v0, v2 = v1, v3 = v2): Vector4 =>
   new Vector4Impl(v0, v1, v2, v3)
 
 export const magnitude: (vector: Vector4) => number = (vector: Vector4) =>
-  round(Math.hypot(vector.x, vector.y, vector.z, vector.w))
+  Math.hypot(vector.x, vector.y, vector.z, vector.w)
 
 export const normalize: (vector: Vector4) => Vector4 = (vector: Vector4) => {
   const m = magnitude(vector)
@@ -64,7 +76,7 @@ export const normalize: (vector: Vector4) => Vector4 = (vector: Vector4) => {
 
 export const dot = dual<(b: Vector4) => (a: Vector4) => number, (a: Vector4, b: Vector4) => number>(
   2,
-  (a: Vector4, b: Vector4) => round(a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w),
+  (a: Vector4, b: Vector4) => a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w,
 )
 
 export const components: (v: Vector4) => [number, number, number, number] = (v: Vector4) => [

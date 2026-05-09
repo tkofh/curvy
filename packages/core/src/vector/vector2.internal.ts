@@ -1,5 +1,5 @@
 import { dual, Pipeable } from '../pipe'
-import { round } from '../utils'
+import { epsEquals } from '../utils'
 import type { Vector2 } from './vector2'
 
 export const Vector2TypeId = Symbol.for('curvy/vector2')
@@ -13,8 +13,8 @@ class Vector2Impl extends Pipeable implements Vector2 {
 
   constructor(v0 = 0, v1 = 0) {
     super()
-    this.x = round(v0)
-    this.y = round(v1)
+    this.x = v0
+    this.y = v1
   }
 
   get [0]() {
@@ -37,6 +37,14 @@ class Vector2Impl extends Pipeable implements Vector2 {
 export const isVector2 = (v: unknown): v is Vector2 =>
   typeof v === 'object' && v !== null && Vector2TypeId in v
 
+export const equals = dual<
+  (b: Vector2, eps?: number) => (a: Vector2) => boolean,
+  (a: Vector2, b: Vector2, eps?: number) => boolean
+>(
+  (args) => isVector2(args[0]) && isVector2(args[1]),
+  (a: Vector2, b: Vector2, eps?: number) => epsEquals(a.x, b.x, eps) && epsEquals(a.y, b.y, eps),
+)
+
 export const make = (v0: number, v1 = v0): Vector2 => new Vector2Impl(v0, v1)
 
 export const fromPolar = (r: number, theta: number) =>
@@ -44,7 +52,7 @@ export const fromPolar = (r: number, theta: number) =>
 
 export const components = (v: Vector2): [number, number] => [v.x, v.y]
 
-export const magnitude = (vector: Vector2) => round(Math.hypot(vector.x, vector.y))
+export const magnitude = (vector: Vector2) => Math.hypot(vector.x, vector.y)
 
 export const normalize = (vector: Vector2) => {
   const m = magnitude(vector)
@@ -54,13 +62,13 @@ export const normalize = (vector: Vector2) => {
 
 export const dot = dual<(b: Vector2) => (a: Vector2) => number, (a: Vector2, b: Vector2) => number>(
   2,
-  (a: Vector2, b: Vector2) => round(a.x * b.x + a.y * b.y),
+  (a: Vector2, b: Vector2) => a.x * b.x + a.y * b.y,
 )
 
 export const cross = dual<
   (b: Vector2) => (a: Vector2) => number,
   (a: Vector2, b: Vector2) => number
->(2, (a: Vector2, b: Vector2) => round(a.x * b.y - a.y * b.x))
+>(2, (a: Vector2, b: Vector2) => a.x * b.y - a.y * b.x)
 
 export const softmax = (v: Vector2) => {
   const max = Math.max(v.x, v.y)
@@ -110,7 +118,7 @@ export const setR = dual<
   (v: Vector2, r: number) => Vector2
 >(2, (v: Vector2, r: number) => scale(r / magnitude(v))(v))
 
-export const getTheta = (v: Vector2) => round(Math.atan2(v.y, v.x))
+export const getTheta = (v: Vector2) => Math.atan2(v.y, v.x)
 export const setTheta = dual<
   (theta: number) => (v: Vector2) => Vector2,
   (v: Vector2, theta: number) => Vector2

@@ -37,6 +37,28 @@ export interface LinearPolynomial extends Pipeable {
  */
 export const isLinearPolynomial: (v: unknown) => v is LinearPolynomial = internal.isLinearPolynomial
 
+export const equals: {
+  /**
+   * Checks if two `LinearPolynomial` instances are approximately equal within an absolute tolerance.
+   *
+   * @param a - The first polynomial.
+   * @param b - The second polynomial.
+   * @param eps - Maximum allowed absolute difference per coefficient. Defaults to `1e-10`.
+   * @returns `true` when each pair of coefficients is within `eps`.
+   * @since 1.1.0
+   */
+  (a: LinearPolynomial, b: LinearPolynomial, eps?: number): boolean
+  /**
+   * Checks if two `LinearPolynomial` instances are approximately equal within an absolute tolerance.
+   *
+   * @param b - The second polynomial.
+   * @param eps - Maximum allowed absolute difference per coefficient. Defaults to `1e-10`.
+   * @returns A function that takes the first polynomial and returns the comparison result.
+   * @since 1.1.0
+   */
+  (b: LinearPolynomial, eps?: number): (a: LinearPolynomial) => boolean
+} = internal.equals
+
 /**
  * Creates a new `LinearPolynomial` instance.
  *

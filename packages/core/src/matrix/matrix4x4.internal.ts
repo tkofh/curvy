@@ -1,6 +1,6 @@
 import { toFourDimensionalIndex } from '../dimensions'
 import { dual, Pipeable } from '../pipe'
-import { invariant, round } from '../utils'
+import { epsEquals, invariant } from '../utils'
 import type { Vector4 } from '../vector/vector4'
 import * as vector4 from '../vector/vector4.internal'
 import type { Matrix3x3 } from './matrix3x3'
@@ -53,22 +53,22 @@ class Matrix4x4Impl extends Pipeable implements Matrix4x4 {
   ) {
     super()
 
-    this.m00 = round(m00)
-    this.m01 = round(m01)
-    this.m02 = round(m02)
-    this.m03 = round(m03)
-    this.m10 = round(m10)
-    this.m11 = round(m11)
-    this.m12 = round(m12)
-    this.m13 = round(m13)
-    this.m20 = round(m20)
-    this.m21 = round(m21)
-    this.m22 = round(m22)
-    this.m23 = round(m23)
-    this.m30 = round(m30)
-    this.m31 = round(m31)
-    this.m32 = round(m32)
-    this.m33 = round(m33)
+    this.m00 = m00
+    this.m01 = m01
+    this.m02 = m02
+    this.m03 = m03
+    this.m10 = m10
+    this.m11 = m11
+    this.m12 = m12
+    this.m13 = m13
+    this.m20 = m20
+    this.m21 = m21
+    this.m22 = m22
+    this.m23 = m23
+    this.m30 = m30
+    this.m31 = m31
+    this.m32 = m32
+    this.m33 = m33
   }
 
   get [Symbol.toStringTag]() {
@@ -86,6 +86,30 @@ class Matrix4x4Impl extends Pipeable implements Matrix4x4 {
 
 export const isMatrix4x4 = (m: unknown): m is Matrix4x4 =>
   typeof m === 'object' && m !== null && Matrix4x4TypeId in m
+
+export const equals = dual<
+  (b: Matrix4x4, eps?: number) => (a: Matrix4x4) => boolean,
+  (a: Matrix4x4, b: Matrix4x4, eps?: number) => boolean
+>(
+  (args) => isMatrix4x4(args[0]) && isMatrix4x4(args[1]),
+  (a: Matrix4x4, b: Matrix4x4, eps?: number) =>
+    epsEquals(a.m00, b.m00, eps) &&
+    epsEquals(a.m01, b.m01, eps) &&
+    epsEquals(a.m02, b.m02, eps) &&
+    epsEquals(a.m03, b.m03, eps) &&
+    epsEquals(a.m10, b.m10, eps) &&
+    epsEquals(a.m11, b.m11, eps) &&
+    epsEquals(a.m12, b.m12, eps) &&
+    epsEquals(a.m13, b.m13, eps) &&
+    epsEquals(a.m20, b.m20, eps) &&
+    epsEquals(a.m21, b.m21, eps) &&
+    epsEquals(a.m22, b.m22, eps) &&
+    epsEquals(a.m23, b.m23, eps) &&
+    epsEquals(a.m30, b.m30, eps) &&
+    epsEquals(a.m31, b.m31, eps) &&
+    epsEquals(a.m32, b.m32, eps) &&
+    epsEquals(a.m33, b.m33, eps),
+)
 
 // first four arguments are the top row
 export const make = (
@@ -172,12 +196,10 @@ export const setColumn = dual<
 )
 
 export const determinant = (m: Matrix4x4) =>
-  round(
-    m.m00 * matrix3x3.determinant(minor(m, 0, 0)) -
-      m.m01 * matrix3x3.determinant(minor(m, 0, 1)) +
-      m.m02 * matrix3x3.determinant(minor(m, 0, 2)) -
-      m.m03 * matrix3x3.determinant(minor(m, 0, 3)),
-  )
+  m.m00 * matrix3x3.determinant(minor(m, 0, 0)) -
+  m.m01 * matrix3x3.determinant(minor(m, 0, 1)) +
+  m.m02 * matrix3x3.determinant(minor(m, 0, 2)) -
+  m.m03 * matrix3x3.determinant(minor(m, 0, 3))
 
 export const minor = dual<
   (row: Matrix4x4Coordinate, column: Matrix4x4Coordinate) => (m: Matrix4x4) => Matrix3x3,

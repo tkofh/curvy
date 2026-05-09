@@ -1,5 +1,4 @@
 import { Pipeable } from '../pipe'
-import { round } from '../utils'
 import type { QuadraticPolynomial } from './quadratic'
 
 export const QuadraticPolynomialTypeId: unique symbol = Symbol.for('curvy/polynomial/quadratic')
@@ -15,8 +14,8 @@ export class QuadraticPolynomialImpl extends Pipeable implements QuadraticPolyno
   constructor(c0 = 0, c1 = 0, c2 = 0) {
     super()
 
-    this.c0 = round(c0)
-    this.c1 = round(c1)
-    this.c2 = round(c2)
+    this.c0 = c0
+    this.c1 = c1
+    this.c2 = c2
   }
 }

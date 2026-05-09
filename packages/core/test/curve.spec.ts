@@ -34,7 +34,7 @@ describe('linear2d', () => {
         linear2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
         0.5,
       ),
-    ).toEqual(vector2.make(0.5, 1))
+    ).toBeCloseToValue(vector2.make(0.5, 1))
   })
   test('length', () => {
     expect(
@@ -77,7 +77,7 @@ describe('quadratic2d', () => {
         ),
         0.5,
       ),
-    ).toEqual(vector2.make(0.25, -0.25))
+    ).toBeCloseToValue(vector2.make(0.25, -0.25))
   })
   test('length', () => {
     expect(
@@ -88,7 +88,7 @@ describe('quadratic2d', () => {
         ),
         interval.make(0, 1),
       ),
-    ).toEqual(vector2.magnitude(vector2.make(1, 1)))
+    ).toBeCloseTo(vector2.magnitude(vector2.make(1, 1)), 10)
     expect(
       quadratic2d.length(
         quadratic2d.fromPolynomials(
@@ -97,7 +97,7 @@ describe('quadratic2d', () => {
         ),
         interval.make(0, 0.5),
       ),
-    ).toEqual(vector2.magnitude(vector2.make(0.25, 0.25)))
+    ).toBeCloseTo(vector2.magnitude(vector2.make(0.25, 0.25)), 10)
   })
 })
 
@@ -132,7 +132,7 @@ describe('cubic2d', () => {
         ),
         0.5,
       ),
-    ).toEqual(vector2.make(0.125, -0.125))
+    ).toBeCloseToValue(vector2.make(0.125, -0.125))
   })
   test('length', () => {
     expect(
@@ -143,7 +143,7 @@ describe('cubic2d', () => {
         ),
         interval.make(0, 1),
       ),
-    ).toEqual(vector2.magnitude(vector2.make(1, 1)))
+    ).toBeCloseTo(vector2.magnitude(vector2.make(1, 1)), 10)
     expect(
       cubic2d.length(
         cubic2d.fromPolynomials(
@@ -152,6 +152,6 @@ describe('cubic2d', () => {
         ),
         interval.make(0, 0.5),
       ),
-    ).toEqual(vector2.magnitude(vector2.make(0.125, 0.125)))
+    ).toBeCloseTo(vector2.magnitude(vector2.make(0.125, 0.125)), 10)
   })
 })

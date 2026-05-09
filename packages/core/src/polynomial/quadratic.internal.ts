@@ -1,6 +1,6 @@
 import * as Interval from '../interval'
 import { dual } from '../pipe'
-import { round } from '../utils'
+import { epsEquals } from '../utils'
 import * as Vector2 from '../vector/vector2'
 import type { Vector3 } from '../vector/vector3'
 import type { CubicPolynomial } from './cubic'
@@ -17,12 +17,21 @@ export const make = (c0 = 0, c1 = 0, c2 = 0): QuadraticPolynomial =>
 export const isQuadraticPolynomial = (v: unknown): v is QuadraticPolynomial =>
   typeof v === 'object' && v !== null && QuadraticPolynomialTypeId in v
 
+export const equals = dual<
+  (b: QuadraticPolynomial, eps?: number) => (a: QuadraticPolynomial) => boolean,
+  (a: QuadraticPolynomial, b: QuadraticPolynomial, eps?: number) => boolean
+>(
+  (args) => isQuadraticPolynomial(args[0]) && isQuadraticPolynomial(args[1]),
+  (a: QuadraticPolynomial, b: QuadraticPolynomial, eps?: number) =>
+    epsEquals(a.c0, b.c0, eps) && epsEquals(a.c1, b.c1, eps) && epsEquals(a.c2, b.c2, eps),
+)
+
 export const fromVector = (v: Vector3) => new QuadraticPolynomialImpl(v.x, v.y, v.z)
 
 export const solve = dual<
   (x: number) => (p: QuadraticPolynomial) => number,
   (p: QuadraticPolynomial, x: number) => number
->(2, (p: QuadraticPolynomial, x: number) => round(p.c0 + x * p.c1 + x ** 2 * p.c2))
+>(2, (p: QuadraticPolynomial, x: number) => p.c0 + x * p.c1 + x ** 2 * p.c2)
 
 export const toSolver = (p: QuadraticPolynomial) => (x: number) => solve(p, x)
 
@@ -40,14 +49,14 @@ export const solveInverse: {
   }
 
   if (discriminant === 0) {
-    return [round(-p.c1 / (2 * p.c2))] as ZeroToTwo
+    return [-p.c1 / (2 * p.c2)] as ZeroToTwo
   }
 
   const sqrtDiscriminant = Math.sqrt(discriminant)
 
   return [
-    round((-p.c1 + sqrtDiscriminant) / (2 * p.c2)),
-    round((-p.c1 - sqrtDiscriminant) / (2 * p.c2)),
+    (-p.c1 + sqrtDiscriminant) / (2 * p.c2),
+    (-p.c1 - sqrtDiscriminant) / (2 * p.c2),
   ].toSorted((a, b) => a - b) as unknown as ZeroToTwo
 })
 
@@ -160,12 +169,12 @@ export const length = dual<
   const evalEnd =
     (derivativeEnd * sqrtEnd + Math.log(Math.abs(derivativeEnd + sqrtEnd))) / (4 * p.c2)
 
-  return round(evalEnd - evalStart)
+  return evalEnd - evalStart
 })
 
 export const curvature = dual<
   (x: number) => (p: QuadraticPolynomial) => number,
   (p: QuadraticPolynomial, x: number) => number
 >(2, (p: QuadraticPolynomial, x: number) =>
-  round(Math.abs(2 * p.c2) / (1 + (Linear.solve(derivative(p), x) ** 2) ** 1.5)),
+  Math.abs(2 * p.c2) / (1 + (Linear.solve(derivative(p), x) ** 2) ** 1.5),
 )

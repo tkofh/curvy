@@ -2,7 +2,6 @@ import { describe, expect, test } from 'vitest'
 import * as matrix2x2 from '../src/matrix/matrix2x2'
 import * as matrix3x3 from '../src/matrix/matrix3x3'
 import * as matrix4x4 from '../src/matrix/matrix4x4'
-import { round } from '../src/utils'
 import * as vector2 from '../src/vector/vector2'
 import * as vector3 from '../src/vector/vector3'
 import * as vector4 from '../src/vector/vector4'
@@ -170,20 +169,14 @@ describe('matrix3x3', () => {
     const result = matrix3x3.solveSystem(coefficients, solution)
 
     expect(
-      round(
-        result.x * coefficients.m00 + result.y * coefficients.m01 + result.z * coefficients.m02,
-      ),
-    ).toEqual(solution.x)
+      result.x * coefficients.m00 + result.y * coefficients.m01 + result.z * coefficients.m02,
+    ).toBeCloseTo(solution.x, 10)
     expect(
-      round(
-        result.x * coefficients.m10 + result.y * coefficients.m11 + result.z * coefficients.m12,
-      ),
-    ).toEqual(solution.y)
+      result.x * coefficients.m10 + result.y * coefficients.m11 + result.z * coefficients.m12,
+    ).toBeCloseTo(solution.y, 10)
     expect(
-      round(
-        result.x * coefficients.m20 + result.y * coefficients.m21 + result.z * coefficients.m22,
-      ),
-    ).toEqual(solution.z)
+      result.x * coefficients.m20 + result.y * coefficients.m21 + result.z * coefficients.m22,
+    ).toBeCloseTo(solution.z, 10)
   })
   test('toRows', () => {
     expect(matrix3x3.toRows(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9))).toEqual([
@@ -342,37 +335,29 @@ describe('matrix4x4', () => {
     const result = matrix4x4.solveSystem(coefficients, solution)
 
     expect(
-      round(
-        result.x * coefficients.m00 +
-          result.y * coefficients.m01 +
-          result.z * coefficients.m02 +
-          result.w * coefficients.m03,
-      ),
-    ).toEqual(solution.x)
+      result.x * coefficients.m00 +
+        result.y * coefficients.m01 +
+        result.z * coefficients.m02 +
+        result.w * coefficients.m03,
+    ).toBeCloseTo(solution.x, 10)
     expect(
-      round(
-        result.x * coefficients.m10 +
-          result.y * coefficients.m11 +
-          result.z * coefficients.m12 +
-          result.w * coefficients.m13,
-      ),
-    ).toEqual(solution.y)
+      result.x * coefficients.m10 +
+        result.y * coefficients.m11 +
+        result.z * coefficients.m12 +
+        result.w * coefficients.m13,
+    ).toBeCloseTo(solution.y, 10)
     expect(
-      round(
-        result.x * coefficients.m20 +
-          result.y * coefficients.m21 +
-          result.z * coefficients.m22 +
-          result.w * coefficients.m23,
-      ),
-    ).toEqual(solution.z)
+      result.x * coefficients.m20 +
+        result.y * coefficients.m21 +
+        result.z * coefficients.m22 +
+        result.w * coefficients.m23,
+    ).toBeCloseTo(solution.z, 10)
     expect(
-      round(
-        result.x * coefficients.m30 +
-          result.y * coefficients.m31 +
-          result.z * coefficients.m32 +
-          result.w * coefficients.m33,
-      ),
-    ).toEqual(solution.w)
+      result.x * coefficients.m30 +
+        result.y * coefficients.m31 +
+        result.z * coefficients.m32 +
+        result.w * coefficients.m33,
+    ).toBeCloseTo(solution.w, 10)
   })
   test('toRows', () => {
     expect(

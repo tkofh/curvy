@@ -1,6 +1,6 @@
 import * as Interval from '../interval'
 import { dual, Pipeable } from '../pipe'
-import { round } from '../utils'
+import { epsEquals } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPolynomial } from './linear'
 import type { QuadraticPolynomial } from './quadratic'
@@ -19,13 +19,22 @@ class LinearPolynomialImpl extends Pipeable implements LinearPolynomial {
   constructor(c0 = 0, c1 = 0) {
     super()
 
-    this.c0 = round(c0)
-    this.c1 = round(c1)
+    this.c0 = c0
+    this.c1 = c1
   }
 }
 
 export const isLinearPolynomial = (v: unknown): v is LinearPolynomial =>
   typeof v === 'object' && v !== null && LinearPolynomialTypeId in v
+
+export const equals = dual<
+  (b: LinearPolynomial, eps?: number) => (a: LinearPolynomial) => boolean,
+  (a: LinearPolynomial, b: LinearPolynomial, eps?: number) => boolean
+>(
+  (args) => isLinearPolynomial(args[0]) && isLinearPolynomial(args[1]),
+  (a: LinearPolynomial, b: LinearPolynomial, eps?: number) =>
+    epsEquals(a.c0, b.c0, eps) && epsEquals(a.c1, b.c1, eps),
+)
 
 export const make = (c0 = 0, c1 = 0): LinearPolynomial => new LinearPolynomialImpl(c0, c1)
 
@@ -40,7 +49,7 @@ export const fromPoints = (p1: Vector2, p2: Vector2) =>
 export const solve = dual<
   (x: number) => (p: LinearPolynomial) => number,
   (p: LinearPolynomial, x: number) => number
->(2, (p: LinearPolynomial, x: number) => round(p.c0 + x * p.c1))
+>(2, (p: LinearPolynomial, x: number) => p.c0 + x * p.c1)
 
 export const toSolver = (p: LinearPolynomial) => (x: number) => solve(p, x)
 
@@ -51,7 +60,7 @@ export const solveInverse = dual<
   if (p.c1 === 0) {
     return null
   }
-  return round((y - p.c0) / p.c1)
+  return (y - p.c0) / p.c1
 })
 
 export const toInverseSolver = (p: LinearPolynomial) => (y: number) => solveInverse(p, y)
@@ -107,8 +116,8 @@ export const length = dual<
   }
 
   if (p.c1 === 0) {
-    return round(Interval.size(domain))
+    return Interval.size(domain)
   }
 
-  return round(Math.sqrt(1 + p.c1 ** 2) * Interval.size(domain))
+  return Math.sqrt(1 + p.c1 ** 2) * Interval.size(domain)
 })

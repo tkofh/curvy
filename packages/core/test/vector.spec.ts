@@ -17,10 +17,12 @@ describe('vector2', () => {
     expect(vector2.isVector2({ x: 1, y: 2, [0]: 1, [1]: 2 })).toBe(false)
   })
   test('magnitude', () => {
-    expect(vector2.magnitude(vector2.make(2, 2))).toBe(2.82842712)
+    expect(vector2.magnitude(vector2.make(2, 2))).toBeCloseTo(Math.hypot(2, 2), 12)
   })
   test('normalize', () => {
-    expect(vector2.normalize(vector2.make(2, 2))).toEqual(vector2.make(Math.SQRT1_2, Math.SQRT1_2))
+    expect(vector2.normalize(vector2.make(2, 2))).toBeCloseToValue(
+      vector2.make(Math.SQRT1_2, Math.SQRT1_2),
+    )
   })
   test('dot', () => {
     expect(vector2.dot(vector2.make(1, 2), vector2.make(3, 4))).toBe(11)
@@ -29,16 +31,24 @@ describe('vector2', () => {
     expect(vector2.components(vector2.make(1, 2))).toEqual([1, 2])
   })
   test('softmax', () => {
-    expect(vector2.softmax(vector2.make(1, 2))).toEqual(vector2.make(0.26894142, 0.73105858))
+    expect(vector2.softmax(vector2.make(1, 2))).toBeCloseToValue(
+      vector2.make(0.2689414213699951, 0.7310585786300049),
+    )
   })
   test('add', () => {
-    expect(vector2.add(vector2.make(1, 2), vector2.make(3, 4))).toEqual(vector2.make(4, 6))
+    expect(vector2.add(vector2.make(1, 2), vector2.make(3, 4))).toBeCloseToValue(
+      vector2.make(4, 6),
+    )
   })
   test('subtract', () => {
-    expect(vector2.subtract(vector2.make(1, 2), vector2.make(3, 4))).toEqual(vector2.make(-2, -2))
+    expect(vector2.subtract(vector2.make(1, 2), vector2.make(3, 4))).toBeCloseToValue(
+      vector2.make(-2, -2),
+    )
   })
   test('hadamard', () => {
-    expect(vector2.hadamard(vector2.make(1, 2), vector2.make(3, 4))).toEqual(vector2.make(3, 8))
+    expect(vector2.hadamard(vector2.make(1, 2), vector2.make(3, 4))).toBeCloseToValue(
+      vector2.make(3, 8),
+    )
   })
 })
 
@@ -58,12 +68,11 @@ describe('vector3', () => {
     expect(vector3.isVector3({ x: 1, y: 2, z: 3, [0]: 1, [1]: 2, [2]: 3 })).toBe(false)
   })
   test('magnitude', () => {
-    expect(vector3.magnitude(vector3.make(2, 2, 2))).toBe(3.46410162)
+    expect(vector3.magnitude(vector3.make(2, 2, 2))).toBeCloseTo(Math.hypot(2, 2, 2), 12)
   })
   test('normalize', () => {
-    expect(vector3.normalize(vector3.make(2, 2, 2))).toEqual(
-      vector3.make(0.57735027, 0.57735027, 0.57735027),
-    )
+    const inv = 1 / Math.sqrt(3)
+    expect(vector3.normalize(vector3.make(2, 2, 2))).toBeCloseToValue(vector3.make(inv, inv, inv))
   })
   test('dot', () => {
     expect(vector3.dot(vector3.make(1, 2, 3), vector3.make(3, 4, 5))).toBe(26)
@@ -72,20 +81,22 @@ describe('vector3', () => {
     expect(vector3.components(vector3.make(1, 2, 3))).toEqual([1, 2, 3])
   })
   test('softmax', () => {
-    expect(vector3.softmax(vector3.make(1, 2, 3))).toEqual(
-      vector3.make(0.09003057, 0.24472847, 0.66524096),
+    expect(vector3.softmax(vector3.make(1, 2, 3))).toBeCloseToValue(
+      vector3.make(0.09003057317038046, 0.24472847105479764, 0.6652409557748218),
     )
   })
   test('add', () => {
-    expect(vector3.add(vector3.make(1, 2, 3), vector3.make(3, 4, 5))).toEqual(vector3.make(4, 6, 8))
+    expect(vector3.add(vector3.make(1, 2, 3), vector3.make(3, 4, 5))).toBeCloseToValue(
+      vector3.make(4, 6, 8),
+    )
   })
   test('subtract', () => {
-    expect(vector3.subtract(vector3.make(1, 2, 3), vector3.make(3, 4, 5))).toEqual(
+    expect(vector3.subtract(vector3.make(1, 2, 3), vector3.make(3, 4, 5))).toBeCloseToValue(
       vector3.make(-2, -2, -2),
     )
   })
   test('hadamard', () => {
-    expect(vector3.hadamard(vector3.make(1, 2, 3), vector3.make(3, 4, 5))).toEqual(
+    expect(vector3.hadamard(vector3.make(1, 2, 3), vector3.make(3, 4, 5))).toBeCloseToValue(
       vector3.make(3, 8, 15),
     )
   })
@@ -120,10 +131,12 @@ describe('vector4', () => {
     ).toBe(false)
   })
   test('magnitude', () => {
-    expect(vector4.magnitude(vector4.make(2, 2, 2, 2))).toBe(4)
+    expect(vector4.magnitude(vector4.make(2, 2, 2, 2))).toBeCloseTo(4, 12)
   })
   test('normalize', () => {
-    expect(vector4.normalize(vector4.make(2, 2, 2, 2))).toEqual(vector4.make(0.5, 0.5, 0.5, 0.5))
+    expect(vector4.normalize(vector4.make(2, 2, 2, 2))).toBeCloseToValue(
+      vector4.make(0.5, 0.5, 0.5, 0.5),
+    )
   })
   test('dot', () => {
     expect(vector4.dot(vector4.make(1, 2, 3, 4), vector4.make(3, 4, 5, 6))).toBe(50)
@@ -132,22 +145,27 @@ describe('vector4', () => {
     expect(vector4.components(vector4.make(1, 2, 3, 4))).toEqual([1, 2, 3, 4])
   })
   test('softmax', () => {
-    expect(vector4.softmax(vector4.make(1, 2, 3, 4))).toEqual(
-      vector4.make(0.0320586, 0.08714432, 0.23688282, 0.64391426),
+    expect(vector4.softmax(vector4.make(1, 2, 3, 4))).toBeCloseToValue(
+      vector4.make(
+        0.03205860328008499,
+        0.08714431874203257,
+        0.23688281808991013,
+        0.6439142598879724,
+      ),
     )
   })
   test('add', () => {
-    expect(vector4.add(vector4.make(1, 2, 3, 4), vector4.make(3, 4, 5, 6))).toEqual(
+    expect(vector4.add(vector4.make(1, 2, 3, 4), vector4.make(3, 4, 5, 6))).toBeCloseToValue(
       vector4.make(4, 6, 8, 10),
     )
   })
   test('subtract', () => {
-    expect(vector4.subtract(vector4.make(1, 2, 3, 4), vector4.make(3, 4, 5, 6))).toEqual(
+    expect(vector4.subtract(vector4.make(1, 2, 3, 4), vector4.make(3, 4, 5, 6))).toBeCloseToValue(
       vector4.make(-2, -2, -2, -2),
     )
   })
   test('hadamard', () => {
-    expect(vector4.hadamard(vector4.make(1, 2, 3, 4), vector4.make(3, 4, 5, 6))).toEqual(
+    expect(vector4.hadamard(vector4.make(1, 2, 3, 4), vector4.make(3, 4, 5, 6))).toBeCloseToValue(
       vector4.make(3, 8, 15, 24),
     )
   })

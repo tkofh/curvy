@@ -1,5 +1,5 @@
 import { dual, Pipeable } from '../pipe'
-import { round } from '../utils'
+import { epsEquals } from '../utils'
 import type { Vector3 } from './vector3'
 
 export const Vector3TypeId: unique symbol = Symbol.for('curvy/vector3')
@@ -14,9 +14,9 @@ class Vector3Impl extends Pipeable implements Vector3 {
 
   constructor(v0 = 0, v1 = 0, v2 = 0) {
     super()
-    this.x = round(v0)
-    this.y = round(v1)
-    this.z = round(v2)
+    this.x = v0
+    this.y = v1
+    this.z = v2
   }
 
   get [0]() {
@@ -43,6 +43,15 @@ class Vector3Impl extends Pipeable implements Vector3 {
 export const isVector3 = (v: unknown): v is Vector3 =>
   typeof v === 'object' && v !== null && Vector3TypeId in v
 
+export const equals = dual<
+  (b: Vector3, eps?: number) => (a: Vector3) => boolean,
+  (a: Vector3, b: Vector3, eps?: number) => boolean
+>(
+  (args) => isVector3(args[0]) && isVector3(args[1]),
+  (a: Vector3, b: Vector3, eps?: number) =>
+    epsEquals(a.x, b.x, eps) && epsEquals(a.y, b.y, eps) && epsEquals(a.z, b.z, eps),
+)
+
 export const make = (v0: number, v1 = v0, v2 = v1): Vector3 => new Vector3Impl(v0, v1, v2)
 
 export const fromSpherical = (r: number, theta: number, phi: number) =>
@@ -52,7 +61,7 @@ export const fromSpherical = (r: number, theta: number, phi: number) =>
     r * Math.cos(theta),
   )
 
-export const magnitude = (vector: Vector3) => round(Math.hypot(vector.x, vector.y, vector.z))
+export const magnitude = (vector: Vector3) => Math.hypot(vector.x, vector.y, vector.z)
 
 export const normalize = (vector: Vector3) => {
   const m = magnitude(vector)
@@ -62,7 +71,7 @@ export const normalize = (vector: Vector3) => {
 
 export const dot = dual<(b: Vector3) => (a: Vector3) => number, (a: Vector3, b: Vector3) => number>(
   2,
-  (a: Vector3, b: Vector3) => round(a.x * b.x + a.y * b.y + a.z * b.z),
+  (a: Vector3, b: Vector3) => a.x * b.x + a.y * b.y + a.z * b.z,
 )
 
 export const cross = dual<
@@ -143,7 +152,7 @@ export const setTheta = dual<
   return make(m * sinTheta * Math.cos(v.y), m * sinTheta * Math.sin(v.y), m * Math.cos(phi))
 })
 
-export const getPhi = (v: Vector3) => round(Math.atan2(v.y, v.x))
+export const getPhi = (v: Vector3) => Math.atan2(v.y, v.x)
 export const setPhi = dual<
   (theta: number) => (v: Vector3) => Vector3,
   (v: Vector3, theta: number) => Vector3

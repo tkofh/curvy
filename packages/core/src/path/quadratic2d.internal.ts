@@ -1,7 +1,6 @@
 import * as QuadraticCurve2d from '../curve/quadratic2d'
 import * as Interval from '../interval'
 import { dual, Pipeable } from '../pipe'
-import { round } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { QuadraticPath2d } from './quadratic2d'
 
@@ -45,7 +44,7 @@ export const length = (p: QuadraticPath2d) => {
     length += QuadraticCurve2d.length(curve, Interval.unit)
   }
 
-  return round(length)
+  return length
 }
 
 export const solve = dual<

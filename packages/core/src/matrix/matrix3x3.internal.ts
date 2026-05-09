@@ -1,6 +1,6 @@
 import { toThreeDimensionalIndex } from '../dimensions'
 import { dual, Pipeable } from '../pipe'
-import { invariant, round } from '../utils'
+import { epsEquals, invariant } from '../utils'
 import type { Vector3 } from '../vector/vector3'
 import * as vector3 from '../vector/vector3.internal'
 import type { Matrix2x2 } from './matrix2x2'
@@ -27,15 +27,15 @@ class Matrix3x3Impl extends Pipeable implements Matrix3x3 {
 
   constructor(m00 = 0, m01 = 0, m02 = 0, m10 = 0, m11 = 0, m12 = 0, m20 = 0, m21 = 0, m22 = 0) {
     super()
-    this.m00 = round(m00)
-    this.m01 = round(m01)
-    this.m02 = round(m02)
-    this.m10 = round(m10)
-    this.m11 = round(m11)
-    this.m12 = round(m12)
-    this.m20 = round(m20)
-    this.m21 = round(m21)
-    this.m22 = round(m22)
+    this.m00 = m00
+    this.m01 = m01
+    this.m02 = m02
+    this.m10 = m10
+    this.m11 = m11
+    this.m12 = m12
+    this.m20 = m20
+    this.m21 = m21
+    this.m22 = m22
   }
 
   get [Symbol.toStringTag]() {
@@ -55,6 +55,23 @@ export type { Matrix3x3 }
 
 export const isMatrix3x3 = (m: unknown): m is Matrix3x3 =>
   typeof m === 'object' && m !== null && Matrix3x3TypeId in m
+
+export const equals = dual<
+  (b: Matrix3x3, eps?: number) => (a: Matrix3x3) => boolean,
+  (a: Matrix3x3, b: Matrix3x3, eps?: number) => boolean
+>(
+  (args) => isMatrix3x3(args[0]) && isMatrix3x3(args[1]),
+  (a: Matrix3x3, b: Matrix3x3, eps?: number) =>
+    epsEquals(a.m00, b.m00, eps) &&
+    epsEquals(a.m01, b.m01, eps) &&
+    epsEquals(a.m02, b.m02, eps) &&
+    epsEquals(a.m10, b.m10, eps) &&
+    epsEquals(a.m11, b.m11, eps) &&
+    epsEquals(a.m12, b.m12, eps) &&
+    epsEquals(a.m20, b.m20, eps) &&
+    epsEquals(a.m21, b.m21, eps) &&
+    epsEquals(a.m22, b.m22, eps),
+)
 
 export const make = (
   m00 = 0,
@@ -93,11 +110,9 @@ export const setColumn = dual<
 )
 
 export const determinant = (m: Matrix3x3) =>
-  round(
-    m.m00 * matrix2x2.determinant(minor(m, 0, 0)) -
-      m.m01 * matrix2x2.determinant(minor(m, 0, 1)) +
-      m.m02 * matrix2x2.determinant(minor(m, 0, 2)),
-  )
+  m.m00 * matrix2x2.determinant(minor(m, 0, 0)) -
+  m.m01 * matrix2x2.determinant(minor(m, 0, 1)) +
+  m.m02 * matrix2x2.determinant(minor(m, 0, 2))
 
 export const minor = dual<
   (row: Matrix3x3Coordinate, column: Matrix3x3Coordinate) => (m: Matrix3x3) => Matrix2x2,
