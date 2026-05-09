@@ -111,6 +111,11 @@ export const equals = dual<
     epsEquals(a.m33, b.m33, eps),
 )
 
+/**
+ * The 4x4 identity matrix.
+ */
+export const identity: Matrix4x4 = new Matrix4x4Impl(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+
 // first four arguments are the top row
 export const make = (
   m00 = 0,
@@ -256,6 +261,63 @@ export const vectorProductRight = dual<
     vector4.dot(v, v3),
   )
 })
+
+export const multiply = dual<
+  (b: Matrix4x4) => (a: Matrix4x4) => Matrix4x4,
+  (a: Matrix4x4, b: Matrix4x4) => Matrix4x4
+>(
+  2,
+  (a: Matrix4x4, b: Matrix4x4) =>
+    new Matrix4x4Impl(
+      a.m00 * b.m00 + a.m01 * b.m10 + a.m02 * b.m20 + a.m03 * b.m30,
+      a.m00 * b.m01 + a.m01 * b.m11 + a.m02 * b.m21 + a.m03 * b.m31,
+      a.m00 * b.m02 + a.m01 * b.m12 + a.m02 * b.m22 + a.m03 * b.m32,
+      a.m00 * b.m03 + a.m01 * b.m13 + a.m02 * b.m23 + a.m03 * b.m33,
+      a.m10 * b.m00 + a.m11 * b.m10 + a.m12 * b.m20 + a.m13 * b.m30,
+      a.m10 * b.m01 + a.m11 * b.m11 + a.m12 * b.m21 + a.m13 * b.m31,
+      a.m10 * b.m02 + a.m11 * b.m12 + a.m12 * b.m22 + a.m13 * b.m32,
+      a.m10 * b.m03 + a.m11 * b.m13 + a.m12 * b.m23 + a.m13 * b.m33,
+      a.m20 * b.m00 + a.m21 * b.m10 + a.m22 * b.m20 + a.m23 * b.m30,
+      a.m20 * b.m01 + a.m21 * b.m11 + a.m22 * b.m21 + a.m23 * b.m31,
+      a.m20 * b.m02 + a.m21 * b.m12 + a.m22 * b.m22 + a.m23 * b.m32,
+      a.m20 * b.m03 + a.m21 * b.m13 + a.m22 * b.m23 + a.m23 * b.m33,
+      a.m30 * b.m00 + a.m31 * b.m10 + a.m32 * b.m20 + a.m33 * b.m30,
+      a.m30 * b.m01 + a.m31 * b.m11 + a.m32 * b.m21 + a.m33 * b.m31,
+      a.m30 * b.m02 + a.m31 * b.m12 + a.m32 * b.m22 + a.m33 * b.m32,
+      a.m30 * b.m03 + a.m31 * b.m13 + a.m32 * b.m23 + a.m33 * b.m33,
+    ),
+)
+
+export const inverse = (m: Matrix4x4): Matrix4x4 => {
+  const det = determinant(m)
+  invariant(det !== 0, 'cannot invert singular matrix')
+
+  const inv = 1 / det
+  // adjugate is the transpose of the cofactor matrix
+  const cof = (row: Matrix4x4Coordinate, col: Matrix4x4Coordinate) => {
+    const sign = ((row as number) + (col as number)) % 2 === 0 ? 1 : -1
+    return sign * matrix3x3.determinant(minor(m, row, col)) * inv
+  }
+
+  return new Matrix4x4Impl(
+    cof(0, 0),
+    cof(1, 0),
+    cof(2, 0),
+    cof(3, 0),
+    cof(0, 1),
+    cof(1, 1),
+    cof(2, 1),
+    cof(3, 1),
+    cof(0, 2),
+    cof(1, 2),
+    cof(2, 2),
+    cof(3, 2),
+    cof(0, 3),
+    cof(1, 3),
+    cof(2, 3),
+    cof(3, 3),
+  )
+}
 
 export const solveSystem = dual<
   (v: Vector4) => (m: Matrix4x4) => Vector4,

@@ -7,25 +7,33 @@ import * as Bezier2d from './bezier2d'
 import type { Cardinal2d } from './cardinal2d'
 import { toCurves } from './util'
 
-export const characteristic = (scale: number) =>
-  Matrix4x4.make(
-    0,
-    1,
-    0,
-    0,
-    -scale,
-    0,
-    scale,
-    0,
-    2 * scale,
-    scale - 3,
-    3 - 2 * scale,
-    -scale,
-    -scale,
-    2 - scale,
-    scale - 2,
-    scale,
-  )
+const characteristicCache = new Map<number, Matrix4x4.Matrix4x4>()
+
+export const characteristic = (scale: number): Matrix4x4.Matrix4x4 => {
+  let m = characteristicCache.get(scale)
+  if (m === undefined) {
+    m = Matrix4x4.make(
+      0,
+      1,
+      0,
+      0,
+      -scale,
+      0,
+      scale,
+      0,
+      2 * scale,
+      scale - 3,
+      3 - 2 * scale,
+      -scale,
+      -scale,
+      2 - scale,
+      scale - 2,
+      scale,
+    )
+    characteristicCache.set(scale, m)
+  }
+  return m
+}
 
 export const catRomCharacteristic = characteristic(0.5)
 

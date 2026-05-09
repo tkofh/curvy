@@ -92,3 +92,31 @@ export const solve: {
    */
   (p: CubicPath2d, u: number): Vector2
 } = internal.solve
+
+export const solveByDistance: {
+  /**
+   * Solves a cubic path by normalized arc length. Unlike {@link solve}, which
+   * is parameterized by curve `u`, this samples points at constant speed along
+   * the path — `s = 0.5` returns the point exactly halfway along the curve by
+   * arc length, regardless of how the underlying parameterization stretches.
+   *
+   * Cumulative segment lengths are cached by path identity so repeated calls
+   * with the same path are fast.
+   *
+   * @param p - The cubic path to sample.
+   * @param s - Normalized arc length in `[0, 1]`. Values outside the range are
+   *   clamped to path endpoints.
+   * @returns The point on the path at the given normalized arc length.
+   * @since 1.1.0
+   */
+  (p: CubicPath2d, s: number): Vector2
+  /**
+   * Solves a cubic path by normalized arc length.
+   *
+   * @param s - Normalized arc length in `[0, 1]`.
+   * @returns A function that takes a cubic path and returns the point at that
+   *   arc length.
+   * @since 1.1.0
+   */
+  (s: number): (p: CubicPath2d) => Vector2
+} = internal.solveByDistance

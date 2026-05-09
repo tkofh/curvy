@@ -1,8 +1,10 @@
 import * as CubicCurve2d from '../curve/cubic2d'
+import * as cubicCurveInternal from '../curve/cubic2d.internal'
+import * as QuadraticCurve2d from '../curve/quadratic2d'
 import * as Interval from '../interval'
 import { dual, Pipeable } from '../pipe'
 import { invariant } from '../utils'
-import type { Vector2 } from '../vector/vector2'
+import * as Vector2 from '../vector/vector2'
 import type { CubicPath2d } from './cubic2d'
 
 export const CubicPath2dTypeId: unique symbol = Symbol('curvy/path/cubic2d')
@@ -48,8 +50,8 @@ export const length = (p: CubicPath2d) => {
 }
 
 export const solve = dual<
-  (u: number) => (p: CubicPath2d) => Vector2,
-  (p: CubicPath2d, u: number) => Vector2
+  (u: number) => (p: CubicPath2d) => Vector2.Vector2,
+  (p: CubicPath2d, u: number) => Vector2.Vector2
 >(2, (p: CubicPath2d, u: number) => {
   const curves = p instanceof CubicPath2dImpl ? p.curves : [...p]
 
@@ -62,4 +64,107 @@ export const solve = dual<
   const i = Math.floor(t)
   const curve = curves[i] as CubicCurve2d.CubicCurve2d
   return CubicCurve2d.solve(curve, t - i)
+})
+
+// Cumulative segment lengths cache. lengths[k] = total length through segment k.
+// Cached by path identity since paths are immutable.
+const cumulativeLengthCache = new WeakMap<CubicPath2d, ReadonlyArray<number>>()
+
+const getCumulativeLengths = (p: CubicPath2d): ReadonlyArray<number> => {
+  let cached = cumulativeLengthCache.get(p)
+  if (cached === undefined) {
+    const lengths: Array<number> = []
+    let total = 0
+    for (const curve of p) {
+      total += CubicCurve2d.length(curve, Interval.unit)
+      lengths.push(total)
+    }
+    cached = lengths
+    cumulativeLengthCache.set(p, cached)
+  }
+  return cached
+}
+
+// Newton's method to find the local parameter t ∈ [0, 1] within `curve` such
+// that the arc length from 0 to t equals `target`. Each iteration costs one
+// GL32 quadrature plus one velocity eval; converges in 3–5 iterations for
+// well-behaved curves. Falls back to bisection on cusps where speed → 0.
+const solveCurveByDistance = (
+  curve: CubicCurve2d.CubicCurve2d,
+  target: number,
+  segmentLength: number,
+): number => {
+  if (target <= 0) {
+    return 0
+  }
+  if (target >= segmentLength) {
+    return 1
+  }
+
+  const derivative = cubicCurveInternal.derivative(curve)
+
+  let t = target / segmentLength
+  let lo = 0
+  let hi = 1
+
+  for (let iter = 0; iter < 16; iter++) {
+    const currentLength = CubicCurve2d.length(curve, Interval.make(0, t))
+    const error = currentLength - target
+
+    if (Math.abs(error) < 1e-10) {
+      return t
+    }
+
+    if (error > 0) {
+      hi = t
+    } else {
+      lo = t
+    }
+
+    const speed = Vector2.magnitude(QuadraticCurve2d.solve(derivative, t))
+    if (speed === 0) {
+      // cusp — bisect instead
+      t = (lo + hi) / 2
+      continue
+    }
+
+    const next = t - error / speed
+    // bracket-clamp Newton step; if it leaves the bracket, fall back to bisection
+    t = next > lo && next < hi ? next : (lo + hi) / 2
+  }
+
+  return t
+}
+
+export const solveByDistance = dual<
+  (s: number) => (p: CubicPath2d) => Vector2.Vector2,
+  (p: CubicPath2d, s: number) => Vector2.Vector2
+>(2, (p: CubicPath2d, s: number) => {
+  if (s <= 0) {
+    return solve(p, 0)
+  }
+  if (s >= 1) {
+    return solve(p, 1)
+  }
+
+  const lengths = getCumulativeLengths(p)
+  const total = lengths[lengths.length - 1] as number
+  const target = s * total
+
+  // find segment k such that lengths[k-1] ≤ target ≤ lengths[k]
+  let k = 0
+  while (k < lengths.length - 1 && (lengths[k] as number) < target) {
+    k++
+  }
+
+  const segmentStart = k === 0 ? 0 : (lengths[k - 1] as number)
+  const segmentEnd = lengths[k] as number
+  const segmentLength = segmentEnd - segmentStart
+  const segmentTarget = target - segmentStart
+
+  const curves = p instanceof CubicPath2dImpl ? p.curves : [...p]
+  const curve = curves[k] as CubicCurve2d.CubicCurve2d
+  const localT = solveCurveByDistance(curve, segmentTarget, segmentLength)
+
+  return CubicCurve2d.solve(curve, localT)
 })

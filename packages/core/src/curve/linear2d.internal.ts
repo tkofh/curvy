@@ -48,6 +48,8 @@ export const solve = dual<
   Vector2.make(LinearPolynomial.solve(c.x, t), LinearPolynomial.solve(c.y, t)),
 )
 
-export const length = dual(2, (c: LinearCurve2d, i: Interval) =>
-  Math.sqrt(c.x.c1 ** 2 + c.y.c1 ** 2) * Math.abs(i.end - i.start),
+export const length = dual(
+  2,
+  (c: LinearCurve2d, i: Interval) =>
+    Math.sqrt(c.x.c1 ** 2 + c.y.c1 ** 2) * Math.abs(i.end - i.start),
 )

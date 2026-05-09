@@ -183,3 +183,26 @@ export const appendAccelerationAligned: {
  * @since 1.0.0
  */
 export const toPath: (p: Bezier2d) => CubicPath2d = internal.toPath
+
+export const subdivide: {
+  /**
+   * Splits a `Bezier2d` at the given global parameter `u ∈ (0, 1)` using
+   * de Casteljau's algorithm. The two returned beziers together trace the
+   * same curve as the input — the left covers `[0, u]`, the right covers
+   * `[u, 1]`.
+   *
+   * @param b - The bezier to split.
+   * @param u - The split parameter in the open interval `(0, 1)`.
+   * @returns A two-element tuple of the left and right halves.
+   * @since 1.1.0
+   */
+  (b: Bezier2d, u: number): [Bezier2d, Bezier2d]
+  /**
+   * Splits a `Bezier2d` at the given global parameter `u ∈ (0, 1)`.
+   *
+   * @param u - The split parameter in the open interval `(0, 1)`.
+   * @returns A function that takes a bezier and returns the two halves.
+   * @since 1.1.0
+   */
+  (u: number): (b: Bezier2d) => [Bezier2d, Bezier2d]
+} = internal.subdivide

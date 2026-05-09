@@ -36,9 +36,7 @@ describe('vector2', () => {
     )
   })
   test('add', () => {
-    expect(vector2.add(vector2.make(1, 2), vector2.make(3, 4))).toBeCloseToValue(
-      vector2.make(4, 6),
-    )
+    expect(vector2.add(vector2.make(1, 2), vector2.make(3, 4))).toBeCloseToValue(vector2.make(4, 6))
   })
   test('subtract', () => {
     expect(vector2.subtract(vector2.make(1, 2), vector2.make(3, 4))).toBeCloseToValue(

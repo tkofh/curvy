@@ -97,6 +97,13 @@ export interface Matrix4x4 extends Pipeable {
  */
 export const isMatrix4x4: (m: unknown) => m is Matrix4x4 = internal.isMatrix4x4
 
+/**
+ * The 4x4 identity matrix.
+ *
+ * @since 1.1.0
+ */
+export const identity: Matrix4x4 = internal.identity
+
 export const equals: {
   /**
    * Checks if two `Matrix4x4` instances are approximately equal within an absolute tolerance.
@@ -338,6 +345,37 @@ export const vectorProductRight: {
    */
   (v: Vector4): (m: Matrix4x4) => Vector4
 } = internal.vectorProductRight
+
+export const multiply: {
+  /**
+   * Multiplies two `Matrix4x4` instances. Result is `a · b`.
+   *
+   * @param a - The left-hand matrix.
+   * @param b - The right-hand matrix.
+   * @returns The product matrix.
+   * @since 1.1.0
+   */
+  (a: Matrix4x4, b: Matrix4x4): Matrix4x4
+  /**
+   * Multiplies two `Matrix4x4` instances. Result is `a · b`.
+   *
+   * @param b - The right-hand matrix.
+   * @returns A function that takes the left-hand matrix and returns the product.
+   * @since 1.1.0
+   */
+  (b: Matrix4x4): (a: Matrix4x4) => Matrix4x4
+} = internal.multiply
+
+/**
+ * Returns the inverse of a `Matrix4x4`.
+ *
+ * Throws when the matrix is singular (determinant is zero).
+ *
+ * @param m - The matrix to invert.
+ * @returns The inverse matrix.
+ * @since 1.1.0
+ */
+export const inverse: (m: Matrix4x4) => Matrix4x4 = internal.inverse
 
 export const solveSystem: {
   /**

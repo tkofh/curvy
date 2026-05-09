@@ -109,7 +109,9 @@ describe('quadratic', () => {
       expect.closeTo(-0.5, 10),
       expect.closeTo(0, 10),
     ])
-    expect(quadratic.solveInverse(quadratic.make(0, 1, 2), -0.125)).toEqual([expect.closeTo(-0.25, 10)])
+    expect(quadratic.solveInverse(quadratic.make(0, 1, 2), -0.125)).toEqual([
+      expect.closeTo(-0.25, 10),
+    ])
     expect(quadratic.solveInverse(quadratic.make(0, 1, 2), -0.5)).toEqual([])
   })
   test('toInverseSolver', () => {
