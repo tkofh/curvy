@@ -1,14 +1,12 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.14/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true,
     "defaultBranch": "main"
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
@@ -17,13 +15,15 @@
         "noExcessiveCognitiveComplexity": "warn",
         "noUselessTernary": "warn",
         "noVoid": "warn",
+        "useLiteralKeys": "off",
         "useSimplifiedLogicExpression": "warn"
       },
       "correctness": {
-        "noNewSymbol": "error",
         "noUnusedPrivateClassMembers": "error",
         "noUnusedVariables": "warn",
-        "noUnusedImports": "error"
+        "noUnusedImports": "error",
+        "noInvalidBuiltinInstantiation": "error",
+        "noSwitchDeclarations": "warn"
       },
       "performance": {
         "noBarrelFile": "warn",
@@ -54,15 +54,12 @@
             "syntax": "generic"
           }
         },
-        "useShorthandAssign": "error",
-        "useSingleCaseStatement": "warn"
+        "useShorthandAssign": "error"
       },
       "suspicious": {
         "noApproximativeNumericConstant": "error",
         "noEmptyBlockStatements": "off",
-        "useAwait": "warn"
-      },
-      "nursery": {
+        "useAwait": "warn",
         "noDuplicateElseIf": "warn"
       }
     }
@@ -81,12 +78,9 @@
       "arrowParentheses": "always"
     }
   },
-  "assists": {
-    "enabled": true
-  },
   "overrides": [
     {
-      "include": ["*.config.ts"],
+      "includes": ["**/*.config.ts"],
       "linter": {
         "rules": {
           "style": {

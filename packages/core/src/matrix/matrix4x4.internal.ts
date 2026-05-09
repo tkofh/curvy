@@ -1,6 +1,5 @@
 import { toFourDimensionalIndex } from '../dimensions'
-import { Pipeable } from '../pipe'
-import { dual } from '../pipe'
+import { dual, Pipeable } from '../pipe'
 import { invariant, round } from '../utils'
 import type { Vector4 } from '../vector/vector4'
 import * as vector4 from '../vector/vector4.internal'

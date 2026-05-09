@@ -3,20 +3,21 @@
   "globalDependencies": ["**/.env.*local"],
   "tasks": {
     "build": {
-      "dependsOn": ["^transit", "^build"],
+      "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
     "test": {
-      "dependsOn": ["^transit"]
+      "dependsOn": ["^build"]
+    },
+    "bench": {
+      "dependsOn": ["^build"],
+      "cache": false
     },
     "test:watch": {
-      "dependsOn": ["^transit"],
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true,
       "interactive": true
-    },
-    "transit": {
-      "dependsOn": ["^transit"]
     },
     "//#check": {},
     "//#check:fix": {

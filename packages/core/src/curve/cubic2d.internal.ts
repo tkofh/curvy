@@ -33,8 +33,7 @@ import {
   GL32_X14,
   GL32_X15,
 } from '../length'
-import { Pipeable } from '../pipe'
-import { dual } from '../pipe'
+import { dual, Pipeable } from '../pipe'
 import * as CubicPolynomial from '../polynomial/cubic'
 import * as QuadraticPolynomial from '../polynomial/quadratic'
 import { round } from '../utils'

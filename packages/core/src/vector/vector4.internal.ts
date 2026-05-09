@@ -1,5 +1,4 @@
-import { Pipeable } from '../pipe'
-import { dual } from '../pipe'
+import { dual, Pipeable } from '../pipe'
 import { round } from '../utils'
 import type { Vector4 } from './vector4'
 

@@ -1,7 +1,6 @@
 import * as LinearCurve2d from '../curve/linear2d'
 import * as Interval from '../interval'
-import { Pipeable } from '../pipe'
-import { dual } from '../pipe'
+import { dual, Pipeable } from '../pipe'
 import { round } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPath2d } from './linear2d'

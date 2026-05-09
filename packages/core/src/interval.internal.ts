@@ -1,6 +1,5 @@
 import type { Interval } from './interval'
-import { Pipeable } from './pipe'
-import { dual } from './pipe'
+import { dual, Pipeable } from './pipe'
 import { round } from './utils'
 
 const TypeId: unique symbol = Symbol.for('curvy/interval')

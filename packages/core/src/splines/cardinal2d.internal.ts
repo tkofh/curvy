@@ -1,7 +1,6 @@
 import * as Matrix4x4 from '../matrix/matrix4x4'
 import * as CubicPath2d from '../path/cubic2d'
-import { Pipeable } from '../pipe'
-import { dual } from '../pipe'
+import { dual, Pipeable } from '../pipe'
 import { invariant } from '../utils'
 import * as Vector2 from '../vector/vector2'
 import * as Bezier2d from './bezier2d'

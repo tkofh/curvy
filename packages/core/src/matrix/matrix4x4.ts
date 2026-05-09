@@ -2,8 +2,8 @@ import type { FourDimensionalComponent, FourDimensionalIndex } from '../dimensio
 import type { Pipeable } from '../pipe'
 import type { Vector4 } from '../vector/vector4'
 import type { Matrix3x3 } from './matrix3x3'
-import * as internal from './matrix4x4.internal'
 import type { Matrix4x4TypeId } from './matrix4x4.internal'
+import * as internal from './matrix4x4.internal'
 
 /**
  * A coordinate in a 4x4 matrix.

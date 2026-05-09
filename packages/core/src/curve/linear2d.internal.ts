@@ -1,6 +1,5 @@
 import type { Interval } from '../interval'
-import { Pipeable } from '../pipe'
-import { dual } from '../pipe'
+import { dual, Pipeable } from '../pipe'
 import * as LinearPolynomial from '../polynomial/linear'
 import { round } from '../utils'
 import * as Vector2 from '../vector/vector2'

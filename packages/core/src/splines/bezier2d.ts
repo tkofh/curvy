@@ -115,9 +115,9 @@ export const appendTangentAligned: {
   (p: Bezier2d, ratio: number, p2: Vector2, p3: Vector2): Bezier2d
 } = internal.appendTangentAligned
 
-export const appendCurvatureMirrored: {
+export const appendCurvatureAligned: {
   /**
-   * Appends control points to a `Bezier2d` with mirrored curvature.
+   * Appends control points to a `Bezier2d` with aligned curvature (G² continuity).
    *
    * @param a - The first curvature parameter.
    * @param b - The second curvature parameter.
@@ -126,7 +126,7 @@ export const appendCurvatureMirrored: {
    */
   (a: number, b: number, p6: Vector2): (p: Bezier2d) => Bezier2d
   /**
-   * Appends control points to a `Bezier2d` with mirrored curvature.
+   * Appends control points to a `Bezier2d` with aligned curvature (G² continuity).
    *
    * @param p - The `Bezier2d` to append the control points to.
    * @param a - The first curvature parameter.

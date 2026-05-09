@@ -39,7 +39,7 @@ import type { Vector4 } from '../vector/vector4'
 import type { CubicPolynomial } from './cubic'
 import { CubicPolynomialImpl, CubicPolynomialTypeId } from './cubic.internal.circular'
 import * as Linear from './linear.internal'
-import { type Monotonicity, guaranteedMonotonicityFromComparison } from './monotonicity'
+import { guaranteedMonotonicityFromComparison, type Monotonicity } from './monotonicity'
 import * as Quadratic from './quadratic.internal'
 import type { ZeroToThree, ZeroToTwo } from './types'
 

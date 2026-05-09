@@ -34,7 +34,7 @@ describe('bezier', () => {
       Vector2.make(0, 1),
       Vector2.make(1, 0),
       Vector2.make(1, 1),
-    ).pipe(Bezier2d.appendCurvatureMirrored(1, 0, Vector2.make(1, 2)))
+    ).pipe(Bezier2d.appendCurvatureAligned(1, 0, Vector2.make(1, 2)))
 
     const path = Bezier2d.toPath(points)
 

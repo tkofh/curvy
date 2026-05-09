@@ -1,0 +1,69 @@
+import { bench, describe } from 'vitest'
+import * as CubicCurve2d from '../src/curve/cubic2d'
+import * as Interval from '../src/interval'
+import * as Matrix4x4 from '../src/matrix/matrix4x4'
+import * as CubicPath2d from '../src/path/cubic2d'
+import * as Bezier2d from '../src/splines/bezier2d'
+import * as Vector2 from '../src/vector/vector2'
+
+describe('vector2', () => {
+  const a = Vector2.make(1.234, 5.678)
+  const b = Vector2.make(9.012, 3.456)
+
+  bench('add x1k', () => {
+    let result = a
+    for (let i = 0; i < 1000; i++) {
+      result = Vector2.add(result, b)
+    }
+    return result
+  })
+})
+
+describe('matrix4x4', () => {
+  bench('make x1k', () => {
+    let result: Matrix4x4.Matrix4x4 | undefined
+    for (let i = 0; i < 1000; i++) {
+      result = Matrix4x4.make(1, 0, 0, 0, -3, 3, 0, 0, 3, -6, 3, 0, -1, 3, -3, 1)
+    }
+    return result
+  })
+})
+
+describe('curve/cubic2d', () => {
+  const curve = CubicCurve2d.fromPoints(
+    Vector2.make(0, 0),
+    Vector2.make(0, 1),
+    Vector2.make(1, 0),
+    Vector2.make(1, 1),
+  )
+
+  bench('solve at t=0.5', () => {
+    return CubicCurve2d.solve(curve, 0.5)
+  })
+
+  bench('length over [0,1]', () => {
+    return CubicCurve2d.length(curve, Interval.unit)
+  })
+})
+
+describe('end-to-end: 4-segment bezier path', () => {
+  const bezier = Bezier2d.make(
+    Vector2.make(0, 0),
+    Vector2.make(0, 1),
+    Vector2.make(1, 0),
+    Vector2.make(1, 1),
+  ).pipe(
+    Bezier2d.append(Vector2.make(2, 1), Vector2.make(2, 2), Vector2.make(3, 2)),
+    Bezier2d.append(Vector2.make(4, 2), Vector2.make(4, 3), Vector2.make(5, 3)),
+    Bezier2d.append(Vector2.make(6, 3), Vector2.make(6, 4), Vector2.make(7, 4)),
+  )
+
+  bench('toPath + 1000 samples', () => {
+    const path = Bezier2d.toPath(bezier)
+    let last: Vector2.Vector2 | undefined
+    for (let i = 0; i <= 1000; i++) {
+      last = CubicPath2d.solve(path, i / 1000)
+    }
+    return last
+  })
+})

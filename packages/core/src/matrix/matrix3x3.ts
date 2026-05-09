@@ -2,8 +2,8 @@ import type { ThreeDimensionalComponent, ThreeDimensionalIndex } from '../dimens
 import type { Pipeable } from '../pipe'
 import type { Vector3 } from '../vector/vector3'
 import type { Matrix2x2 } from './matrix2x2'
-import * as internal from './matrix3x3.internal'
 import type { Matrix3x3TypeId } from './matrix3x3.internal'
+import * as internal from './matrix3x3.internal'
 
 /**
  * A coordinate in a 3x3 matrix.

@@ -1,6 +1,5 @@
 import { toThreeDimensionalIndex } from '../dimensions'
-import { Pipeable } from '../pipe'
-import { dual } from '../pipe'
+import { dual, Pipeable } from '../pipe'
 import { invariant, round } from '../utils'
 import type { Vector3 } from '../vector/vector3'
 import * as vector3 from '../vector/vector3.internal'

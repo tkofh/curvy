@@ -1,7 +1,6 @@
 import * as CubicCurve2d from '../curve/cubic2d'
 import * as Interval from '../interval'
-import { Pipeable } from '../pipe'
-import { dual } from '../pipe'
+import { dual, Pipeable } from '../pipe'
 import { invariant, round } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { CubicPath2d } from './cubic2d'

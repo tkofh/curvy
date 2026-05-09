@@ -5,18 +5,19 @@
     "deps:reinstall": "pnpm dlx rimraf node_modules pnpm-lock.yaml ./**/node_modules && pnpm install",
     "deps:update": "pnpm -r update --latest && pnpm dedupe",
     "test": "turbo run test",
+    "bench": "turbo run bench",
     "check": "biome check .",
     "check:fix": "biome check . --write --unsafe",
     "publish-packages": "turbo run check build test && changeset version && changeset publish && turbo run check:fix"
   },
   "private": true,
-  "packageManager": "pnpm@10.7.1+sha512.2d92c86b7928dc8284f53494fb4201f983da65f0fb4f0d40baafa5cf628fa31dae3e5968f12466f17df7e97310e30f343a648baea1b9b350685dafafffdf5808",
+  "packageManager": "pnpm@11.0.9+sha512.34ce82e6780233cf9cad8685029a8f81d2e06196c5a9bad98879f7424940c6817c4e4524fb7d38b8553ceed48b9758b8ebaf1abd3600c232c4c8cf7366086f38",
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@changesets/cli": "^2.28.1",
+    "@biomejs/biome": "^2.4.14",
+    "@changesets/cli": "^2.31.0",
     "@repo/tsconfig": "workspace:*",
-    "turbo": "^2.5.0",
-    "typescript": "^5.8.3"
+    "turbo": "^2.9.10",
+    "typescript": "^6.0.3"
   },
   "pnpm": {
     "allowedDeprecatedVersions": {
