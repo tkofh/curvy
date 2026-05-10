@@ -51,15 +51,12 @@ export const isVector4 = (v: unknown): v is Vector4 =>
   typeof v === 'object' && v !== null && Vector4TypeId in v
 
 export const equals = dual<
-  (b: Vector4, eps?: number) => (a: Vector4) => boolean,
-  (a: Vector4, b: Vector4, eps?: number) => boolean
+  (b: Vector4) => (a: Vector4) => boolean,
+  (a: Vector4, b: Vector4) => boolean
 >(
-  (args) => isVector4(args[0]) && isVector4(args[1]),
-  (a: Vector4, b: Vector4, eps?: number) =>
-    epsEquals(a.x, b.x, eps) &&
-    epsEquals(a.y, b.y, eps) &&
-    epsEquals(a.z, b.z, eps) &&
-    epsEquals(a.w, b.w, eps),
+  2,
+  (a: Vector4, b: Vector4) =>
+    epsEquals(a.x, b.x) && epsEquals(a.y, b.y) && epsEquals(a.z, b.z) && epsEquals(a.w, b.w),
 )
 
 export const make = (v0: number, v1 = v0, v2 = v1, v3 = v2): Vector4 =>

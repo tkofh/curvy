@@ -88,27 +88,27 @@ export const isMatrix4x4 = (m: unknown): m is Matrix4x4 =>
   typeof m === 'object' && m !== null && Matrix4x4TypeId in m
 
 export const equals = dual<
-  (b: Matrix4x4, eps?: number) => (a: Matrix4x4) => boolean,
-  (a: Matrix4x4, b: Matrix4x4, eps?: number) => boolean
+  (b: Matrix4x4) => (a: Matrix4x4) => boolean,
+  (a: Matrix4x4, b: Matrix4x4) => boolean
 >(
-  (args) => isMatrix4x4(args[0]) && isMatrix4x4(args[1]),
-  (a: Matrix4x4, b: Matrix4x4, eps?: number) =>
-    epsEquals(a.m00, b.m00, eps) &&
-    epsEquals(a.m01, b.m01, eps) &&
-    epsEquals(a.m02, b.m02, eps) &&
-    epsEquals(a.m03, b.m03, eps) &&
-    epsEquals(a.m10, b.m10, eps) &&
-    epsEquals(a.m11, b.m11, eps) &&
-    epsEquals(a.m12, b.m12, eps) &&
-    epsEquals(a.m13, b.m13, eps) &&
-    epsEquals(a.m20, b.m20, eps) &&
-    epsEquals(a.m21, b.m21, eps) &&
-    epsEquals(a.m22, b.m22, eps) &&
-    epsEquals(a.m23, b.m23, eps) &&
-    epsEquals(a.m30, b.m30, eps) &&
-    epsEquals(a.m31, b.m31, eps) &&
-    epsEquals(a.m32, b.m32, eps) &&
-    epsEquals(a.m33, b.m33, eps),
+  2,
+  (a: Matrix4x4, b: Matrix4x4) =>
+    epsEquals(a.m00, b.m00) &&
+    epsEquals(a.m01, b.m01) &&
+    epsEquals(a.m02, b.m02) &&
+    epsEquals(a.m03, b.m03) &&
+    epsEquals(a.m10, b.m10) &&
+    epsEquals(a.m11, b.m11) &&
+    epsEquals(a.m12, b.m12) &&
+    epsEquals(a.m13, b.m13) &&
+    epsEquals(a.m20, b.m20) &&
+    epsEquals(a.m21, b.m21) &&
+    epsEquals(a.m22, b.m22) &&
+    epsEquals(a.m23, b.m23) &&
+    epsEquals(a.m30, b.m30) &&
+    epsEquals(a.m31, b.m31) &&
+    epsEquals(a.m32, b.m32) &&
+    epsEquals(a.m33, b.m33),
 )
 
 /**

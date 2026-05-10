@@ -54,29 +54,19 @@ class OpenImpl extends IntervalImpl implements Open {
 export const isInterval = (v: unknown): v is Interval =>
   typeof v === 'object' && v !== null && TypeId in v
 
-const isBoundsLike = (v: unknown): v is Bounds =>
-  typeof v === 'object' &&
-  v !== null &&
-  typeof (v as { start?: unknown }).start === 'number' &&
-  typeof (v as { end?: unknown }).end === 'number'
-
 export const equals = dual<
-  (b: Interval, eps?: number) => (a: Interval) => boolean,
-  (a: Interval, b: Interval, eps?: number) => boolean
+  (b: Interval) => (a: Interval) => boolean,
+  (a: Interval, b: Interval) => boolean
 >(
-  (args) => isInterval(args[0]) && isInterval(args[1]),
-  (a: Interval, b: Interval, eps?: number) =>
-    a.kind === b.kind && epsEquals(a.start, b.start, eps) && epsEquals(a.end, b.end, eps),
+  2,
+  (a: Interval, b: Interval) =>
+    a.kind === b.kind && epsEquals(a.start, b.start) && epsEquals(a.end, b.end),
 )
 
 export const aligned = dual<
-  (b: Bounds, eps?: number) => (a: Bounds) => boolean,
-  (a: Bounds, b: Bounds, eps?: number) => boolean
->(
-  (args) => isBoundsLike(args[0]) && isBoundsLike(args[1]),
-  (a: Bounds, b: Bounds, eps?: number) =>
-    epsEquals(a.start, b.start, eps) && epsEquals(a.end, b.end, eps),
-)
+  (b: Bounds) => (a: Bounds) => boolean,
+  (a: Bounds, b: Bounds) => boolean
+>(2, (a: Bounds, b: Bounds) => epsEquals(a.start, b.start) && epsEquals(a.end, b.end))
 
 export const make = (start: number, end?: number): Closed => new ClosedImpl(start, end ?? start)
 

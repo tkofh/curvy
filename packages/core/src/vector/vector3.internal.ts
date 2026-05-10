@@ -44,13 +44,9 @@ export const isVector3 = (v: unknown): v is Vector3 =>
   typeof v === 'object' && v !== null && Vector3TypeId in v
 
 export const equals = dual<
-  (b: Vector3, eps?: number) => (a: Vector3) => boolean,
-  (a: Vector3, b: Vector3, eps?: number) => boolean
->(
-  (args) => isVector3(args[0]) && isVector3(args[1]),
-  (a: Vector3, b: Vector3, eps?: number) =>
-    epsEquals(a.x, b.x, eps) && epsEquals(a.y, b.y, eps) && epsEquals(a.z, b.z, eps),
-)
+  (b: Vector3) => (a: Vector3) => boolean,
+  (a: Vector3, b: Vector3) => boolean
+>(2, (a: Vector3, b: Vector3) => epsEquals(a.x, b.x) && epsEquals(a.y, b.y) && epsEquals(a.z, b.z))
 
 export const make = (v0: number, v1 = v0, v2 = v1): Vector3 => new Vector3Impl(v0, v1, v2)
 

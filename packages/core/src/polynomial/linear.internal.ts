@@ -31,13 +31,9 @@ export const isLinearPolynomial = (v: unknown): v is LinearPolynomial =>
   typeof v === 'object' && v !== null && LinearPolynomialTypeId in v
 
 export const equals = dual<
-  (b: LinearPolynomial, eps?: number) => (a: LinearPolynomial) => boolean,
-  (a: LinearPolynomial, b: LinearPolynomial, eps?: number) => boolean
->(
-  (args) => isLinearPolynomial(args[0]) && isLinearPolynomial(args[1]),
-  (a: LinearPolynomial, b: LinearPolynomial, eps?: number) =>
-    epsEquals(a.c0, b.c0, eps) && epsEquals(a.c1, b.c1, eps),
-)
+  (b: LinearPolynomial) => (a: LinearPolynomial) => boolean,
+  (a: LinearPolynomial, b: LinearPolynomial) => boolean
+>(2, (a: LinearPolynomial, b: LinearPolynomial) => epsEquals(a.c0, b.c0) && epsEquals(a.c1, b.c1))
 
 export const make = (c0 = 0, c1 = 0): LinearPolynomial => new LinearPolynomialImpl(c0, c1)
 

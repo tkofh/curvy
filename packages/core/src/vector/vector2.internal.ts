@@ -38,12 +38,9 @@ export const isVector2 = (v: unknown): v is Vector2 =>
   typeof v === 'object' && v !== null && Vector2TypeId in v
 
 export const equals = dual<
-  (b: Vector2, eps?: number) => (a: Vector2) => boolean,
-  (a: Vector2, b: Vector2, eps?: number) => boolean
->(
-  (args) => isVector2(args[0]) && isVector2(args[1]),
-  (a: Vector2, b: Vector2, eps?: number) => epsEquals(a.x, b.x, eps) && epsEquals(a.y, b.y, eps),
-)
+  (b: Vector2) => (a: Vector2) => boolean,
+  (a: Vector2, b: Vector2) => boolean
+>(2, (a: Vector2, b: Vector2) => epsEquals(a.x, b.x) && epsEquals(a.y, b.y))
 
 export const make = (v0: number, v1 = v0): Vector2 => new Vector2Impl(v0, v1)
 

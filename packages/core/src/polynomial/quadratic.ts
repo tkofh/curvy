@@ -55,24 +55,24 @@ export const isQuadraticPolynomial: (v: unknown) => v is QuadraticPolynomial =
 
 export const equals: {
   /**
-   * Checks if two `QuadraticPolynomial` instances are approximately equal within an absolute tolerance.
+   * Checks if two `QuadraticPolynomial` instances are approximately equal
+   * within the default absolute tolerance ({@link EPSILON}).
    *
    * @param a - The first polynomial.
    * @param b - The second polynomial.
-   * @param eps - Maximum allowed absolute difference per coefficient. Defaults to `1e-10`.
-   * @returns `true` when each pair of coefficients is within `eps`.
+   * @returns `true` when each pair of coefficients is within tolerance.
    * @since 1.1.0
    */
-  (a: QuadraticPolynomial, b: QuadraticPolynomial, eps?: number): boolean
+  (a: QuadraticPolynomial, b: QuadraticPolynomial): boolean
   /**
-   * Checks if two `QuadraticPolynomial` instances are approximately equal within an absolute tolerance.
+   * Checks if two `QuadraticPolynomial` instances are approximately equal
+   * within the default absolute tolerance ({@link EPSILON}).
    *
    * @param b - The second polynomial.
-   * @param eps - Maximum allowed absolute difference per coefficient. Defaults to `1e-10`.
    * @returns A function that takes the first polynomial and returns the comparison result.
    * @since 1.1.0
    */
-  (b: QuadraticPolynomial, eps?: number): (a: QuadraticPolynomial) => boolean
+  (b: QuadraticPolynomial): (a: QuadraticPolynomial) => boolean
 } = internal.equals
 
 /**

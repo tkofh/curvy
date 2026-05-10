@@ -36,12 +36,12 @@ export const isQuadraticPolynomial = (v: unknown): v is QuadraticPolynomial =>
   typeof v === 'object' && v !== null && QuadraticPolynomialTypeId in v
 
 export const equals = dual<
-  (b: QuadraticPolynomial, eps?: number) => (a: QuadraticPolynomial) => boolean,
-  (a: QuadraticPolynomial, b: QuadraticPolynomial, eps?: number) => boolean
+  (b: QuadraticPolynomial) => (a: QuadraticPolynomial) => boolean,
+  (a: QuadraticPolynomial, b: QuadraticPolynomial) => boolean
 >(
-  (args) => isQuadraticPolynomial(args[0]) && isQuadraticPolynomial(args[1]),
-  (a: QuadraticPolynomial, b: QuadraticPolynomial, eps?: number) =>
-    epsEquals(a.c0, b.c0, eps) && epsEquals(a.c1, b.c1, eps) && epsEquals(a.c2, b.c2, eps),
+  2,
+  (a: QuadraticPolynomial, b: QuadraticPolynomial) =>
+    epsEquals(a.c0, b.c0) && epsEquals(a.c1, b.c1) && epsEquals(a.c2, b.c2),
 )
 
 export const fromVector = (v: Vector3) => new QuadraticPolynomialImpl(v.x, v.y, v.z)

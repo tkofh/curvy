@@ -74,7 +74,8 @@ export const isInterval: (v: unknown) => v is Interval = internal.isInterval
 
 export const equals: {
   /**
-   * Checks if two `Interval` instances are approximately equal within an absolute tolerance.
+   * Checks if two `Interval` instances are approximately equal within the
+   * default absolute tolerance ({@link EPSILON}).
    *
    * Both endpoints AND the kind must match — a `Closed` and an `OpenStart` with
    * the same numeric endpoints are not equal. Use `aligned` for the looser
@@ -82,20 +83,19 @@ export const equals: {
    *
    * @param a - The first interval.
    * @param b - The second interval.
-   * @param eps - Maximum allowed absolute difference per endpoint. Defaults to `1e-10`.
-   * @returns `true` when both intervals share a kind and both endpoints are within `eps`.
+   * @returns `true` when both intervals share a kind and both endpoints are within tolerance.
    * @since 1.1.0
    */
-  (a: Interval, b: Interval, eps?: number): boolean
+  (a: Interval, b: Interval): boolean
   /**
-   * Checks if two `Interval` instances are approximately equal within an absolute tolerance.
+   * Checks if two `Interval` instances are approximately equal within the
+   * default absolute tolerance ({@link EPSILON}).
    *
    * @param b - The second interval.
-   * @param eps - Maximum allowed absolute difference per endpoint. Defaults to `1e-10`.
    * @returns A function that takes the first interval and returns the comparison result.
    * @since 1.1.0
    */
-  (b: Interval, eps?: number): (a: Interval) => boolean
+  (b: Interval): (a: Interval) => boolean
 } = internal.equals
 
 export const aligned: {
@@ -105,18 +105,16 @@ export const aligned: {
    *
    * @param a - The first bounds.
    * @param b - The second bounds.
-   * @param eps - Maximum allowed absolute difference per endpoint. Defaults to `1e-10`.
-   * @returns `true` when both endpoints are within `eps`.
+   * @returns `true` when both endpoints are within the default tolerance ({@link EPSILON}).
    * @since 2.0.0
    */
-  (a: Bounds, b: Bounds, eps?: number): boolean
+  (a: Bounds, b: Bounds): boolean
   /**
    * @param b - The second bounds.
-   * @param eps - Maximum allowed absolute difference per endpoint. Defaults to `1e-10`.
    * @returns A function that takes the first bounds and returns the comparison result.
    * @since 2.0.0
    */
-  (b: Bounds, eps?: number): (a: Bounds) => boolean
+  (b: Bounds): (a: Bounds) => boolean
 } = internal.aligned
 
 export const make: {

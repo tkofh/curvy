@@ -57,20 +57,20 @@ export const isMatrix3x3 = (m: unknown): m is Matrix3x3 =>
   typeof m === 'object' && m !== null && Matrix3x3TypeId in m
 
 export const equals = dual<
-  (b: Matrix3x3, eps?: number) => (a: Matrix3x3) => boolean,
-  (a: Matrix3x3, b: Matrix3x3, eps?: number) => boolean
+  (b: Matrix3x3) => (a: Matrix3x3) => boolean,
+  (a: Matrix3x3, b: Matrix3x3) => boolean
 >(
-  (args) => isMatrix3x3(args[0]) && isMatrix3x3(args[1]),
-  (a: Matrix3x3, b: Matrix3x3, eps?: number) =>
-    epsEquals(a.m00, b.m00, eps) &&
-    epsEquals(a.m01, b.m01, eps) &&
-    epsEquals(a.m02, b.m02, eps) &&
-    epsEquals(a.m10, b.m10, eps) &&
-    epsEquals(a.m11, b.m11, eps) &&
-    epsEquals(a.m12, b.m12, eps) &&
-    epsEquals(a.m20, b.m20, eps) &&
-    epsEquals(a.m21, b.m21, eps) &&
-    epsEquals(a.m22, b.m22, eps),
+  2,
+  (a: Matrix3x3, b: Matrix3x3) =>
+    epsEquals(a.m00, b.m00) &&
+    epsEquals(a.m01, b.m01) &&
+    epsEquals(a.m02, b.m02) &&
+    epsEquals(a.m10, b.m10) &&
+    epsEquals(a.m11, b.m11) &&
+    epsEquals(a.m12, b.m12) &&
+    epsEquals(a.m20, b.m20) &&
+    epsEquals(a.m21, b.m21) &&
+    epsEquals(a.m22, b.m22),
 )
 
 export const make = (

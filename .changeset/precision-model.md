@@ -6,8 +6,8 @@
 
 New APIs for explicit precision:
 
-- **`equals(a, b, eps?)`** on each value type (`Vector2`, `Vector3`, `Vector4`, `Matrix2x2`, `Matrix3x3`, `Matrix4x4`, `LinearPolynomial`, `QuadraticPolynomial`, `CubicPolynomial`, `Interval`), in both data-first and data-last forms. Defaults to a per-component absolute tolerance of `EPSILON = 1e-10`.
-- **`epsEquals(a, b, eps?)`** in `curvy/utils` — approximate equality for raw numbers.
+- **`equals(a, b)`** on each value type (`Vector2`, `Vector3`, `Vector4`, `Matrix2x2`, `Matrix3x3`, `Matrix4x4`, `LinearPolynomial`, `QuadraticPolynomial`, `CubicPolynomial`, `Interval`), in both data-first and data-last forms. Uses a per-component absolute tolerance of `EPSILON = 1e-10`. For non-default tolerance, compose `epsEquals` directly (`(a, b) => epsEquals(a.x, b.x, 1e-6) && ...`).
+- **`epsEquals(a, b, eps?)`** in `curvy/utils` — approximate equality for raw numbers, with optional tolerance override.
 - **`clampToZero(value, eps)`** in `curvy/utils` — snaps near-zero values to exactly zero, useful for stable sign tests.
 - **`EPSILON`** constant in `curvy/utils`.
 

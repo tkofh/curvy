@@ -70,24 +70,24 @@ export const isMatrix3x3: (m: unknown) => m is Matrix3x3 = internal.isMatrix3x3
 
 export const equals: {
   /**
-   * Checks if two `Matrix3x3` instances are approximately equal within an absolute tolerance.
+   * Checks if two `Matrix3x3` instances are approximately equal within the
+   * default absolute tolerance ({@link EPSILON}).
    *
    * @param a - The first matrix.
    * @param b - The second matrix.
-   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
-   * @returns `true` when each pair of components is within `eps`.
+   * @returns `true` when each pair of components is within tolerance.
    * @since 1.1.0
    */
-  (a: Matrix3x3, b: Matrix3x3, eps?: number): boolean
+  (a: Matrix3x3, b: Matrix3x3): boolean
   /**
-   * Checks if two `Matrix3x3` instances are approximately equal within an absolute tolerance.
+   * Checks if two `Matrix3x3` instances are approximately equal within the
+   * default absolute tolerance ({@link EPSILON}).
    *
    * @param b - The second matrix.
-   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
    * @returns A function that takes the first matrix and returns the comparison result.
    * @since 1.1.0
    */
-  (b: Matrix3x3, eps?: number): (a: Matrix3x3) => boolean
+  (b: Matrix3x3): (a: Matrix3x3) => boolean
 } = internal.equals
 
 /**

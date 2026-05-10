@@ -50,24 +50,24 @@ export const isMatrix2x2: (m: unknown) => m is Matrix2x2 = internal.isMatrix2x2
 
 export const equals: {
   /**
-   * Checks if two `Matrix2x2` instances are approximately equal within an absolute tolerance.
+   * Checks if two `Matrix2x2` instances are approximately equal within the
+   * default absolute tolerance ({@link EPSILON}).
    *
    * @param a - The first matrix.
    * @param b - The second matrix.
-   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
-   * @returns `true` when each pair of components is within `eps`.
+   * @returns `true` when each pair of components is within tolerance.
    * @since 1.1.0
    */
-  (a: Matrix2x2, b: Matrix2x2, eps?: number): boolean
+  (a: Matrix2x2, b: Matrix2x2): boolean
   /**
-   * Checks if two `Matrix2x2` instances are approximately equal within an absolute tolerance.
+   * Checks if two `Matrix2x2` instances are approximately equal within the
+   * default absolute tolerance ({@link EPSILON}).
    *
    * @param b - The second matrix.
-   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
    * @returns A function that takes the first matrix and returns the comparison result.
    * @since 1.1.0
    */
-  (b: Matrix2x2, eps?: number): (a: Matrix2x2) => boolean
+  (b: Matrix2x2): (a: Matrix2x2) => boolean
 } = internal.equals
 
 /**

@@ -25,24 +25,24 @@ export const isVector2: (v: unknown) => v is Vector2 = internal.isVector2
 
 export const equals: {
   /**
-   * Checks if two `Vector2` instances are approximately equal within an absolute tolerance.
+   * Checks if two `Vector2` instances are approximately equal within the
+   * default absolute tolerance ({@link EPSILON}).
    *
    * @param a - The first vector.
    * @param b - The second vector.
-   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
-   * @returns `true` when each pair of components is within `eps`.
+   * @returns `true` when each pair of components is within tolerance.
    * @since 1.1.0
    */
-  (a: Vector2, b: Vector2, eps?: number): boolean
+  (a: Vector2, b: Vector2): boolean
   /**
-   * Checks if two `Vector2` instances are approximately equal within an absolute tolerance.
+   * Checks if two `Vector2` instances are approximately equal within the
+   * default absolute tolerance ({@link EPSILON}).
    *
    * @param b - The second vector.
-   * @param eps - Maximum allowed absolute difference per component. Defaults to `1e-10`.
    * @returns A function that takes the first vector and returns the comparison result.
    * @since 1.1.0
    */
-  (b: Vector2, eps?: number): (a: Vector2) => boolean
+  (b: Vector2): (a: Vector2) => boolean
 } = internal.equals
 
 export const make: {

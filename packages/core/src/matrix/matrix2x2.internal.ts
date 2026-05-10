@@ -42,15 +42,15 @@ export const isMatrix2x2 = (m: unknown): m is Matrix2x2 =>
   typeof m === 'object' && m !== null && Matrix2x2TypeId in m
 
 export const equals = dual<
-  (b: Matrix2x2, eps?: number) => (a: Matrix2x2) => boolean,
-  (a: Matrix2x2, b: Matrix2x2, eps?: number) => boolean
+  (b: Matrix2x2) => (a: Matrix2x2) => boolean,
+  (a: Matrix2x2, b: Matrix2x2) => boolean
 >(
-  (args) => isMatrix2x2(args[0]) && isMatrix2x2(args[1]),
-  (a: Matrix2x2, b: Matrix2x2, eps?: number) =>
-    epsEquals(a.m00, b.m00, eps) &&
-    epsEquals(a.m01, b.m01, eps) &&
-    epsEquals(a.m10, b.m10, eps) &&
-    epsEquals(a.m11, b.m11, eps),
+  2,
+  (a: Matrix2x2, b: Matrix2x2) =>
+    epsEquals(a.m00, b.m00) &&
+    epsEquals(a.m01, b.m01) &&
+    epsEquals(a.m10, b.m10) &&
+    epsEquals(a.m11, b.m11),
 )
 
 export const make = (m00 = 0, m01 = m00, m10 = m01, m11 = m10) =>

@@ -52,15 +52,15 @@ export const isCubicPolynomial = (v: unknown): v is CubicPolynomial =>
   typeof v === 'object' && v !== null && CubicPolynomialTypeId in v
 
 export const equals = dual<
-  (b: CubicPolynomial, eps?: number) => (a: CubicPolynomial) => boolean,
-  (a: CubicPolynomial, b: CubicPolynomial, eps?: number) => boolean
+  (b: CubicPolynomial) => (a: CubicPolynomial) => boolean,
+  (a: CubicPolynomial, b: CubicPolynomial) => boolean
 >(
-  (args) => isCubicPolynomial(args[0]) && isCubicPolynomial(args[1]),
-  (a: CubicPolynomial, b: CubicPolynomial, eps?: number) =>
-    epsEquals(a.c0, b.c0, eps) &&
-    epsEquals(a.c1, b.c1, eps) &&
-    epsEquals(a.c2, b.c2, eps) &&
-    epsEquals(a.c3, b.c3, eps),
+  2,
+  (a: CubicPolynomial, b: CubicPolynomial) =>
+    epsEquals(a.c0, b.c0) &&
+    epsEquals(a.c1, b.c1) &&
+    epsEquals(a.c2, b.c2) &&
+    epsEquals(a.c3, b.c3),
 )
 
 export const fromVector = (v: Vector4) => new CubicPolynomialImpl(v.x, v.y, v.z, v.w)

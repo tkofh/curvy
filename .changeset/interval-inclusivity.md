@@ -10,14 +10,14 @@
 
 **Modifiers** — all return new instances, identity on no-ops:
 
-| Function          | Effect                                                |
-| ----------------- | ----------------------------------------------------- |
-| `toStartOpen`     | Open the start; preserve the end                      |
-| `toStartClosed`   | Close the start; preserve the end                     |
-| `toEndOpen`       | Open the end; preserve the start                      |
-| `toEndClosed`     | Close the end; preserve the start                     |
-| `toOpen`          | Force both endpoints open                             |
-| `toClosed`        | Force both endpoints closed                           |
+| Function        | Effect                            |
+| --------------- | --------------------------------- |
+| `toStartOpen`   | Open the start; preserve the end  |
+| `toStartClosed` | Close the start; preserve the end |
+| `toEndOpen`     | Open the end; preserve the start  |
+| `toEndClosed`   | Close the end; preserve the start |
+| `toOpen`        | Force both endpoints open         |
+| `toClosed`      | Force both endpoints closed       |
 
 The four per-edge modifiers narrow the result type via overloads (e.g. `toStartOpen(Closed) → OpenStart`, `toStartOpen(OpenEnd) → Open`).
 

@@ -49,24 +49,24 @@ export const isLinearPolynomial: (v: unknown) => v is LinearPolynomial = interna
 
 export const equals: {
   /**
-   * Checks if two `LinearPolynomial` instances are approximately equal within an absolute tolerance.
+   * Checks if two `LinearPolynomial` instances are approximately equal within
+   * the default absolute tolerance ({@link EPSILON}).
    *
    * @param a - The first polynomial.
    * @param b - The second polynomial.
-   * @param eps - Maximum allowed absolute difference per coefficient. Defaults to `1e-10`.
-   * @returns `true` when each pair of coefficients is within `eps`.
+   * @returns `true` when each pair of coefficients is within tolerance.
    * @since 1.1.0
    */
-  (a: LinearPolynomial, b: LinearPolynomial, eps?: number): boolean
+  (a: LinearPolynomial, b: LinearPolynomial): boolean
   /**
-   * Checks if two `LinearPolynomial` instances are approximately equal within an absolute tolerance.
+   * Checks if two `LinearPolynomial` instances are approximately equal within
+   * the default absolute tolerance ({@link EPSILON}).
    *
    * @param b - The second polynomial.
-   * @param eps - Maximum allowed absolute difference per coefficient. Defaults to `1e-10`.
    * @returns A function that takes the first polynomial and returns the comparison result.
    * @since 1.1.0
    */
-  (b: LinearPolynomial, eps?: number): (a: LinearPolynomial) => boolean
+  (b: LinearPolynomial): (a: LinearPolynomial) => boolean
 } = internal.equals
 
 /**
