@@ -105,7 +105,7 @@ export const equals: {
  * @returns A new `Matrix3x3` instance.
  * @since 1.0.0
  */
-export const matrix3x3: (
+export const make: (
   m00?: number,
   m01?: number,
   m02?: number,
@@ -217,7 +217,7 @@ export const vectorProductLeft: {
    * import * as Matrix3x3 from 'curvy/matrix3x3'
    * import * as Vector3 from 'curvy/vector3'
    *
-   * const m = Matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)
+   * const m = Matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)
    * const v = Vector3.vector3(10, 11, 12)
    *
    * // Performs:
@@ -240,7 +240,7 @@ export const vectorProductLeft: {
    * import * as Matrix3x3 from 'curvy/matrix3x3'
    * import * as Vector3 from 'curvy/vector3'
    *
-   * const m = Matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)
+   * const m = Matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)
    * const v = Vector3.vector3(10, 11, 12)
    *
    * // Performs:
@@ -265,7 +265,7 @@ export const vectorProductRight: {
    * import * as Matrix3x3 from 'curvy/matrix3x3'
    * import * as Vector3 from 'curvy/vector3'
    *
-   * const m = Matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)
+   * const m = Matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)
    * const v = Vector3.vector3(10, 11, 12)
    *
    * // Performs:
@@ -288,7 +288,7 @@ export const vectorProductRight: {
    * import * as Matrix3x3 from 'curvy/matrix3x3'
    * import * as Vector3 from 'curvy/vector3'
    *
-   * const m = Matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)
+   * const m = Matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)
    * const v = Vector3.vector3(10, 11, 12)
    *
    * // Performs:
@@ -313,7 +313,7 @@ export const solveSystem: {
    * import * as Matrix3x3 from 'curvy/matrix3x3'
    * import * as Vector3 from 'curvy/vector3'
    *
-   * const m = Matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)
+   * const m = Matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)
    * const v = Vector3.vector3(10, 11, 12)
    *
    * // Performs:
@@ -333,7 +333,7 @@ export const solveSystem: {
    * import * as Matrix3x3 from 'curvy/matrix3x3'
    * import * as Vector3 from 'curvy/vector3'
    *
-   * const m = Matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)
+   * const m = Matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)
    * const v = Vector3.vector3(10, 11, 12)
    *
    * // Performs:

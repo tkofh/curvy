@@ -18,6 +18,10 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./vector": {
+      "types": "./dist/vector/index.d.mts",
+      "import": "./dist/vector/index.mjs"
+    },
     "./vector2": {
       "types": "./dist/vector/vector2.d.mts",
       "import": "./dist/vector/vector2.mjs"
@@ -29,6 +33,10 @@
     "./vector4": {
       "types": "./dist/vector/vector4.d.mts",
       "import": "./dist/vector/vector4.mjs"
+    },
+    "./matrix": {
+      "types": "./dist/matrix/index.d.mts",
+      "import": "./dist/matrix/index.mjs"
     },
     "./matrix2x2": {
       "types": "./dist/matrix/matrix2x2.d.mts",
@@ -42,6 +50,10 @@
       "types": "./dist/matrix/matrix4x4.d.mts",
       "import": "./dist/matrix/matrix4x4.mjs"
     },
+    "./curve": {
+      "types": "./dist/curve/index.d.mts",
+      "import": "./dist/curve/index.mjs"
+    },
     "./curve/linear2d": {
       "types": "./dist/curve/linear2d.d.mts",
       "import": "./dist/curve/linear2d.mjs"
@@ -53,6 +65,10 @@
     "./curve/cubic2d": {
       "types": "./dist/curve/cubic2d.d.mts",
       "import": "./dist/curve/cubic2d.mjs"
+    },
+    "./polynomial": {
+      "types": "./dist/polynomial/index.d.mts",
+      "import": "./dist/polynomial/index.mjs"
     },
     "./polynomial/linear": {
       "types": "./dist/polynomial/linear.d.mts",
@@ -70,6 +86,10 @@
       "types": "./dist/interval.d.mts",
       "import": "./dist/interval.mjs"
     },
+    "./path": {
+      "types": "./dist/path/index.d.mts",
+      "import": "./dist/path/index.mjs"
+    },
     "./path/linear2d": {
       "types": "./dist/path/linear2d.d.mts",
       "import": "./dist/path/linear2d.mjs"
@@ -81,6 +101,10 @@
     "./path/cubic2d": {
       "types": "./dist/path/cubic2d.d.mts",
       "import": "./dist/path/cubic2d.mjs"
+    },
+    "./splines": {
+      "types": "./dist/splines/index.d.mts",
+      "import": "./dist/splines/index.mjs"
     },
     "./splines/bezier2d": {
       "types": "./dist/splines/bezier2d.d.mts",

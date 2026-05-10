@@ -79,7 +79,7 @@ describe('matrix2x2', () => {
 
 describe('matrix3x3', () => {
   test('make', () => {
-    expect(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)).toMatchObject({
+    expect(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)).toMatchObject({
       m00: 1,
       m01: 2,
       m02: 3,
@@ -92,7 +92,7 @@ describe('matrix3x3', () => {
     })
   })
   test('isMatrix3x3', () => {
-    expect(matrix3x3.isMatrix3x3(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9))).toBe(true)
+    expect(matrix3x3.isMatrix3x3(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9))).toBe(true)
 
     expect(
       matrix3x3.isMatrix3x3({
@@ -139,17 +139,17 @@ describe('matrix3x3', () => {
     })
   })
   test('determinant', () => {
-    expect(matrix3x3.determinant(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9))).toBe(0)
+    expect(matrix3x3.determinant(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9))).toBe(0)
   })
   test('minor', () => {
-    expect(matrix3x3.minor(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9), 0, 1)).toEqual(
+    expect(matrix3x3.minor(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9), 0, 1)).toEqual(
       matrix2x2.make(4, 6, 7, 9),
     )
   })
   test('vectorProductLeft', () => {
     expect(
       matrix3x3.vectorProductLeft(
-        matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9),
+        matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9),
         vector3.make(1, 2, 3),
       ),
     ).toEqual(vector3.make(14, 32, 50))
@@ -157,14 +157,14 @@ describe('matrix3x3', () => {
   test('vectorProductRight', () => {
     expect(
       matrix3x3.vectorProductRight(
-        matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9),
+        matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9),
         vector3.make(1, 2, 3),
       ),
     ).toEqual(vector3.make(30, 36, 42))
   })
   test('solveSystem', () => {
     const solution = vector3.make(1, 2, 3)
-    const coefficients = matrix3x3.matrix3x3(1, 0, 1, 0, 2, 0, 0, 0, 1)
+    const coefficients = matrix3x3.make(1, 0, 1, 0, 2, 0, 0, 0, 1)
 
     const result = matrix3x3.solveSystem(coefficients, solution)
 
@@ -179,26 +179,26 @@ describe('matrix3x3', () => {
     ).toBeCloseTo(solution.z, 10)
   })
   test('toRows', () => {
-    expect(matrix3x3.toRows(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9))).toEqual([
+    expect(matrix3x3.toRows(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9))).toEqual([
       vector3.make(1, 2, 3),
       vector3.make(4, 5, 6),
       vector3.make(7, 8, 9),
     ])
   })
   test('toColumns', () => {
-    expect(matrix3x3.toColumns(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9))).toEqual([
+    expect(matrix3x3.toColumns(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9))).toEqual([
       vector3.make(1, 4, 7),
       vector3.make(2, 5, 8),
       vector3.make(3, 6, 9),
     ])
   })
   test('rowVector', () => {
-    expect(matrix3x3.rowVector(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9), 0)).toEqual(
+    expect(matrix3x3.rowVector(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9), 0)).toEqual(
       vector3.make(1, 2, 3),
     )
   })
   test('columnVector', () => {
-    expect(matrix3x3.columnVector(matrix3x3.matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9), 0)).toEqual(
+    expect(matrix3x3.columnVector(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9), 0)).toEqual(
       vector3.make(1, 4, 7),
     )
   })
@@ -310,7 +310,7 @@ describe('matrix4x4', () => {
   test('minor', () => {
     expect(
       matrix4x4.minor(matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16), 0, 1),
-    ).toEqual(matrix3x3.matrix3x3(5, 7, 8, 9, 11, 12, 13, 15, 16))
+    ).toEqual(matrix3x3.make(5, 7, 8, 9, 11, 12, 13, 15, 16))
   })
   test('vectorProductLeft', () => {
     expect(

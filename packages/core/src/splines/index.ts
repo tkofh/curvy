@@ -1,0 +1,4 @@
+export * as Bezier2d from './bezier2d'
+export * as Cardinal2d from './cardinal2d'
+export * as Hermite2d from './hermite2d'
+export * as Basis2d from './basis2d'

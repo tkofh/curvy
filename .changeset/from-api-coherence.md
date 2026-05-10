@@ -47,3 +47,5 @@ const p = QuadraticPolynomial.fromPoints(
   Vector2.make(1, 6),
 )
 ```
+
+**Renamed (matrix module):** `Matrix3x3.matrix3x3` → `Matrix3x3.make`. The `Matrix2x2` and `Matrix4x4` modules already used `make`; only `Matrix3x3` had the type-name-as-constructor variant, breaking symmetry across the matrix family.
