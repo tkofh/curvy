@@ -2,15 +2,65 @@ import * as internal from './interval.internal'
 import type { Pipeable } from './pipe'
 
 /**
- * A mathematical interval.
+ * The structural minimum: any value with numeric `start` and `end` fields.
+ *
+ * Operations that don't read endpoint inclusivity (e.g. `lerp`, `normalize`,
+ * `remap`, `size`) accept `Bounds` so the signature itself documents what
+ * the operation depends on.
+ *
+ * @since 2.0.0
+ */
+export interface Bounds {
+  readonly start: number
+  readonly end: number
+}
+
+/**
+ * A mathematical interval. Discriminated union of four variants by endpoint
+ * inclusivity: `Closed`, `OpenStart`, `OpenEnd`, `Open`. Operations that
+ * depend on inclusivity (e.g. `contains`, `filter`, `equals`) dispatch on
+ * the `kind` field; operations that don't accept the broader `Bounds` type.
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
  * @since 1.0.0
  */
-export interface Interval extends Pipeable {
-  readonly start: number
-  readonly end: number
+export type Interval = Closed | OpenStart | OpenEnd | Open
+
+/**
+ * `[start, end]` — both endpoints included.
+ *
+ * @since 2.0.0
+ */
+export interface Closed extends Pipeable, Bounds {
+  readonly kind: 'closed'
+}
+
+/**
+ * `(start, end]` — start excluded, end included.
+ *
+ * @since 2.0.0
+ */
+export interface OpenStart extends Pipeable, Bounds {
+  readonly kind: 'open-start'
+}
+
+/**
+ * `[start, end)` — start included, end excluded.
+ *
+ * @since 2.0.0
+ */
+export interface OpenEnd extends Pipeable, Bounds {
+  readonly kind: 'open-end'
+}
+
+/**
+ * `(start, end)` — both endpoints excluded.
+ *
+ * @since 2.0.0
+ */
+export interface Open extends Pipeable, Bounds {
+  readonly kind: 'open'
 }
 
 /**
@@ -26,10 +76,14 @@ export const equals: {
   /**
    * Checks if two `Interval` instances are approximately equal within an absolute tolerance.
    *
+   * Both endpoints AND the kind must match — a `Closed` and an `OpenStart` with
+   * the same numeric endpoints are not equal. Use `aligned` for the looser
+   * "same numeric range" check.
+   *
    * @param a - The first interval.
    * @param b - The second interval.
    * @param eps - Maximum allowed absolute difference per endpoint. Defaults to `1e-10`.
-   * @returns `true` when both endpoints are within `eps`.
+   * @returns `true` when both intervals share a kind and both endpoints are within `eps`.
    * @since 1.1.0
    */
   (a: Interval, b: Interval, eps?: number): boolean
@@ -44,245 +98,424 @@ export const equals: {
   (b: Interval, eps?: number): (a: Interval) => boolean
 } = internal.equals
 
+export const aligned: {
+  /**
+   * Checks if two values share the same numeric range, ignoring endpoint
+   * inclusivity. Accepts any `Bounds`-shaped value.
+   *
+   * @param a - The first bounds.
+   * @param b - The second bounds.
+   * @param eps - Maximum allowed absolute difference per endpoint. Defaults to `1e-10`.
+   * @returns `true` when both endpoints are within `eps`.
+   * @since 2.0.0
+   */
+  (a: Bounds, b: Bounds, eps?: number): boolean
+  /**
+   * @param b - The second bounds.
+   * @param eps - Maximum allowed absolute difference per endpoint. Defaults to `1e-10`.
+   * @returns A function that takes the first bounds and returns the comparison result.
+   * @since 2.0.0
+   */
+  (b: Bounds, eps?: number): (a: Bounds) => boolean
+} = internal.aligned
+
 export const make: {
   /**
-   * Creates a new `Interval` instance.
+   * Creates a new closed `Interval` instance.
    *
    * @param point - The point of the interval.
-   * @returns A new `Interval` instance.
+   * @returns A new `Closed` interval `[point, point]`.
    * @since 1.0.0
    */
-  (point: number): Interval
+  (point: number): Closed
   /**
-   * Creates a new `Interval` instance.
+   * Creates a new closed `Interval` instance.
    *
    * @param start - The start of the interval.
    * @param end - The end of the interval.
-   * @returns A new `Interval` instance.
+   * @returns A new `Closed` interval `[start, end]`.
    * @since 1.0.0
    */
-  (start: number, end: number): Interval
+  (start: number, end: number): Closed
 } = internal.make
+
+export const makeOpenStart: {
+  /**
+   * Creates a new left-open `Interval` instance.
+   *
+   * @param point - The point of the interval.
+   * @returns A new `OpenStart` interval `(point, point]` (degenerate, empty).
+   * @since 2.0.0
+   */
+  (point: number): OpenStart
+  /**
+   * Creates a new left-open `Interval` instance.
+   *
+   * @param start - The start of the interval (excluded).
+   * @param end - The end of the interval (included).
+   * @returns A new `OpenStart` interval `(start, end]`.
+   * @since 2.0.0
+   */
+  (start: number, end: number): OpenStart
+} = internal.makeOpenStart
+
+export const makeOpenEnd: {
+  /**
+   * Creates a new right-open `Interval` instance.
+   *
+   * @param point - The point of the interval.
+   * @returns A new `OpenEnd` interval `[point, point)` (degenerate, empty).
+   * @since 2.0.0
+   */
+  (point: number): OpenEnd
+  /**
+   * Creates a new right-open `Interval` instance.
+   *
+   * @param start - The start of the interval (included).
+   * @param end - The end of the interval (excluded).
+   * @returns A new `OpenEnd` interval `[start, end)`.
+   * @since 2.0.0
+   */
+  (start: number, end: number): OpenEnd
+} = internal.makeOpenEnd
+
+export const makeOpen: {
+  /**
+   * Creates a new fully open `Interval` instance.
+   *
+   * @param point - The point of the interval.
+   * @returns A new `Open` interval `(point, point)` (degenerate, empty).
+   * @since 2.0.0
+   */
+  (point: number): Open
+  /**
+   * Creates a new fully open `Interval` instance.
+   *
+   * @param start - The start of the interval (excluded).
+   * @param end - The end of the interval (excluded).
+   * @returns A new `Open` interval `(start, end)`.
+   * @since 2.0.0
+   */
+  (start: number, end: number): Open
+} = internal.makeOpen
 
 export const fromSize: {
   /**
-   * Creates a new `Interval` instance from a size.
+   * Creates a new closed `Interval` instance from a size.
    *
    * @param size - The size of the interval.
-   * @returns A new `Interval` instance.
+   * @returns A new `Closed` interval `[0, size]`.
    * @since 1.0.0
    */
-  (size: number): Interval
+  (size: number): Closed
   /**
-   * Creates a new `Interval` instance from a size.
+   * Creates a new closed `Interval` instance from a size.
    *
-   * @param size - The size of the interval.
    * @param start - The start of the interval.
-   * @returns A new `Interval` instance.
+   * @param size - The size of the interval.
+   * @returns A new `Closed` interval `[start, start + size]`.
    * @since 1.0.0
    */
-  (start: number, size: number): Interval
+  (start: number, size: number): Closed
 } = internal.fromSize
 
 /**
- * Creates a new `Interval` instance from a minimum and maximum value.
+ * Creates a new closed `Interval` from a minimum and maximum value, in any order.
  *
- * @param values - The minimum and maximum values of the interval.
- * @returns A new `Interval` instance.
+ * @param values - The values to take the min and max of.
+ * @returns A new `Closed` interval `[min(values), max(values)]`.
  * @since 1.0.0
  */
-export const fromMinMax: (...values: ReadonlyArray<number>) => Interval = internal.fromMinMax
+export const fromMinMax: (...values: ReadonlyArray<number>) => Closed = internal.fromMinMax
 
 /**
  * Calculates the size of an interval.
  *
- * @param interval - The interval to calculate the size of.
- * @returns The size of the interval.
+ * Kind-agnostic — `size` of `[0, 1]` and `(0, 1)` are both `1`.
+ *
+ * @param i - The bounds to calculate the size of.
+ * @returns The size of the bounds.
  * @since 1.0.0
  */
-export const size: (i: Interval) => number = internal.size
+export const size: (i: Bounds) => number = internal.size
 
 export const contains: {
   /**
-   * Checks if a value is contained within an interval.
+   * Checks if a value is contained within an interval. Endpoint inclusivity
+   * follows the interval's `kind`.
    *
    * @param interval - The interval to check.
    * @param value - The value to check.
-   * @param options - Options for the check.
    * @returns `true` if the value is contained within the interval, `false` otherwise.
    * @since 1.0.0
    */
-  (
-    interval: Interval,
-    value: number,
-    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
-  ): boolean
+  (interval: Interval, value: number): boolean
   /**
-   * Checks if a value is contained within an interval.
+   * Checks if a value is contained within an interval. Endpoint inclusivity
+   * follows the interval's `kind`.
    *
    * @param value - The value to check.
-   * @param options - Options for the check.
    * @returns A function that takes an interval and returns `true` if the value is contained within the interval, `false` otherwise.
    * @since 1.0.0
    */
-  (
-    value: number,
-    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
-  ): (interval: Interval) => boolean
+  (value: number): (interval: Interval) => boolean
 } = internal.contains
 
 export const filter: {
   /**
-   * Filters a value to be within an interval.
+   * Filters an array of values to those contained within an interval.
+   * Endpoint inclusivity follows the interval's `kind`.
    *
-   * @param interval - The interval to filter the value to.
-   * @param value - The value to filter.
-   * @param options - Options for the filter.
-   * @returns The filtered value.
+   * @param interval - The interval to filter the values to.
+   * @param value - The values to filter.
+   * @returns The filtered values.
    * @since 1.0.0
    */
-  <V extends ReadonlyArray<number>>(
-    interval: Interval,
-    value: V,
-    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
-  ): V
+  <V extends ReadonlyArray<number>>(interval: Interval, value: V): V
   /**
-   * Filters a value to be within an interval.
+   * Filters an array of values to those contained within an interval.
    *
-   * @param value - The value to filter.
-   * @param options - Options for the filter.
-   * @returns A function that takes an interval and returns the filtered value.
+   * @param value - The values to filter.
+   * @returns A function that takes an interval and returns the filtered values.
    * @since 1.0.0
    */
-  <V extends ReadonlyArray<number>>(
-    value: V,
-    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
-  ): (interval: Interval) => V
+  <V extends ReadonlyArray<number>>(value: V): (interval: Interval) => V
 } = internal.filter
 
 export const clamp: {
   /**
-   * Clamps a value to be within an interval.
+   * Clamps a value to be within bounds. Kind-agnostic — clamps to the numeric
+   * range regardless of endpoint inclusivity.
    *
-   * @param interval - The interval to clamp the value to.
+   * @param interval - The bounds to clamp the value to.
    * @param value - The value to clamp.
    * @returns The clamped value.
    * @since 1.0.0
    */
-  (interval: Interval, value: number): number
+  (interval: Bounds, value: number): number
   /**
-   * Clamps a value to be within an interval.
+   * Clamps a value to be within bounds. Kind-agnostic.
    *
    * @param value - The value to clamp.
-   * @returns A function that takes an interval and returns the clamped value.
+   * @returns A function that takes bounds and returns the clamped value.
    * @since 1.0.0
    */
-  (value: number): (interval: Interval) => number
+  (value: number): (interval: Bounds) => number
   /**
-   * Clamps an array of values to be within an interval.
+   * Clamps an array of values to be within bounds. Kind-agnostic.
    *
-   * @param interval - The interval to clamp the values to.
+   * @param interval - The bounds to clamp the values to.
    * @param value - The values to clamp.
    * @returns The clamped values.
    * @since 1.0.0
    */
-  (interval: Interval, value: ReadonlyArray<number>): ReadonlyArray<number>
+  (interval: Bounds, value: ReadonlyArray<number>): ReadonlyArray<number>
   /**
-   * Clamps an array of values to be within an interval.
+   * Clamps an array of values to be within bounds. Kind-agnostic.
    *
    * @param value - The values to clamp.
-   * @returns A function that takes an interval and returns the clamped values.
+   * @returns A function that takes bounds and returns the clamped values.
    * @since 1.0.0
    */
-  (value: ReadonlyArray<number>): (interval: Interval) => ReadonlyArray<number>
+  (value: ReadonlyArray<number>): (interval: Bounds) => ReadonlyArray<number>
 } = internal.clamp
 
 /**
- * The unit interval, which is the interval [0, 1].
+ * Returns an interval with the start endpoint open. Preserves the end endpoint's inclusivity.
+ *
+ * @since 2.0.0
+ */
+export const toStartOpen: {
+  (i: Closed | OpenStart): OpenStart
+  (i: OpenEnd | Open): Open
+} = internal.toStartOpen
+
+/**
+ * Returns an interval with the start endpoint closed. Preserves the end endpoint's inclusivity.
+ *
+ * @since 2.0.0
+ */
+export const toStartClosed: {
+  (i: Closed | OpenEnd): Closed
+  (i: OpenStart | Open): OpenEnd
+} = internal.toStartClosed
+
+/**
+ * Returns an interval with the end endpoint open. Preserves the start endpoint's inclusivity.
+ *
+ * @since 2.0.0
+ */
+export const toEndOpen: {
+  (i: Closed | OpenEnd): OpenEnd
+  (i: OpenStart | Open): Open
+} = internal.toEndOpen
+
+/**
+ * Returns an interval with the end endpoint closed. Preserves the start endpoint's inclusivity.
+ *
+ * @since 2.0.0
+ */
+export const toEndClosed: {
+  (i: Closed | OpenEnd): Closed
+  (i: OpenStart | Open): OpenStart
+} = internal.toEndClosed
+
+/**
+ * Returns a closed interval over the same numeric range.
+ *
+ * @since 2.0.0
+ */
+export const toClosed: (i: Interval) => Closed = internal.toClosed
+
+/**
+ * Returns a fully open interval over the same numeric range.
+ *
+ * @since 2.0.0
+ */
+export const toOpen: (i: Interval) => Open = internal.toOpen
+
+/**
+ * Type-narrowing predicate: refines `Interval` to `Closed`.
+ *
+ * @since 2.0.0
+ */
+export const isClosed: (i: Interval) => i is Closed = internal.isClosed
+
+/**
+ * Type-narrowing predicate: refines `Interval` to `Open`.
+ *
+ * @since 2.0.0
+ */
+export const isOpen: (i: Interval) => i is Open = internal.isOpen
+
+/**
+ * Type-narrowing predicate: refines `Interval` to `OpenStart`.
+ *
+ * @since 2.0.0
+ */
+export const isOpenStart: (i: Interval) => i is OpenStart = internal.isOpenStart
+
+/**
+ * Type-narrowing predicate: refines `Interval` to `OpenEnd`.
+ *
+ * @since 2.0.0
+ */
+export const isOpenEnd: (i: Interval) => i is OpenEnd = internal.isOpenEnd
+
+/**
+ * Type-narrowing predicate: refines `Interval` to those with an open start endpoint.
+ *
+ * @since 2.0.0
+ */
+export const isOpenAtStart: (i: Interval) => i is OpenStart | Open = internal.isOpenAtStart
+
+/**
+ * Type-narrowing predicate: refines `Interval` to those with an open end endpoint.
+ *
+ * @since 2.0.0
+ */
+export const isOpenAtEnd: (i: Interval) => i is OpenEnd | Open = internal.isOpenAtEnd
+
+/**
+ * Type-narrowing predicate: refines `Interval` to those with a closed start endpoint.
+ *
+ * @since 2.0.0
+ */
+export const isClosedAtStart: (i: Interval) => i is Closed | OpenEnd = internal.isClosedAtStart
+
+/**
+ * Type-narrowing predicate: refines `Interval` to those with a closed end endpoint.
+ *
+ * @since 2.0.0
+ */
+export const isClosedAtEnd: (i: Interval) => i is Closed | OpenStart = internal.isClosedAtEnd
+
+/**
+ * The unit interval, `[0, 1]`.
  *
  * @since 1.0.0
  */
-export const unit: Interval = internal.unit
+export const unit: Closed = internal.unit
 
 /**
- * The biunit interval, which is the interval [-1, 1].
+ * The biunit interval, `[-1, 1]`.
  *
  * @since 1.0.0
  */
-export const biunit: Interval = internal.biunit
+export const biunit: Closed = internal.biunit
 
 /**
- * Linearly interpolates a value within an interval.
+ * Linearly interpolates a value within bounds.
  *
- * @param interval - The interval to interpolate within.
+ * @param interval - The bounds to interpolate within.
  * @param t - The interpolation factor, typically between 0 and 1.
  * @returns The interpolated value.
  * @since 1.0.0
  */
-export const lerp: (interval: Interval, t: number) => number = internal.lerp
+export const lerp: (interval: Bounds, t: number) => number = internal.lerp
 
 /**
- * Creates a linear interpolation function for an interval.
+ * Creates a linear interpolation function for given bounds.
  *
- * @param interval - The interval to create the interpolation function for.
+ * @param interval - The bounds to create the interpolation function for.
  * @returns A function that takes a factor `t` and returns the interpolated value.
  * @since 1.0.0
  */
-export const toLerpFn: (interval: Interval) => (t: number) => number = internal.toLerpFn
+export const toLerpFn: (interval: Bounds) => (t: number) => number = internal.toLerpFn
 
 /**
- * Normalizes a value within an interval.
+ * Normalizes a value within bounds.
  *
- * @param interval - The interval to normalize within.
+ * @param interval - The bounds to normalize within.
  * @param x - The value to normalize.
  * @returns The normalized value.
  * @since 1.0.0
  */
-export const normalize: (interval: Interval, x: number) => number = internal.normalize
+export const normalize: (interval: Bounds, x: number) => number = internal.normalize
 
 /**
- * Creates a normalization function for an interval.
+ * Creates a normalization function for given bounds.
  *
- * @param interval - The interval to create the normalization function for.
+ * @param interval - The bounds to create the normalization function for.
  * @returns A function that takes a value `x` and returns the normalized value.
  * @since 1.0.0
  */
-export const toNormalizeFn: (interval: Interval) => (x: number) => number = internal.toNormalizeFn
+export const toNormalizeFn: (interval: Bounds) => (x: number) => number = internal.toNormalizeFn
 
 /**
- * Remaps a value from one interval to another.
+ * Remaps a value from one bounds to another.
  *
- * @param source - The source interval.
- * @param target - The target interval.
+ * @param source - The source bounds.
+ * @param target - The target bounds.
  * @param x - The value to remap.
  * @returns The remapped value.
  * @since 1.0.0
  */
-export const remap: (source: Interval, target: Interval, x: number) => number = internal.remap
+export const remap: (source: Bounds, target: Bounds, x: number) => number = internal.remap
 
 /**
- * Creates a remapping function for an interval.
+ * Creates a remapping function for given bounds.
  *
- * @param source - The source interval.
- * @param target - The target interval.
+ * @param source - The source bounds.
+ * @param target - The target bounds.
  * @returns A function that takes a value `x` and returns the remapped value.
  * @since 1.0.0
  */
-export const toRemapFn: (source: Interval, target: Interval) => (x: number) => number =
+export const toRemapFn: (source: Bounds, target: Bounds) => (x: number) => number =
   internal.toRemapFn
 
 /**
- * Calculates the scale and shift needed to map a source interval to a target interval.
+ * Calculates the scale and shift needed to map a source bounds to a target bounds.
  *
- * @param source - The source interval.
- * @param target - The target interval.
+ * @param source - The source bounds.
+ * @param target - The target bounds.
  * @returns An object containing the scale and shift values.
  * @since 1.0.0
  */
-export const scaleShift: (source: Interval, target: Interval) => ScaleShift = internal.scaleShift
+export const scaleShift: (source: Bounds, target: Bounds) => ScaleShift = internal.scaleShift
 
 /**
- * The scale and shift needed to map a source interval to a target interval.
+ * The scale and shift needed to map a source bounds to a target bounds.
  *
  * @since 1.0.0
  */

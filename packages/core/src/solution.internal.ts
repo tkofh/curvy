@@ -205,11 +205,8 @@ export const filter = <T>(s: Solution<T>, predicate: (v: T) => boolean): Solutio
   }
 }
 
-export const filterInterval = (
-  s: Solution<number>,
-  i: Interval.Interval,
-  options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
-): Solution<number> => filter(s, (v) => Interval.contains(i, v, options))
+export const filterInterval = (s: Solution<number>, i: Interval.Interval): Solution<number> =>
+  filter(s, (v) => Interval.contains(i, v))
 
 export const map = <A, B>(s: Solution<A>, f: (v: A) => B): Solution<B> => {
   switch (s._tag) {

@@ -124,7 +124,7 @@ export const monotonicity = dual<
 
     // if there is no interval, or the extreme is within the interval,
     // the monotonicity is none
-    if (i === undefined || Interval.contains(i, e.x, { includeStart: false, includeEnd: false })) {
+    if (i === undefined || Interval.contains(Interval.toOpen(i), e.x)) {
       return 'none'
     }
 

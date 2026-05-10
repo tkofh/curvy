@@ -183,10 +183,7 @@ export const monotonicity = dual<
       return Quadratic.monotonicity(Quadratic.make(p.c0, p.c1, p.c2), i)
     }
 
-    const e = Interval.filter(i, [...extrema(p)], {
-      includeStart: false,
-      includeEnd: false,
-    })
+    const e = Interval.filter(Interval.toOpen(i), [...extrema(p)])
 
     if (e.length > 0) {
       return 'none'

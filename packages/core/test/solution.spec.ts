@@ -95,12 +95,11 @@ describe('Solution transformations', () => {
     const s = Solution.three(-1, 0.5, 2)
     expect([...Solution.filterInterval(s, Interval.unit)]).toEqual([0.5])
   })
-  test('filterInterval respects endpoint inclusion options', () => {
+  test('filterInterval respects the interval kind', () => {
     const s = Solution.three(0, 0.5, 1)
     expect([...Solution.filterInterval(s, Interval.unit)]).toEqual([0, 0.5, 1])
-    expect([
-      ...Solution.filterInterval(s, Interval.unit, { includeStart: false, includeEnd: false }),
-    ]).toEqual([0.5])
+    expect([...Solution.filterInterval(s, Interval.toOpen(Interval.unit))]).toEqual([0.5])
+    expect([...Solution.filterInterval(s, Interval.makeOpenStart(0, 1))]).toEqual([0.5, 1])
   })
   test('map transforms each element', () => {
     const s = Solution.three(1, 2, 3)

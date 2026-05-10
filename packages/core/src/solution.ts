@@ -216,18 +216,17 @@ export const filter: <T>(s: Solution<T>, predicate: (v: T) => boolean) => Soluti
   internal.filter
 
 /**
- * Filters the solution to values contained within a numeric interval.
+ * Filters the solution to values contained within an interval. Endpoint
+ * inclusivity follows the interval's `kind` — pass an open variant (e.g.
+ * `Interval.makeOpen(0, 1)` or `Interval.toOpen(closed)`) for strict
+ * containment.
  *
  * @param s - The solution to filter.
  * @param i - The interval to retain values within.
- * @param options - Endpoint inclusion options. Defaults to inclusive on both ends.
  * @since 2.0.0
  */
-export const filterInterval: (
-  s: Solution<number>,
-  i: Interval,
-  options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
-) => Solution<number> = internal.filterInterval
+export const filterInterval: (s: Solution<number>, i: Interval) => Solution<number> =
+  internal.filterInterval
 
 /**
  * Maps every value in the solution to a new value. Result cardinality matches
