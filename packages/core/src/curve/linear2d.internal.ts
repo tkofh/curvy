@@ -33,8 +33,21 @@ export const fromPolynomials: (
   c1: LinearPolynomial.LinearPolynomial,
 ) => LinearCurve2d = (c0, c1) => new LinearCurve2dImpl(c0, c1)
 
-export const fromPoints: (p0: Vector2.Vector2, p1: Vector2.Vector2) => LinearCurve2d = (p0, p1) =>
-  new LinearCurve2dImpl(LinearPolynomial.make(p0.x, p1.x), LinearPolynomial.make(p0.y, p1.y))
+export const fromCoefficients: (c0: Vector2.Vector2, c1: Vector2.Vector2) => LinearCurve2d = (
+  c0,
+  c1,
+) => new LinearCurve2dImpl(LinearPolynomial.make(c0.x, c1.x), LinearPolynomial.make(c0.y, c1.y))
+
+// Linear Bernstein basis: B(t) = (1-t)·p0 + t·p1
+// Expanding to monomial form gives c0 = p0, c1 = p1 - p0.
+export const fromBezierPoints: (p0: Vector2.Vector2, p1: Vector2.Vector2) => LinearCurve2d = (
+  p0,
+  p1,
+) =>
+  new LinearCurve2dImpl(
+    LinearPolynomial.make(p0.x, p1.x - p0.x),
+    LinearPolynomial.make(p0.y, p1.y - p0.y),
+  )
 
 export const isLinearCurve2d = (c: unknown): c is LinearCurve2d =>
   typeof c === 'object' && c !== null && LinearCurve2dTypeId in c

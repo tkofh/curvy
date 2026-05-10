@@ -85,6 +85,20 @@ export const make: (c0?: number, c1?: number, c2?: number) => QuadraticPolynomia
  */
 export const fromVector: (v: Vector3) => QuadraticPolynomial = internal.fromVector
 
+/**
+ * Creates a new `QuadraticPolynomial` that interpolates the three given
+ * points, treating each `Vector2` as an `(x, y)` pair. The three input `x`
+ * values must be distinct.
+ *
+ * @param p0 - The first point.
+ * @param p1 - The second point.
+ * @param p2 - The third point.
+ * @returns The unique quadratic polynomial passing through the three points.
+ * @since 2.0.0
+ */
+export const fromPoints: (p0: Vector2, p1: Vector2, p2: Vector2) => QuadraticPolynomial =
+  internal.fromPoints
+
 export const solve: {
   /**
    * Solves the quadratic polynomial for a given x value.

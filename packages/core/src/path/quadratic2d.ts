@@ -16,24 +16,23 @@ export interface QuadraticPath2d extends Pipeable, Iterable<QuadraticCurve2d> {
 }
 
 /**
- * Creates a new `QuadraticPath2d` instance from curve parameters.
+ * Creates a new `QuadraticPath2d` instance from a sequence of curves.
  *
  * @param curves - The curves to create the path from.
  * @returns A new `QuadraticPath2d` instance.
- * @since 1.0.0
+ * @since 2.0.0
  */
-export const fromCurves: (...curves: ReadonlyArray<QuadraticCurve2d>) => QuadraticPath2d =
-  internal.fromCurves
+export const make: (...curves: ReadonlyArray<QuadraticCurve2d>) => QuadraticPath2d = internal.make
 
 /**
  * Creates a new `QuadraticPath2d` instance from an array of curves.
  *
  * @param curves - The curves to create the path from.
  * @returns A new `QuadraticPath2d` instance.
- * @since 1.0.0
+ * @since 2.0.0
  */
-export const fromCurveArray: (curves: ReadonlyArray<QuadraticCurve2d>) => QuadraticPath2d =
-  internal.fromCurveArray
+export const fromArray: (curves: ReadonlyArray<QuadraticCurve2d>) => QuadraticPath2d =
+  internal.fromArray
 
 /**
  * Checks if a value is a `QuadraticPath2d`.
@@ -91,3 +90,14 @@ export const solve: {
    */
   (p: QuadraticPath2d, u: number): Vector2
 } = internal.solve
+
+/**
+ * Serializes a quadratic path as an SVG path data string (the value of a
+ * `<path>` element's `d` attribute), using `M` and `Q` commands. Discontinuities
+ * between curves emit a fresh `M` command.
+ *
+ * @param p - The quadratic path to serialize.
+ * @returns The SVG path data string.
+ * @since 2.0.0
+ */
+export const toPathData: (p: QuadraticPath2d) => string = internal.toPathData

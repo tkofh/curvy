@@ -3,7 +3,8 @@ import * as CubicPath2d from '../path/cubic2d'
 import { dual, Pipeable } from '../pipe'
 import { invariant } from '../utils'
 import type * as Vector2 from '../vector/vector2'
-import * as Bezier2d from './bezier2d'
+import type { Bezier2d } from './bezier2d'
+import * as bezierInternal from './bezier2d.internal'
 import type { Hermite2d } from './hermite2d'
 import { toCurves } from './util'
 
@@ -58,6 +59,6 @@ export const prepend = dual<
   return new Hermite2dImpl([p0, v0].concat(points))
 })
 
-export const toPath = (p: Hermite2d) => CubicPath2d.fromCurves(...toCurves(p, characteristic, 2))
+export const toPath = (p: Hermite2d) => CubicPath2d.make(...toCurves(p, characteristic, 2))
 
-export const toBezier = (p: Hermite2d) => Bezier2d.fromSpline(p, characteristic, 2)
+export const toBezier = (p: Hermite2d): Bezier2d => bezierInternal.fromBasis(p, characteristic, 2)

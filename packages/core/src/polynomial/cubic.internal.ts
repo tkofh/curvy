@@ -35,6 +35,7 @@ import {
 } from '../length'
 import { dual } from '../pipe'
 import { clampToZero, epsEquals } from '../utils'
+import type * as Vector2 from '../vector/vector2'
 import type { Vector4 } from '../vector/vector4'
 import type { CubicPolynomial } from './cubic'
 import { CubicPolynomialImpl, CubicPolynomialTypeId } from './cubic.internal.circular'
@@ -62,6 +63,28 @@ export const equals = dual<
 )
 
 export const fromVector = (v: Vector4) => new CubicPolynomialImpl(v.x, v.y, v.z, v.w)
+
+export const fromPoints = (
+  p0: Vector2.Vector2,
+  p1: Vector2.Vector2,
+  p2: Vector2.Vector2,
+  p3: Vector2.Vector2,
+): CubicPolynomial => {
+  // Newton's divided differences, then collected to monomial form.
+  const f01 = (p1.y - p0.y) / (p1.x - p0.x)
+  const f12 = (p2.y - p1.y) / (p2.x - p1.x)
+  const f23 = (p3.y - p2.y) / (p3.x - p2.x)
+  const f012 = (f12 - f01) / (p2.x - p0.x)
+  const f123 = (f23 - f12) / (p3.x - p1.x)
+  const f0123 = (f123 - f012) / (p3.x - p0.x)
+
+  return new CubicPolynomialImpl(
+    p0.y - f01 * p0.x + f012 * p0.x * p1.x - f0123 * p0.x * p1.x * p2.x,
+    f01 - f012 * (p0.x + p1.x) + f0123 * (p0.x * p1.x + p0.x * p2.x + p1.x * p2.x),
+    f012 - f0123 * (p0.x + p1.x + p2.x),
+    f0123,
+  )
+}
 
 export const solve = dual<
   (x: number) => (p: CubicPolynomial) => number,

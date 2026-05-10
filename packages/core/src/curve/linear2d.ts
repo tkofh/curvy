@@ -29,12 +29,34 @@ export const fromPolynomials: (x: LinearPolynomial, y: LinearPolynomial) => Line
   internal.fromPolynomials
 
 /**
- * Creates a new `LinearCurve2d` instance from pairs of coefficients.
+ * Creates a new `LinearCurve2d` instance from monomial coefficient vectors.
  *
- * @param p0 - The x^0 coefficients for the x and y polynomials.
- * @param p1 - The x^1 coefficients for the x and y polynomials.
+ * Each argument bundles the per-axis coefficient at the given power: `c0`
+ * holds the x⁰ term, `c1` holds the x¹ term. The resulting curve evaluates to
+ * `c0 + c1·t` per axis.
+ *
+ * @param c0 - The x⁰ coefficients (x and y).
+ * @param c1 - The x¹ coefficients (x and y).
+ * @returns A new `LinearCurve2d` instance.
+ * @since 2.0.0
  */
-export const fromPoints: (p0: Vector2, p1: Vector2) => LinearCurve2d = internal.fromPoints
+export const fromCoefficients: (c0: Vector2, c1: Vector2) => LinearCurve2d =
+  internal.fromCoefficients
+
+/**
+ * Creates a new `LinearCurve2d` instance from a pair of endpoints.
+ *
+ * `p0` is the curve at `t = 0`, `p1` is the curve at `t = 1`. The
+ * implementation converts to the curve's internal monomial form (slope-form
+ * polynomial in `t`) in closed form.
+ *
+ * @param p0 - The curve's start point.
+ * @param p1 - The curve's end point.
+ * @returns A new `LinearCurve2d` instance whose curve matches the line from `p0` to `p1`.
+ * @since 2.0.0
+ */
+export const fromBezierPoints: (p0: Vector2, p1: Vector2) => LinearCurve2d =
+  internal.fromBezierPoints
 
 /**
  * Checks if a value is a `LinearCurve2d`.

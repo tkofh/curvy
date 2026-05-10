@@ -32,16 +32,44 @@ export const fromPolynomials: (
 ) => QuadraticCurve2d = internal.fromPolynomials
 
 /**
- * Creates a new `QuadraticCurve2d` instance from pairs of coefficients.
+ * Creates a new `QuadraticCurve2d` instance from monomial coefficient vectors.
  *
- * @param p0 - The x^0 coefficients for the x and y polynomials.
- * @param p1 - The x^1 coefficients for the x and y polynomials.
- * @param p2 - The x^2 coefficients for the x and y polynomials.
+ * Each argument bundles the per-axis coefficient at the given power: `c0`
+ * holds the x⁰ term, `c1` holds the x¹ term, and so on. The resulting curve
+ * evaluates to `c0 + c1·t + c2·t²` per axis.
+ *
+ * @param c0 - The x⁰ coefficients (x and y).
+ * @param c1 - The x¹ coefficients (x and y).
+ * @param c2 - The x² coefficients (x and y).
  * @returns A new `QuadraticCurve2d` instance.
- * @since 1.0.0
+ * @since 2.0.0
  */
-export const fromPoints: (p0: Vector2, p1: Vector2, p2: Vector2) => QuadraticCurve2d =
-  internal.fromPoints
+export const fromCoefficients: (
+  c0: Vector2,
+  c1: Vector2,
+  c2: Vector2,
+) => QuadraticCurve2d = internal.fromCoefficients
+
+/**
+ * Creates a new `QuadraticCurve2d` instance from quadratic Bézier control
+ * points.
+ *
+ * The three arguments are the Bernstein-basis control points: `p0` and `p2`
+ * are the curve's endpoints and `p1` is the off-curve control handle. The
+ * implementation converts to the curve's internal monomial form in closed
+ * form.
+ *
+ * @param p0 - The first control point (curve start).
+ * @param p1 - The second control point (control handle).
+ * @param p2 - The third control point (curve end).
+ * @returns A new `QuadraticCurve2d` instance whose curve matches the given Bézier.
+ * @since 2.0.0
+ */
+export const fromBezierPoints: (
+  p0: Vector2,
+  p1: Vector2,
+  p2: Vector2,
+) => QuadraticCurve2d = internal.fromBezierPoints
 
 /**
  * Checks if a value is a `QuadraticCurve2d`.

@@ -28,6 +28,16 @@ describe('linear2d', () => {
       ),
     ).toBe(true)
   })
+  test('fromCoefficients packs coefficient vectors into per-axis polynomials', () => {
+    const c = linear2d.fromCoefficients(vector2.make(1, 2), vector2.make(3, 4))
+    expect(c.x).toMatchObject({ c0: 1, c1: 3 })
+    expect(c.y).toMatchObject({ c0: 2, c1: 4 })
+  })
+  test('fromBezierPoints reproduces the line at t=0 and t=1', () => {
+    const c = linear2d.fromBezierPoints(vector2.make(2, 3), vector2.make(7, 11))
+    expect(linear2d.solve(c, 0)).toBeCloseToValue(vector2.make(2, 3))
+    expect(linear2d.solve(c, 1)).toBeCloseToValue(vector2.make(7, 11))
+  })
   test('solve', () => {
     expect(
       linear2d.solve(
@@ -67,6 +77,25 @@ describe('quadratic2d', () => {
         ),
       ),
     ).toBe(true)
+  })
+  test('fromCoefficients packs coefficient vectors into per-axis polynomials', () => {
+    const c = quadratic2d.fromCoefficients(
+      vector2.make(1, 2),
+      vector2.make(3, 4),
+      vector2.make(5, 6),
+    )
+    expect(c.x).toMatchObject({ c0: 1, c1: 3, c2: 5 })
+    expect(c.y).toMatchObject({ c0: 2, c1: 4, c2: 6 })
+  })
+  test('fromBezierPoints reproduces the curve at t=0, t=0.5, t=1', () => {
+    const p0 = vector2.make(0, 0)
+    const p1 = vector2.make(2, 4)
+    const p2 = vector2.make(4, 0)
+    const c = quadratic2d.fromBezierPoints(p0, p1, p2)
+    expect(quadratic2d.solve(c, 0)).toBeCloseToValue(p0)
+    // Bezier at t=0.5 is (p0 + 2·p1 + p2) / 4 = (2, 2)
+    expect(quadratic2d.solve(c, 0.5)).toBeCloseToValue(vector2.make(2, 2))
+    expect(quadratic2d.solve(c, 1)).toBeCloseToValue(p2)
   })
   test('solve', () => {
     expect(
@@ -122,6 +151,27 @@ describe('cubic2d', () => {
         ),
       ),
     ).toBe(true)
+  })
+  test('fromCoefficients packs coefficient vectors into per-axis polynomials', () => {
+    const c = cubic2d.fromCoefficients(
+      vector2.make(1, 2),
+      vector2.make(3, 4),
+      vector2.make(5, 6),
+      vector2.make(7, 8),
+    )
+    expect(c.x).toMatchObject({ c0: 1, c1: 3, c2: 5, c3: 7 })
+    expect(c.y).toMatchObject({ c0: 2, c1: 4, c2: 6, c3: 8 })
+  })
+  test('fromBezierPoints reproduces endpoints exactly and midpoint geometrically', () => {
+    const p0 = vector2.make(0, 0)
+    const p1 = vector2.make(0, 1)
+    const p2 = vector2.make(1, 1)
+    const p3 = vector2.make(1, 0)
+    const c = cubic2d.fromBezierPoints(p0, p1, p2, p3)
+    expect(cubic2d.solve(c, 0)).toBeCloseToValue(p0)
+    expect(cubic2d.solve(c, 1)).toBeCloseToValue(p3)
+    // Bezier at t=0.5 is (p0 + 3·p1 + 3·p2 + p3) / 8 = (0.5, 0.75)
+    expect(cubic2d.solve(c, 0.5)).toBeCloseToValue(vector2.make(0.5, 0.75))
   })
   test('solve', () => {
     expect(

@@ -70,15 +70,42 @@ export const fromPolynomials: (
   c1: CubicPolynomial.CubicPolynomial,
 ) => CubicCurve2d = (c0, c1) => new CubicCurve2dImpl(c0, c1)
 
-export const fromPoints: (
+export const fromCoefficients: (
+  c0: Vector2.Vector2,
+  c1: Vector2.Vector2,
+  c2: Vector2.Vector2,
+  c3: Vector2.Vector2,
+) => CubicCurve2d = (c0, c1, c2, c3) =>
+  new CubicCurve2dImpl(
+    CubicPolynomial.make(c0.x, c1.x, c2.x, c3.x),
+    CubicPolynomial.make(c0.y, c1.y, c2.y, c3.y),
+  )
+
+// Cubic Bernstein basis: B(t) = (1-t)³·p0 + 3(1-t)²t·p1 + 3(1-t)t²·p2 + t³·p3
+// Expanding to monomial form gives:
+//   c0 = p0
+//   c1 = -3p0 + 3p1
+//   c2 = 3p0 - 6p1 + 3p2
+//   c3 = -p0 + 3p1 - 3p2 + p3
+export const fromBezierPoints: (
   p0: Vector2.Vector2,
   p1: Vector2.Vector2,
   p2: Vector2.Vector2,
   p3: Vector2.Vector2,
 ) => CubicCurve2d = (p0, p1, p2, p3) =>
   new CubicCurve2dImpl(
-    CubicPolynomial.make(p0.x, p1.x, p2.x, p3.x),
-    CubicPolynomial.make(p0.y, p1.y, p2.y, p3.y),
+    CubicPolynomial.make(
+      p0.x,
+      -3 * p0.x + 3 * p1.x,
+      3 * p0.x - 6 * p1.x + 3 * p2.x,
+      -p0.x + 3 * p1.x - 3 * p2.x + p3.x,
+    ),
+    CubicPolynomial.make(
+      p0.y,
+      -3 * p0.y + 3 * p1.y,
+      3 * p0.y - 6 * p1.y + 3 * p2.y,
+      -p0.y + 3 * p1.y - 3 * p2.y + p3.y,
+    ),
   )
 
 export const isCubicCurve2d = (c: unknown): c is CubicCurve2d =>

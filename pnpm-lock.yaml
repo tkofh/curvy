@@ -42,25 +42,6 @@ importers:
         specifier: ^4.1.5
         version: 4.1.5(vite@6.2.5)
 
-  packages/svg:
-    dependencies:
-      curvy:
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@repo/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/tsconfig
-      tsdown:
-        specifier: ^0.22.0
-        version: 0.22.0(typescript@6.0.3)
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(vite@6.2.5)
-
   tooling/tsconfig: {}
 
 packages:

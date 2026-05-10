@@ -13,17 +13,17 @@ import * as Bezier2d from '../src/splines/bezier2d'
 import * as vector2 from '../src/vector/vector2'
 
 describe('linear2d', () => {
-  test('fromCurves', () => {
+  test('make', () => {
     expect(
-      linearPath2d.fromCurves(
+      linearPath2d.make(
         linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
         linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
       ),
     ).toBeDefined()
   })
-  test('fromCurveArray', () => {
+  test('fromArray', () => {
     expect(
-      linearPath2d.fromCurveArray([
+      linearPath2d.fromArray([
         linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
         linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
       ]),
@@ -32,7 +32,7 @@ describe('linear2d', () => {
   test('isLinear2dPath', () => {
     expect(
       linearPath2d.isLinearPath2d(
-        linearPath2d.fromCurves(
+        linearPath2d.make(
           linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
           linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
         ),
@@ -48,7 +48,7 @@ describe('linear2d', () => {
       linearPolynomial.make(1, 1),
       linearPolynomial.make(1, -1),
     )
-    const p0 = linearPath2d.fromCurves(c0)
+    const p0 = linearPath2d.make(c0)
 
     const p1Curves = [...p0]
 
@@ -61,7 +61,7 @@ describe('linear2d', () => {
     expect(p2Curves).toEqual([c0, c1])
   })
   test('solve', () => {
-    const p = linearPath2d.fromCurves(
+    const p = linearPath2d.make(
       linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
       linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
     )
@@ -73,7 +73,7 @@ describe('linear2d', () => {
   test('length', () => {
     expect(
       linearPath2d.length(
-        linearPath2d.fromCurves(
+        linearPath2d.make(
           linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
           linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
         ),
@@ -83,9 +83,9 @@ describe('linear2d', () => {
 })
 
 describe('quadratic2d', () => {
-  test('fromCurves', () => {
+  test('make', () => {
     expect(
-      quadraticPath2d.fromCurves(
+      quadraticPath2d.make(
         quadraticCurve2d.fromPolynomials(
           quadraticPolynomial.make(0, 0, 1),
           quadraticPolynomial.make(0, 0, 1),
@@ -97,9 +97,9 @@ describe('quadratic2d', () => {
       ),
     ).toBeDefined()
   })
-  test('fromCurveArray', () => {
+  test('fromArray', () => {
     expect(
-      quadraticPath2d.fromCurveArray([
+      quadraticPath2d.fromArray([
         quadraticCurve2d.fromPolynomials(
           quadraticPolynomial.make(0, 0, 1),
           quadraticPolynomial.make(0, 0, 1),
@@ -114,7 +114,7 @@ describe('quadratic2d', () => {
   test('isQuadratic2dPath', () => {
     expect(
       quadraticPath2d.isQuadraticPath2d(
-        quadraticPath2d.fromCurves(
+        quadraticPath2d.make(
           quadraticCurve2d.fromPolynomials(
             quadraticPolynomial.make(0, 0, 1),
             quadraticPolynomial.make(0, 0, 1),
@@ -136,7 +136,7 @@ describe('quadratic2d', () => {
       quadraticPolynomial.make(0, 0, 1),
       quadraticPolynomial.make(0, 0, 1),
     )
-    const p0 = quadraticPath2d.fromCurves(c0)
+    const p0 = quadraticPath2d.make(c0)
 
     const p1Curves = [...p0]
 
@@ -149,7 +149,7 @@ describe('quadratic2d', () => {
     expect(p2Curves).toEqual([c0, c1])
   })
   test('solve', () => {
-    const p = quadraticPath2d.fromCurves(
+    const p = quadraticPath2d.make(
       quadraticCurve2d.fromPolynomials(
         quadraticPolynomial.make(0, 0, 1),
         quadraticPolynomial.make(0, 0, 1),
@@ -167,9 +167,9 @@ describe('quadratic2d', () => {
 })
 
 describe('cubic2d', () => {
-  test('fromCurves', () => {
+  test('make', () => {
     expect(
-      cubicPath2d.fromCurves(
+      cubicPath2d.make(
         cubicCurve2d.fromPolynomials(
           cubicPolynomial.make(0, 0, 0, 1),
           cubicPolynomial.make(0, 0, 0, 1),
@@ -181,9 +181,9 @@ describe('cubic2d', () => {
       ),
     ).toBeDefined()
   })
-  test('fromCurveArray', () => {
+  test('fromArray', () => {
     expect(
-      cubicPath2d.fromCurveArray([
+      cubicPath2d.fromArray([
         cubicCurve2d.fromPolynomials(
           cubicPolynomial.make(0, 0, 0, 1),
           cubicPolynomial.make(0, 0, 0, 1),
@@ -198,7 +198,7 @@ describe('cubic2d', () => {
   test('isCubic2dPath', () => {
     expect(
       cubicPath2d.isCubicPath2d(
-        cubicPath2d.fromCurves(
+        cubicPath2d.make(
           cubicCurve2d.fromPolynomials(
             cubicPolynomial.make(0, 0, 0, 1),
             cubicPolynomial.make(0, 0, 0, 1),
@@ -220,7 +220,7 @@ describe('cubic2d', () => {
       cubicPolynomial.make(0, 0, 0, 1),
       cubicPolynomial.make(0, 0, 0, 1),
     )
-    const p0 = cubicPath2d.fromCurves(c0)
+    const p0 = cubicPath2d.make(c0)
 
     const p1Curves = [...p0]
 
@@ -233,7 +233,7 @@ describe('cubic2d', () => {
     expect(p2Curves).toEqual([c0, c1])
   })
   test('solve', () => {
-    const p = cubicPath2d.fromCurves(
+    const p = cubicPath2d.make(
       cubicCurve2d.fromPolynomials(
         cubicPolynomial.make(0, 0, 0, 1),
         cubicPolynomial.make(0, 0, 0, 1),
@@ -315,5 +315,99 @@ describe('cubic2d', () => {
       Bezier2d.toPath,
     )
     expect(cubicPath2d.solveByDistance(p, 0.5)).toBeCloseToValue(vector2.make(1, 0), 1e-6)
+  })
+  test('toPathData renders a single bezier segment', () => {
+    const d = Bezier2d.make(
+      vector2.zero,
+      vector2.make(1, 0),
+      vector2.make(1, 1),
+      vector2.make(0, 1),
+    ).pipe(Bezier2d.toPath, cubicPath2d.toPathData)
+    expect(d).toBe('M 0,0 C 1,0 1,1 0,1')
+  })
+  test('toPathData stitches continuous segments without re-emitting M', () => {
+    const d = Bezier2d.make(
+      vector2.zero,
+      vector2.make(0, 1),
+      vector2.make(1, 1),
+      vector2.make(1, 0),
+    )
+      .pipe(
+        Bezier2d.append(vector2.make(1, -1), vector2.make(2, -1), vector2.make(2, 0)),
+        Bezier2d.toPath,
+      )
+      .pipe(cubicPath2d.toPathData)
+    expect(d).toBe('M 0,0 C 0,1 1,1 1,0 C 1,-1 2,-1 2,0')
+  })
+  test('toPathData emits a fresh M for discontinuous segments', () => {
+    const c0 = cubicCurve2d.fromBezierPoints(
+      vector2.make(0, 0),
+      vector2.make(1, 0),
+      vector2.make(1, 1),
+      vector2.make(0, 1),
+    )
+    const c1 = cubicCurve2d.fromBezierPoints(
+      vector2.make(10, 10),
+      vector2.make(11, 10),
+      vector2.make(11, 11),
+      vector2.make(10, 11),
+    )
+    const d = cubicPath2d.make(c0, c1).pipe(cubicPath2d.toPathData)
+    expect(d).toBe('M 0,0 C 1,0 1,1 0,1 M 10,10 C 11,10 11,11 10,11')
+  })
+})
+
+describe('toPathData', () => {
+  test('linear path renders M and L commands', () => {
+    const d = linearPath2d
+      .make(
+        linearCurve2d.fromBezierPoints(vector2.make(0, 0), vector2.make(1, 1)),
+        linearCurve2d.fromBezierPoints(vector2.make(1, 1), vector2.make(2, 0)),
+      )
+      .pipe(linearPath2d.toPathData)
+    expect(d).toBe('M 0,0 L 1,1 L 2,0')
+  })
+  test('linear path emits fresh M on discontinuity', () => {
+    const d = linearPath2d
+      .make(
+        linearCurve2d.fromBezierPoints(vector2.make(0, 0), vector2.make(1, 1)),
+        linearCurve2d.fromBezierPoints(vector2.make(5, 5), vector2.make(6, 6)),
+      )
+      .pipe(linearPath2d.toPathData)
+    expect(d).toBe('M 0,0 L 1,1 M 5,5 L 6,6')
+  })
+  test('quadratic path renders M and Q commands', () => {
+    const d = quadraticPath2d
+      .make(
+        quadraticCurve2d.fromBezierPoints(
+          vector2.make(0, 0),
+          vector2.make(1, 1),
+          vector2.make(2, 0),
+        ),
+        quadraticCurve2d.fromBezierPoints(
+          vector2.make(2, 0),
+          vector2.make(3, -1),
+          vector2.make(4, 0),
+        ),
+      )
+      .pipe(quadraticPath2d.toPathData)
+    expect(d).toBe('M 0,0 Q 1,1 2,0 Q 3,-1 4,0')
+  })
+  test('quadratic path emits fresh M on discontinuity', () => {
+    const d = quadraticPath2d
+      .make(
+        quadraticCurve2d.fromBezierPoints(
+          vector2.make(0, 0),
+          vector2.make(1, 1),
+          vector2.make(2, 0),
+        ),
+        quadraticCurve2d.fromBezierPoints(
+          vector2.make(10, 10),
+          vector2.make(11, 11),
+          vector2.make(12, 10),
+        ),
+      )
+      .pipe(quadraticPath2d.toPathData)
+    expect(d).toBe('M 0,0 Q 1,1 2,0 M 10,10 Q 11,11 12,10')
   })
 })

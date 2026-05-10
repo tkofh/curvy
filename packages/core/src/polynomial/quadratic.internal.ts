@@ -11,6 +11,23 @@ import type { QuadraticPolynomial } from './quadratic'
 import { QuadraticPolynomialImpl, QuadraticPolynomialTypeId } from './quadratic.internal.circular'
 import type { ZeroToTwo } from './types'
 
+export const fromPoints = (
+  p0: Vector2.Vector2,
+  p1: Vector2.Vector2,
+  p2: Vector2.Vector2,
+): QuadraticPolynomial => {
+  // Newton's divided differences, then collected to monomial form.
+  const f01 = (p1.y - p0.y) / (p1.x - p0.x)
+  const f12 = (p2.y - p1.y) / (p2.x - p1.x)
+  const f012 = (f12 - f01) / (p2.x - p0.x)
+
+  return new QuadraticPolynomialImpl(
+    p0.y - f01 * p0.x + f012 * p0.x * p1.x,
+    f01 - f012 * (p0.x + p1.x),
+    f012,
+  )
+}
+
 export const make = (c0 = 0, c1 = 0, c2 = 0): QuadraticPolynomial =>
   new QuadraticPolynomialImpl(c0, c1, c2)
 

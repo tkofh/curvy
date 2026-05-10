@@ -1,5 +1,6 @@
 import type { Interval } from '../interval'
 import type { Pipeable } from '../pipe'
+import type { Vector2 } from '../vector/vector2'
 import type { Vector4 } from '../vector/vector4'
 import * as internal from './cubic.internal'
 import type { CubicPolynomialTypeId } from './cubic.internal.circular'
@@ -86,6 +87,25 @@ export const make: (c0: number, c1: number, c2: number, c3: number) => CubicPoly
  * @since 1.0.0
  */
 export const fromVector: (v: Vector4) => CubicPolynomial = internal.fromVector
+
+/**
+ * Creates a new `CubicPolynomial` that interpolates the four given points,
+ * treating each `Vector2` as an `(x, y)` pair. The four input `x` values must
+ * be distinct.
+ *
+ * @param p0 - The first point.
+ * @param p1 - The second point.
+ * @param p2 - The third point.
+ * @param p3 - The fourth point.
+ * @returns The unique cubic polynomial passing through the four points.
+ * @since 2.0.0
+ */
+export const fromPoints: (
+  p0: Vector2,
+  p1: Vector2,
+  p2: Vector2,
+  p3: Vector2,
+) => CubicPolynomial = internal.fromPoints
 
 export const solve: {
   /**

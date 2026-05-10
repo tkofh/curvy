@@ -93,6 +93,19 @@ describe('quadratic', () => {
       c2: 2,
     })
   })
+  test('fromPoints interpolates a known parabola', () => {
+    // y = x² + 2x + 3, sampled at x = -1, 0, 1.
+    const p = quadratic.fromPoints(vector2.make(-1, 2), vector2.make(0, 3), vector2.make(1, 6))
+    expect(p.c0).toBeCloseTo(3, 10)
+    expect(p.c1).toBeCloseTo(2, 10)
+    expect(p.c2).toBeCloseTo(1, 10)
+  })
+  test('fromPoints recovers exact polynomial values at sample points', () => {
+    const p = quadratic.fromPoints(vector2.make(-2, 7), vector2.make(1, -2), vector2.make(3, 18))
+    expect(quadratic.solve(p, -2)).toBeCloseTo(7, 10)
+    expect(quadratic.solve(p, 1)).toBeCloseTo(-2, 10)
+    expect(quadratic.solve(p, 3)).toBeCloseTo(18, 10)
+  })
   test('solve', () => {
     expect(quadratic.solve(quadratic.make(0, 1, 2), 0)).toBe(0)
     expect(quadratic.solve(quadratic.make(0, 1, 2), 1)).toBe(3)
@@ -188,6 +201,31 @@ describe('cubic', () => {
   })
   test('fromVector', () => {
     expect(cubic.fromVector(vector4.make(0, 1, 2, 3))).toBeCloseToValue(cubic.make(0, 1, 2, 3))
+  })
+  test('fromPoints interpolates a known cubic', () => {
+    // y = x³ - 2x² + x + 1, sampled at x = -1, 0, 1, 2.
+    const p = cubic.fromPoints(
+      vector2.make(-1, -3),
+      vector2.make(0, 1),
+      vector2.make(1, 1),
+      vector2.make(2, 3),
+    )
+    expect(p.c0).toBeCloseTo(1, 10)
+    expect(p.c1).toBeCloseTo(1, 10)
+    expect(p.c2).toBeCloseTo(-2, 10)
+    expect(p.c3).toBeCloseTo(1, 10)
+  })
+  test('fromPoints recovers exact polynomial values at sample points', () => {
+    const p = cubic.fromPoints(
+      vector2.make(-2, -5),
+      vector2.make(0, 1),
+      vector2.make(1, 4),
+      vector2.make(3, 28),
+    )
+    expect(cubic.solve(p, -2)).toBeCloseTo(-5, 10)
+    expect(cubic.solve(p, 0)).toBeCloseTo(1, 10)
+    expect(cubic.solve(p, 1)).toBeCloseTo(4, 10)
+    expect(cubic.solve(p, 3)).toBeCloseTo(28, 10)
   })
   test('solve', () => {
     expect(cubic.solve(cubic.make(0, 1, 2, 3), 0)).toBe(0)

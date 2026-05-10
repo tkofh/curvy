@@ -1,6 +1,7 @@
 import * as LinearCurve2d from '../curve/linear2d'
 import * as Interval from '../interval'
 import { dual, Pipeable } from '../pipe'
+import { epsEquals } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPath2d } from './linear2d'
 
@@ -25,16 +26,16 @@ export class LinearPath2dImpl extends Pipeable implements LinearPath2d {
 export const isLinearPath2d = (p: unknown): p is LinearPath2d =>
   typeof p === 'object' && p !== null && LinearPath2dTypeId in p
 
-export const fromCurves = (...curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>): LinearPath2d =>
+export const make = (...curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>): LinearPath2d =>
   new LinearPath2dImpl(curves)
 
-export const fromCurveArray = (curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>) =>
+export const fromArray = (curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>) =>
   new LinearPath2dImpl(curves)
 
 export const append = dual<
   (c: LinearCurve2d.LinearCurve2d) => (p: LinearPath2d) => LinearPath2d,
   (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) => LinearPath2d
->(2, (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) => fromCurveArray([...p, c]))
+>(2, (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) => fromArray([...p, c]))
 
 export const length = (p: LinearPath2d) => {
   let total = 0
@@ -61,3 +62,26 @@ export const solve = dual<
   const curve = curves[i] as LinearCurve2d.LinearCurve2d
   return LinearCurve2d.solve(curve, t - i)
 })
+
+export const toPathData = (p: LinearPath2d): string => {
+  let result = ''
+  let prevEndX = Number.NaN
+  let prevEndY = Number.NaN
+
+  for (const curve of p) {
+    const startX = curve.x.c0
+    const startY = curve.y.c0
+    const endX = curve.x.c0 + curve.x.c1
+    const endY = curve.y.c0 + curve.y.c1
+
+    if (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY)) {
+      result += ` M ${startX},${startY}`
+    }
+    result += ` L ${endX},${endY}`
+
+    prevEndX = endX
+    prevEndY = endY
+  }
+
+  return result.slice(1)
+}

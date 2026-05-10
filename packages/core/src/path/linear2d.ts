@@ -16,24 +16,22 @@ export interface LinearPath2d extends Pipeable, Iterable<LinearCurve2d> {
 }
 
 /**
- * Creates a new `LinearPath2d` instance from curve parameters.
+ * Creates a new `LinearPath2d` instance from a sequence of curves.
  *
  * @param curves - The curves to create the path from.
  * @returns A new `LinearPath2d` instance.
- * @since 1.0.0
+ * @since 2.0.0
  */
-export const fromCurves: (...curves: ReadonlyArray<LinearCurve2d>) => LinearPath2d =
-  internal.fromCurves
+export const make: (...curves: ReadonlyArray<LinearCurve2d>) => LinearPath2d = internal.make
 
 /**
  * Creates a new `LinearPath2d` instance from an array of curves.
  *
  * @param curves - The curves to create the path from.
  * @returns A new `LinearPath2d` instance.
- * @since 1.0.0
+ * @since 2.0.0
  */
-export const fromCurveArray: (curves: ReadonlyArray<LinearCurve2d>) => LinearPath2d =
-  internal.fromCurveArray
+export const fromArray: (curves: ReadonlyArray<LinearCurve2d>) => LinearPath2d = internal.fromArray
 
 /**
  * Checks if a value is a `LinearPath2d`.
@@ -92,3 +90,14 @@ export const solve: {
    */
   (p: LinearPath2d, u: number): Vector2
 } = internal.solve
+
+/**
+ * Serializes a linear path as an SVG path data string (the value of a `<path>`
+ * element's `d` attribute), using `M` and `L` commands. Discontinuities between
+ * curves emit a fresh `M` command.
+ *
+ * @param p - The linear path to serialize.
+ * @returns The SVG path data string.
+ * @since 2.0.0
+ */
+export const toPathData: (p: LinearPath2d) => string = internal.toPathData

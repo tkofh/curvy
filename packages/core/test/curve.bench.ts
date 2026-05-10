@@ -36,7 +36,7 @@ describe('matrix4x4', () => {
 })
 
 describe('curve/cubic2d', () => {
-  const curve = CubicCurve2d.fromPoints(
+  const curve = CubicCurve2d.fromCoefficients(
     Vector2.make(0, 0),
     Vector2.make(0, 1),
     Vector2.make(1, 0),

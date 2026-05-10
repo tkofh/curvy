@@ -16,24 +16,22 @@ export interface CubicPath2d extends Pipeable, Iterable<CubicCurve2d> {
 }
 
 /**
- * Creates a new `CubicPath2d` instance from curve parameters.
+ * Creates a new `CubicPath2d` instance from a sequence of curves.
  *
  * @param curves - The curves to create the path from.
  * @returns A new `CubicPath2d` instance.
- * @since 1.0.0
+ * @since 2.0.0
  */
-export const fromCurves: (...curves: ReadonlyArray<CubicCurve2d>) => CubicPath2d =
-  internal.fromCurves
+export const make: (...curves: ReadonlyArray<CubicCurve2d>) => CubicPath2d = internal.make
 
 /**
  * Creates a new `CubicPath2d` instance from an array of curves.
  *
  * @param curves - The curves to create the path from.
  * @returns A new `CubicPath2d` instance.
- * @since 1.0.0
+ * @since 2.0.0
  */
-export const fromCurveArray: (curves: ReadonlyArray<CubicCurve2d>) => CubicPath2d =
-  internal.fromCurveArray
+export const fromArray: (curves: ReadonlyArray<CubicCurve2d>) => CubicPath2d = internal.fromArray
 
 /**
  * Checks if a value is a `CubicPath2d`.
@@ -92,6 +90,17 @@ export const solve: {
    */
   (p: CubicPath2d, u: number): Vector2
 } = internal.solve
+
+/**
+ * Serializes a cubic path as an SVG path data string (the value of a `<path>`
+ * element's `d` attribute), using `M` and `C` commands. Discontinuities between
+ * curves emit a fresh `M` command.
+ *
+ * @param p - The cubic path to serialize.
+ * @returns The SVG path data string.
+ * @since 2.0.0
+ */
+export const toPathData: (p: CubicPath2d) => string = internal.toPathData
 
 export const solveByDistance: {
   /**

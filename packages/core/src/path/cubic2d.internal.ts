@@ -3,7 +3,7 @@ import * as cubicCurveInternal from '../curve/cubic2d.internal'
 import * as QuadraticCurve2d from '../curve/quadratic2d'
 import * as Interval from '../interval'
 import { dual, Pipeable } from '../pipe'
-import { invariant } from '../utils'
+import { epsEquals, invariant } from '../utils'
 import * as Vector2 from '../vector/vector2'
 import type { CubicPath2d } from './cubic2d'
 
@@ -29,16 +29,16 @@ export class CubicPath2dImpl extends Pipeable implements CubicPath2d {
 export const isCubicPath2d = (p: unknown): p is CubicPath2d =>
   typeof p === 'object' && p !== null && CubicPath2dTypeId in p
 
-export const fromCurves = (...curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d =>
+export const make = (...curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d =>
   new CubicPath2dImpl(curves)
 
-export const fromCurveArray = (curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d =>
+export const fromArray = (curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d =>
   new CubicPath2dImpl(curves)
 
 export const append = dual<
   (c: CubicCurve2d.CubicCurve2d) => (p: CubicPath2d) => CubicPath2d,
   (p: CubicPath2d, c: CubicCurve2d.CubicCurve2d) => CubicPath2d
->(2, (p: CubicPath2d, c: CubicCurve2d.CubicCurve2d) => fromCurveArray([...p, c]))
+>(2, (p: CubicPath2d, c: CubicCurve2d.CubicCurve2d) => fromArray([...p, c]))
 
 export const length = (p: CubicPath2d) => {
   let total = 0
@@ -134,6 +134,45 @@ const solveCurveByDistance = (
   }
 
   return t
+}
+
+// Cubic Bernstein basis: P(t) = (1-t)³·p0 + 3(1-t)²t·p1 + 3(1-t)t²·p2 + t³·p3
+// expanded gives c0 = p0, c1 = -3p0 + 3p1, c2 = 3p0 - 6p1 + 3p2, c3 = -p0 + 3p1 - 3p2 + p3,
+// so: p0 = c0, p1 = c0 + c1/3, p2 = c0 + 2c1/3 + c2/3, p3 = c0 + c1 + c2 + c3.
+export const toPathData = (p: CubicPath2d): string => {
+  let result = ''
+  let prevEndX = Number.NaN
+  let prevEndY = Number.NaN
+
+  for (const curve of p) {
+    const c0x = curve.x.c0
+    const c0y = curve.y.c0
+    const c1x = curve.x.c1
+    const c1y = curve.y.c1
+    const c2x = curve.x.c2
+    const c2y = curve.y.c2
+    const c3x = curve.x.c3
+    const c3y = curve.y.c3
+
+    const startX = c0x
+    const startY = c0y
+    const ctrl1X = c0x + c1x / 3
+    const ctrl1Y = c0y + c1y / 3
+    const ctrl2X = c0x + (2 * c1x) / 3 + c2x / 3
+    const ctrl2Y = c0y + (2 * c1y) / 3 + c2y / 3
+    const endX = c0x + c1x + c2x + c3x
+    const endY = c0y + c1y + c2y + c3y
+
+    if (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY)) {
+      result += ` M ${startX},${startY}`
+    }
+    result += ` C ${ctrl1X},${ctrl1Y} ${ctrl2X},${ctrl2Y} ${endX},${endY}`
+
+    prevEndX = endX
+    prevEndY = endY
+  }
+
+  return result.slice(1)
 }
 
 export const solveByDistance = dual<

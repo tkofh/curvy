@@ -12,7 +12,7 @@ export const characteristic = Matrix4x4.make(1, 0, 0, 0, -3, 3, 0, 0, 3, -6, 3, 
 const characteristicInverse = Matrix4x4.inverse(characteristic)
 
 // Maps a source spline's characteristic matrix to its precomputed conversion
-// matrix `M_bezier_inverse · M_source`, so each `fromSpline` call is one
+// matrix `M_bezier_inverse · M_source`, so each `fromBasis` call is one
 // matrix-vector product per axis instead of running Cramer's rule per quad.
 const conversionCache = new WeakMap<Matrix4x4.Matrix4x4, Matrix4x4.Matrix4x4>()
 
@@ -66,7 +66,7 @@ export const append = dual<
     new Bezier2dImpl((p instanceof Bezier2dImpl ? p.points : Array.from(p)).concat(p1, p2, p3)),
 )
 
-export const fromSpline = (
+export const fromBasis = (
   p: Iterable<Vector2.Vector2>,
   matrix: Matrix4x4.Matrix4x4,
   stride: 1 | 2 | 3,
@@ -142,7 +142,7 @@ export const appendAccelerationAligned = dual<
   return append(p, p4, p5, p6)
 })
 
-export const toPath = (p: Bezier2d) => CubicPath2d.fromCurves(...toCurves(p, characteristic, 3))
+export const toPath = (p: Bezier2d) => CubicPath2d.make(...toCurves(p, characteristic, 3))
 
 export const subdivide = dual<
   (u: number) => (b: Bezier2d) => [Bezier2d, Bezier2d],

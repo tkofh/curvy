@@ -1,6 +1,5 @@
 ---
 'curvy': patch
-'@curvy/svg': patch
 ---
 
 TypeScript declarations are now published as `.d.mts` rather than `.d.ts`, matching the ESM-only `.mjs` artifact convention. The `package.json` `exports` field has been updated accordingly, so consumers using modern TypeScript (5+) with `moduleResolution: "node16"`, `"nodenext"`, or `"bundler"` see no change — types resolve through `exports` like before.

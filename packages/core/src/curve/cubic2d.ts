@@ -29,17 +29,47 @@ export const fromPolynomials: (x: CubicPolynomial, y: CubicPolynomial) => CubicC
   internal.fromPolynomials
 
 /**
- * Creates a new `CubicCurve2d` instance from pairs of coefficients.
+ * Creates a new `CubicCurve2d` instance from monomial coefficient vectors.
  *
- * @param p0 - The x^0 coefficients for the x and y polynomials.
- * @param p1 - The x^1 coefficients for the x and y polynomials.
- * @param p2 - The x^2 coefficients for the x and y polynomials.
- * @param p3 - The x^3 coefficients for the x and y polynomials.
+ * Each argument bundles the per-axis coefficient at the given power: `c0`
+ * holds the x⁰ term, `c1` holds the x¹ term, and so on. The resulting curve
+ * evaluates to `c0 + c1·t + c2·t² + c3·t³` per axis.
+ *
+ * @param c0 - The x⁰ coefficients (x and y).
+ * @param c1 - The x¹ coefficients (x and y).
+ * @param c2 - The x² coefficients (x and y).
+ * @param c3 - The x³ coefficients (x and y).
  * @returns A new `CubicCurve2d` instance.
- * @since 1.0.0
+ * @since 2.0.0
  */
-export const fromPoints: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => CubicCurve2d =
-  internal.fromPoints
+export const fromCoefficients: (
+  c0: Vector2,
+  c1: Vector2,
+  c2: Vector2,
+  c3: Vector2,
+) => CubicCurve2d = internal.fromCoefficients
+
+/**
+ * Creates a new `CubicCurve2d` instance from cubic Bézier control points.
+ *
+ * The four arguments are the Bernstein-basis control points: `p0` and `p3` are
+ * the curve's endpoints and `p1` and `p2` are the off-curve control handles.
+ * The implementation converts to the curve's internal monomial form in closed
+ * form.
+ *
+ * @param p0 - The first control point (curve start).
+ * @param p1 - The second control point (start handle).
+ * @param p2 - The third control point (end handle).
+ * @param p3 - The fourth control point (curve end).
+ * @returns A new `CubicCurve2d` instance whose curve matches the given Bézier.
+ * @since 2.0.0
+ */
+export const fromBezierPoints: (
+  p0: Vector2,
+  p1: Vector2,
+  p2: Vector2,
+  p3: Vector2,
+) => CubicCurve2d = internal.fromBezierPoints
 
 /**
  * Checks if a value is a `CubicCurve2d`.

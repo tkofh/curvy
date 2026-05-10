@@ -72,14 +72,29 @@ export const fromPolynomials: (
   c1: QuadraticPolynomial.QuadraticPolynomial,
 ) => QuadraticCurve2d = (c0, c1) => new QuadraticCurve2dImpl(c0, c1)
 
-export const fromPoints: (
+export const fromCoefficients: (
+  c0: Vector2.Vector2,
+  c1: Vector2.Vector2,
+  c2: Vector2.Vector2,
+) => QuadraticCurve2d = (c0, c1, c2) =>
+  new QuadraticCurve2dImpl(
+    QuadraticPolynomial.make(c0.x, c1.x, c2.x),
+    QuadraticPolynomial.make(c0.y, c1.y, c2.y),
+  )
+
+// Quadratic Bernstein basis: B(t) = (1-t)²·p0 + 2(1-t)t·p1 + t²·p2
+// Expanding to monomial form gives:
+//   c0 = p0
+//   c1 = -2p0 + 2p1
+//   c2 = p0 - 2p1 + p2
+export const fromBezierPoints: (
   p0: Vector2.Vector2,
   p1: Vector2.Vector2,
   p2: Vector2.Vector2,
 ) => QuadraticCurve2d = (p0, p1, p2) =>
   new QuadraticCurve2dImpl(
-    QuadraticPolynomial.make(p0.x, p1.x, p2.x),
-    QuadraticPolynomial.make(p0.y, p1.y, p2.y),
+    QuadraticPolynomial.make(p0.x, -2 * p0.x + 2 * p1.x, p0.x - 2 * p1.x + p2.x),
+    QuadraticPolynomial.make(p0.y, -2 * p0.y + 2 * p1.y, p0.y - 2 * p1.y + p2.y),
   )
 
 export const isQuadraticCurve2d = (c: unknown): c is QuadraticCurve2d =>

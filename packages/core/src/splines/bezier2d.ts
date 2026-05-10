@@ -48,21 +48,6 @@ export const make: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => Bezie
 export const fromArray: (points: ReadonlyArray<Vector2>) => Bezier2d = internal.fromArray
 
 /**
- * Creates a new `Bezier2d` instance from an iterable of control points and the characteristic matrix associated with the control points.
- *
- * @param points - The control points.
- * @param matrix - The characteristic matrix.
- * @param stride - The stride of the control points.
- * @returns A new `Bezier2d` instance.
- * @since 1.0.0
- */
-export const fromSpline: (
-  points: Iterable<Vector2>,
-  matrix: Matrix4x4,
-  stride: 1 | 2 | 3,
-) => Bezier2d = internal.fromSpline
-
-/**
  * Checks if a value is a `Bezier2d`.
  *
  * @param p - The value to check.

@@ -1,6 +1,7 @@
 import * as QuadraticCurve2d from '../curve/quadratic2d'
 import * as Interval from '../interval'
 import { dual, Pipeable } from '../pipe'
+import { epsEquals } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { QuadraticPath2d } from './quadratic2d'
 
@@ -25,18 +26,18 @@ export class QuadraticPath2dImpl extends Pipeable implements QuadraticPath2d {
 export const isQuadraticPath2d = (p: unknown): p is QuadraticPath2d =>
   typeof p === 'object' && p !== null && QuadraticPath2dTypeId in p
 
-export const fromCurves = (
+export const make = (
   ...curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>
 ): QuadraticPath2d => new QuadraticPath2dImpl(curves)
 
-export const fromCurveArray = (
+export const fromArray = (
   curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>,
 ): QuadraticPath2d => new QuadraticPath2dImpl(curves)
 
 export const append = dual<
   (c: QuadraticCurve2d.QuadraticCurve2d) => (p: QuadraticPath2d) => QuadraticPath2d,
   (p: QuadraticPath2d, c: QuadraticCurve2d.QuadraticCurve2d) => QuadraticPath2d
->(2, (p: QuadraticPath2d, c: QuadraticCurve2d.QuadraticCurve2d) => fromCurveArray([...p, c]))
+>(2, (p: QuadraticPath2d, c: QuadraticCurve2d.QuadraticCurve2d) => fromArray([...p, c]))
 
 export const length = (p: QuadraticPath2d) => {
   let total = 0
@@ -63,3 +64,38 @@ export const solve = dual<
   const curve = curves[i] as QuadraticCurve2d.QuadraticCurve2d
   return QuadraticCurve2d.solve(curve, t - i)
 })
+
+// Quadratic Bernstein basis: P(t) = (1-t)²·p0 + 2(1-t)t·p1 + t²·p2
+// expanded gives c0 = p0, c1 = -2p0 + 2p1, c2 = p0 - 2p1 + p2, so:
+//   p0 = c0, p1 = c0 + c1/2, p2 = c0 + c1 + c2.
+export const toPathData = (p: QuadraticPath2d): string => {
+  let result = ''
+  let prevEndX = Number.NaN
+  let prevEndY = Number.NaN
+
+  for (const curve of p) {
+    const c0x = curve.x.c0
+    const c0y = curve.y.c0
+    const c1x = curve.x.c1
+    const c1y = curve.y.c1
+    const c2x = curve.x.c2
+    const c2y = curve.y.c2
+
+    const startX = c0x
+    const startY = c0y
+    const ctrlX = c0x + c1x / 2
+    const ctrlY = c0y + c1y / 2
+    const endX = c0x + c1x + c2x
+    const endY = c0y + c1y + c2y
+
+    if (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY)) {
+      result += ` M ${startX},${startY}`
+    }
+    result += ` Q ${ctrlX},${ctrlY} ${endX},${endY}`
+
+    prevEndX = endX
+    prevEndY = endY
+  }
+
+  return result.slice(1)
+}

@@ -3,7 +3,8 @@ import * as CubicPath2d from '../path/cubic2d'
 import { dual, Pipeable } from '../pipe'
 import { invariant } from '../utils'
 import * as Vector2 from '../vector/vector2'
-import * as Bezier2d from './bezier2d'
+import type { Bezier2d } from './bezier2d'
+import * as bezierInternal from './bezier2d.internal'
 import type { Cardinal2d } from './cardinal2d'
 import { toCurves } from './util'
 
@@ -115,10 +116,10 @@ export const withReflectedEndpoints = dual(
 export const toPath = dual(
   (args) => isCardinal2d(args[0]),
   (p: Cardinal2d, scale = 0.5) =>
-    CubicPath2d.fromCurves(
+    CubicPath2d.make(
       ...toCurves(p, scale === 0.5 ? catRomCharacteristic : characteristic(scale), 1),
     ),
 )
 
-export const toBezier = (p: Cardinal2d, scale = 0.5) =>
-  Bezier2d.fromSpline(p, scale === 0.5 ? catRomCharacteristic : characteristic(scale), 1)
+export const toBezier = (p: Cardinal2d, scale = 0.5): Bezier2d =>
+  bezierInternal.fromBasis(p, scale === 0.5 ? catRomCharacteristic : characteristic(scale), 1)
