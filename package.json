@@ -1,4 +1,5 @@
 {
+  "private": true,
   "type": "module",
   "scripts": {
     "build": "turbo run build",
@@ -6,19 +7,23 @@
     "deps:update": "pnpm -r update --latest && pnpm dedupe",
     "test": "turbo run test",
     "bench": "turbo run bench",
-    "check": "biome check .",
-    "check:fix": "biome check . --write --unsafe",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt --check .",
+    "format:fix": "oxfmt .",
+    "check": "oxlint . && oxfmt --check .",
+    "check:fix": "oxlint --fix . && oxfmt .",
     "publish-packages": "turbo run check build test && changeset version && changeset publish && turbo run check:fix"
   },
-  "private": true,
-  "packageManager": "pnpm@11.0.9+sha512.34ce82e6780233cf9cad8685029a8f81d2e06196c5a9bad98879f7424940c6817c4e4524fb7d38b8553ceed48b9758b8ebaf1abd3600c232c4c8cf7366086f38",
   "devDependencies": {
-    "@biomejs/biome": "^2.4.14",
     "@changesets/cli": "^2.31.0",
     "@repo/tsconfig": "workspace:*",
+    "oxfmt": "^0.48.0",
+    "oxlint": "^1.63.0",
     "turbo": "^2.9.10",
     "typescript": "^6.0.3"
   },
+  "packageManager": "pnpm@11.0.9+sha512.34ce82e6780233cf9cad8685029a8f81d2e06196c5a9bad98879f7424940c6817c4e4524fb7d38b8553ceed48b9758b8ebaf1abd3600c232c4c8cf7366086f38",
   "pnpm": {
     "allowedDeprecatedVersions": {
       "glob": "8.1.0",

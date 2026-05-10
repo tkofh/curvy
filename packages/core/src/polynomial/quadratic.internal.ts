@@ -119,52 +119,52 @@ export const antiderivative = dual<
 export const domain = dual<
   (range: Interval.Interval) => (p: QuadraticPolynomial) => Interval.Interval | null,
   (p: QuadraticPolynomial, range: Interval.Interval) => Interval.Interval | null
->(2, (p: QuadraticPolynomial, range: Interval.Interval) => {
-  const start = solveInverse(p, range.start)
-  const end = solveInverse(p, range.end)
+>(2, (p: QuadraticPolynomial, r: Interval.Interval) => {
+  const start = solveInverse(p, r.start)
+  const end = solveInverse(p, r.end)
 
   if (start.length === 0 && end.length === 0) {
     return null
   }
 
-  return Interval.fromMinMax(...solveInverse(p, range.start), ...solveInverse(p, range.end))
+  return Interval.fromMinMax(...solveInverse(p, r.start), ...solveInverse(p, r.end))
 })
 
 export const range = dual<
   (domain: Interval.Interval) => (p: QuadraticPolynomial) => Interval.Interval,
   (p: QuadraticPolynomial, domain: Interval.Interval) => Interval.Interval
->(2, (p: QuadraticPolynomial, domain: Interval.Interval) => {
+>(2, (p: QuadraticPolynomial, d: Interval.Interval) => {
   if (p.c2 === 0) {
-    return Linear.range(Linear.make(p.c0, p.c1), domain)
+    return Linear.range(Linear.make(p.c0, p.c1), d)
   }
 
   const e = extreme(p)
 
-  return e !== null && Interval.contains(domain, e.x)
-    ? Interval.fromMinMax(solve(p, domain.start), solve(p, domain.end), e.y)
-    : Interval.fromMinMax(solve(p, domain.start), solve(p, domain.end))
+  return e !== null && Interval.contains(d, e.x)
+    ? Interval.fromMinMax(solve(p, d.start), solve(p, d.end), e.y)
+    : Interval.fromMinMax(solve(p, d.start), solve(p, d.end))
 })
 
 export const length = dual<
   (domain: Interval.Interval) => (p: QuadraticPolynomial) => number,
   (p: QuadraticPolynomial, domain: Interval.Interval) => number
->(2, (p: QuadraticPolynomial, domain: Interval.Interval) => {
-  if (Interval.size(domain) === 0) {
+>(2, (p: QuadraticPolynomial, dom: Interval.Interval) => {
+  if (Interval.size(dom) === 0) {
     return 0
   }
 
   if (p.c2 === 0) {
-    return Linear.length(Linear.make(p.c0, p.c1), domain)
+    return Linear.length(Linear.make(p.c0, p.c1), dom)
   }
 
-  const d = derivative(p)
+  const dp = derivative(p)
 
-  const derivativeStart = Linear.solve(d, domain.start)
+  const derivativeStart = Linear.solve(dp, dom.start)
   const sqrtStart = Math.sqrt(1 + derivativeStart ** 2)
   const evalStart =
     (derivativeStart * sqrtStart + Math.log(Math.abs(derivativeStart + sqrtStart))) / (4 * p.c2)
 
-  const derivativeEnd = Linear.solve(d, domain.end)
+  const derivativeEnd = Linear.solve(dp, dom.end)
   const sqrtEnd = Math.sqrt(1 + derivativeEnd ** 2)
   const evalEnd =
     (derivativeEnd * sqrtEnd + Math.log(Math.abs(derivativeEnd + sqrtEnd))) / (4 * p.c2)

@@ -60,12 +60,12 @@ export const size = (i: Interval) => Math.abs(i.end - i.start)
 export const contains = dual<
   (
     value: number,
-    options?: { includeStart?: boolean; includeEnd?: boolean },
+    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
   ) => (interval: Interval) => boolean,
   (
     interval: Interval,
     value: number,
-    options?: { includeStart?: boolean; includeEnd?: boolean },
+    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
   ) => boolean
 >(
   (args) => isInterval(args[0]),
@@ -78,19 +78,19 @@ export const contains = dual<
 export const filter = dual<
   <V extends ReadonlyArray<number>>(
     value: V,
-    options?: { includeStart?: boolean; includeEnd?: boolean },
+    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
   ) => (interval: Interval) => V,
   <V extends ReadonlyArray<number>>(
     interval: Interval,
     value: V,
-    options?: { includeStart?: boolean; includeEnd?: boolean },
+    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
   ) => V
 >(
   (args) => isInterval(args[0]),
   <V extends ReadonlyArray<number>>(
     interval: Interval,
     value: V,
-    options?: { includeStart?: boolean; includeEnd?: boolean },
+    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
   ): V => {
     return value.filter((v) => contains(interval, v, options)) as unknown as V
   },

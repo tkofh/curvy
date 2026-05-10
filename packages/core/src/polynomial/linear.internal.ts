@@ -82,16 +82,16 @@ export const antiderivative = dual<
 export const domain = dual<
   (range: Interval.Interval) => (p: LinearPolynomial) => ZeroOrOne<Interval.Interval>,
   (p: LinearPolynomial, range: Interval.Interval) => ZeroOrOne<Interval.Interval>
->(2, (p: LinearPolynomial, range: Interval.Interval) => {
+>(2, (p: LinearPolynomial, r: Interval.Interval) => {
   if (p.c1 === 0) {
-    if (range.start === p.c0 && range.end === p.c0) {
+    if (r.start === p.c0 && r.end === p.c0) {
       return Interval.make(Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY)
     }
     return null
   }
 
-  const start = solveInverse(p, range.start)
-  const end = solveInverse(p, range.end)
+  const start = solveInverse(p, r.start)
+  const end = solveInverse(p, r.end)
 
   if (start === null || end === null) {
     return null
@@ -103,21 +103,21 @@ export const domain = dual<
 export const range = dual<
   (domain: Interval.Interval) => (p: LinearPolynomial) => Interval.Interval,
   (p: LinearPolynomial, domain: Interval.Interval) => Interval.Interval
->(2, (p: LinearPolynomial, domain: Interval.Interval) =>
-  Interval.make(solve(p, domain.start), solve(p, domain.end)),
+>(2, (p: LinearPolynomial, d: Interval.Interval) =>
+  Interval.make(solve(p, d.start), solve(p, d.end)),
 )
 
 export const length = dual<
   (domain: Interval.Interval) => (p: LinearPolynomial) => number,
   (p: LinearPolynomial, domain: Interval.Interval) => number
->(2, (p: LinearPolynomial, domain: Interval.Interval) => {
-  if (Interval.size(domain) === 0) {
+>(2, (p: LinearPolynomial, d: Interval.Interval) => {
+  if (Interval.size(d) === 0) {
     return 0
   }
 
   if (p.c1 === 0) {
-    return Interval.size(domain)
+    return Interval.size(d)
   }
 
-  return Math.sqrt(1 + p.c1 ** 2) * Interval.size(domain)
+  return Math.sqrt(1 + p.c1 ** 2) * Interval.size(d)
 })

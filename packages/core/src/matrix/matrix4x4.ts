@@ -280,6 +280,7 @@ export const vectorProductLeft: {
    * @param m - The matrix to multiply.
    * @param v - The vector to multiply.
    * @returns The resulting vector.
+   * @since 1.0.0
    */
   (m: Matrix4x4, v: Vector4): Vector4
   /**
@@ -300,6 +301,7 @@ export const vectorProductLeft: {
    * // w = 13 * 17 + 14 * 18 + 15 * 19 + 16 * 20
    * const result = Matrix4x4.vectorProductLeft(v)(m)
    * ```
+   * @since 1.0.0
    */
   (v: Vector4): (m: Matrix4x4) => Vector4
 } = internal.vectorProductLeft
@@ -323,6 +325,7 @@ export const vectorProductRight: {
    * // w = 4 * 17 + 8 * 18 + 12 * 19 + 16 * 20
    * const result = Matrix4x4.vectorProductRight(m, v)
    * ```
+   * @since 1.0.0
    */
   (m: Matrix4x4, v: Vector4): Vector4
   /**
@@ -342,6 +345,8 @@ export const vectorProductRight: {
    * // z = 3 * 17 + 7 * 18 + 11 * 19 + 15 * 20
    * // w = 4 * 17 + 8 * 18 + 12 * 19 + 16 * 20
    * const result = Matrix4x4.vectorProductRight(v)(m)
+   * ```
+   * @since 1.0.0
    */
   (v: Vector4): (m: Matrix4x4) => Vector4
 } = internal.vectorProductRight
@@ -384,6 +389,7 @@ export const solveSystem: {
    * @param m - The matrix representing the coefficients of the equations.
    * @param v - The vector representing the constants of the equations.
    * @returns The solution vector.
+   * @since 1.0.0
    */
   (m: Matrix4x4, v: Vector4): Vector4
   /**
@@ -391,6 +397,7 @@ export const solveSystem: {
    *
    * @param v - The vector representing the constants of the equations.
    * @returns A function that takes a matrix and returns the solution vector.
+   * @since 1.0.0
    */
   (v: Vector4): (m: Matrix4x4) => Vector4
 } = internal.solveSystem
@@ -423,6 +430,7 @@ export const rowVector: {
    * @param m - The matrix to get the row vector from.
    * @param row - The row index.
    * @returns The row vector.
+   * @since 1.0.0
    */
   (m: Matrix4x4, row: Matrix4x4Coordinate): Vector4
   /**
@@ -430,6 +438,7 @@ export const rowVector: {
    *
    * @param row - The row index.
    * @returns A function that takes a matrix and returns the row vector.
+   * @since 1.0.0
    */
   (row: Matrix4x4Coordinate): (m: Matrix4x4) => Vector4
 } = internal.rowVector
@@ -441,6 +450,7 @@ export const columnVector: {
    * @param m - The matrix to get the column vector from.
    * @param column - The column index.
    * @returns The column vector.
+   * @since 1.0.0
    */
   (m: Matrix4x4, column: Matrix4x4Coordinate): Vector4
   /**
@@ -448,6 +458,7 @@ export const columnVector: {
    *
    * @param column - The column index.
    * @returns A function that takes a matrix and returns the column vector.
+   * @since 1.0.0
    */
   (column: Matrix4x4Coordinate): (m: Matrix4x4) => Vector4
 } = internal.columnVector

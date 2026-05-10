@@ -92,6 +92,7 @@ export const solve: {
    * @param p - The quadratic polynomial.
    * @param x - The x value to solve for.
    * @returns The result of the polynomial at the given x value.
+   * @since 1.0.0
    */
   (p: QuadraticPolynomial, x: number): number
   /**
@@ -99,6 +100,7 @@ export const solve: {
    *
    * @param x - The x value to solve for.
    * @returns A function that takes a quadratic polynomial and returns the result of the polynomial at the given x value.
+   * @since 1.0.0
    */
   (x: number): (p: QuadraticPolynomial) => number
 } = internal.solve
@@ -118,6 +120,7 @@ export const solveInverse: {
    * @param p - The quadratic polynomial.
    * @param y - The y value to solve for.
    * @returns The solutions to the polynomial at the given y value.
+   * @since 1.0.0
    */
   (p: QuadraticPolynomial, y: number): ZeroToTwo
   /**
@@ -125,6 +128,7 @@ export const solveInverse: {
    *
    * @param y - The y value to solve for.
    * @returns A function that takes a quadratic polynomial and returns the solutions to the polynomial at the given y value.
+   * @since 1.0.0
    */
   (y: number): (p: QuadraticPolynomial) => ZeroToTwo
 } = internal.solveInverse
@@ -172,6 +176,7 @@ export const monotonicity: {
    * @param p - The quadratic polynomial.
    * @param i - The interval to compute the monotonicity over.
    * @returns The monotonicity of the polynomial over the interval.
+   * @since 1.0.0
    */
   (p: QuadraticPolynomial, i?: Interval): Monotonicity
   /**
@@ -179,6 +184,7 @@ export const monotonicity: {
    *
    * @param i - The interval to compute the monotonicity over.
    * @returns A function that takes a quadratic polynomial and returns the monotonicity of the polynomial over the interval.
+   * @since 1.0.0
    */
   (i: Interval): (p: QuadraticPolynomial) => Monotonicity
 } = internal.monotonicity
@@ -190,6 +196,7 @@ export const antiderivative: {
    * @param p - The quadratic polynomial.
    * @param constant - The constant of integration. Defaults to 0.
    * @returns The antiderivative of the polynomial as a cubic polynomial.
+   * @since 1.0.0
    */
   (p: QuadraticPolynomial, constant?: number): CubicPolynomial
   /**
@@ -197,6 +204,7 @@ export const antiderivative: {
    *
    * @param constant - The constant of integration. Defaults to 0.
    * @returns A function that takes a quadratic polynomial and returns the antiderivative of the polynomial as a cubic polynomial.
+   * @since 1.0.0
    */
   (constant: number): (p: QuadraticPolynomial) => CubicPolynomial
 } = internal.antiderivative
@@ -208,6 +216,7 @@ export const domain: {
    * @param p - The quadratic polynomial.
    * @param range - The range to compute the domain over.
    * @returns The domain of the polynomial over the range.
+   * @since 1.0.0
    */
   (p: QuadraticPolynomial, range: Interval): Interval | null
   /**
@@ -215,6 +224,7 @@ export const domain: {
    *
    * @param range - The range to compute the domain over.
    * @returns A function that takes a quadratic polynomial and returns the domain of the polynomial over the range.
+   * @since 1.0.0
    */
   (range: Interval): (p: QuadraticPolynomial) => Interval | null
 } = internal.domain
@@ -226,6 +236,7 @@ export const range: {
    * @param p - The quadratic polynomial.
    * @param domain - The domain to compute the range over.
    * @returns The range of the polynomial over the domain.
+   * @since 1.0.0
    */
   (p: QuadraticPolynomial, domain: Interval): Interval
   /**
@@ -233,6 +244,7 @@ export const range: {
    *
    * @param domain - The domain to compute the range over.
    * @returns A function that takes a quadratic polynomial and returns the range of the polynomial over the domain.
+   * @since 1.0.0
    */
   (domain: Interval): (p: QuadraticPolynomial) => Interval
 } = internal.range
@@ -244,6 +256,7 @@ export const length: {
    * @param p - The quadratic polynomial.
    * @param i - The interval to compute the length over.
    * @returns The length of the polynomial over the interval.
+   * @since 1.0.0
    */
   (p: QuadraticPolynomial, i: Interval): number
   /**
@@ -251,6 +264,7 @@ export const length: {
    *
    * @param i - The interval to compute the length over.
    * @returns A function that takes a quadratic polynomial and returns the length of the polynomial over the interval.
+   * @since 1.0.0
    */
   (i: Interval): (p: QuadraticPolynomial) => number
 } = internal.length
@@ -262,6 +276,7 @@ export const curvature: {
    * @param p - The quadratic polynomial.
    * @param x - The x value to compute the curvature at.
    * @returns The curvature of the polynomial at the given x value.
+   * @since 1.0.0
    */
   (p: QuadraticPolynomial, x: number): number
   /**
@@ -269,6 +284,7 @@ export const curvature: {
    *
    * @param x - The x value to compute the curvature at.
    * @returns A function that takes a quadratic polynomial and returns the curvature of the polynomial at the given x value.
+   * @since 1.0.0
    */
   (x: number): (p: QuadraticPolynomial) => number
 } = internal.curvature

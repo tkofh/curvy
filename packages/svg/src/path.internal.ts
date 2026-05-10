@@ -18,15 +18,15 @@ export class PathImpl extends Pipeable {
 }
 
 interface MoveCommand {
-  type: 'M'
-  p: Vector2.Vector2
+  readonly type: 'M'
+  readonly p: Vector2.Vector2
 }
 
 interface CubicBezierCommand {
-  type: 'C'
-  cs: Vector2.Vector2
-  ce: Vector2.Vector2
-  e: Vector2.Vector2
+  readonly type: 'C'
+  readonly cs: Vector2.Vector2
+  readonly ce: Vector2.Vector2
+  readonly e: Vector2.Vector2
 }
 
 type PathCommand = MoveCommand | CubicBezierCommand

@@ -1,6 +1,7 @@
 packages:
-  - "packages/*"
-  - "tooling/*"
+  - 'packages/*'
+  - 'tooling/*'
 allowBuilds:
-  '@biomejs/biome': true
   esbuild: true
+  oxfmt: true
+  oxlint: true

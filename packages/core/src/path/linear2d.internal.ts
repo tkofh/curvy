@@ -37,12 +37,12 @@ export const append = dual<
 >(2, (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) => fromCurveArray([...p, c]))
 
 export const length = (p: LinearPath2d) => {
-  let length = 0
+  let total = 0
   for (const curve of p) {
-    length += LinearCurve2d.length(curve, Interval.unit)
+    total += LinearCurve2d.length(curve, Interval.unit)
   }
 
-  return length
+  return total
 }
 
 export const solve = dual<

@@ -148,6 +148,7 @@ export const setRow: {
    * @param row - The row index to set.
    * @param v - The new vector for the row.
    * @returns A new matrix with the specified row set to the new vector.
+   * @since 1.0.0
    */
   (m: Matrix3x3, row: Matrix3x3Coordinate, v: Vector3): Matrix3x3
   /**
@@ -156,6 +157,7 @@ export const setRow: {
    * @param row - The row index to set.
    * @param v - The new vector for the row.
    * @returns A function that takes a matrix and returns a new matrix with the specified row set to the new vector.
+   * @since 1.0.0
    */
   (row: Matrix3x3Coordinate, v: Vector3): (m: Matrix3x3) => Matrix3x3
 } = internal.setRow
@@ -168,6 +170,7 @@ export const setColumn: {
    * @param column - The column index to set.
    * @param v - The new vector for the column.
    * @returns A new matrix with the specified column set to the new vector.
+   * @since 1.0.0
    */
   (m: Matrix3x3, column: Matrix3x3Coordinate, v: Vector3): Matrix3x3
   /**
@@ -176,6 +179,7 @@ export const setColumn: {
    * @param column - The column index to set.
    * @param v - The new vector for the column.
    * @returns A function that takes a matrix and returns a new matrix with the specified column set to the new vector.
+   * @since 1.0.0
    */
   (column: Matrix3x3Coordinate, v: Vector3): (m: Matrix3x3) => Matrix3x3
 } = internal.setColumn
@@ -247,6 +251,7 @@ export const vectorProductLeft: {
    * ```
    * @param v - The vector to calculate the left vector product with.
    * @returns A function that takes a matrix and returns the resulting vector from the left vector product.
+   * @since 1.0.0
    */
   (v: Vector3): (m: Matrix3x3) => Vector3
 } = internal.vectorProductLeft
@@ -272,6 +277,7 @@ export const vectorProductRight: {
    * @param m - The matrix to calculate the right vector product with.
    * @param v - The vector to calculate the right vector product with.
    * @returns The resulting vector from the right vector product.
+   * @since 1.0.0
    */
   (m: Matrix3x3, v: Vector3): Vector3
   /**
@@ -316,6 +322,7 @@ export const solveSystem: {
    * // z = m20 * x + m21 * y + m22 * z
    * const result = Matrix3x3.solveSystem(m, v)
    * ```
+   * @since 1.0.0
    */
   (m: Matrix3x3, v: Vector3): Vector3
   /**
@@ -335,6 +342,7 @@ export const solveSystem: {
    * // z = m20 * x + m21 * y + m22 * z
    * const result = Matrix3x3.solveSystem(v)(m)
    * ```
+   * @since 1.0.0
    */
   (v: Vector3): (m: Matrix3x3) => Vector3
 } = internal.solveSystem
@@ -368,6 +376,7 @@ export const rowVector: {
    * @param m - The matrix to get the row vector from.
    * @param row - The row index to get the vector from.
    * @returns The row vector at the specified index.
+   * @since 1.0.0
    */
   (m: Matrix3x3, row: Matrix3x3Coordinate): Vector3
   /**
@@ -375,6 +384,7 @@ export const rowVector: {
    *
    * @param row - The row index to get the vector from.
    * @returns A function that takes a matrix and returns the row vector at the specified index.
+   * @since 1.0.0
    */
   (row: Matrix3x3Coordinate): (m: Matrix3x3) => Vector3
 } = internal.rowVector
@@ -386,6 +396,7 @@ export const columnVector: {
    * @param m - The matrix to get the column vector from.
    * @param column - The column index to get the vector from.
    * @returns The column vector at the specified index.
+   * @since 1.0.0
    */
   (m: Matrix3x3, column: Matrix3x3Coordinate): Vector3
   /**
@@ -393,6 +404,7 @@ export const columnVector: {
    *
    * @param column - The column index to get the vector from.
    * @returns A function that takes a matrix and returns the column vector at the specified index.
+   * @since 1.0.0
    */
   (column: Matrix3x3Coordinate): (m: Matrix3x3) => Vector3
 } = internal.columnVector

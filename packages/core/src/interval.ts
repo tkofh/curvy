@@ -115,7 +115,7 @@ export const contains: {
   (
     interval: Interval,
     value: number,
-    options?: { includeStart?: boolean; includeEnd?: boolean },
+    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
   ): boolean
   /**
    * Checks if a value is contained within an interval.
@@ -127,7 +127,7 @@ export const contains: {
    */
   (
     value: number,
-    options?: { includeStart?: boolean; includeEnd?: boolean },
+    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
   ): (interval: Interval) => boolean
 } = internal.contains
 
@@ -144,7 +144,7 @@ export const filter: {
   <V extends ReadonlyArray<number>>(
     interval: Interval,
     value: V,
-    options?: { includeStart?: boolean; includeEnd?: boolean },
+    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
   ): V
   /**
    * Filters a value to be within an interval.
@@ -156,7 +156,7 @@ export const filter: {
    */
   <V extends ReadonlyArray<number>>(
     value: V,
-    options?: { includeStart?: boolean; includeEnd?: boolean },
+    options?: { readonly includeStart?: boolean; readonly includeEnd?: boolean },
   ): (interval: Interval) => V
 } = internal.filter
 

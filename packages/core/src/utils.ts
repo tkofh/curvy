@@ -109,123 +109,189 @@ export function roundUp(value: number, precision = PRECISION): number {
   return result
 }
 
-/**
- * Linear interpolation function.
- *
- * @param t - The interpolation factor (between 0 and 1).
- * @param a - The start value.
- * @param b - The end value.
- * @returns The interpolated value.
- * @example
- * ```ts
- * import { lerp } from 'curvy/utils'
- *
- * const interpolatedValue = lerp(0.5, 10, 20) // 15
- * const interpolatedValue2 = lerp(0.5)(10, 20) // 15
- * ```
- * @since 1.0.0
- */
 export const lerp: {
+  /**
+   * Linearly interpolates between two values.
+   *
+   * @param t - The interpolation factor (between 0 and 1).
+   * @param a - The start value.
+   * @param b - The end value.
+   * @returns The interpolated value.
+   * @example
+   * ```ts
+   * import { lerp } from 'curvy/utils'
+   *
+   * lerp(0.5, 10, 20) // 15
+   * ```
+   * @since 1.0.0
+   */
   (t: number, a: number, b: number): number
+  /**
+   * Linearly interpolates between two values.
+   *
+   * @param a - The start value.
+   * @param b - The end value.
+   * @returns A function that takes the interpolation factor and returns the interpolated value.
+   * @example
+   * ```ts
+   * import { lerp } from 'curvy/utils'
+   *
+   * lerp(10, 20)(0.5) // 15
+   * ```
+   * @since 1.0.0
+   */
   (a: number, b: number): (t: number) => number
-} = dual(3, (t: number, a: number, b: number): number => {
-  return b * t + a * (1 - t)
-})
+} = dual(3, (t: number, a: number, b: number) => b * t + a * (1 - t))
 
-/**
- * Normalizes a value between two bounds.
- *
- * @param x - The value to normalize.
- * @param a - The lower bound.
- * @param b - The upper bound.
- * @returns The normalized value.
- * @example
- * ```ts
- * import { normalize } from 'curvy/utils'
- *
- * const normalizedValue = normalize(15, 10, 20) // 0.5
- * const normalizedValue2 = normalize(10, 20)(15) // 0.5
- * ```
- * @since 1.0.0
- */
 export const normalize: {
+  /**
+   * Normalizes a value between two bounds to the unit interval.
+   *
+   * @param x - The value to normalize.
+   * @param a - The lower bound.
+   * @param b - The upper bound.
+   * @returns The normalized value.
+   * @example
+   * ```ts
+   * import { normalize } from 'curvy/utils'
+   *
+   * normalize(15, 10, 20) // 0.5
+   * ```
+   * @since 1.0.0
+   */
   (x: number, a: number, b: number): number
+  /**
+   * Normalizes a value between two bounds to the unit interval.
+   *
+   * @param a - The lower bound.
+   * @param b - The upper bound.
+   * @returns A function that takes a value and returns the normalized value.
+   * @example
+   * ```ts
+   * import { normalize } from 'curvy/utils'
+   *
+   * normalize(10, 20)(15) // 0.5
+   * ```
+   * @since 1.0.0
+   */
   (a: number, b: number): (x: number) => number
-} = dual(3, (x: number, a: number, b: number): number => {
-  return (x - a) / (b - a)
-})
+} = dual(3, (x: number, a: number, b: number) => (x - a) / (b - a))
 
-/**
- * Remaps a value from one range to another.
- *
- * @param x - The value to remap.
- * @param x1 - The lower bound of the original range.
- * @param x2 - The upper bound of the original range.
- * @param y1 - The lower bound of the new range.
- * @param y2 - The upper bound of the new range.
- * @returns The remapped value.
- * @example
- * ```ts
- * import { remap } from 'curvy/utils'
- *
- * const remappedValue = remap(15, 10, 20, 0, 100) // 50
- * const remappedValue2 = remap(10, 20, 0, 100)(15) // 50
- * ```
- * @since 1.0.0
- */
 export const remap: {
+  /**
+   * Remaps a value from one range to another.
+   *
+   * @param x - The value to remap.
+   * @param x1 - The lower bound of the original range.
+   * @param x2 - The upper bound of the original range.
+   * @param y1 - The lower bound of the new range.
+   * @param y2 - The upper bound of the new range.
+   * @returns The remapped value.
+   * @example
+   * ```ts
+   * import { remap } from 'curvy/utils'
+   *
+   * remap(15, 10, 20, 0, 100) // 50
+   * ```
+   * @since 1.0.0
+   */
   (x: number, x1: number, x2: number, y1: number, y2: number): number
+  /**
+   * Remaps a value from one range to another.
+   *
+   * @param x1 - The lower bound of the original range.
+   * @param x2 - The upper bound of the original range.
+   * @param y1 - The lower bound of the new range.
+   * @param y2 - The upper bound of the new range.
+   * @returns A function that takes a value and returns the remapped value.
+   * @example
+   * ```ts
+   * import { remap } from 'curvy/utils'
+   *
+   * remap(10, 20, 0, 100)(15) // 50
+   * ```
+   * @since 1.0.0
+   */
   (x1: number, x2: number, y1: number, y2: number): (x: number) => number
-} = dual(5, (x: number, x1: number, x2: number, y1: number, y2: number): number => {
-  return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
-})
+} = dual(
+  5,
+  (x: number, x1: number, x2: number, y1: number, y2: number) =>
+    y1 + ((x - x1) / (x2 - x1)) * (y2 - y1),
+)
 
-/**
- * Clamps a value between two bounds.
- *
- * @param value - The value to clamp.
- * @param min - The lower bound.
- * @param max - The upper bound.
- * @returns The clamped value.
- * @example
- * ```ts
- * import { clamp } from 'curvy/utils'
- *
- * const clampedValue = clamp(25, 10, 20) // 20
- * const clampedValue2 = clamp(10, 20)(25) // 20
- * ```
- * @since 1.0.0
- */
 export const clamp: {
+  /**
+   * Clamps a value between two bounds.
+   *
+   * @param value - The value to clamp.
+   * @param min - The lower bound.
+   * @param max - The upper bound.
+   * @returns The clamped value.
+   * @example
+   * ```ts
+   * import { clamp } from 'curvy/utils'
+   *
+   * clamp(25, 10, 20) // 20
+   * ```
+   * @since 1.0.0
+   */
   (value: number, min: number, max: number): number
+  /**
+   * Clamps a value between two bounds.
+   *
+   * @param min - The lower bound.
+   * @param max - The upper bound.
+   * @returns A function that takes a value and returns the clamped value.
+   * @example
+   * ```ts
+   * import { clamp } from 'curvy/utils'
+   *
+   * clamp(10, 20)(25) // 20
+   * ```
+   * @since 1.0.0
+   */
   (min: number, max: number): (value: number) => number
-} = dual(3, (value: number, min: number, max: number) => {
-  return value < min ? min : value > max ? max : value
-})
+} = dual(3, (value: number, min: number, max: number) =>
+  value < min ? min : value > max ? max : value,
+)
 
-/**
- * Clips a value to a specified range, returning a fallback value if the value is outside the range.
- *
- * @param value - The value to clip.
- * @param min - The lower bound.
- * @param max - The upper bound.
- * @param onClip - The fallback value to return if the value is outside the range.
- * @returns The clipped value or the fallback value.
- * @example
- * ```ts
- * import { clip } from 'curvy/utils'
- *
- * const clippedValue = clip(25, 10, 20, 15) // 15
- * const clippedValue2 = clip(10, 20, 15)(25) // 15
- * ```
- * @since 1.0.0
- */
 export const clip: {
+  /**
+   * Clips a value to a specified range, returning a fallback value if the value is outside the range.
+   *
+   * @param value - The value to clip.
+   * @param min - The lower bound.
+   * @param max - The upper bound.
+   * @param onClip - The fallback value to return if the value is outside the range.
+   * @returns The original value if within range, otherwise the fallback.
+   * @example
+   * ```ts
+   * import { clip } from 'curvy/utils'
+   *
+   * clip(25, 10, 20, 15) // 15
+   * ```
+   * @since 1.0.0
+   */
   <T>(value: number, min: number, max: number, onClip: T): T | number
+  /**
+   * Clips a value to a specified range, returning a fallback value if the value is outside the range.
+   *
+   * @param min - The lower bound.
+   * @param max - The upper bound.
+   * @param onClip - The fallback value to return if the value is outside the range.
+   * @returns A function that takes a value and returns it if within range, otherwise the fallback.
+   * @example
+   * ```ts
+   * import { clip } from 'curvy/utils'
+   *
+   * clip(10, 20, 15)(25) // 15
+   * ```
+   * @since 1.0.0
+   */
   <T>(min: number, max: number, onClip: T): (value: number) => T | number
-} = dual(4, (value: number, min: number, max: number, onClip: unknown) => {
-  return value < min ? onClip : value > max ? onClip : value
-})
+} = dual(4, (value: number, min: number, max: number, onClip: unknown) =>
+  value < min ? onClip : value > max ? onClip : value,
+)
 
 /**
  * Returns the minimum and maximum of two numbers.

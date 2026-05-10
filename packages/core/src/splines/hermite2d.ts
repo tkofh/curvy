@@ -4,7 +4,7 @@ import type { Pipeable } from '../pipe'
 import type { Vector2 } from '../vector/vector2'
 import type { Bezier2d } from './bezier2d'
 import * as internal from './hermite2d.internal'
-import { Hermite2dTypeId } from './hermite2d.internal'
+import type { Hermite2dTypeId } from './hermite2d.internal'
 
 /**
  * A Hermite spline in 2D space.

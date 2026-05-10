@@ -2,11 +2,21 @@
   "name": "curvy",
   "version": "1.0.9",
   "description": "Spline and Curve utilities",
-  "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
+  "bugs": {
+    "url": "https://github.com/tkofh/curvy/issues"
+  },
   "license": "MIT",
-  "sideEffects": false,
+  "author": "Tim Morris <timthewebguy@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkofh/curvy.git"
+  },
+  "files": [
+    "dist"
+  ],
   "type": "module",
+  "sideEffects": false,
   "exports": {
     "./vector2": {
       "types": "./dist/vector/vector2.d.mts",
@@ -97,15 +107,8 @@
       "import": "./dist/utils.mjs"
     }
   },
-  "files": [
-    "dist"
-  ],
   "publishConfig": {
     "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tkofh/curvy.git"
   },
   "scripts": {
     "build": "tsdown",
@@ -113,9 +116,6 @@
     "test:watch": "vitest",
     "bench": "vitest bench --run",
     "typecheck": "tsc --noEmit"
-  },
-  "bugs": {
-    "url": "https://github.com/tkofh/curvy/issues"
   },
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",

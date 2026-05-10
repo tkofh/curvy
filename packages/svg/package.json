@@ -2,35 +2,35 @@
   "name": "@curvy/svg",
   "version": "0.0.8",
   "description": "Spline and Curve utilities for SVG",
-  "author": "Tim Morris <timthewebguy@gmail.com>",
   "homepage": "https://github.com/tkofh/curvy#readme",
+  "bugs": {
+    "url": "https://github.com/tkofh/curvy/issues"
+  },
   "license": "MIT",
-  "sideEffects": false,
+  "author": "Tim Morris <timthewebguy@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkofh/curvy.git"
+  },
+  "files": [
+    "dist"
+  ],
   "type": "module",
+  "sideEffects": false,
   "exports": {
     "./path": {
       "types": "./dist/path.d.mts",
       "import": "./dist/path.mjs"
     }
   },
-  "files": [
-    "dist"
-  ],
   "publishConfig": {
     "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tkofh/curvy.git"
   },
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
-  },
-  "bugs": {
-    "url": "https://github.com/tkofh/curvy/issues"
   },
   "dependencies": {
     "curvy": "workspace:*"

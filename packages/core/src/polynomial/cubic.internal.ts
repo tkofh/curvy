@@ -172,40 +172,40 @@ export const monotonicity = dual<
 export const domain = dual<
   (range: Interval.Interval) => (p: CubicPolynomial) => Interval.Interval,
   (p: CubicPolynomial, range: Interval.Interval) => Interval.Interval
->(2, (p: CubicPolynomial, range: Interval.Interval) =>
-  Interval.fromMinMax(...solveInverse(p, range.start), ...solveInverse(p, range.end)),
+>(2, (p: CubicPolynomial, r: Interval.Interval) =>
+  Interval.fromMinMax(...solveInverse(p, r.start), ...solveInverse(p, r.end)),
 )
 
 export const range = dual<
   (domain: Interval.Interval) => (p: CubicPolynomial) => Interval.Interval,
   (p: CubicPolynomial, domain: Interval.Interval) => Interval.Interval
->(2, (p: CubicPolynomial, domain: Interval.Interval) =>
+>(2, (p: CubicPolynomial, d: Interval.Interval) =>
   Interval.fromMinMax(
-    solve(p, domain.start),
-    solve(p, domain.end),
-    ...Interval.filter(domain, extrema(p)).map((e) => solve(p, e)),
+    solve(p, d.start),
+    solve(p, d.end),
+    ...Interval.filter(d, extrema(p)).map((e) => solve(p, e)),
   ),
 )
 
 export const length = dual<
   (domain: Interval.Interval) => (p: CubicPolynomial) => number,
   (p: CubicPolynomial, domain: Interval.Interval) => number
->(2, (p: CubicPolynomial, domain: Interval.Interval) => {
-  if (Interval.size(domain) === 0) {
+>(2, (p: CubicPolynomial, dom: Interval.Interval) => {
+  if (Interval.size(dom) === 0) {
     return 0
   }
 
   if (p.c3 === 0) {
     if (p.c2 === 0) {
-      return Linear.length(Linear.make(p.c0, p.c1), domain)
+      return Linear.length(Linear.make(p.c0, p.c1), dom)
     }
 
-    return Quadratic.length(Quadratic.make(p.c0, p.c1, p.c2), domain)
+    return Quadratic.length(Quadratic.make(p.c0, p.c1, p.c2), dom)
   }
 
   const d = derivative(p)
 
-  const { scale, shift } = Interval.scaleShift(Interval.biunit, domain)
+  const { scale, shift } = Interval.scaleShift(Interval.biunit, dom)
 
   return (
     (GL32_W0 * Math.sqrt(1 + Quadratic.solve(d, shift + scale * -GL32_X0) ** 2) +
