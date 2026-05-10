@@ -148,10 +148,7 @@ describe('matrix3x3', () => {
   })
   test('vectorProductLeft', () => {
     expect(
-      matrix3x3.vectorProductLeft(
-        matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9),
-        vector3.make(1, 2, 3),
-      ),
+      matrix3x3.vectorProductLeft(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9), vector3.make(1, 2, 3)),
     ).toEqual(vector3.make(14, 32, 50))
   })
   test('vectorProductRight', () => {

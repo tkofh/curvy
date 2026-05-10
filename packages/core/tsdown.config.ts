@@ -6,6 +6,7 @@ export default defineConfig({
     'src/interval.ts',
     'src/length.ts',
     'src/pipe.ts',
+    'src/solution.ts',
     'src/utils.ts',
     'src/curve/index.ts',
     'src/curve/cubic2d.ts',

@@ -2,19 +2,28 @@ import type { TwoDimensional } from '../dimensions'
 import type { Interval } from '../interval'
 import type { Pipeable } from '../pipe'
 import type { QuadraticPolynomial } from '../polynomial/quadratic'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
+import type * as Solution from '../solution'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearCurve2d } from './linear2d'
 import type { QuadraticCurve2dTypeId } from './quadratic2d.internal'
 import * as internal from './quadratic2d.internal'
+
+export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits'
 
 /**
  * A quadratic curve in 2D space.
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
+ * The two type parameters carry the trait sets of the curve's per-axis
+ * polynomials. Refiners check monotonicity over the unit interval `[0, 1]` —
+ * the curve's natural parameter domain.
+ *
  * @since 1.0.0
  */
-export interface QuadraticCurve2d extends Pipeable, TwoDimensional<QuadraticPolynomial> {
+export interface QuadraticCurve2d<out XTraits = unknown, out YTraits = unknown>
+  extends Pipeable, TwoDimensional<QuadraticPolynomial<XTraits>, QuadraticPolynomial<YTraits>> {
   readonly [QuadraticCurve2dTypeId]: QuadraticCurve2dTypeId
 }
 
@@ -44,11 +53,8 @@ export const fromPolynomials: (
  * @returns A new `QuadraticCurve2d` instance.
  * @since 2.0.0
  */
-export const fromCoefficients: (
-  c0: Vector2,
-  c1: Vector2,
-  c2: Vector2,
-) => QuadraticCurve2d = internal.fromCoefficients
+export const fromCoefficients: (c0: Vector2, c1: Vector2, c2: Vector2) => QuadraticCurve2d =
+  internal.fromCoefficients
 
 /**
  * Creates a new `QuadraticCurve2d` instance from quadratic Bézier control
@@ -65,11 +71,8 @@ export const fromCoefficients: (
  * @returns A new `QuadraticCurve2d` instance whose curve matches the given Bézier.
  * @since 2.0.0
  */
-export const fromBezierPoints: (
-  p0: Vector2,
-  p1: Vector2,
-  p2: Vector2,
-) => QuadraticCurve2d = internal.fromBezierPoints
+export const fromBezierPoints: (p0: Vector2, p1: Vector2, p2: Vector2) => QuadraticCurve2d =
+  internal.fromBezierPoints
 
 /**
  * Checks if a value is a `QuadraticCurve2d`.
@@ -120,6 +123,64 @@ export const length: {
   (i: Interval): (c: QuadraticCurve2d) => number
 } = internal.length
 
+export const solveAtX: {
+  /**
+   * Evaluates the curve's y values at a given x. Because the x polynomial is
+   * `Monotonic`, the inverse has at most one solution — at most one y value.
+   *
+   * @param c - The quadratic curve.
+   * @param x - The x coordinate.
+   * @returns Zero or one y values, in t-ascending order.
+   * @since 2.0.0
+   */
+  <XT extends Monotonic, YT>(c: QuadraticCurve2d<XT, YT>, x: number): Solution.AtMostOne<number>
+  /**
+   * Evaluates the curve's y values at a given x. The result is the y values
+   * the curve passes through where x(t) = the given x — up to two solutions
+   * for a quadratic curve.
+   *
+   * @param c - The quadratic curve.
+   * @param x - The x coordinate.
+   * @returns The y values at x, in t-ascending order.
+   * @since 2.0.0
+   */
+  <XT, YT>(c: QuadraticCurve2d<XT, YT>, x: number): Solution.AtMostTwo<number>
+  /** @since 2.0.0 */
+  (x: number): {
+    <XT extends Monotonic, YT>(c: QuadraticCurve2d<XT, YT>): Solution.AtMostOne<number>
+    <XT, YT>(c: QuadraticCurve2d<XT, YT>): Solution.AtMostTwo<number>
+  }
+} = internal.solveAtX as never
+
+export const solveAtY: {
+  /**
+   * Evaluates the curve's x values at a given y. Because the y polynomial is
+   * `Monotonic`, the inverse has at most one solution.
+   *
+   * @param c - The quadratic curve.
+   * @param y - The y coordinate.
+   * @returns Zero or one x values, in t-ascending order.
+   * @since 2.0.0
+   */
+  <XT, YT extends Monotonic>(c: QuadraticCurve2d<XT, YT>, y: number): Solution.AtMostOne<number>
+  /**
+   * Evaluates the curve's x values at a given y. The result is the x values
+   * the curve passes through where y(t) = the given y — up to two solutions
+   * for a quadratic curve.
+   *
+   * @param c - The quadratic curve.
+   * @param y - The y coordinate.
+   * @returns The x values at y, in t-ascending order.
+   * @since 2.0.0
+   */
+  <XT, YT>(c: QuadraticCurve2d<XT, YT>, y: number): Solution.AtMostTwo<number>
+  /** @since 2.0.0 */
+  (y: number): {
+    <XT, YT extends Monotonic>(c: QuadraticCurve2d<XT, YT>): Solution.AtMostOne<number>
+    <XT, YT>(c: QuadraticCurve2d<XT, YT>): Solution.AtMostTwo<number>
+  }
+} = internal.solveAtY as never
+
 /**
  * Computes the derivative of a quadratic curve.
  *
@@ -148,3 +209,41 @@ export const curvature: {
    */
   (t: number): (c: QuadraticCurve2d) => number
 } = internal.curvature
+
+/**
+ * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
+ * when both x and y polynomials are monotonic over the unit interval `[0, 1]`.
+ *
+ * For checking only one axis, call the polynomial-level refiner directly:
+ * `QuadraticPolynomial.isMonotonic(curve.x, Interval.unit)`.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonic: <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+) => c is QuadraticCurve2d<XT & Monotonic, YT & Monotonic> = internal.isMonotonic
+
+/** @since 2.0.0 */
+export const isIncreasing: <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+) => c is QuadraticCurve2d<XT & Increasing, YT & Increasing> = internal.isIncreasing
+
+/** @since 2.0.0 */
+export const isDecreasing: <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+) => c is QuadraticCurve2d<XT & Decreasing, YT & Decreasing> = internal.isDecreasing
+
+/** @since 2.0.0 */
+export const asMonotonic: <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+) => QuadraticCurve2d<XT & Monotonic, YT & Monotonic> = internal.asMonotonic
+
+/** @since 2.0.0 */
+export const asIncreasing: <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+) => QuadraticCurve2d<XT & Increasing, YT & Increasing> = internal.asIncreasing
+
+/** @since 2.0.0 */
+export const asDecreasing: <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+) => QuadraticCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing

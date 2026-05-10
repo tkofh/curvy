@@ -2,18 +2,27 @@ import type { TwoDimensional } from '../dimensions'
 import type { Interval } from '../interval'
 import type { Pipeable } from '../pipe'
 import type { LinearPolynomial } from '../polynomial/linear'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
+import type * as Solution from '../solution'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearCurve2dTypeId } from './linear2d.internal'
 import * as internal from './linear2d.internal'
+
+export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits'
 
 /**
  * A linear curve in 2D space.
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
+ * The two type parameters carry the trait sets of the curve's per-axis
+ * polynomials. Refiners like `isMonotonic` lift each axis's monotonicity into
+ * the curve's combined trait set.
+ *
  * @since 1.0.0
  */
-export interface LinearCurve2d extends Pipeable, TwoDimensional<LinearPolynomial> {
+export interface LinearCurve2d<out XTraits = unknown, out YTraits = unknown>
+  extends Pipeable, TwoDimensional<LinearPolynomial<XTraits>, LinearPolynomial<YTraits>> {
   readonly [LinearCurve2dTypeId]: LinearCurve2dTypeId
 }
 
@@ -115,3 +124,95 @@ export const length: {
    */
   (i: Interval): (c: LinearCurve2d) => number
 } = internal.length
+
+export const solveAtX: {
+  /**
+   * Evaluates the curve's y value at a given x. A linear curve crosses any
+   * vertical line at most once (within the curve's parameter domain `[0, 1]`),
+   * so the result is at most one y. Returns the empty tuple when x is outside
+   * the curve's range or when the curve's x polynomial is constant.
+   *
+   * @param c - The linear curve.
+   * @param x - The x coordinate.
+   * @returns The y value at x, or empty when x is undefined for this curve.
+   * @since 2.0.0
+   */
+  <XT, YT>(c: LinearCurve2d<XT, YT>, x: number): Solution.AtMostOne<number>
+  /** @since 2.0.0 */
+  (x: number): <XT, YT>(c: LinearCurve2d<XT, YT>) => Solution.AtMostOne<number>
+} = internal.solveAtX as never
+
+export const solveAtY: {
+  /**
+   * Evaluates the curve's x value at a given y. A linear curve crosses any
+   * horizontal line at most once (within the curve's parameter domain
+   * `[0, 1]`), so the result is at most one x.
+   *
+   * @param c - The linear curve.
+   * @param y - The y coordinate.
+   * @returns The x value at y, or empty when y is undefined for this curve.
+   * @since 2.0.0
+   */
+  <XT, YT>(c: LinearCurve2d<XT, YT>, y: number): Solution.AtMostOne<number>
+  /** @since 2.0.0 */
+  (y: number): <XT, YT>(c: LinearCurve2d<XT, YT>) => Solution.AtMostOne<number>
+} = internal.solveAtY as never
+
+/**
+ * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
+ * when both the x and y polynomials are strictly monotonic. When both axes
+ * are monotonic, the curve is invertible in either direction.
+ *
+ * For checking only one axis, call the polynomial-level refiner directly:
+ * `LinearPolynomial.isMonotonic(curve.x)`.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonic: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => c is LinearCurve2d<XT & Monotonic, YT & Monotonic> = internal.isMonotonic
+
+/**
+ * Type-narrowing predicate: refines both axes' traits to include `Increasing`.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasing: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => c is LinearCurve2d<XT & Increasing, YT & Increasing> = internal.isIncreasing
+
+/**
+ * Type-narrowing predicate: refines both axes' traits to include `Decreasing`.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasing: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => c is LinearCurve2d<XT & Decreasing, YT & Decreasing> = internal.isDecreasing
+
+/**
+ * Asserts monotonicity in both axes, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asMonotonic: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => LinearCurve2d<XT & Monotonic, YT & Monotonic> = internal.asMonotonic
+
+/**
+ * Asserts that both axes are strictly increasing, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asIncreasing: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => LinearCurve2d<XT & Increasing, YT & Increasing> = internal.asIncreasing
+
+/**
+ * Asserts that both axes are strictly decreasing, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asDecreasing: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => LinearCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing

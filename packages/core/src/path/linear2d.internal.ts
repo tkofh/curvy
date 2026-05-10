@@ -1,15 +1,17 @@
 import * as LinearCurve2d from '../curve/linear2d'
 import * as Interval from '../interval'
 import { dual, Pipeable } from '../pipe'
-import { epsEquals } from '../utils'
+import { epsEquals, invariant } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPath2d } from './linear2d'
+import { PathTraits, type Continuous } from './traits'
 
 export const LinearPath2dTypeId: unique symbol = Symbol('curvy/path/linear2d')
 export type LinearPath2dTypeId = typeof LinearPath2dTypeId
 
-export class LinearPath2dImpl extends Pipeable implements LinearPath2d {
+export class LinearPath2dImpl extends Pipeable implements LinearPath2d<unknown> {
   readonly [LinearPath2dTypeId]: LinearPath2dTypeId = LinearPath2dTypeId
+  declare readonly [PathTraits]: unknown
 
   readonly curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>
 
@@ -84,4 +86,27 @@ export const toPathData = (p: LinearPath2d): string => {
   }
 
   return result.slice(1)
+}
+
+export const isContinuous = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & Continuous> => {
+  let prevEndX = Number.NaN
+  let prevEndY = Number.NaN
+  let first = true
+
+  for (const curve of p) {
+    const startX = curve.x.c0
+    const startY = curve.y.c0
+    if (!first && (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY))) {
+      return false
+    }
+    prevEndX = curve.x.c0 + curve.x.c1
+    prevEndY = curve.y.c0 + curve.y.c1
+    first = false
+  }
+  return true
+}
+
+export const asContinuous = <T>(p: LinearPath2d<T>): LinearPath2d<T & Continuous> => {
+  invariant(isContinuous(p), 'linear path is not continuous')
+  return p
 }

@@ -126,6 +126,10 @@
       "types": "./dist/pipe.d.mts",
       "import": "./dist/pipe.mjs"
     },
+    "./solution": {
+      "types": "./dist/solution.d.mts",
+      "import": "./dist/solution.mjs"
+    },
     "./utils": {
       "types": "./dist/utils.d.mts",
       "import": "./dist/utils.mjs"
@@ -142,7 +146,6 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/tsconfig": "workspace:*",
     "tsdown": "^0.22.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"

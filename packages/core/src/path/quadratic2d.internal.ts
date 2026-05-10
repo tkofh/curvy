@@ -1,15 +1,17 @@
 import * as QuadraticCurve2d from '../curve/quadratic2d'
 import * as Interval from '../interval'
 import { dual, Pipeable } from '../pipe'
-import { epsEquals } from '../utils'
+import { epsEquals, invariant } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { QuadraticPath2d } from './quadratic2d'
+import { PathTraits, type Continuous } from './traits'
 
 export const QuadraticPath2dTypeId: unique symbol = Symbol('curvy/path/quadratic2d')
 export type QuadraticPath2dTypeId = typeof QuadraticPath2dTypeId
 
-export class QuadraticPath2dImpl extends Pipeable implements QuadraticPath2d {
+export class QuadraticPath2dImpl extends Pipeable implements QuadraticPath2d<unknown> {
   readonly [QuadraticPath2dTypeId]: QuadraticPath2dTypeId = QuadraticPath2dTypeId
+  declare readonly [PathTraits]: unknown
 
   readonly curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>
 
@@ -98,4 +100,27 @@ export const toPathData = (p: QuadraticPath2d): string => {
   }
 
   return result.slice(1)
+}
+
+export const isContinuous = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & Continuous> => {
+  let prevEndX = Number.NaN
+  let prevEndY = Number.NaN
+  let first = true
+
+  for (const curve of p) {
+    const startX = curve.x.c0
+    const startY = curve.y.c0
+    if (!first && (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY))) {
+      return false
+    }
+    prevEndX = curve.x.c0 + curve.x.c1 + curve.x.c2
+    prevEndY = curve.y.c0 + curve.y.c1 + curve.y.c2
+    first = false
+  }
+  return true
+}
+
+export const asContinuous = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & Continuous> => {
+  invariant(isContinuous(p), 'quadratic path is not continuous')
+  return p
 }

@@ -3,16 +3,24 @@ import type { Pipeable } from '../pipe'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPath2dTypeId } from './linear2d.internal'
 import * as internal from './linear2d.internal'
+import type { Continuous, PathTraits } from './traits'
+
+export type { Continuous } from './traits'
 
 /**
  * A linear path in 2D space.
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
+ * The `Trait` type parameter accumulates trait brands as the path is refined
+ * via `isContinuous` / `asContinuous`. A `Continuous` path's `toPathData`
+ * skips the per-segment discontinuity check.
+ *
  * @since 1.0.0
  */
-export interface LinearPath2d extends Pipeable, Iterable<LinearCurve2d> {
+export interface LinearPath2d<out Trait = unknown> extends Pipeable, Iterable<LinearCurve2d> {
   readonly [LinearPath2dTypeId]: LinearPath2dTypeId
+  readonly [PathTraits]: Trait
 }
 
 /**
@@ -101,3 +109,26 @@ export const solve: {
  * @since 2.0.0
  */
 export const toPathData: (p: LinearPath2d) => string = internal.toPathData
+
+/**
+ * Type-narrowing predicate: refines `LinearPath2d<T>` to
+ * `LinearPath2d<T & Continuous>` when adjacent curves connect at their join
+ * points.
+ *
+ * @param p - The linear path to check.
+ * @returns `true` when the path is continuous (G⁰).
+ * @since 2.0.0
+ */
+export const isContinuous: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & Continuous> =
+  internal.isContinuous
+
+/**
+ * Asserts that the linear path is continuous, throwing on failure.
+ *
+ * @param p - The linear path to assert against.
+ * @returns The same path, typed with the `Continuous` brand.
+ * @throws When the path has a discontinuity between adjacent curves.
+ * @since 2.0.0
+ */
+export const asContinuous: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Continuous> =
+  internal.asContinuous

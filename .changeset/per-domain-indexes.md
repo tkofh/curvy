@@ -4,14 +4,14 @@
 
 Add per-domain namespace index entry points so callers can import related types in one shot rather than chaining several deep imports. Each new entry re-exports the domain's modules as namespaces named after the public type:
 
-| Subpath | Re-exports |
-|---|---|
-| `curvy/curve` | `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d` |
-| `curvy/path` | `LinearPath2d`, `QuadraticPath2d`, `CubicPath2d` |
-| `curvy/splines` | `Bezier2d`, `Cardinal2d`, `Hermite2d`, `Basis2d` |
+| Subpath            | Re-exports                                                   |
+| ------------------ | ------------------------------------------------------------ |
+| `curvy/curve`      | `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`          |
+| `curvy/path`       | `LinearPath2d`, `QuadraticPath2d`, `CubicPath2d`             |
+| `curvy/splines`    | `Bezier2d`, `Cardinal2d`, `Hermite2d`, `Basis2d`             |
 | `curvy/polynomial` | `LinearPolynomial`, `QuadraticPolynomial`, `CubicPolynomial` |
-| `curvy/matrix` | `Matrix2x2`, `Matrix3x3`, `Matrix4x4` |
-| `curvy/vector` | `Vector2`, `Vector3`, `Vector4` |
+| `curvy/matrix`     | `Matrix2x2`, `Matrix3x3`, `Matrix4x4`                        |
+| `curvy/vector`     | `Vector2`, `Vector3`, `Vector4`                              |
 
 ```ts
 // before

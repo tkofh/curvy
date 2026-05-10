@@ -23,7 +23,8 @@
     "no-lonely-if": "error",
     "operator-assignment": "error",
     "require-await": "warn",
-    "unicorn/filename-case": ["error", { "case": "camelCase" }]
+    "unicorn/filename-case": ["error", { "case": "camelCase" }],
+    "typescript/no-namespace": ["error", { "allowDeclarations": true }]
   },
   "env": {
     "builtin": true

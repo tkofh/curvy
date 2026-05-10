@@ -1,22 +1,31 @@
 import type { Interval } from '../interval'
 import type { Pipeable } from '../pipe'
+import type * as Solution from '../solution'
 import type { Vector2 } from '../vector/vector2'
 import type { Vector4 } from '../vector/vector4'
 import * as internal from './cubic.internal'
 import type { CubicPolynomialTypeId } from './cubic.internal.circular'
 import type { Monotonicity } from './monotonicity'
 import type { QuadraticPolynomial } from './quadratic'
-import type { ZeroToThree, ZeroToTwo } from './types'
+import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits'
+
+export type { Monotonic, Increasing, Decreasing } from './traits'
 
 /**
  * A cubic polynomial.
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
+ * The `Traits` type parameter is a phantom marker that accumulates trait
+ * brands as the polynomial is refined via `isMonotonic` / `asMonotonic` and
+ * friends. A cubic is monotonic only over an interval that avoids both of its
+ * extrema (or globally, when c2 = c3 = 0 and c1 ≠ 0).
+ *
  * @since 1.0.0
  */
-export interface CubicPolynomial extends Pipeable {
+export interface CubicPolynomial<out Traits = unknown> extends Pipeable {
   readonly [CubicPolynomialTypeId]: CubicPolynomialTypeId
+  readonly [PolynomialTraits]: Traits
 
   /**
    * The coefficient of the x^0 term.
@@ -100,12 +109,8 @@ export const fromVector: (v: Vector4) => CubicPolynomial = internal.fromVector
  * @returns The unique cubic polynomial passing through the four points.
  * @since 2.0.0
  */
-export const fromPoints: (
-  p0: Vector2,
-  p1: Vector2,
-  p2: Vector2,
-  p3: Vector2,
-) => CubicPolynomial = internal.fromPoints
+export const fromPoints: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => CubicPolynomial =
+  internal.fromPoints
 
 export const solve: {
   /**
@@ -138,6 +143,16 @@ export const toSolver: (p: CubicPolynomial) => (x: number) => number = internal.
 
 export const solveInverse: {
   /**
+   * Solves a monotonic cubic polynomial for a given value of y. Because the
+   * polynomial is strictly monotonic, the inverse has at most one solution.
+   *
+   * @param p - The monotonic cubic polynomial.
+   * @param y - The value of y to solve for.
+   * @returns Zero or one solutions.
+   * @since 2.0.0
+   */
+  <T extends Monotonic>(p: CubicPolynomial<T>, y: number): Solution.AtMostOne<number>
+  /**
    * Solves a cubic polynomial for a given value of y.
    *
    * @param p - The cubic polynomial to solve.
@@ -145,16 +160,21 @@ export const solveInverse: {
    * @returns The roots of the polynomial equation p(x) = y.
    * @since 1.0.0
    */
-  (p: CubicPolynomial, y: number): ZeroToThree
+  <T>(p: CubicPolynomial<T>, y: number): Solution.AtMostThree<number>
   /**
    * Solves a cubic polynomial for a given value of y.
    *
    * @param y - The value of y to solve for.
-   * @returns A function that takes a cubic polynomial and returns the roots of the polynomial equation p(x) = y.
+   * @returns A function that takes a cubic polynomial and returns the roots
+   *   of the polynomial equation p(x) = y. Tightens to `Solution.AtMostOne<number>` for
+   *   monotonic inputs.
    * @since 1.0.0
    */
-  (y: number): (p: CubicPolynomial) => ZeroToThree
-} = internal.solveInverse
+  (y: number): {
+    <T extends Monotonic>(p: CubicPolynomial<T>): Solution.AtMostOne<number>
+    <T>(p: CubicPolynomial<T>): Solution.AtMostThree<number>
+  }
+} = internal.solveInverse as never
 
 /**
  * Converts a cubic polynomial to an inverse solver function.
@@ -163,7 +183,7 @@ export const solveInverse: {
  * @returns A function that takes a value of y and returns the roots of the polynomial equation p(x) = y.
  * @since 1.0.0
  */
-export const toInverseSolver: (p: CubicPolynomial) => (y: number) => ZeroToThree =
+export const toInverseSolver: (p: CubicPolynomial) => (y: number) => Solution.AtMostThree<number> =
   internal.toInverseSolver
 
 /**
@@ -182,7 +202,7 @@ export const derivative: (p: CubicPolynomial) => QuadraticPolynomial = internal.
  * @returns The roots of the cubic polynomial.
  * @since 1.0.0
  */
-export const roots: (p: CubicPolynomial) => ZeroToThree = internal.roots
+export const roots: (p: CubicPolynomial) => Solution.AtMostThree<number> = internal.roots
 
 /**
  * Calculates the extrema of a cubic polynomial.
@@ -191,11 +211,12 @@ export const roots: (p: CubicPolynomial) => ZeroToThree = internal.roots
  * @returns The extrema of the cubic polynomial.
  * @since 1.0.0
  */
-export const extrema: (p: CubicPolynomial) => ZeroToTwo = internal.extrema
+export const extrema: (p: CubicPolynomial) => Solution.AtMostTwo<number> = internal.extrema
 
 export const monotonicity: {
   /**
-   * Calculates the monotonicity of a cubic polynomial.
+   * Calculates the monotonicity of a cubic polynomial. Throws when the
+   * interval has zero width — the question is undefined at a single point.
    *
    * @param p - The cubic polynomial to analyze.
    * @param i - The interval to restrict the analysis to.
@@ -204,14 +225,85 @@ export const monotonicity: {
    */
   (p: CubicPolynomial, i?: Interval): Monotonicity
   /**
-   * Calculates the monotonicity of a cubic polynomial.
+   * Calculates the monotonicity of a cubic polynomial. Throws when the
+   * interval has zero width.
    *
    * @param i - The interval to restrict the analysis to.
-   * @returns A function that takes a cubic polynomial and returns the monotonicity of the cubic polynomial in the specified interval.
+   * @returns A function that takes a cubic polynomial and returns the
+   *   monotonicity of the cubic polynomial in the specified interval.
    * @since 1.0.0
    */
   (i: Interval): (p: CubicPolynomial) => Monotonicity
 } = internal.monotonicity
+
+/**
+ * Type-narrowing predicate: refines a `CubicPolynomial<T>` to
+ * `CubicPolynomial<T & Monotonic>` when the polynomial is strictly monotonic
+ * over the given interval (or globally, when no interval is given).
+ *
+ * @param p - The cubic polynomial to check.
+ * @param i - Optional interval over which to check monotonicity.
+ * @returns `true` when monotonicity is `'increasing'` or `'decreasing'`.
+ * @since 2.0.0
+ */
+export const isMonotonic: {
+  <T>(p: CubicPolynomial<T>, i?: Interval): p is CubicPolynomial<T & Monotonic>
+  (i: Interval): <T>(p: CubicPolynomial<T>) => p is CubicPolynomial<T & Monotonic>
+} = internal.isMonotonic
+
+/**
+ * Type-narrowing predicate: refines to `CubicPolynomial<T & Increasing>`.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasing: {
+  <T>(p: CubicPolynomial<T>, i?: Interval): p is CubicPolynomial<T & Increasing>
+  (i: Interval): <T>(p: CubicPolynomial<T>) => p is CubicPolynomial<T & Increasing>
+} = internal.isIncreasing
+
+/**
+ * Type-narrowing predicate: refines to `CubicPolynomial<T & Decreasing>`.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasing: {
+  <T>(p: CubicPolynomial<T>, i?: Interval): p is CubicPolynomial<T & Decreasing>
+  (i: Interval): <T>(p: CubicPolynomial<T>) => p is CubicPolynomial<T & Decreasing>
+} = internal.isDecreasing
+
+/**
+ * Asserts that the cubic polynomial is monotonic, throwing on failure.
+ *
+ * @param p - The cubic polynomial to assert against.
+ * @param i - Optional interval over which to check monotonicity.
+ * @returns The same polynomial, typed with the `Monotonic` brand.
+ * @throws When the polynomial is not monotonic over the given (or global) interval.
+ * @since 2.0.0
+ */
+export const asMonotonic: <T>(
+  p: CubicPolynomial<T>,
+  i?: Interval,
+) => CubicPolynomial<T & Monotonic> = internal.asMonotonic
+
+/**
+ * Asserts that the cubic polynomial is increasing, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asIncreasing: <T>(
+  p: CubicPolynomial<T>,
+  i?: Interval,
+) => CubicPolynomial<T & Increasing> = internal.asIncreasing
+
+/**
+ * Asserts that the cubic polynomial is decreasing, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asDecreasing: <T>(
+  p: CubicPolynomial<T>,
+  i?: Interval,
+) => CubicPolynomial<T & Decreasing> = internal.asDecreasing
 
 export const domain: {
   /**

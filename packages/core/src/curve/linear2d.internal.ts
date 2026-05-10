@@ -1,13 +1,15 @@
 import type { Interval } from '../interval'
 import { dual, Pipeable } from '../pipe'
 import * as LinearPolynomial from '../polynomial/linear'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
+import * as Solution from '../solution'
 import * as Vector2 from '../vector/vector2'
 import type { LinearCurve2d } from './linear2d'
 
 export const LinearCurve2dTypeId: unique symbol = Symbol('curvy/curve/linear2d')
 export type LinearCurve2dTypeId = typeof LinearCurve2dTypeId
 
-export class LinearCurve2dImpl extends Pipeable implements LinearCurve2d {
+export class LinearCurve2dImpl extends Pipeable implements LinearCurve2d<unknown, unknown> {
   readonly [LinearCurve2dTypeId]: LinearCurve2dTypeId = LinearCurve2dTypeId
 
   readonly x: LinearPolynomial.LinearPolynomial
@@ -61,8 +63,65 @@ export const solve = dual<
   Vector2.make(LinearPolynomial.solve(c.x, t), LinearPolynomial.solve(c.y, t)),
 )
 
+// solveAtX: invert the x polynomial to find t, then evaluate y at t — only
+// returning the result when t lies in the curve's parameter domain [0, 1].
+// A linear curve crosses any vertical line at most once, so the result is
+// always 0 or 1 element.
+export const solveAtX = dual(2, (c: LinearCurve2d, x: number) =>
+  Solution.match(LinearPolynomial.solveInverse(c.x, x), {
+    onNone: () => Solution.none,
+    onSome: ({ value: t }) =>
+      t < 0 || t > 1 ? Solution.none : Solution.one(LinearPolynomial.solve(c.y, t)),
+  }),
+)
+
+export const solveAtY = dual(2, (c: LinearCurve2d, y: number) =>
+  Solution.match(LinearPolynomial.solveInverse(c.y, y), {
+    onNone: () => Solution.none,
+    onSome: ({ value: t }) =>
+      t < 0 || t > 1 ? Solution.none : Solution.one(LinearPolynomial.solve(c.x, t)),
+  }),
+)
+
 export const length = dual(
   2,
   (c: LinearCurve2d, i: Interval) =>
     Math.sqrt(c.x.c1 ** 2 + c.y.c1 ** 2) * Math.abs(i.end - i.start),
 )
+
+// Combined trait refiners — fan out the polynomial-level check across both
+// axes. For per-axis checks, users can call `LinearPolynomial.isMonotonic(c.x)`
+// directly.
+export const isMonotonic = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): c is LinearCurve2d<XT & Monotonic, YT & Monotonic> =>
+  LinearPolynomial.isMonotonic(c.x) && LinearPolynomial.isMonotonic(c.y)
+
+export const isIncreasing = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): c is LinearCurve2d<XT & Increasing, YT & Increasing> =>
+  LinearPolynomial.isIncreasing(c.x) && LinearPolynomial.isIncreasing(c.y)
+
+export const isDecreasing = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): c is LinearCurve2d<XT & Decreasing, YT & Decreasing> =>
+  LinearPolynomial.isDecreasing(c.x) && LinearPolynomial.isDecreasing(c.y)
+
+const fail = (m: string): never => {
+  throw new Error(m)
+}
+
+export const asMonotonic = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): LinearCurve2d<XT & Monotonic, YT & Monotonic> =>
+  isMonotonic(c) ? c : fail('linear curve is not monotonic in both axes')
+
+export const asIncreasing = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): LinearCurve2d<XT & Increasing, YT & Increasing> =>
+  isIncreasing(c) ? c : fail('linear curve is not increasing in both axes')
+
+export const asDecreasing = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): LinearCurve2d<XT & Decreasing, YT & Decreasing> =>
+  isDecreasing(c) ? c : fail('linear curve is not decreasing in both axes')

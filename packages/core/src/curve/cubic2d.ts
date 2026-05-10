@@ -2,18 +2,27 @@ import type { TwoDimensional } from '../dimensions'
 import type { Interval } from '../interval'
 import type { Pipeable } from '../pipe'
 import type { CubicPolynomial } from '../polynomial/cubic'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
+import type * as Solution from '../solution'
 import type { Vector2 } from '../vector/vector2'
 import type { CubicCurve2dTypeId } from './cubic2d.internal'
 import * as internal from './cubic2d.internal'
+
+export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits'
 
 /**
  * A cubic curve in 2D space.
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
+ * The two type parameters carry the trait sets of the curve's per-axis
+ * polynomials. Refiners check monotonicity over the unit interval `[0, 1]` —
+ * the curve's natural parameter domain.
+ *
  * @since 1.0.0
  */
-export interface CubicCurve2d extends Pipeable, TwoDimensional<CubicPolynomial> {
+export interface CubicCurve2d<out XTraits = unknown, out YTraits = unknown>
+  extends Pipeable, TwoDimensional<CubicPolynomial<XTraits>, CubicPolynomial<YTraits>> {
   readonly [CubicCurve2dTypeId]: CubicCurve2dTypeId
 }
 
@@ -120,6 +129,64 @@ export const length: {
   (i: Interval): (c: CubicCurve2d) => number
 } = internal.length
 
+export const solveAtX: {
+  /**
+   * Evaluates the curve's y values at a given x. Because the x polynomial is
+   * `Monotonic`, the inverse has at most one solution — at most one y value.
+   *
+   * @param c - The cubic curve.
+   * @param x - The x coordinate.
+   * @returns Zero or one y values, in t-ascending order.
+   * @since 2.0.0
+   */
+  <XT extends Monotonic, YT>(c: CubicCurve2d<XT, YT>, x: number): Solution.AtMostOne<number>
+  /**
+   * Evaluates the curve's y values at a given x. The result is the y values
+   * the curve passes through where x(t) = the given x — up to three solutions
+   * for a cubic curve.
+   *
+   * @param c - The cubic curve.
+   * @param x - The x coordinate.
+   * @returns The y values at x, in t-ascending order.
+   * @since 2.0.0
+   */
+  <XT, YT>(c: CubicCurve2d<XT, YT>, x: number): Solution.AtMostThree<number>
+  /** @since 2.0.0 */
+  (x: number): {
+    <XT extends Monotonic, YT>(c: CubicCurve2d<XT, YT>): Solution.AtMostOne<number>
+    <XT, YT>(c: CubicCurve2d<XT, YT>): Solution.AtMostThree<number>
+  }
+} = internal.solveAtX as never
+
+export const solveAtY: {
+  /**
+   * Evaluates the curve's x values at a given y. Because the y polynomial is
+   * `Monotonic`, the inverse has at most one solution.
+   *
+   * @param c - The cubic curve.
+   * @param y - The y coordinate.
+   * @returns Zero or one x values, in t-ascending order.
+   * @since 2.0.0
+   */
+  <XT, YT extends Monotonic>(c: CubicCurve2d<XT, YT>, y: number): Solution.AtMostOne<number>
+  /**
+   * Evaluates the curve's x values at a given y. The result is the x values
+   * the curve passes through where y(t) = the given y — up to three solutions
+   * for a cubic curve.
+   *
+   * @param c - The cubic curve.
+   * @param y - The y coordinate.
+   * @returns The x values at y, in t-ascending order.
+   * @since 2.0.0
+   */
+  <XT, YT>(c: CubicCurve2d<XT, YT>, y: number): Solution.AtMostThree<number>
+  /** @since 2.0.0 */
+  (y: number): {
+    <XT, YT extends Monotonic>(c: CubicCurve2d<XT, YT>): Solution.AtMostOne<number>
+    <XT, YT>(c: CubicCurve2d<XT, YT>): Solution.AtMostThree<number>
+  }
+} = internal.solveAtY as never
+
 export const curvature: {
   /**
    * Calculates the curvature of a cubic curve at a given parameter.
@@ -139,3 +206,41 @@ export const curvature: {
    */
   (t: number): (c: CubicCurve2d) => number
 } = internal.curvature
+
+/**
+ * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
+ * when both x and y polynomials are monotonic over the unit interval `[0, 1]`.
+ *
+ * For checking only one axis, call the polynomial-level refiner directly:
+ * `CubicPolynomial.isMonotonic(curve.x, Interval.unit)`.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonic: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => c is CubicCurve2d<XT & Monotonic, YT & Monotonic> = internal.isMonotonic
+
+/** @since 2.0.0 */
+export const isIncreasing: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => c is CubicCurve2d<XT & Increasing, YT & Increasing> = internal.isIncreasing
+
+/** @since 2.0.0 */
+export const isDecreasing: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => c is CubicCurve2d<XT & Decreasing, YT & Decreasing> = internal.isDecreasing
+
+/** @since 2.0.0 */
+export const asMonotonic: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => CubicCurve2d<XT & Monotonic, YT & Monotonic> = internal.asMonotonic
+
+/** @since 2.0.0 */
+export const asIncreasing: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => CubicCurve2d<XT & Increasing, YT & Increasing> = internal.asIncreasing
+
+/** @since 2.0.0 */
+export const asDecreasing: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => CubicCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing

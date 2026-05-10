@@ -1,5 +1,6 @@
 import type { Interval } from '../interval'
 import type { Pipeable } from '../pipe'
+import type * as Solution from '../solution'
 import type { Vector2 } from '../vector/vector2'
 import type { Vector3 } from '../vector/vector3'
 import type { CubicPolynomial } from './cubic'
@@ -7,17 +8,26 @@ import type { LinearPolynomial } from './linear'
 import type { Monotonicity } from './monotonicity'
 import * as internal from './quadratic.internal'
 import type { QuadraticPolynomialTypeId } from './quadratic.internal.circular'
-import type { ZeroOrOne, ZeroToTwo } from './types'
+import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits'
+
+export type { Monotonic, Increasing, Decreasing } from './traits'
 
 /**
  * A quadratic polynomial.
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
+ * The `Traits` type parameter is a phantom marker that accumulates trait
+ * brands as the polynomial is refined via `isMonotonic` / `asMonotonic` and
+ * friends. Refinements may be parameterized by an `Interval` — a quadratic is
+ * monotonic on an interval that avoids its extremum, even though it is not
+ * monotonic globally.
+ *
  * @since 1.0.0
  */
-export interface QuadraticPolynomial extends Pipeable {
+export interface QuadraticPolynomial<out Traits = unknown> extends Pipeable {
   readonly [QuadraticPolynomialTypeId]: QuadraticPolynomialTypeId
+  readonly [PolynomialTraits]: Traits
 
   /**
    * The coefficient of the x^0 term.
@@ -129,6 +139,18 @@ export const toSolver: (p: QuadraticPolynomial) => (x: number) => number = inter
 
 export const solveInverse: {
   /**
+   * Solves a monotonic quadratic polynomial for a given y value. Because the
+   * polynomial is strictly monotonic (either globally, or over the interval
+   * the `Monotonic` brand was attached for), the inverse has at most one
+   * solution.
+   *
+   * @param p - The monotonic quadratic polynomial.
+   * @param y - The y value to solve for.
+   * @returns Zero or one solutions.
+   * @since 2.0.0
+   */
+  <T extends Monotonic>(p: QuadraticPolynomial<T>, y: number): Solution.AtMostOne<number>
+  /**
    * Solves the quadratic polynomial for a given y value.
    *
    * @param p - The quadratic polynomial.
@@ -136,16 +158,20 @@ export const solveInverse: {
    * @returns The solutions to the polynomial at the given y value.
    * @since 1.0.0
    */
-  (p: QuadraticPolynomial, y: number): ZeroToTwo
+  <T>(p: QuadraticPolynomial<T>, y: number): Solution.AtMostTwo<number>
   /**
    * Solves the quadratic polynomial for a given y value.
    *
    * @param y - The y value to solve for.
-   * @returns A function that takes a quadratic polynomial and returns the solutions to the polynomial at the given y value.
+   * @returns A function that takes a quadratic polynomial and returns the
+   *   solutions. Tightens to `Solution.AtMostOne<number>` for monotonic inputs.
    * @since 1.0.0
    */
-  (y: number): (p: QuadraticPolynomial) => ZeroToTwo
-} = internal.solveInverse
+  (y: number): {
+    <T extends Monotonic>(p: QuadraticPolynomial<T>): Solution.AtMostOne<number>
+    <T>(p: QuadraticPolynomial<T>): Solution.AtMostTwo<number>
+  }
+} = internal.solveInverse as never
 
 /**
  * Creates an inverse solver function for the quadratic polynomial.
@@ -153,8 +179,9 @@ export const solveInverse: {
  * @param p - The quadratic polynomial.
  * @returns A function that takes a y value and returns the solutions to the polynomial at that y value.
  */
-export const toInverseSolver: (p: QuadraticPolynomial) => (y: number) => ZeroToTwo =
-  internal.toInverseSolver
+export const toInverseSolver: (
+  p: QuadraticPolynomial,
+) => (y: number) => Solution.AtMostTwo<number> = internal.toInverseSolver
 
 /**
  * Computes the derivative of the quadratic polynomial.
@@ -172,7 +199,7 @@ export const derivative: (p: QuadraticPolynomial) => LinearPolynomial = internal
  * @returns The roots of the polynomial as a tuple of solutions.
  * @since 1.0.0
  */
-export const roots: (p: QuadraticPolynomial) => ZeroToTwo = internal.roots
+export const roots: (p: QuadraticPolynomial) => Solution.AtMostTwo<number> = internal.roots
 
 /**
  * Finds the extreme point of the quadratic polynomial.
@@ -181,11 +208,13 @@ export const roots: (p: QuadraticPolynomial) => ZeroToTwo = internal.roots
  * @returns The extreme point of the polynomial as a solution.
  * @since 1.0.0
  */
-export const extreme: (p: QuadraticPolynomial) => ZeroOrOne<Vector2> = internal.extreme
+export const extreme: (p: QuadraticPolynomial) => Vector2 | null = internal.extreme
 
 export const monotonicity: {
   /**
-   * Computes the monotonicity of the quadratic polynomial over a given interval.
+   * Computes the monotonicity of the quadratic polynomial over a given
+   * interval. Throws when the interval has zero width — the question is
+   * undefined at a single point.
    *
    * @param p - The quadratic polynomial.
    * @param i - The interval to compute the monotonicity over.
@@ -194,14 +223,85 @@ export const monotonicity: {
    */
   (p: QuadraticPolynomial, i?: Interval): Monotonicity
   /**
-   * Computes the monotonicity of the quadratic polynomial over a given interval.
+   * Computes the monotonicity of the quadratic polynomial over a given
+   * interval. Throws when the interval has zero width.
    *
    * @param i - The interval to compute the monotonicity over.
-   * @returns A function that takes a quadratic polynomial and returns the monotonicity of the polynomial over the interval.
+   * @returns A function that takes a quadratic polynomial and returns the
+   *   monotonicity of the polynomial over the interval.
    * @since 1.0.0
    */
   (i: Interval): (p: QuadraticPolynomial) => Monotonicity
 } = internal.monotonicity
+
+/**
+ * Type-narrowing predicate: refines a `QuadraticPolynomial<T>` to
+ * `QuadraticPolynomial<T & Monotonic>` when the polynomial is strictly
+ * monotonic over the given interval (or globally, when no interval is given).
+ *
+ * @param p - The quadratic polynomial to check.
+ * @param i - Optional interval over which to check monotonicity.
+ * @returns `true` when monotonicity is `'increasing'` or `'decreasing'`.
+ * @since 2.0.0
+ */
+export const isMonotonic: {
+  <T>(p: QuadraticPolynomial<T>, i?: Interval): p is QuadraticPolynomial<T & Monotonic>
+  (i: Interval): <T>(p: QuadraticPolynomial<T>) => p is QuadraticPolynomial<T & Monotonic>
+} = internal.isMonotonic
+
+/**
+ * Type-narrowing predicate: refines to `QuadraticPolynomial<T & Increasing>`.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasing: {
+  <T>(p: QuadraticPolynomial<T>, i?: Interval): p is QuadraticPolynomial<T & Increasing>
+  (i: Interval): <T>(p: QuadraticPolynomial<T>) => p is QuadraticPolynomial<T & Increasing>
+} = internal.isIncreasing
+
+/**
+ * Type-narrowing predicate: refines to `QuadraticPolynomial<T & Decreasing>`.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasing: {
+  <T>(p: QuadraticPolynomial<T>, i?: Interval): p is QuadraticPolynomial<T & Decreasing>
+  (i: Interval): <T>(p: QuadraticPolynomial<T>) => p is QuadraticPolynomial<T & Decreasing>
+} = internal.isDecreasing
+
+/**
+ * Asserts that the quadratic polynomial is monotonic, throwing on failure.
+ *
+ * @param p - The quadratic polynomial to assert against.
+ * @param i - Optional interval over which to check monotonicity.
+ * @returns The same polynomial, typed with the `Monotonic` brand.
+ * @throws When the polynomial is not monotonic over the given (or global) interval.
+ * @since 2.0.0
+ */
+export const asMonotonic: <T>(
+  p: QuadraticPolynomial<T>,
+  i?: Interval,
+) => QuadraticPolynomial<T & Monotonic> = internal.asMonotonic
+
+/**
+ * Asserts that the quadratic polynomial is increasing, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asIncreasing: <T>(
+  p: QuadraticPolynomial<T>,
+  i?: Interval,
+) => QuadraticPolynomial<T & Increasing> = internal.asIncreasing
+
+/**
+ * Asserts that the quadratic polynomial is decreasing, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asDecreasing: <T>(
+  p: QuadraticPolynomial<T>,
+  i?: Interval,
+) => QuadraticPolynomial<T & Decreasing> = internal.asDecreasing
 
 export const antiderivative: {
   /**
@@ -232,7 +332,7 @@ export const domain: {
    * @returns The domain of the polynomial over the range.
    * @since 1.0.0
    */
-  (p: QuadraticPolynomial, range: Interval): Interval | null
+  (p: QuadraticPolynomial, range: Interval): Solution.AtMostOne<Interval>
   /**
    * Computes the domain of the quadratic polynomial over a given range.
    *
@@ -240,7 +340,7 @@ export const domain: {
    * @returns A function that takes a quadratic polynomial and returns the domain of the polynomial over the range.
    * @since 1.0.0
    */
-  (range: Interval): (p: QuadraticPolynomial) => Interval | null
+  (range: Interval): (p: QuadraticPolynomial) => Solution.AtMostOne<Interval>
 } = internal.domain
 
 export const range: {

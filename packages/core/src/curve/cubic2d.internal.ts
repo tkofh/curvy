@@ -36,6 +36,8 @@ import {
 import { dual, Pipeable } from '../pipe'
 import * as CubicPolynomial from '../polynomial/cubic'
 import * as QuadraticPolynomial from '../polynomial/quadratic'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
+import * as Solution from '../solution'
 import * as Vector2 from '../vector/vector2'
 import type { CubicCurve2d } from './cubic2d'
 import * as LinearCurve2d from './linear2d'
@@ -44,7 +46,7 @@ import * as QuadraticCurve2d from './quadratic2d'
 export const CubicCurve2dTypeId: unique symbol = Symbol('curvy/curve/cubic2d')
 export type CubicCurve2dTypeId = typeof CubicCurve2dTypeId
 
-export class CubicCurve2dImpl extends Pipeable implements CubicCurve2d {
+export class CubicCurve2dImpl extends Pipeable implements CubicCurve2d<unknown, unknown> {
   readonly [CubicCurve2dTypeId]: CubicCurve2dTypeId = CubicCurve2dTypeId
 
   readonly x: CubicPolynomial.CubicPolynomial
@@ -117,6 +119,19 @@ export const solve = dual<
 >(2, (c: CubicCurve2d, t: number) =>
   Vector2.make(CubicPolynomial.solve(c.x, t), CubicPolynomial.solve(c.y, t)),
 )
+
+// solveAtX: invert the x polynomial to find ts within the unit interval, then
+// evaluate y at each surviving t. Result order matches solveInverse order
+// (t-ascending).
+export const solveAtX = dual(2, (c: CubicCurve2d, x: number) => {
+  const ts = Solution.filterInterval(CubicPolynomial.solveInverse(c.x, x), Interval.unit)
+  return Solution.map(ts, (t) => CubicPolynomial.solve(c.y, t))
+})
+
+export const solveAtY = dual(2, (c: CubicCurve2d, y: number) => {
+  const ts = Solution.filterInterval(CubicPolynomial.solveInverse(c.y, y), Interval.unit)
+  return Solution.map(ts, (t) => CubicPolynomial.solve(c.x, t))
+})
 
 export const derivative = (c: CubicCurve2d) =>
   QuadraticCurve2d.fromPolynomials(CubicPolynomial.derivative(c.x), CubicPolynomial.derivative(c.y))
@@ -191,3 +206,42 @@ export const curvature = dual(2, (c: CubicCurve2d, t: number) => {
 
   return Math.abs(Vector2.cross(v, a)) / vMag ** 3
 })
+
+// Combined trait refiners — fan out the polynomial-level check across both
+// axes, over the unit interval. For per-axis checks, users can call
+// `CubicPolynomial.isMonotonic(c.x, Interval.unit)` directly.
+export const isMonotonic = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): c is CubicCurve2d<XT & Monotonic, YT & Monotonic> =>
+  CubicPolynomial.isMonotonic(c.x, Interval.unit) && CubicPolynomial.isMonotonic(c.y, Interval.unit)
+
+export const isIncreasing = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): c is CubicCurve2d<XT & Increasing, YT & Increasing> =>
+  CubicPolynomial.isIncreasing(c.x, Interval.unit) &&
+  CubicPolynomial.isIncreasing(c.y, Interval.unit)
+
+export const isDecreasing = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): c is CubicCurve2d<XT & Decreasing, YT & Decreasing> =>
+  CubicPolynomial.isDecreasing(c.x, Interval.unit) &&
+  CubicPolynomial.isDecreasing(c.y, Interval.unit)
+
+const fail = (m: string): never => {
+  throw new Error(m)
+}
+
+export const asMonotonic = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): CubicCurve2d<XT & Monotonic, YT & Monotonic> =>
+  isMonotonic(c) ? c : fail('cubic curve is not monotonic in both axes')
+
+export const asIncreasing = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): CubicCurve2d<XT & Increasing, YT & Increasing> =>
+  isIncreasing(c) ? c : fail('cubic curve is not increasing in both axes')
+
+export const asDecreasing = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): CubicCurve2d<XT & Decreasing, YT & Decreasing> =>
+  isDecreasing(c) ? c : fail('cubic curve is not decreasing in both axes')

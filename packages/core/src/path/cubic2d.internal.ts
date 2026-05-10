@@ -6,12 +6,14 @@ import { dual, Pipeable } from '../pipe'
 import { epsEquals, invariant } from '../utils'
 import * as Vector2 from '../vector/vector2'
 import type { CubicPath2d } from './cubic2d'
+import { PathTraits, type Continuous } from './traits'
 
 export const CubicPath2dTypeId: unique symbol = Symbol('curvy/path/cubic2d')
 export type CubicPath2dTypeId = typeof CubicPath2dTypeId
 
-export class CubicPath2dImpl extends Pipeable implements CubicPath2d {
+export class CubicPath2dImpl extends Pipeable implements CubicPath2d<unknown> {
   readonly [CubicPath2dTypeId]: CubicPath2dTypeId = CubicPath2dTypeId
+  declare readonly [PathTraits]: unknown
 
   readonly curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>
 
@@ -173,6 +175,29 @@ export const toPathData = (p: CubicPath2d): string => {
   }
 
   return result.slice(1)
+}
+
+export const isContinuous = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & Continuous> => {
+  let prevEndX = Number.NaN
+  let prevEndY = Number.NaN
+  let first = true
+
+  for (const curve of p) {
+    const startX = curve.x.c0
+    const startY = curve.y.c0
+    if (!first && (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY))) {
+      return false
+    }
+    prevEndX = curve.x.c0 + curve.x.c1 + curve.x.c2 + curve.x.c3
+    prevEndY = curve.y.c0 + curve.y.c1 + curve.y.c2 + curve.y.c3
+    first = false
+  }
+  return true
+}
+
+export const asContinuous = <T>(p: CubicPath2d<T>): CubicPath2d<T & Continuous> => {
+  invariant(isContinuous(p), 'cubic path is not continuous')
+  return p
 }
 
 export const solveByDistance = dual<

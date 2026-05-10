@@ -17,7 +17,6 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
-    "@repo/tsconfig": "workspace:*",
     "oxfmt": "^0.48.0",
     "oxlint": "^1.63.0",
     "turbo": "^2.9.10",

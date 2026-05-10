@@ -1,6 +1,7 @@
 import * as Interval from '../interval'
 import { dual } from '../pipe'
-import { epsEquals } from '../utils'
+import * as Solution from '../solution'
+import { epsEquals, invariant } from '../utils'
 import * as Vector2 from '../vector/vector2'
 import type { Vector3 } from '../vector/vector3'
 import type { CubicPolynomial } from './cubic'
@@ -9,7 +10,7 @@ import * as Linear from './linear.internal'
 import { guaranteedMonotonicityFromComparison, type Monotonicity } from './monotonicity'
 import type { QuadraticPolynomial } from './quadratic'
 import { QuadraticPolynomialImpl, QuadraticPolynomialTypeId } from './quadratic.internal.circular'
-import type { ZeroToTwo } from './types'
+import type { Decreasing, Increasing, Monotonic } from './traits'
 
 export const fromPoints = (
   p0: Vector2.Vector2,
@@ -53,44 +54,51 @@ export const solve = dual<
 export const toSolver = (p: QuadraticPolynomial) => (x: number) => solve(p, x)
 
 export const solveInverse: {
-  (p: QuadraticPolynomial, y: number): ZeroToTwo
-  (y: number): (p: QuadraticPolynomial) => ZeroToTwo
+  (p: QuadraticPolynomial, y: number): Solution.AtMostTwo<number>
+  (y: number): (p: QuadraticPolynomial) => Solution.AtMostTwo<number>
 } = dual<
-  (y: number) => (p: QuadraticPolynomial) => ZeroToTwo,
-  (p: QuadraticPolynomial, y: number) => ZeroToTwo
+  (y: number) => (p: QuadraticPolynomial) => Solution.AtMostTwo<number>,
+  (p: QuadraticPolynomial, y: number) => Solution.AtMostTwo<number>
 >(2, (p: QuadraticPolynomial, y: number) => {
+  // c2 = 0: the polynomial is actually linear in disguise. Defer rather than
+  // dividing by zero in the quadratic formula.
+  if (p.c2 === 0) {
+    return Linear.solveInverse(Linear.make(p.c0, p.c1), y)
+  }
+
   const discriminant = p.c1 ** 2 - 4 * p.c2 * (p.c0 - y)
 
   if (discriminant < 0) {
-    return [] as ZeroToTwo
+    return Solution.none
   }
 
   if (discriminant === 0) {
-    return [-p.c1 / (2 * p.c2)] as ZeroToTwo
+    return Solution.one(-p.c1 / (2 * p.c2))
   }
 
   const sqrtDiscriminant = Math.sqrt(discriminant)
-
-  return [
-    (-p.c1 + sqrtDiscriminant) / (2 * p.c2),
-    (-p.c1 - sqrtDiscriminant) / (2 * p.c2),
-  ].toSorted((a, b) => a - b) as unknown as ZeroToTwo
+  const a = (-p.c1 + sqrtDiscriminant) / (2 * p.c2)
+  const b = (-p.c1 - sqrtDiscriminant) / (2 * p.c2)
+  return a < b ? Solution.two(a, b) : Solution.two(b, a)
 })
 
 export const toInverseSolver =
   (p: QuadraticPolynomial) =>
-  (y: number): ZeroToTwo =>
+  (y: number): Solution.AtMostTwo<number> =>
     solveInverse(p, y)
 
 export const derivative = (p: QuadraticPolynomial) => Linear.make(p.c1, p.c2 * 2)
 
 export const roots = (p: QuadraticPolynomial) => solveInverse(p, 0)
 
-export const extreme = (p: QuadraticPolynomial) => {
-  const result = derivative(p).pipe(Linear.solveInverse(0)) ?? (p.c2 === 0 ? null : 0)
-
-  return result === null ? null : Vector2.make(result, solve(p, result))
-}
+export const extreme = (p: QuadraticPolynomial) =>
+  derivative(p).pipe(
+    Linear.solveInverse(0),
+    Solution.match({
+      onNone: () => null,
+      onSome: ({ value: t }) => Vector2.make(t, solve(p, t)),
+    }),
+  )
 
 export const monotonicity = dual<
   (i: Interval.Interval) => (p: QuadraticPolynomial) => Monotonicity,
@@ -98,6 +106,11 @@ export const monotonicity = dual<
 >(
   (args) => isQuadraticPolynomial(args[0]),
   (p: QuadraticPolynomial, i?: Interval.Interval) => {
+    invariant(
+      i === undefined || Interval.size(i) > 0,
+      'monotonicity is undefined over a zero-width interval',
+    )
+
     if (p.c2 === 0 && p.c1 === 0) {
       return 'constant'
     }
@@ -109,11 +122,6 @@ export const monotonicity = dual<
     // c2 is non-zero, so the extreme is guaranteed to be non-null
     const e = extreme(p) as Vector2.Vector2
 
-    // if the interval is a single point, the monotonicity is constant
-    if (i && Interval.size(i) === 0) {
-      return 'constant'
-    }
-
     // if there is no interval, or the extreme is within the interval,
     // the monotonicity is none
     if (i === undefined || Interval.contains(i, e.x, { includeStart: false, includeEnd: false })) {
@@ -123,6 +131,62 @@ export const monotonicity = dual<
     return guaranteedMonotonicityFromComparison(solve(p, i.start), solve(p, i.end))
   },
 )
+
+export const isMonotonic = dual<
+  (
+    i: Interval.Interval,
+  ) => <T>(p: QuadraticPolynomial<T>) => p is QuadraticPolynomial<T & Monotonic>,
+  <T>(p: QuadraticPolynomial<T>, i?: Interval.Interval) => p is QuadraticPolynomial<T & Monotonic>
+>((args) => isQuadraticPolynomial(args[0]), ((p: QuadraticPolynomial, i?: Interval.Interval) => {
+  const m = monotonicity(p, i as Interval.Interval)
+  return m === 'increasing' || m === 'decreasing'
+}) as never)
+
+export const isIncreasing = dual<
+  (
+    i: Interval.Interval,
+  ) => <T>(p: QuadraticPolynomial<T>) => p is QuadraticPolynomial<T & Increasing>,
+  <T>(p: QuadraticPolynomial<T>, i?: Interval.Interval) => p is QuadraticPolynomial<T & Increasing>
+>(
+  (args) => isQuadraticPolynomial(args[0]),
+  ((p: QuadraticPolynomial, i?: Interval.Interval) =>
+    monotonicity(p, i as Interval.Interval) === 'increasing') as never,
+)
+
+export const isDecreasing = dual<
+  (
+    i: Interval.Interval,
+  ) => <T>(p: QuadraticPolynomial<T>) => p is QuadraticPolynomial<T & Decreasing>,
+  <T>(p: QuadraticPolynomial<T>, i?: Interval.Interval) => p is QuadraticPolynomial<T & Decreasing>
+>(
+  (args) => isQuadraticPolynomial(args[0]),
+  ((p: QuadraticPolynomial, i?: Interval.Interval) =>
+    monotonicity(p, i as Interval.Interval) === 'decreasing') as never,
+)
+
+export const asMonotonic = <T>(
+  p: QuadraticPolynomial<T>,
+  i?: Interval.Interval,
+): QuadraticPolynomial<T & Monotonic> => {
+  invariant(isMonotonic(p, i as Interval.Interval), 'quadratic polynomial is not monotonic')
+  return p
+}
+
+export const asIncreasing = <T>(
+  p: QuadraticPolynomial<T>,
+  i?: Interval.Interval,
+): QuadraticPolynomial<T & Increasing> => {
+  invariant(isIncreasing(p, i as Interval.Interval), 'quadratic polynomial is not increasing')
+  return p
+}
+
+export const asDecreasing = <T>(
+  p: QuadraticPolynomial<T>,
+  i?: Interval.Interval,
+): QuadraticPolynomial<T & Decreasing> => {
+  invariant(isDecreasing(p, i as Interval.Interval), 'quadratic polynomial is not decreasing')
+  return p
+}
 
 export const antiderivative = dual<
   (integrationConstant: number) => (p: QuadraticPolynomial) => CubicPolynomial,
@@ -134,17 +198,17 @@ export const antiderivative = dual<
 )
 
 export const domain = dual<
-  (range: Interval.Interval) => (p: QuadraticPolynomial) => Interval.Interval | null,
-  (p: QuadraticPolynomial, range: Interval.Interval) => Interval.Interval | null
+  (range: Interval.Interval) => (p: QuadraticPolynomial) => Solution.AtMostOne<Interval.Interval>,
+  (p: QuadraticPolynomial, range: Interval.Interval) => Solution.AtMostOne<Interval.Interval>
 >(2, (p: QuadraticPolynomial, r: Interval.Interval) => {
   const start = solveInverse(p, r.start)
   const end = solveInverse(p, r.end)
 
   if (start.length === 0 && end.length === 0) {
-    return null
+    return Solution.none
   }
 
-  return Interval.fromMinMax(...solveInverse(p, r.start), ...solveInverse(p, r.end))
+  return Solution.one(Interval.fromMinMax(...start, ...end))
 })
 
 export const range = dual<

@@ -1,4 +1,5 @@
 import * as Interval from '../interval'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
 import {
   GL32_W0,
   GL32_W1,
@@ -36,6 +37,7 @@ import {
 import { dual, Pipeable } from '../pipe'
 import * as LinearPolynomial from '../polynomial/linear'
 import * as QuadraticPolynomial from '../polynomial/quadratic'
+import * as Solution from '../solution'
 import * as Vector2 from '../vector/vector2'
 import * as LinearCurve2d from './linear2d'
 import type { QuadraticCurve2d } from './quadratic2d'
@@ -43,7 +45,7 @@ import type { QuadraticCurve2d } from './quadratic2d'
 export const QuadraticCurve2dTypeId: unique symbol = Symbol('curvy/curve/quadratic2d')
 export type QuadraticCurve2dTypeId = typeof QuadraticCurve2dTypeId
 
-export class QuadraticCurve2dImpl extends Pipeable implements QuadraticCurve2d {
+export class QuadraticCurve2dImpl extends Pipeable implements QuadraticCurve2d<unknown, unknown> {
   readonly [QuadraticCurve2dTypeId]: QuadraticCurve2dTypeId = QuadraticCurve2dTypeId
 
   readonly x: QuadraticPolynomial.QuadraticPolynomial
@@ -106,6 +108,19 @@ export const solve = dual<
 >(2, (c: QuadraticCurve2d, t: number) =>
   Vector2.make(QuadraticPolynomial.solve(c.x, t), QuadraticPolynomial.solve(c.y, t)),
 )
+
+// solveAtX: invert the x polynomial to find ts within the unit interval, then
+// evaluate y at each surviving t. Result order matches solveInverse order
+// (t-ascending).
+export const solveAtX = dual(2, (c: QuadraticCurve2d, x: number) => {
+  const ts = Solution.filterInterval(QuadraticPolynomial.solveInverse(c.x, x), Interval.unit)
+  return Solution.map(ts, (t) => QuadraticPolynomial.solve(c.y, t))
+})
+
+export const solveAtY = dual(2, (c: QuadraticCurve2d, y: number) => {
+  const ts = Solution.filterInterval(QuadraticPolynomial.solveInverse(c.y, y), Interval.unit)
+  return Solution.map(ts, (t) => QuadraticPolynomial.solve(c.x, t))
+})
 
 export const derivative = (c: QuadraticCurve2d) =>
   LinearCurve2d.fromPolynomials(
@@ -182,3 +197,43 @@ export const curvature = dual(2, (c: QuadraticCurve2d, t: number) => {
 
   return Math.abs(Vector2.cross(v, a)) / vMag ** 3
 })
+
+// Combined trait refiners — fan out the polynomial-level check across both
+// axes, over the unit interval. For per-axis checks, users can call
+// `QuadraticPolynomial.isMonotonic(c.x, Interval.unit)` directly.
+export const isMonotonic = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): c is QuadraticCurve2d<XT & Monotonic, YT & Monotonic> =>
+  QuadraticPolynomial.isMonotonic(c.x, Interval.unit) &&
+  QuadraticPolynomial.isMonotonic(c.y, Interval.unit)
+
+export const isIncreasing = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): c is QuadraticCurve2d<XT & Increasing, YT & Increasing> =>
+  QuadraticPolynomial.isIncreasing(c.x, Interval.unit) &&
+  QuadraticPolynomial.isIncreasing(c.y, Interval.unit)
+
+export const isDecreasing = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): c is QuadraticCurve2d<XT & Decreasing, YT & Decreasing> =>
+  QuadraticPolynomial.isDecreasing(c.x, Interval.unit) &&
+  QuadraticPolynomial.isDecreasing(c.y, Interval.unit)
+
+const fail = (m: string): never => {
+  throw new Error(m)
+}
+
+export const asMonotonic = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): QuadraticCurve2d<XT & Monotonic, YT & Monotonic> =>
+  isMonotonic(c) ? c : fail('quadratic curve is not monotonic in both axes')
+
+export const asIncreasing = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): QuadraticCurve2d<XT & Increasing, YT & Increasing> =>
+  isIncreasing(c) ? c : fail('quadratic curve is not increasing in both axes')
+
+export const asDecreasing = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): QuadraticCurve2d<XT & Decreasing, YT & Decreasing> =>
+  isDecreasing(c) ? c : fail('quadratic curve is not decreasing in both axes')

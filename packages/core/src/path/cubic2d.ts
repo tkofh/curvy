@@ -3,16 +3,23 @@ import type { Pipeable } from '../pipe'
 import type { Vector2 } from '../vector/vector2'
 import type { CubicPath2dTypeId } from './cubic2d.internal'
 import * as internal from './cubic2d.internal'
+import type { Continuous, PathTraits } from './traits'
+
+export type { Continuous } from './traits'
 
 /**
  * A cubic path in 2D space.
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
+ * The `Trait` type parameter accumulates trait brands as the path is refined
+ * via `isContinuous` / `asContinuous`.
+ *
  * @since 1.0.0
  */
-export interface CubicPath2d extends Pipeable, Iterable<CubicCurve2d> {
+export interface CubicPath2d<out Trait = unknown> extends Pipeable, Iterable<CubicCurve2d> {
   readonly [CubicPath2dTypeId]: CubicPath2dTypeId
+  readonly [PathTraits]: Trait
 }
 
 /**
@@ -101,6 +108,23 @@ export const solve: {
  * @since 2.0.0
  */
 export const toPathData: (p: CubicPath2d) => string = internal.toPathData
+
+/**
+ * Type-narrowing predicate: refines `CubicPath2d<T>` to
+ * `CubicPath2d<T & Continuous>` when adjacent curves connect.
+ *
+ * @since 2.0.0
+ */
+export const isContinuous: <T>(p: CubicPath2d<T>) => p is CubicPath2d<T & Continuous> =
+  internal.isContinuous
+
+/**
+ * Asserts that the cubic path is continuous, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asContinuous: <T>(p: CubicPath2d<T>) => CubicPath2d<T & Continuous> =
+  internal.asContinuous
 
 export const solveByDistance: {
   /**
