@@ -1,4 +1,3 @@
-import type { Matrix4x4 } from '../matrix/matrix4x4'
 import type { CubicPath2d } from '../path/cubic2d'
 import type { Pipeable } from '../pipe'
 import type { Vector2 } from '../vector/vector2'
@@ -7,18 +6,12 @@ import * as internal from './basis2d.internal'
 import type { Bezier2d } from './bezier2d'
 
 /**
- * Characteristic matrix of a Basis Spline.
- *
- * The characteristic matrix is a 4x4 matrix that defines the shape of the spline.
- *
- * @since 1.0.0
- */
-export const characteristic: Matrix4x4 = internal.characteristic
-
-/**
- * A Basis Spline in 2D space.
+ * A Basis Spline (uniform cubic B-spline) in 2D space.
  *
  * All fields are readonly and immutable, and all operations create new instances.
+ *
+ * The characteristic matrix that identifies this spline family lives in the
+ * `characteristic` module as `Characteristic.cubicBasisSpline`.
  *
  * @since 1.0.0
  */

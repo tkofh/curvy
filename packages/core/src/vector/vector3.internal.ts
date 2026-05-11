@@ -50,6 +50,20 @@ export const equals = dual<
 
 export const make = (v0: number, v1 = v0, v2 = v1): Vector3 => new Vector3Impl(v0, v1, v2)
 
+export const transpose = <T, const Channels extends ReadonlyArray<number>>(
+  inputs: readonly [T, T, T],
+  project: (item: T) => Channels,
+): { readonly [K in keyof Channels]: Vector3 } => {
+  const a = project(inputs[0])
+  const b = project(inputs[1])
+  const c = project(inputs[2])
+  const result: Array<Vector3> = []
+  for (let i = 0; i < a.length; i++) {
+    result.push(make(a[i] as number, b[i] as number, c[i] as number))
+  }
+  return result as never
+}
+
 export const fromSpherical = (r: number, theta: number, phi: number) =>
   new Vector3Impl(
     r * Math.sin(theta) * Math.cos(phi),

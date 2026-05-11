@@ -62,6 +62,21 @@ export const equals = dual<
 export const make = (v0: number, v1 = v0, v2 = v1, v3 = v2): Vector4 =>
   new Vector4Impl(v0, v1, v2, v3)
 
+export const transpose = <T, const Channels extends ReadonlyArray<number>>(
+  inputs: readonly [T, T, T, T],
+  project: (item: T) => Channels,
+): { readonly [K in keyof Channels]: Vector4 } => {
+  const a = project(inputs[0])
+  const b = project(inputs[1])
+  const c = project(inputs[2])
+  const d = project(inputs[3])
+  const result: Array<Vector4> = []
+  for (let i = 0; i < a.length; i++) {
+    result.push(make(a[i] as number, b[i] as number, c[i] as number, d[i] as number))
+  }
+  return result as never
+}
+
 export const magnitude: (vector: Vector4) => number = (vector: Vector4) =>
   Math.hypot(vector.x, vector.y, vector.z, vector.w)
 

@@ -91,15 +91,15 @@ describe('Solution transformations', () => {
     expect(Solution.filter(s, (v) => v > 1)).toEqual(Solution.two(2, 3))
     expect(Solution.filter(s, (v) => v > 5)).toEqual(Solution.none)
   })
-  test('filterInterval keeps values within an interval', () => {
+  test('clip keeps values within an interval', () => {
     const s = Solution.three(-1, 0.5, 2)
-    expect([...Solution.filterInterval(s, Interval.unit)]).toEqual([0.5])
+    expect([...Solution.clip(s, Interval.unit)]).toEqual([0.5])
   })
-  test('filterInterval respects the interval kind', () => {
+  test('clip respects the interval kind', () => {
     const s = Solution.three(0, 0.5, 1)
-    expect([...Solution.filterInterval(s, Interval.unit)]).toEqual([0, 0.5, 1])
-    expect([...Solution.filterInterval(s, Interval.toOpen(Interval.unit))]).toEqual([0.5])
-    expect([...Solution.filterInterval(s, Interval.makeOpenStart(0, 1))]).toEqual([0.5, 1])
+    expect([...Solution.clip(s, Interval.unit)]).toEqual([0, 0.5, 1])
+    expect([...Solution.clip(s, Interval.toOpen(Interval.unit))]).toEqual([0.5])
+    expect([...Solution.clip(s, Interval.makeOpenStart(0, 1))]).toEqual([0.5, 1])
   })
   test('map transforms each element', () => {
     const s = Solution.three(1, 2, 3)

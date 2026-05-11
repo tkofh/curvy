@@ -76,6 +76,21 @@ export const make: {
 } = internal.make
 
 /**
+ * Transposes a 3-tuple of items into one or more `Vector3`s, one per channel
+ * extracted by the projection function. See {@link Vector4.transpose} for the
+ * full operation description; this is the 3-component analog.
+ *
+ * @param inputs - Exactly three items of any type.
+ * @param project - A function returning a fixed-arity tuple of numbers — one per output channel.
+ * @returns A tuple of `Vector3`s with the same arity as the projection's return tuple.
+ * @since 2.1.0
+ */
+export const transpose: <T, const Channels extends ReadonlyArray<number>>(
+  inputs: readonly [T, T, T],
+  project: (item: T) => Channels,
+) => { readonly [K in keyof Channels]: Vector3 } = internal.transpose
+
+/**
  * Creates a new `Vector3` instance from spherical coordinates.
  *
  * @param r - The radius.

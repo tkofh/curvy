@@ -1,14 +1,18 @@
-import type { Matrix4x4 } from '../matrix/matrix4x4'
 import type { CubicPath2d } from '../path/cubic2d'
 import type { Pipeable } from '../pipe'
+import type * as Solution from '../solution'
 import type { Vector2 } from '../vector/vector2'
 import type { Bezier2dTypeId } from './bezier2d.internal'
 import * as internal from './bezier2d.internal'
+import type { RationalBezier2d } from './rationalBezier2d'
 
 /**
  * A Bézier curve in 2D space.
  *
  * All fields are readonly and immutable, and all operations create new instances.
+ *
+ * The characteristic matrix that identifies this spline family lives in the
+ * `characteristic` module as `Characteristic.cubicBezier`.
  *
  * @since 1.0.0
  */
@@ -16,15 +20,6 @@ export interface Bezier2d extends Pipeable {
   readonly [Bezier2dTypeId]: Bezier2dTypeId
   [Symbol.iterator](): IterableIterator<Vector2>
 }
-
-/**
- * Characteristic matrix of a Bézier curve.
- *
- * The characteristic matrix is a 4x4 matrix that defines the shape of the Bézier curve.
- *
- * @since 1.0.0
- */
-export const characteristic: Matrix4x4 = internal.characteristic
 
 /**
  * Creates a new `Bezier2d` instance.
@@ -168,6 +163,21 @@ export const appendAccelerationAligned: {
  * @since 1.0.0
  */
 export const toPath: (p: Bezier2d) => CubicPath2d = internal.toPath
+
+/**
+ * Attempts to lower a `RationalBezier2d` to a non-rational `Bezier2d`.
+ *
+ * Succeeds with `Solution.one(bezier)` when the rational curve's weights are
+ * uniform (the curve is mathematically a polynomial Bézier) and returns
+ * `Solution.none` otherwise — the rational curve cannot be represented
+ * exactly by a non-rational cubic Bézier.
+ *
+ * @param r - The rational bezier to convert.
+ * @returns Either a `Bezier2d` instance or `Solution.none`.
+ * @since 2.1.0
+ */
+export const fromRational: (r: RationalBezier2d) => Solution.AtMostOne<Bezier2d> =
+  internal.fromRational
 
 export const subdivide: {
   /**

@@ -87,6 +87,37 @@ export const make: {
 } = internal.make
 
 /**
+ * Transposes a 4-tuple of items into one or more `Vector4`s, one per channel
+ * extracted by the projection function.
+ *
+ * For each output channel, takes the corresponding number from each of the
+ * four projected items and packs them into a `Vector4` — the data-layout
+ * transformation NumPy calls a transpose, FP calls `unzip`, GPUs call a
+ * gather, and DSP people inexplicably call deinterleaving.
+ *
+ * The projection's return-tuple arity determines the number of output
+ * vectors, and that arity is preserved in the return type.
+ *
+ * @example
+ * ```ts
+ * // Pack the x and y coordinates of four control points into two Vector4s.
+ * const [xs, ys] = Vector4.transpose(
+ *   [p0, p1, p2, p3],
+ *   (p) => [p.x, p.y],
+ * )
+ * ```
+ *
+ * @param inputs - Exactly four items of any type.
+ * @param project - A function returning a fixed-arity tuple of numbers — one per output channel.
+ * @returns A tuple of `Vector4`s with the same arity as the projection's return tuple.
+ * @since 2.1.0
+ */
+export const transpose: <T, const Channels extends ReadonlyArray<number>>(
+  inputs: readonly [T, T, T, T],
+  project: (item: T) => Channels,
+) => { readonly [K in keyof Channels]: Vector4 } = internal.transpose
+
+/**
  * Gets the magnitude of a `Vector4`.
  *
  * @param vector - The vector to calculate the magnitude of.

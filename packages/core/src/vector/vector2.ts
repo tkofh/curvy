@@ -1,6 +1,6 @@
 import type { TwoDimensional } from '../dimensions'
 import type { Pipeable } from '../pipe'
-import type { Vector2TypeId } from './vector2.internal'
+import type { Vector2TypeId, WeightedVector2TypeId } from './vector2.internal'
 import * as internal from './vector2.internal'
 
 /**
@@ -15,6 +15,27 @@ export interface Vector2 extends Pipeable, TwoDimensional<number> {
 }
 
 /**
+ * A 2D point with an associated positive scalar weight.
+ *
+ * Used by rational primitives (e.g. `RationalBezier2d`) where each control
+ * point carries an influence weight. The interface is structurally distinct
+ * from `Vector2` — its brand prevents accidental use with vector arithmetic
+ * (`add`, `subtract`, `scale`, etc.) where weighted operations are not
+ * well-defined.
+ *
+ * Construct via {@link makeWeighted} (from raw components) or
+ * {@link withWeight} (from an existing `Vector2`).
+ *
+ * @since 2.1.0
+ */
+export interface Weighted extends Pipeable {
+  readonly [WeightedVector2TypeId]: WeightedVector2TypeId
+  readonly x: number
+  readonly y: number
+  readonly weight: number
+}
+
+/**
  * Checks if a value is a `Vector2`.
  *
  * @param v - The value to check.
@@ -22,6 +43,80 @@ export interface Vector2 extends Pipeable, TwoDimensional<number> {
  * @since 1.0.0
  */
 export const isVector2: (v: unknown) => v is Vector2 = internal.isVector2
+
+/**
+ * Checks if a value is a `Vector2.Weighted`.
+ *
+ * @param v - The value to check.
+ * @returns `true` if the value is a `Vector2.Weighted`, `false` otherwise.
+ * @since 2.1.0
+ */
+export const isWeighted: (v: unknown) => v is Weighted = internal.isWeighted
+
+/**
+ * Creates a new `Vector2.Weighted` from raw components. The weight must be
+ * finite and positive.
+ *
+ * @param x - The x component.
+ * @param y - The y component.
+ * @param weight - The positive scalar weight.
+ * @returns A new `Vector2.Weighted` instance.
+ * @since 2.1.0
+ */
+export const makeWeighted: (x: number, y: number, weight: number) => Weighted =
+  internal.makeWeighted
+
+export const withWeight: {
+  /**
+   * Promotes a `Vector2` to a `Vector2.Weighted` by attaching the given
+   * positive scalar weight.
+   *
+   * @param v - The point to weight.
+   * @param weight - The positive scalar weight.
+   * @returns A new `Vector2.Weighted` instance.
+   * @since 2.1.0
+   */
+  (v: Vector2, weight: number): Weighted
+  /**
+   * Promotes a `Vector2` to a `Vector2.Weighted` by attaching the given
+   * positive scalar weight.
+   *
+   * @param weight - The positive scalar weight.
+   * @returns A function that takes a `Vector2` and returns a weighted point.
+   * @since 2.1.0
+   */
+  (weight: number): (v: Vector2) => Weighted
+} = internal.withWeight
+
+/**
+ * Strips the weight from a `Vector2.Weighted`, returning the underlying point.
+ *
+ * @param w - The weighted point.
+ * @returns A new `Vector2` instance with the same x and y components.
+ * @since 2.1.0
+ */
+export const unweighted: (w: Weighted) => Vector2 = internal.unweighted
+
+export const weightedEquals: {
+  /**
+   * Checks if two `Vector2.Weighted` instances are approximately equal —
+   * point components and weight all within the default absolute tolerance.
+   *
+   * @param a - The first weighted point.
+   * @param b - The second weighted point.
+   * @returns `true` when components and weight are within tolerance.
+   * @since 2.1.0
+   */
+  (a: Weighted, b: Weighted): boolean
+  /**
+   * Checks if two `Vector2.Weighted` instances are approximately equal.
+   *
+   * @param b - The second weighted point.
+   * @returns A function that takes the first weighted point and returns the comparison result.
+   * @since 2.1.0
+   */
+  (b: Weighted): (a: Weighted) => boolean
+} = internal.weightedEquals
 
 export const equals: {
   /**
@@ -64,6 +159,21 @@ export const make: {
    */
   (x: number, y: number): Vector2
 } = internal.make
+
+/**
+ * Transposes a 2-tuple of items into one or more `Vector2`s, one per channel
+ * extracted by the projection function. See {@link Vector4.transpose} for the
+ * full operation description; this is the 2-component analog.
+ *
+ * @param inputs - Exactly two items of any type.
+ * @param project - A function returning a fixed-arity tuple of numbers — one per output channel.
+ * @returns A tuple of `Vector2`s with the same arity as the projection's return tuple.
+ * @since 2.1.0
+ */
+export const transpose: <T, const Channels extends ReadonlyArray<number>>(
+  inputs: readonly [T, T],
+  project: (item: T) => Channels,
+) => { readonly [K in keyof Channels]: Vector2 } = internal.transpose
 
 /**
  * Creates a new `Vector2` instance from polar coordinates.

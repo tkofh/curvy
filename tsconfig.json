@@ -18,6 +18,6 @@
     "exactOptionalPropertyTypes": true,
     "types": []
   },
-  "include": [],
+  "include": ["*.config.ts"],
   "exclude": ["**/node_modules", "**/dist"]
 }

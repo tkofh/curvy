@@ -222,6 +222,8 @@ export const isClosedAtEnd = (i: Interval): i is Closed | OpenStart =>
 
 export const unit: Closed = make(0, 1)
 
+export const unitOpen: Open = new OpenImpl(0, 1)
+
 export const biunit: Closed = make(-1, 1)
 
 export const lerp = (interval: Bounds, t: number): number =>

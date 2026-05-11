@@ -168,3 +168,58 @@ describe('vector4', () => {
     )
   })
 })
+
+describe('transpose', () => {
+  test('Vector2.transpose packs two channels from two inputs', () => {
+    const a = { x: 1, y: 2 }
+    const b = { x: 3, y: 4 }
+    const [xs, ys] = vector2.transpose([a, b], (p) => [p.x, p.y])
+    expect(xs).toBeCloseToValue(vector2.make(1, 3))
+    expect(ys).toBeCloseToValue(vector2.make(2, 4))
+  })
+
+  test('Vector3.transpose packs three channels from three inputs', () => {
+    const a = { x: 1, y: 2, w: 0.5 }
+    const b = { x: 3, y: 4, w: 1 }
+    const c = { x: 5, y: 6, w: 2 }
+    const [xs, ys, ws] = vector3.transpose([a, b, c], (p) => [p.x, p.y, p.w])
+    expect(xs).toBeCloseToValue(vector3.make(1, 3, 5))
+    expect(ys).toBeCloseToValue(vector3.make(2, 4, 6))
+    expect(ws).toBeCloseToValue(vector3.make(0.5, 1, 2))
+  })
+
+  test('Vector4.transpose packs the splines-pipeline channels from four inputs', () => {
+    // The canonical use case: gather x and y across four control points.
+    const p0 = vector2.make(0, 0)
+    const p1 = vector2.make(1, 2)
+    const p2 = vector2.make(3, 4)
+    const p3 = vector2.make(5, 6)
+    const [xs, ys] = vector4.transpose([p0, p1, p2, p3], (p) => [p.x, p.y])
+    expect(xs).toBeCloseToValue(vector4.make(0, 1, 3, 5))
+    expect(ys).toBeCloseToValue(vector4.make(0, 2, 4, 6))
+  })
+
+  test('Vector4.transpose fuses lift + transpose for rational/weighted inputs', () => {
+    // Lift each Vector2.Weighted to homogeneous (w·x, w·y, w) inside the
+    // projection — same shape RationalCubicCurve2d.fromBezierPoints uses.
+    const p0 = vector2.makeWeighted(1, 0, 1)
+    const p1 = vector2.makeWeighted(1, 1, 2)
+    const p2 = vector2.makeWeighted(0, 1, 2)
+    const p3 = vector2.makeWeighted(0, 0, 1)
+    const [xs, ys, ws] = vector4.transpose([p0, p1, p2, p3], (p) => [
+      p.x * p.weight,
+      p.y * p.weight,
+      p.weight,
+    ])
+    expect(xs).toBeCloseToValue(vector4.make(1, 2, 0, 0))
+    expect(ys).toBeCloseToValue(vector4.make(0, 2, 2, 0))
+    expect(ws).toBeCloseToValue(vector4.make(1, 2, 2, 1))
+  })
+
+  test('output tuple arity matches projection arity', () => {
+    // Single-channel projection → one output vector.
+    const result = vector4.transpose([{ v: 10 }, { v: 20 }, { v: 30 }, { v: 40 }], (p) => [p.v])
+    expect(result).toHaveLength(1)
+    expect(result[0]).toBeCloseToValue(vector4.make(10, 20, 30, 40))
+  })
+})

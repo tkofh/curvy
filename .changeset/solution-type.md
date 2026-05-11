@@ -37,7 +37,7 @@ Solution.AtMostThree<T> // = Solution<T>
 - `Solution.min(s)` / `Solution.max(s)` — numeric `number | undefined` (returns `number` when called on `Some<number>`).
 - `Solution.unsafeFirst(s)` / `Solution.unsafeLast(s)` / `Solution.unsafeMin(s)` / `Solution.unsafeMax(s)` — throw on empty.
 - `Solution.filter(s, predicate)` — drop values that don't match.
-- `Solution.filterInterval(s, interval, options?)` — drop numeric values outside an interval.
+- `Solution.clip(s, interval)` — drop numeric values outside an interval.
 - `Solution.map(s, f)` — transform every value.
 
 **API migration:**

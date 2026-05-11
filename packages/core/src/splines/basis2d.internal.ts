@@ -1,31 +1,12 @@
-import * as Matrix4x4 from '../matrix/matrix4x4'
+import * as Characteristic from '../characteristic'
 import * as CubicPath2d from '../path/cubic2d'
 import { dual, Pipeable } from '../pipe'
-import { invariant, roundDown } from '../utils'
+import { invariant } from '../utils'
 import type * as Vector2 from '../vector/vector2'
 import type { Basis2d } from './basis2d'
 import type { Bezier2d } from './bezier2d'
 import * as bezierInternal from './bezier2d.internal'
 import { toCurves } from './util'
-
-export const characteristic = Matrix4x4.make(
-  1 / 6,
-  4 / 6,
-  roundDown(1 / 6),
-  0,
-  -0.5,
-  0,
-  0.5,
-  0,
-  0.5,
-  -1,
-  0.5,
-  0,
-  -1 / 6,
-  0.5,
-  -0.5,
-  1 / 6,
-)
 
 export const Basis2dTypeId = Symbol('curvy/splines/basis2d')
 export type Basis2dTypeId = typeof Basis2dTypeId
@@ -85,6 +66,8 @@ export const withTriplicatedEndpoints = (p: Basis2d) => {
   ])
 }
 
-export const toPath = (p: Basis2d) => CubicPath2d.make(...toCurves(p, characteristic, 1))
+export const toPath = (p: Basis2d) =>
+  CubicPath2d.make(...toCurves(p, Characteristic.cubicBasisSpline, 1))
 
-export const toBezier = (p: Basis2d): Bezier2d => bezierInternal.fromBasis(p, characteristic, 1)
+export const toBezier = (p: Basis2d): Bezier2d =>
+  bezierInternal.fromBasis(p, Characteristic.cubicBasisSpline, 1)

@@ -1,4 +1,4 @@
-import * as Matrix4x4 from '../matrix/matrix4x4'
+import * as Characteristic from '../characteristic'
 import * as CubicPath2d from '../path/cubic2d'
 import { dual, Pipeable } from '../pipe'
 import { invariant } from '../utils'
@@ -7,8 +7,6 @@ import type { Bezier2d } from './bezier2d'
 import * as bezierInternal from './bezier2d.internal'
 import type { Hermite2d } from './hermite2d'
 import { toCurves } from './util'
-
-export const characteristic = Matrix4x4.make(1, 0, 0, 0, 0, 1, 0, 0, -3, -2, 3, -1, 2, 1, -2, 1)
 
 export const Hermite2dTypeId = Symbol('curvy/splines/hermite2d')
 export type Hermite2dTypeId = typeof Hermite2dTypeId
@@ -59,6 +57,8 @@ export const prepend = dual<
   return new Hermite2dImpl([p0, v0].concat(points))
 })
 
-export const toPath = (p: Hermite2d) => CubicPath2d.make(...toCurves(p, characteristic, 2))
+export const toPath = (p: Hermite2d) =>
+  CubicPath2d.make(...toCurves(p, Characteristic.cubicHermite, 2))
 
-export const toBezier = (p: Hermite2d): Bezier2d => bezierInternal.fromBasis(p, characteristic, 2)
+export const toBezier = (p: Hermite2d): Bezier2d =>
+  bezierInternal.fromBasis(p, Characteristic.cubicHermite, 2)

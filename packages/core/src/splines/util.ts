@@ -1,6 +1,6 @@
+import * as Characteristic from '../characteristic'
 import * as CubicCurve2d from '../curve/cubic2d'
-import * as Matrix4x4 from '../matrix/matrix4x4'
-import * as CubicPolynomial from '../polynomial/cubic'
+import type * as Matrix4x4 from '../matrix/matrix4x4'
 import type { Vector2 } from '../vector/vector2'
 import * as Vector4 from '../vector/vector4'
 
@@ -51,14 +51,8 @@ export function* toCurves(
   matrix: Matrix4x4.Matrix4x4,
   stride: 1 | 2 | 3,
 ) {
-  for (const [p0, p1, p2, p3] of toPointQuads(points, stride)) {
-    yield CubicCurve2d.fromPolynomials(
-      CubicPolynomial.fromVector(
-        Matrix4x4.vectorProductLeft(matrix, Vector4.make(p0.x, p1.x, p2.x, p3.x)),
-      ),
-      CubicPolynomial.fromVector(
-        Matrix4x4.vectorProductLeft(matrix, Vector4.make(p0.y, p1.y, p2.y, p3.y)),
-      ),
-    )
+  for (const quad of toPointQuads(points, stride)) {
+    const channels = Vector4.transpose(quad, (p) => [p.x, p.y])
+    yield CubicCurve2d.fromPolynomials(...Characteristic.apply(matrix, ...channels))
   }
 }

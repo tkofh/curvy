@@ -1,4 +1,3 @@
-import type { Matrix4x4 } from '../matrix/matrix4x4'
 import type { CubicPath2d } from '../path/cubic2d'
 import type { Pipeable } from '../pipe'
 import type { Vector2 } from '../vector/vector2'
@@ -11,6 +10,9 @@ import type { Hermite2dTypeId } from './hermite2d.internal'
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
+ * The characteristic matrix that identifies this spline family lives in the
+ * `characteristic` module as `Characteristic.cubicHermite`.
+ *
  * @since 1.0.0
  */
 export interface Hermite2d extends Pipeable {
@@ -18,15 +20,6 @@ export interface Hermite2d extends Pipeable {
 
   [Symbol.iterator](): IterableIterator<Vector2>
 }
-
-/**
- * The characteristic matrix of a Hermite spline.
- *
- * The characteristic matrix is a 4x4 matrix that defines the shape of the spline.
- *
- * @since 1.0.0
- */
-export const characteristic: Matrix4x4 = internal.characteristic
 
 /**
  * Checks if a value is a `Hermite2d`.

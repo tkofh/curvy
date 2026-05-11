@@ -66,6 +66,10 @@
       "types": "./dist/curve/cubic2d.d.mts",
       "import": "./dist/curve/cubic2d.mjs"
     },
+    "./curve/rationalCubic2d": {
+      "types": "./dist/curve/rationalCubic2d.d.mts",
+      "import": "./dist/curve/rationalCubic2d.mjs"
+    },
     "./polynomial": {
       "types": "./dist/polynomial/index.d.mts",
       "import": "./dist/polynomial/index.mjs"
@@ -102,6 +106,14 @@
       "types": "./dist/path/cubic2d.d.mts",
       "import": "./dist/path/cubic2d.mjs"
     },
+    "./path/rationalCubic2d": {
+      "types": "./dist/path/rationalCubic2d.d.mts",
+      "import": "./dist/path/rationalCubic2d.mjs"
+    },
+    "./characteristic": {
+      "types": "./dist/characteristic.d.mts",
+      "import": "./dist/characteristic.mjs"
+    },
     "./splines": {
       "types": "./dist/splines/index.d.mts",
       "import": "./dist/splines/index.mjs"
@@ -121,6 +133,10 @@
     "./splines/basis2d": {
       "types": "./dist/splines/basis2d.d.mts",
       "import": "./dist/splines/basis2d.mjs"
+    },
+    "./splines/rationalBezier2d": {
+      "types": "./dist/splines/rationalBezier2d.d.mts",
+      "import": "./dist/splines/rationalBezier2d.mjs"
     },
     "./pipe": {
       "types": "./dist/pipe.d.mts",

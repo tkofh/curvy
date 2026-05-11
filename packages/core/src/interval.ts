@@ -436,6 +436,15 @@ export const isClosedAtEnd: (i: Interval) => i is Closed | OpenStart = internal.
 export const unit: Closed = internal.unit
 
 /**
+ * The open unit interval, `(0, 1)`. The symmetric open analog of {@link unit};
+ * convenient for "strict interior" use cases such as filtering roots that
+ * must lie strictly inside the unit parameter range.
+ *
+ * @since 2.1.0
+ */
+export const unitOpen: Open = internal.unitOpen
+
+/**
  * The biunit interval, `[-1, 1]`.
  *
  * @since 1.0.0

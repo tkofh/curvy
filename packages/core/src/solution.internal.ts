@@ -205,10 +205,13 @@ export const filter = <T>(s: Solution<T>, predicate: (v: T) => boolean): Solutio
   }
 }
 
-export const filterInterval = (s: Solution<number>, i: Interval.Interval): Solution<number> =>
-  filter(s, (v) => Interval.contains(i, v))
+export const clip = dual(
+  2,
+  (s: Solution<number>, i: Interval.Interval): Solution<number> =>
+    filter(s, (v) => Interval.contains(i, v)),
+)
 
-export const map = <A, B>(s: Solution<A>, f: (v: A) => B): Solution<B> => {
+export const map = dual(2, <A, B>(s: Solution<A>, f: (v: A) => B): Solution<B> => {
   switch (s._tag) {
     case 'none':
       return s
@@ -219,7 +222,7 @@ export const map = <A, B>(s: Solution<A>, f: (v: A) => B): Solution<B> => {
     case 'three':
       return three(f(s.values[0]), f(s.values[1]), f(s.values[2]))
   }
-}
+})
 
 export const match = dual(
   2,

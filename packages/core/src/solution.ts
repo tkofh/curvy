@@ -216,17 +216,18 @@ export const filter: <T>(s: Solution<T>, predicate: (v: T) => boolean) => Soluti
   internal.filter
 
 /**
- * Filters the solution to values contained within an interval. Endpoint
+ * Restricts the solution to values contained within an interval. Endpoint
  * inclusivity follows the interval's `kind` — pass an open variant (e.g.
- * `Interval.makeOpen(0, 1)` or `Interval.toOpen(closed)`) for strict
- * containment.
+ * `Interval.makeOpen(0, 1)` or `Interval.unitOpen`) for strict containment.
  *
- * @param s - The solution to filter.
+ * @param s - The solution to clip.
  * @param i - The interval to retain values within.
  * @since 2.0.0
  */
-export const filterInterval: (s: Solution<number>, i: Interval) => Solution<number> =
-  internal.filterInterval
+export const clip: {
+  (i: Interval): (s: Solution<number>) => Solution<number>
+  (s: Solution<number>, i: Interval): Solution<number>
+} = internal.clip
 
 /**
  * Maps every value in the solution to a new value. Result cardinality matches
@@ -234,7 +235,10 @@ export const filterInterval: (s: Solution<number>, i: Interval) => Solution<numb
  *
  * @since 2.0.0
  */
-export const map: <A, B>(s: Solution<A>, f: (v: A) => B) => Solution<B> = internal.map
+export const map: {
+  <A, B>(s: Solution<A>, f: (v: A) => B): Solution<B>
+  <A, B>(f: (v: A) => B): (s: Solution<A>) => Solution<B>
+} = internal.map
 
 // Drops `None` from the union of the input solution type — used by `match` to
 // give `onSome` a tighter parameter type. Distributive: a `Solution.AtMostOne<T>`

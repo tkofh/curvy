@@ -1,15 +1,17 @@
+import * as Characteristic from '../characteristic'
 import * as Matrix4x4 from '../matrix/matrix4x4'
 import * as CubicPath2d from '../path/cubic2d'
 import { dual, Pipeable } from '../pipe'
+import * as Solution from '../solution'
 import { invariant } from '../utils'
 import * as Vector2 from '../vector/vector2'
 import * as Vector4 from '../vector/vector4'
 import type { Bezier2d } from './bezier2d'
+import type { RationalBezier2d } from './rationalBezier2d'
+import * as RationalBezier2dInternal from './rationalBezier2d.internal'
 import { toCurves, toPointQuads } from './util'
 
-export const characteristic = Matrix4x4.make(1, 0, 0, 0, -3, 3, 0, 0, 3, -6, 3, 0, -1, 3, -3, 1)
-
-const characteristicInverse = Matrix4x4.inverse(characteristic)
+const characteristicInverse = Matrix4x4.inverse(Characteristic.cubicBezier)
 
 // Maps a source spline's characteristic matrix to its precomputed conversion
 // matrix `M_bezier_inverse · M_source`, so each `fromBasis` call is one
@@ -142,7 +144,16 @@ export const appendAccelerationAligned = dual<
   return append(p, p4, p5, p6)
 })
 
-export const toPath = (p: Bezier2d) => CubicPath2d.make(...toCurves(p, characteristic, 3))
+export const toPath = (p: Bezier2d) =>
+  CubicPath2d.make(...toCurves(p, Characteristic.cubicBezier, 3))
+
+export const fromRational = (r: RationalBezier2d): Solution.AtMostOne<Bezier2d> => {
+  const points = RationalBezier2dInternal.toBezierPoints(r)
+  if (points._tag === 'none') {
+    return points
+  }
+  return Solution.one(new Bezier2dImpl(points.value))
+}
 
 export const subdivide = dual<
   (u: number) => (b: Bezier2d) => [Bezier2d, Bezier2d],

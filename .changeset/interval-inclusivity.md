@@ -25,7 +25,7 @@ The four per-edge modifiers narrow the result type via overloads (e.g. `toStartO
 
 **Equality.** `equals` now compares both endpoints AND kind — `[0, 1]` and `[0, 1)` are no longer equal. New `aligned` provides the looser numeric-range comparison (`Bounds`-typed) for the previous behavior.
 
-**`unit` and `biunit`** are now typed as `Closed`, not the broader `Interval`.
+**`unit` and `biunit`** are now typed as `Closed`, not the broader `Interval`. **New `unitOpen`**: the open unit interval `(0, 1)` — the symmetric open counterpart to `unit`, useful for strict-interior filtering (e.g. clipping polynomial roots that must lie strictly inside `[0, 1]`).
 
 ```ts
 // Before
@@ -37,12 +37,14 @@ Interval.contains(Interval.toOpen(i), x)
 Interval.contains(Interval.makeOpen(0, 1), x)
 ```
 
-**`Solution.filterInterval`** loses its options arg. Pass an interval of the kind you want:
+**`Solution.filterInterval` is renamed to `Solution.clip`** and loses its options arg. Pass an interval of the kind you want:
 
 ```ts
 // Before
 Solution.filterInterval(s, Interval.unit, { includeStart: false, includeEnd: false })
 
 // After
-Solution.filterInterval(s, Interval.toOpen(Interval.unit))
+Solution.clip(s, Interval.toOpen(Interval.unit))
+// or use the new constant:
+Solution.clip(s, Interval.unitOpen)
 ```

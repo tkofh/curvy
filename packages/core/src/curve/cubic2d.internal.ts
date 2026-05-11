@@ -1,3 +1,4 @@
+import * as Characteristic from '../characteristic'
 import * as Interval from '../interval'
 import {
   GL32_W0,
@@ -39,6 +40,7 @@ import * as QuadraticPolynomial from '../polynomial/quadratic'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
 import * as Solution from '../solution'
 import * as Vector2 from '../vector/vector2'
+import * as Vector4 from '../vector/vector4'
 import type { CubicCurve2d } from './cubic2d'
 import * as LinearCurve2d from './linear2d'
 import * as QuadraticCurve2d from './quadratic2d'
@@ -83,32 +85,19 @@ export const fromCoefficients: (
     CubicPolynomial.make(c0.y, c1.y, c2.y, c3.y),
   )
 
-// Cubic Bernstein basis: B(t) = (1-t)³·p0 + 3(1-t)²t·p1 + 3(1-t)t²·p2 + t³·p3
-// Expanding to monomial form gives:
-//   c0 = p0
-//   c1 = -3p0 + 3p1
-//   c2 = 3p0 - 6p1 + 3p2
-//   c3 = -p0 + 3p1 - 3p2 + p3
+// Applies the cubic Bézier characteristic matrix to the per-axis control
+// vectors, producing monomial polynomials. The matrix encodes the cubic
+// Bernstein → monomial expansion `(c₀, c₁, c₂, c₃) = M · (p₀, p₁, p₂, p₃)`
+// for each axis independently.
 export const fromBezierPoints: (
   p0: Vector2.Vector2,
   p1: Vector2.Vector2,
   p2: Vector2.Vector2,
   p3: Vector2.Vector2,
-) => CubicCurve2d = (p0, p1, p2, p3) =>
-  new CubicCurve2dImpl(
-    CubicPolynomial.make(
-      p0.x,
-      -3 * p0.x + 3 * p1.x,
-      3 * p0.x - 6 * p1.x + 3 * p2.x,
-      -p0.x + 3 * p1.x - 3 * p2.x + p3.x,
-    ),
-    CubicPolynomial.make(
-      p0.y,
-      -3 * p0.y + 3 * p1.y,
-      3 * p0.y - 6 * p1.y + 3 * p2.y,
-      -p0.y + 3 * p1.y - 3 * p2.y + p3.y,
-    ),
-  )
+) => CubicCurve2d = (p0, p1, p2, p3) => {
+  const channels = Vector4.transpose([p0, p1, p2, p3], (p) => [p.x, p.y])
+  return new CubicCurve2dImpl(...Characteristic.apply(Characteristic.cubicBezier, ...channels))
+}
 
 export const isCubicCurve2d = (c: unknown): c is CubicCurve2d =>
   typeof c === 'object' && c !== null && CubicCurve2dTypeId in c
@@ -124,12 +113,12 @@ export const solve = dual<
 // evaluate y at each surviving t. Result order matches solveInverse order
 // (t-ascending).
 export const solveAtX = dual(2, (c: CubicCurve2d, x: number) => {
-  const ts = Solution.filterInterval(CubicPolynomial.solveInverse(c.x, x), Interval.unit)
+  const ts = Solution.clip(CubicPolynomial.solveInverse(c.x, x), Interval.unit)
   return Solution.map(ts, (t) => CubicPolynomial.solve(c.y, t))
 })
 
 export const solveAtY = dual(2, (c: CubicCurve2d, y: number) => {
-  const ts = Solution.filterInterval(CubicPolynomial.solveInverse(c.y, y), Interval.unit)
+  const ts = Solution.clip(CubicPolynomial.solveInverse(c.y, y), Interval.unit)
   return Solution.map(ts, (t) => CubicPolynomial.solve(c.x, t))
 })
 

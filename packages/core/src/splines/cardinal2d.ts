@@ -1,4 +1,3 @@
-import type { Matrix4x4 } from '../matrix/matrix4x4'
 import type { CubicPath2d } from '../path/cubic2d'
 import type { Pipeable } from '../pipe'
 import type { Vector2 } from '../vector/vector2'
@@ -11,32 +10,16 @@ import * as internal from './cardinal2d.internal'
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
+ * The characteristic matrix that identifies this spline family lives in the
+ * `characteristic` module as `Characteristic.cubicCardinal(tension)` (and
+ * the Catmull-Rom variant as `Characteristic.cubicCatmullRom`).
+ *
  * @since 1.0.0
  */
 export interface Cardinal2d extends Pipeable {
   readonly [Cardinal2dTypeId]: Cardinal2dTypeId
   [Symbol.iterator](): IterableIterator<Vector2>
 }
-
-/**
- * The characteristic matrix of a Cardinal spline.
- *
- * The characteristic matrix is a 4x4 matrix that defines the shape of the spline.
- *
- * @param scale - The tension of the spline.
- * @returns The characteristic matrix.
- * @since 1.0.0
- */
-export const characteristic: (scale: number) => Matrix4x4 = internal.characteristic
-
-/**
- * The characteristic matrix of a Catmull-Rom spline.
- *
- * The characteristic matrix is a 4x4 matrix that defines the shape of the spline.
- *
- * @since 1.0.0
- */
-export const catRomCharacteristic: Matrix4x4 = internal.catRomCharacteristic
 
 /**
  * Checks if a value is a `Cardinal2d`.

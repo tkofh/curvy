@@ -1,4 +1,4 @@
-import * as Matrix4x4 from '../matrix/matrix4x4'
+import * as Characteristic from '../characteristic'
 import * as CubicPath2d from '../path/cubic2d'
 import { dual, Pipeable } from '../pipe'
 import { invariant } from '../utils'
@@ -7,36 +7,6 @@ import type { Bezier2d } from './bezier2d'
 import * as bezierInternal from './bezier2d.internal'
 import type { Cardinal2d } from './cardinal2d'
 import { toCurves } from './util'
-
-const characteristicCache = new Map<number, Matrix4x4.Matrix4x4>()
-
-export const characteristic = (scale: number): Matrix4x4.Matrix4x4 => {
-  let m = characteristicCache.get(scale)
-  if (m === undefined) {
-    m = Matrix4x4.make(
-      0,
-      1,
-      0,
-      0,
-      -scale,
-      0,
-      scale,
-      0,
-      2 * scale,
-      scale - 3,
-      3 - 2 * scale,
-      -scale,
-      -scale,
-      2 - scale,
-      scale - 2,
-      scale,
-    )
-    characteristicCache.set(scale, m)
-  }
-  return m
-}
-
-export const catRomCharacteristic = characteristic(0.5)
 
 export const Cardinal2dTypeId: unique symbol = Symbol.for('curvy/splines/cardinal2d')
 export type Cardinal2dTypeId = typeof Cardinal2dTypeId
@@ -113,13 +83,14 @@ export const withReflectedEndpoints = dual(
   },
 )
 
+// `cubicCardinal(0.5)` returns the cached Catmull-Rom matrix from a shared
+// per-tension cache in the `characteristic` module — no need to special-case
+// the 0.5 path here.
 export const toPath = dual(
   (args) => isCardinal2d(args[0]),
   (p: Cardinal2d, scale = 0.5) =>
-    CubicPath2d.make(
-      ...toCurves(p, scale === 0.5 ? catRomCharacteristic : characteristic(scale), 1),
-    ),
+    CubicPath2d.make(...toCurves(p, Characteristic.cubicCardinal(scale), 1)),
 )
 
 export const toBezier = (p: Cardinal2d, scale = 0.5): Bezier2d =>
-  bezierInternal.fromBasis(p, scale === 0.5 ? catRomCharacteristic : characteristic(scale), 1)
+  bezierInternal.fromBasis(p, Characteristic.cubicCardinal(scale), 1)

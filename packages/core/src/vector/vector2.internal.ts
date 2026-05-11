@@ -1,9 +1,12 @@
 import { dual, Pipeable } from '../pipe'
-import { epsEquals } from '../utils'
-import type { Vector2 } from './vector2'
+import { epsEquals, invariant } from '../utils'
+import type { Vector2, Weighted } from './vector2'
 
 export const Vector2TypeId = Symbol.for('curvy/vector2')
 export type Vector2TypeId = typeof Vector2TypeId
+
+export const WeightedVector2TypeId = Symbol.for('curvy/vector2/weighted')
+export type WeightedVector2TypeId = typeof WeightedVector2TypeId
 
 class Vector2Impl extends Pipeable implements Vector2 {
   readonly [Vector2TypeId]: Vector2TypeId = Vector2TypeId
@@ -34,8 +37,34 @@ class Vector2Impl extends Pipeable implements Vector2 {
   }
 }
 
+class WeightedImpl extends Pipeable implements Weighted {
+  readonly [WeightedVector2TypeId]: WeightedVector2TypeId = WeightedVector2TypeId
+
+  readonly x: number
+  readonly y: number
+  readonly weight: number
+
+  constructor(x: number, y: number, weight: number) {
+    super()
+    this.x = x
+    this.y = y
+    this.weight = weight
+  }
+
+  get [Symbol.toStringTag]() {
+    return `Vector2.Weighted(${this.x}, ${this.y}, w=${this.weight})`
+  }
+
+  get [Symbol.for('nodejs.util.inspect.custom')]() {
+    return this[Symbol.toStringTag]
+  }
+}
+
 export const isVector2 = (v: unknown): v is Vector2 =>
   typeof v === 'object' && v !== null && Vector2TypeId in v
+
+export const isWeighted = (v: unknown): v is Weighted =>
+  typeof v === 'object' && v !== null && WeightedVector2TypeId in v
 
 export const equals = dual<
   (b: Vector2) => (a: Vector2) => boolean,
@@ -43,6 +72,43 @@ export const equals = dual<
 >(2, (a: Vector2, b: Vector2) => epsEquals(a.x, b.x) && epsEquals(a.y, b.y))
 
 export const make = (v0: number, v1 = v0): Vector2 => new Vector2Impl(v0, v1)
+
+export const transpose = <T, const Channels extends ReadonlyArray<number>>(
+  inputs: readonly [T, T],
+  project: (item: T) => Channels,
+): { readonly [K in keyof Channels]: Vector2 } => {
+  const a = project(inputs[0])
+  const b = project(inputs[1])
+  const result: Array<Vector2> = []
+  for (let i = 0; i < a.length; i++) {
+    result.push(make(a[i] as number, b[i] as number))
+  }
+  return result as never
+}
+
+export const makeWeighted = (x: number, y: number, weight: number): Weighted => {
+  invariant(
+    Number.isFinite(weight) && weight > 0,
+    'Vector2.Weighted weight must be positive and finite',
+  )
+  return new WeightedImpl(x, y, weight)
+}
+
+export const withWeight = dual<
+  (weight: number) => (v: Vector2) => Weighted,
+  (v: Vector2, weight: number) => Weighted
+>(2, (v: Vector2, weight: number) => makeWeighted(v.x, v.y, weight))
+
+export const unweighted = (w: Weighted): Vector2 => make(w.x, w.y)
+
+export const weightedEquals = dual<
+  (b: Weighted) => (a: Weighted) => boolean,
+  (a: Weighted, b: Weighted) => boolean
+>(
+  2,
+  (a: Weighted, b: Weighted) =>
+    epsEquals(a.x, b.x) && epsEquals(a.y, b.y) && epsEquals(a.weight, b.weight),
+)
 
 export const fromPolar = (r: number, theta: number) =>
   make(r * Math.cos(theta), r * Math.sin(theta))
