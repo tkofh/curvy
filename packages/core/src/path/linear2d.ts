@@ -1,4 +1,4 @@
-import type { Box2d } from '../box/box2d'
+import type { Interval2d } from '../interval/interval2d'
 import type { LinearCurve2d } from '../curve/linear2d'
 import type { Closed } from '../interval/interval'
 import type { Pipeable } from '../utils'
@@ -143,4 +143,4 @@ export const asContinuous: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Continuou
  * @returns A closed `Box2d` enclosing the path.
  * @since 2.1.0
  */
-export const boundingBox: (p: LinearPath2d) => Box2d<Closed, Closed> = internal.boundingBox
+export const boundingBox: (p: LinearPath2d) => Interval2d<Closed, Closed> = internal.boundingBox

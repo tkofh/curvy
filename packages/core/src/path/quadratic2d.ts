@@ -1,4 +1,4 @@
-import type { Box2d } from '../box/box2d'
+import type { Interval2d } from '../interval/interval2d'
 import type { QuadraticCurve2d } from '../curve/quadratic2d'
 import type { Closed } from '../interval/interval'
 import type { Pipeable } from '../utils'
@@ -136,4 +136,4 @@ export const asContinuous: <T>(p: QuadraticPath2d<T>) => QuadraticPath2d<T & Con
  * @returns A closed `Box2d` enclosing the path.
  * @since 2.1.0
  */
-export const boundingBox: (p: QuadraticPath2d) => Box2d<Closed, Closed> = internal.boundingBox
+export const boundingBox: (p: QuadraticPath2d) => Interval2d<Closed, Closed> = internal.boundingBox

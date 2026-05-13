@@ -2,7 +2,7 @@
 'curvy': minor
 ---
 
-**Approximate rational cubic curves as polynomial cubic paths.** Rational curves can't be converted exactly to polynomial Béziers — that's the entire reason rational forms exist (true circles, conic sections, etc.). But they *can* be approximated to arbitrary tolerance via recursive subdivision, which is what PDF and SVG renderers do internally.
+**Approximate rational cubic curves as polynomial cubic paths.** Rational curves can't be converted exactly to polynomial Béziers — that's the entire reason rational forms exist (true circles, conic sections, etc.). But they _can_ be approximated to arbitrary tolerance via recursive subdivision, which is what PDF and SVG renderers do internally.
 
 Two new operations, both at the curve and path level:
 

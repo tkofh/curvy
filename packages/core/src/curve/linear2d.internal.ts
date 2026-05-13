@@ -1,4 +1,4 @@
-import * as Box2d from '../box/box2d'
+import * as Interval2d from '../interval/interval2d'
 import * as Interval from '../interval/interval'
 import { dual, Pipeable } from '../utils'
 import * as LinearPolynomial from '../polynomial/linear'
@@ -90,8 +90,13 @@ export const length = dual(
     Math.sqrt(c.x.c1 ** 2 + c.y.c1 ** 2) * Math.abs(i.end - i.start),
 )
 
-export const boundingBox = (c: LinearCurve2d): Box2d.Box2d<Interval.Closed, Interval.Closed> =>
-  Box2d.make(LinearPolynomial.range(c.x, Interval.unit), LinearPolynomial.range(c.y, Interval.unit))
+export const boundingBox = (
+  c: LinearCurve2d,
+): Interval2d.Interval2d<Interval.Closed, Interval.Closed> =>
+  Interval2d.make(
+    LinearPolynomial.range(c.x, Interval.unit),
+    LinearPolynomial.range(c.y, Interval.unit),
+  )
 
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes. For per-axis checks, users can call `LinearPolynomial.isMonotonic(c.x)`

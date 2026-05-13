@@ -106,6 +106,9 @@ export const contains = dual<
   }
 })
 
+const includesStart = (i: Interval): boolean => i.kind === 'closed' || i.kind === 'open-end'
+const includesEnd = (i: Interval): boolean => i.kind === 'closed' || i.kind === 'open-start'
+
 // Whether `outer` is a superset of `inner`. For each endpoint pair (start/start
 // and end/end), the inner endpoint must be inside outer; when the endpoints
 // are numerically equal, the outer must include that boundary or the inner
@@ -115,19 +118,62 @@ export const containsInterval = dual<
   (inner: Interval) => (outer: Interval) => boolean,
   (outer: Interval, inner: Interval) => boolean
 >(2, (outer: Interval, inner: Interval): boolean => {
-  const outerIncludesStart = outer.kind === 'closed' || outer.kind === 'open-end'
-  const innerIncludesStart = inner.kind === 'closed' || inner.kind === 'open-end'
-  const outerIncludesEnd = outer.kind === 'closed' || outer.kind === 'open-start'
-  const innerIncludesEnd = inner.kind === 'closed' || inner.kind === 'open-start'
+  const outerStart = includesStart(outer)
+  const innerStart = includesStart(inner)
+  const outerEnd = includesEnd(outer)
+  const innerEnd = includesEnd(inner)
 
   const startOk =
-    inner.start > outer.start ||
-    (inner.start === outer.start && (outerIncludesStart || !innerIncludesStart))
-  const endOk =
-    inner.end < outer.end ||
-    (inner.end === outer.end && (outerIncludesEnd || !innerIncludesEnd))
+    inner.start > outer.start || (inner.start === outer.start && (outerStart || !innerStart))
+  const endOk = inner.end < outer.end || (inner.end === outer.end && (outerEnd || !innerEnd))
 
   return startOk && endOk
+})
+
+// Smallest interval enclosing both inputs. Each endpoint of the result is the
+// extremum of (a.start, b.start) / (a.end, b.end), and its inclusivity follows
+// whichever input contributed it. When endpoints tie, the result is closed at
+// that point if EITHER input includes it.
+export const union = dual<
+  (b: Interval) => (a: Interval) => Interval,
+  (a: Interval, b: Interval) => Interval
+>(2, (a: Interval, b: Interval): Interval => {
+  let startVal: number
+  let startInc: boolean
+  if (a.start < b.start) {
+    startVal = a.start
+    startInc = includesStart(a)
+  } else if (a.start > b.start) {
+    startVal = b.start
+    startInc = includesStart(b)
+  } else {
+    startVal = a.start
+    startInc = includesStart(a) || includesStart(b)
+  }
+
+  let endVal: number
+  let endInc: boolean
+  if (a.end > b.end) {
+    endVal = a.end
+    endInc = includesEnd(a)
+  } else if (a.end < b.end) {
+    endVal = b.end
+    endInc = includesEnd(b)
+  } else {
+    endVal = a.end
+    endInc = includesEnd(a) || includesEnd(b)
+  }
+
+  if (startInc && endInc) {
+    return make(startVal, endVal)
+  }
+  if (!startInc && endInc) {
+    return makeOpenStart(startVal, endVal)
+  }
+  if (startInc && !endInc) {
+    return makeOpenEnd(startVal, endVal)
+  }
+  return makeOpen(startVal, endVal)
 })
 
 export const filter = dual<

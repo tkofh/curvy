@@ -6,19 +6,19 @@
 
 **New v2 surface:**
 
-| Subpath              | Style          | Members                                                                                |
-| -------------------- | -------------- | -------------------------------------------------------------------------------------- |
-| `curvy/vector`       | namespaces     | `Vector2`, `Vector3`, `Vector4`                                                        |
-| `curvy/matrix`       | namespaces     | `Matrix2x2`, `Matrix3x3`, `Matrix4x4`                                                  |
-| `curvy/polynomial`   | namespaces     | `LinearPolynomial`, `QuadraticPolynomial`, `CubicPolynomial`                           |
-| `curvy/curve`        | namespaces     | `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`, `RationalCubicCurve2d`            |
-| `curvy/path`         | namespaces     | `LinearPath2d`, `QuadraticPath2d`, `CubicPath2d`, `RationalCubicPath2d`                |
-| `curvy/splines`      | namespaces     | `Bezier2d`, `Hermite2d`, `Cardinal2d`, `Basis2d`, `RationalBezier2d`                   |
-| `curvy/interval`     | namespace      | `Interval`                                                                             |
-| `curvy/solution`     | namespace      | `Solution`                                                                             |
-| `curvy/characteristic` | namespace    | `Characteristic`                                                                       |
-| `curvy/number`       | named exports  | `lerp`, `clamp`, `clip`, `normalize`, `remap`, `minMax`, `mod`, `round`, `roundUp`, `roundDown`, `epsEquals`, `clampToZero`, `EPSILON` |
-| `curvy/utils`        | named exports  | `pipe`, `dual`, `Pipeable`, `invariant`                                                |
+| Subpath                | Style         | Members                                                                                                                                |
+| ---------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `curvy/vector`         | namespaces    | `Vector2`, `Vector3`, `Vector4`                                                                                                        |
+| `curvy/matrix`         | namespaces    | `Matrix2x2`, `Matrix3x3`, `Matrix4x4`                                                                                                  |
+| `curvy/polynomial`     | namespaces    | `LinearPolynomial`, `QuadraticPolynomial`, `CubicPolynomial`                                                                           |
+| `curvy/curve`          | namespaces    | `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`, `RationalCubicCurve2d`                                                            |
+| `curvy/path`           | namespaces    | `LinearPath2d`, `QuadraticPath2d`, `CubicPath2d`, `RationalCubicPath2d`                                                                |
+| `curvy/splines`        | namespaces    | `Bezier2d`, `Hermite2d`, `Cardinal2d`, `Basis2d`, `RationalBezier2d`                                                                   |
+| `curvy/interval`       | namespace     | `Interval`                                                                                                                             |
+| `curvy/solution`       | namespace     | `Solution`                                                                                                                             |
+| `curvy/characteristic` | namespace     | `Characteristic`                                                                                                                       |
+| `curvy/number`         | named exports | `lerp`, `clamp`, `clip`, `normalize`, `remap`, `minMax`, `mod`, `round`, `roundUp`, `roundDown`, `epsEquals`, `clampToZero`, `EPSILON` |
+| `curvy/utils`          | named exports | `pipe`, `dual`, `Pipeable`, `invariant`                                                                                                |
 
 The split principle: **namespaces for things that look like algebraic structures with operations** (you build them and operate on them), **named exports for free-floating utilities** (you call them inline). Consumers can still promote any of the named-export modules to a namespace via `import * as` if they prefer.
 
@@ -77,16 +77,16 @@ import { dual, pipe, Pipeable, invariant } from 'curvy/utils'
 
 **Migration summary table.**
 
-| Before                                     | After                                                |
-| ------------------------------------------ | ---------------------------------------------------- |
-| `import * as Vector2 from 'curvy/vector2'` | `import { Vector2 } from 'curvy/vector'`             |
-| `import * as Matrix4x4 from 'curvy/matrix4x4'` | `import { Matrix4x4 } from 'curvy/matrix'`        |
-| `import * as CubicPolynomial from 'curvy/polynomial/cubic'` | `import { CubicPolynomial } from 'curvy/polynomial'` |
-| `import * as CubicCurve2d from 'curvy/curve/cubic2d'` | `import { CubicCurve2d } from 'curvy/curve'`   |
-| `import * as CubicPath2d from 'curvy/path/cubic2d'` | `import { CubicPath2d } from 'curvy/path'`         |
-| `import * as Bezier2d from 'curvy/splines/bezier2d'` | `import { Bezier2d } from 'curvy/splines'`        |
-| `import * as Interval from 'curvy/interval'` | `import { Interval } from 'curvy/interval'`        |
-| `import * as Solution from 'curvy/solution'` | `import { Solution } from 'curvy/solution'`        |
-| `import * as Characteristic from 'curvy/characteristic'` | `import { Characteristic } from 'curvy/characteristic'` |
-| `import { lerp } from 'curvy/utils'`       | `import { lerp } from 'curvy/number'`                |
-| `import { dual } from 'curvy/pipe'`        | `import { dual } from 'curvy/utils'`                 |
+| Before                                                      | After                                                   |
+| ----------------------------------------------------------- | ------------------------------------------------------- |
+| `import * as Vector2 from 'curvy/vector2'`                  | `import { Vector2 } from 'curvy/vector'`                |
+| `import * as Matrix4x4 from 'curvy/matrix4x4'`              | `import { Matrix4x4 } from 'curvy/matrix'`              |
+| `import * as CubicPolynomial from 'curvy/polynomial/cubic'` | `import { CubicPolynomial } from 'curvy/polynomial'`    |
+| `import * as CubicCurve2d from 'curvy/curve/cubic2d'`       | `import { CubicCurve2d } from 'curvy/curve'`            |
+| `import * as CubicPath2d from 'curvy/path/cubic2d'`         | `import { CubicPath2d } from 'curvy/path'`              |
+| `import * as Bezier2d from 'curvy/splines/bezier2d'`        | `import { Bezier2d } from 'curvy/splines'`              |
+| `import * as Interval from 'curvy/interval'`                | `import { Interval } from 'curvy/interval'`             |
+| `import * as Solution from 'curvy/solution'`                | `import { Solution } from 'curvy/solution'`             |
+| `import * as Characteristic from 'curvy/characteristic'`    | `import { Characteristic } from 'curvy/characteristic'` |
+| `import { lerp } from 'curvy/utils'`                        | `import { lerp } from 'curvy/number'`                   |
+| `import { dual } from 'curvy/pipe'`                         | `import { dual } from 'curvy/utils'`                    |

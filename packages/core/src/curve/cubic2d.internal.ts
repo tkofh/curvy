@@ -1,4 +1,4 @@
-import * as Box2d from '../box/box2d'
+import * as Interval2d from '../interval/interval2d'
 import * as Characteristic from '../characteristic/characteristic'
 import * as Interval from '../interval/interval'
 import {
@@ -197,8 +197,13 @@ export const curvature = dual(2, (c: CubicCurve2d, t: number) => {
   return Math.abs(Vector2.cross(v, a)) / vMag ** 3
 })
 
-export const boundingBox = (c: CubicCurve2d): Box2d.Box2d<Interval.Closed, Interval.Closed> =>
-  Box2d.make(CubicPolynomial.range(c.x, Interval.unit), CubicPolynomial.range(c.y, Interval.unit))
+export const boundingBox = (
+  c: CubicCurve2d,
+): Interval2d.Interval2d<Interval.Closed, Interval.Closed> =>
+  Interval2d.make(
+    CubicPolynomial.range(c.x, Interval.unit),
+    CubicPolynomial.range(c.y, Interval.unit),
+  )
 
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes, over the unit interval. For per-axis checks, users can call

@@ -1,4 +1,4 @@
-import * as Box2d from '../box/box2d'
+import * as Interval2d from '../interval/interval2d'
 import * as QuadraticCurve2d from '../curve/quadratic2d'
 import * as Interval from '../interval/interval'
 import { dual, Pipeable } from '../utils'
@@ -129,12 +129,12 @@ export const asContinuous = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & Cont
 
 export const boundingBox = (
   p: QuadraticPath2d,
-): Box2d.Box2d<Interval.Closed, Interval.Closed> => {
+): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {
   const iter = p[Symbol.iterator]()
   const first = iter.next()
   let acc = QuadraticCurve2d.boundingBox(first.value as QuadraticCurve2d.QuadraticCurve2d)
   for (let next = iter.next(); !next.done; next = iter.next()) {
-    acc = Box2d.union(acc, QuadraticCurve2d.boundingBox(next.value))
+    acc = Interval2d.union(acc, QuadraticCurve2d.boundingBox(next.value))
   }
   return acc
 }

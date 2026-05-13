@@ -1,4 +1,4 @@
-import * as Box2d from '../box/box2d'
+import * as Interval2d from '../interval/interval2d'
 import * as CubicCurve2d from '../curve/cubic2d'
 import * as cubicCurveInternal from '../curve/cubic2d.internal'
 import * as QuadraticCurve2d from '../curve/quadratic2d'
@@ -235,12 +235,14 @@ export const solveByDistance = dual<
   return CubicCurve2d.solve(curve, localT)
 })
 
-export const boundingBox = (p: CubicPath2d): Box2d.Box2d<Interval.Closed, Interval.Closed> => {
+export const boundingBox = (
+  p: CubicPath2d,
+): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {
   const iter = p[Symbol.iterator]()
   const first = iter.next()
   let acc = CubicCurve2d.boundingBox(first.value as CubicCurve2d.CubicCurve2d)
   for (let next = iter.next(); !next.done; next = iter.next()) {
-    acc = Box2d.union(acc, CubicCurve2d.boundingBox(next.value))
+    acc = Interval2d.union(acc, CubicCurve2d.boundingBox(next.value))
   }
   return acc
 }

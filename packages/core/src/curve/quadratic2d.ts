@@ -1,4 +1,4 @@
-import type { Box2d } from '../box/box2d'
+import type { Interval2d } from '../interval/interval2d'
 import type { TwoDimensional } from '../dimensions'
 import type { Closed, Interval } from '../interval/interval'
 import type { Pipeable } from '../utils'
@@ -220,7 +220,7 @@ export const curvature: {
  * @returns A closed `Box2d` enclosing the curve.
  * @since 2.1.0
  */
-export const boundingBox: (c: QuadraticCurve2d) => Box2d<Closed, Closed> = internal.boundingBox
+export const boundingBox: (c: QuadraticCurve2d) => Interval2d<Closed, Closed> = internal.boundingBox
 
 /**
  * Type-narrowing predicate: refines both axes' traits to include `Monotonic`

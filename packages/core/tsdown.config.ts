@@ -10,7 +10,6 @@ export default defineConfig({
     'src/curve/index.ts',
     'src/path/index.ts',
     'src/splines/index.ts',
-    'src/box/index.ts',
     'src/interval/index.ts',
     'src/solution/index.ts',
     'src/characteristic/index.ts',

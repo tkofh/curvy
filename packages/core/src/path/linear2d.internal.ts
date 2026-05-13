@@ -1,4 +1,4 @@
-import * as Box2d from '../box/box2d'
+import * as Interval2d from '../interval/interval2d'
 import * as LinearCurve2d from '../curve/linear2d'
 import * as Interval from '../interval/interval'
 import { dual, Pipeable } from '../utils'
@@ -113,13 +113,15 @@ export const asContinuous = <T>(p: LinearPath2d<T>): LinearPath2d<T & Continuous
   return p
 }
 
-export const boundingBox = (p: LinearPath2d): Box2d.Box2d<Interval.Closed, Interval.Closed> => {
+export const boundingBox = (
+  p: LinearPath2d,
+): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {
   const iter = p[Symbol.iterator]()
   const first = iter.next()
   // path invariant: at least one curve, so first.value is defined
   let acc = LinearCurve2d.boundingBox(first.value as LinearCurve2d.LinearCurve2d)
   for (let next = iter.next(); !next.done; next = iter.next()) {
-    acc = Box2d.union(acc, LinearCurve2d.boundingBox(next.value))
+    acc = Interval2d.union(acc, LinearCurve2d.boundingBox(next.value))
   }
   return acc
 }

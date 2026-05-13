@@ -327,4 +327,3 @@ export function minMax(a: number, b: number): [number, number] {
 export function mod(n: number, m: number): number {
   return ((n % m) + m) % m
 }
-

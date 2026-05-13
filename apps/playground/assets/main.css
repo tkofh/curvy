@@ -5,7 +5,11 @@
   --border: #ddd;
   --accent: #1e88e5;
   --warn: #e53935;
-  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    sans-serif;
   color: var(--fg);
   background: var(--bg);
 }

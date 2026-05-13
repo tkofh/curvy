@@ -1,4 +1,4 @@
-import * as Box2d from '../box/box2d'
+import * as Interval2d from '../interval/interval2d'
 import * as Interval from '../interval/interval'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
 import {
@@ -201,8 +201,8 @@ export const curvature = dual(2, (c: QuadraticCurve2d, t: number) => {
 
 export const boundingBox = (
   c: QuadraticCurve2d,
-): Box2d.Box2d<Interval.Closed, Interval.Closed> =>
-  Box2d.make(
+): Interval2d.Interval2d<Interval.Closed, Interval.Closed> =>
+  Interval2d.make(
     QuadraticPolynomial.range(c.x, Interval.unit),
     QuadraticPolynomial.range(c.y, Interval.unit),
   )

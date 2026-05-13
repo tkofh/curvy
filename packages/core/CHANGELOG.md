@@ -1,5 +1,63 @@
 # Change Log
 
+## 2.0.0-alpha.2
+
+### Minor Changes
+
+- **New `Interval2d` + `Bounds2d` in `curvy/interval`, plus `boundingBox` on every curve and path.** An `Interval2d` is the Cartesian product of two intervals — the smallest abstraction for "is this curve inside this region?" without dragging in a richer rectangle/transform model. Mirrors the `Interval`/`Bounds` split in 1D: `Interval2d` carries per-axis kinds; `Bounds2d` is the structural minimum used by operations (like `size`) that don't depend on endpoint inclusivity.
+
+  ```ts
+  import { Interval, Interval2d } from 'curvy/interval'
+  import { Vector2 } from 'curvy/vector'
+
+  const allowed = Interval2d.make(Interval.make(0, 100), Interval.make(0, 1))
+  Interval2d.containsVector(allowed, Vector2.make(50, 0.5)) // true
+  ```
+
+  `Interval2d<X, Y>` is generic over per-axis subtypes so a closed-on-closed value stays `Interval2d<Closed, Closed>` and mixed-kind values preserve that information through the type system.
+
+  **Surface:**
+  - `Interval2d.make(xInterval, yInterval)` — preserves both axis subtypes
+  - `Interval2d.fromCorners(p0, p1)` — order-independent, returns `Interval2d<Closed, Closed>`
+  - `Interval2d.fromVectors(...points)` — smallest closed value enclosing all inputs
+  - `Interval2d.containsVector(box, v)` — point-in-region, per-axis kind-aware
+  - `Interval2d.containsInterval2d(outer, inner)` — subset test, kind-aware on both sides
+  - `Interval2d.size(box)` — accepts `Bounds2d`, returns `Vector2`
+  - `Interval2d.union(a, b)` — kind-preserving (see below)
+  - `Interval2d.equals(a, b)` — kind-aware equality
+  - `Interval2d.isInterval2d` — guard
+  - `Bounds2d` — structural minimum `{ x: Bounds; y: Bounds }`
+
+  **Kind-preserving union with a collapsing type signature.** `Interval2d.union` returns a type that collapses to the input's shared kind when both axes match, and widens to the open `Interval` type when they differ:
+
+  ```ts
+  Interval2d.union(closedA, closedB) // Interval2d<Closed, Closed>
+  Interval2d.union(openA, openB) // Interval2d<Open, Open>
+  Interval2d.union(closedA, openB) // Interval2d<Interval, Interval>
+  ```
+
+  The runtime is genuinely kind-correct: each endpoint of the result is the extremum of the inputs', and its inclusivity follows the input that contributed it. When endpoints tie, the result is closed at that point if either input includes it.
+
+  **`Interval.union(a, b)` — the underlying primitive.** Exposed on the interval module because it's a self-contained operation worth using on its own.
+
+  **`boundingBox` is available on every polynomial curve and path:**
+
+  ```ts
+  import { CubicCurve2d } from 'curvy/curve'
+  import { CubicPath2d } from 'curvy/path'
+
+  CubicCurve2d.boundingBox(curve) // Interval2d<Closed, Closed>
+  CubicPath2d.boundingBox(path) // Interval2d<Closed, Closed>
+  ```
+
+  Curve-level implementations account for interior extrema (so the box is tight against the curve, not just its control polygon). Path-level implementations union per-segment boxes via `Interval2d.union`.
+
+  Rational cubic curves don't get a `boundingBox` yet — computing the bbox of `(x(t)/w(t), y(t)/w(t))` requires finding roots of a degree-5 polynomial, which is a real implementation rather than a one-liner over existing primitives. Deferred. Workaround: `RationalCubicPath2d.approximateAsCubicPath(path, tolerance).pipe(CubicPath2d.boundingBox)` produces a slightly-padded but valid outer bound.
+
+  **New `Interval.containsInterval(outer, inner)` helper.** Kind-aware interval-subset test, the primitive underneath `Interval2d.containsInterval2d`. Exposed on the interval module because it's a self-contained operation that's useful on its own.
+
+  **Polynomial `range` return types tightened to `Closed`.** `LinearPolynomial.range`, `QuadraticPolynomial.range`, and `CubicPolynomial.range` previously declared `Interval` returns but always built `Closed` at runtime. The tightening lets `boundingBox` thread `Interval2d<Closed, Closed>` through without casts. Also fixes a latent bug in `LinearPolynomial.range` where decreasing polynomials would throw on `Interval.make`'s ordering check — now uses `fromMinMax`.
+
 ## 2.0.0-alpha.1
 
 ### Minor Changes
@@ -7,16 +65,15 @@
 - **New `curvy/box` module + `boundingBox` on every curve and path.** A `Box2d` is the Cartesian product of two intervals — the smallest abstraction that lets you say "is this curve inside this region?" without dragging in a richer rectangle/transform abstraction.
 
   ```ts
-  import { Box2d } from "curvy/box";
-  import { Interval } from "curvy/interval";
-  import { Vector2 } from "curvy/vector";
+  import { Box2d } from 'curvy/box'
+  import { Interval } from 'curvy/interval'
+  import { Vector2 } from 'curvy/vector'
 
-  const allowed = Box2d.make(Interval.make(0, 100), Interval.make(0, 1));
-  Box2d.containsVector(allowed, Vector2.make(50, 0.5)); // true
+  const allowed = Box2d.make(Interval.make(0, 100), Interval.make(0, 1))
+  Box2d.containsVector(allowed, Vector2.make(50, 0.5)) // true
   ```
 
   The type is generic over per-axis interval subtype so a closed-on-closed box stays `Box2d<Closed, Closed>` and mixed-openness boxes preserve that information through the type system. The minimum surface:
-
   - `Box2d.make(xInterval, yInterval)` — preserves both axis subtypes
   - `Box2d.fromCorners(p0, p1)` — order-independent, returns `Box2d<Closed, Closed>`
   - `Box2d.fromVectors(...points)` — smallest closed box enclosing all inputs
@@ -30,11 +87,11 @@
   **`boundingBox` is now available on every polynomial curve and path:**
 
   ```ts
-  import { CubicCurve2d } from "curvy/curve";
-  import { CubicPath2d } from "curvy/path";
+  import { CubicCurve2d } from 'curvy/curve'
+  import { CubicPath2d } from 'curvy/path'
 
-  CubicCurve2d.boundingBox(curve); // Box2d<Closed, Closed>
-  CubicPath2d.boundingBox(path); // Box2d<Closed, Closed> — union over segments
+  CubicCurve2d.boundingBox(curve) // Box2d<Closed, Closed>
+  CubicPath2d.boundingBox(path) // Box2d<Closed, Closed> — union over segments
   ```
 
   The curve-level implementations account for interior extrema (so the box is tight against the curve, not just its control polygon). The path-level implementations union per-segment boxes via `Box2d.union`.
@@ -52,13 +109,13 @@
 - 39d3758: **New `curvy/characteristic` module.** The characteristic matrices that identify each cubic spline family now live in a shared module rather than being scattered across the spline modules.
 
   ```ts
-  import { Characteristic } from "curvy/characteristic";
+  import { Characteristic } from 'curvy/characteristic'
 
-  Characteristic.cubicBezier; // Matrix4x4 — was Bezier2d.characteristic
-  Characteristic.cubicHermite; // Matrix4x4 — was Hermite2d.characteristic
-  Characteristic.cubicBasisSpline; // Matrix4x4 — was Basis2d.characteristic
-  Characteristic.cubicCardinal; // (tension: number) => Matrix4x4 — was Cardinal2d.characteristic
-  Characteristic.cubicCatmullRom; // Matrix4x4 — was Cardinal2d.catRomCharacteristic
+  Characteristic.cubicBezier // Matrix4x4 — was Bezier2d.characteristic
+  Characteristic.cubicHermite // Matrix4x4 — was Hermite2d.characteristic
+  Characteristic.cubicBasisSpline // Matrix4x4 — was Basis2d.characteristic
+  Characteristic.cubicCardinal // (tension: number) => Matrix4x4 — was Cardinal2d.characteristic
+  Characteristic.cubicCatmullRom // Matrix4x4 — was Cardinal2d.catRomCharacteristic
   ```
 
   **The per-spline `characteristic` exports are removed.** Update imports to pull from the new module. The runtime values are unchanged; only the import path moves. `Cardinal2d.catRomCharacteristic` similarly moves to `Characteristic.cubicCatmullRom`.
@@ -66,33 +123,23 @@
   **New `Characteristic.apply` helper.** Applies a characteristic matrix to N channels of control values, producing N cubic polynomials in monomial form. This is the operation Freya Holmér describes in _The Continuity of Splines_ — the matrix IS the spline, and `apply` is the canonical way to combine it with control points to produce a polynomial.
 
   ```ts
-  import { Characteristic } from "curvy/characteristic";
-  import { Vector4 } from "curvy/vector";
+  import { Characteristic } from 'curvy/characteristic'
+  import { Vector4 } from 'curvy/vector'
 
   // Polynomial 2D spline: two channels (x, y)
   const [x, y] = Characteristic.apply(
     Characteristic.cubicBezier,
     Vector4.make(p0.x, p1.x, p2.x, p3.x),
-    Vector4.make(p0.y, p1.y, p2.y, p3.y)
-  );
+    Vector4.make(p0.y, p1.y, p2.y, p3.y),
+  )
 
   // Rational 2D spline: same matrix, three channels (x, y, w)
   const [x, y, w] = Characteristic.apply(
     Characteristic.cubicBezier,
-    Vector4.make(
-      p0.x * p0.weight,
-      p1.x * p1.weight,
-      p2.x * p2.weight,
-      p3.x * p3.weight
-    ),
-    Vector4.make(
-      p0.y * p0.weight,
-      p1.y * p1.weight,
-      p2.y * p2.weight,
-      p3.y * p3.weight
-    ),
-    Vector4.make(p0.weight, p1.weight, p2.weight, p3.weight)
-  );
+    Vector4.make(p0.x * p0.weight, p1.x * p1.weight, p2.x * p2.weight, p3.x * p3.weight),
+    Vector4.make(p0.y * p0.weight, p1.y * p1.weight, p2.y * p2.weight, p3.y * p3.weight),
+    Vector4.make(p0.weight, p1.weight, p2.weight, p3.weight),
+  )
   ```
 
   The polynomial pipeline (`CubicCurve2d.fromBezierPoints`, `splines/util.ts → toCurves`) and the rational pipeline (`RationalCubicCurve2d.fromBezierPoints`) both flow through `apply` now — the unified entry point makes the spline-family-as-matrix story visible at the type level.
@@ -105,20 +152,20 @@
 
   ```ts
   // before
-  CubicCurve2d.fromPoints(c0, c1, c2, c3); // Vector2s = polynomial coefficients
+  CubicCurve2d.fromPoints(c0, c1, c2, c3) // Vector2s = polynomial coefficients
   // after
-  CubicCurve2d.fromCoefficients(c0, c1, c2, c3);
+  CubicCurve2d.fromCoefficients(c0, c1, c2, c3)
   ```
 
   **Renames (path modules):** `LinearPath2d`, `QuadraticPath2d`, `CubicPath2d` switch from `fromCurves` / `fromCurveArray` to `make` / `fromArray`, matching every spline module's `make` + `fromArray` convention.
 
   ```ts
   // before
-  CubicPath2d.fromCurves(c0, c1);
-  CubicPath2d.fromCurveArray([c0, c1]);
+  CubicPath2d.fromCurves(c0, c1)
+  CubicPath2d.fromCurveArray([c0, c1])
   // after
-  CubicPath2d.make(c0, c1);
-  CubicPath2d.fromArray([c0, c1]);
+  CubicPath2d.make(c0, c1)
+  CubicPath2d.fromArray([c0, c1])
   ```
 
   **Removed (Bézier conversion primitive):** `Bezier2d.fromSpline` is now package-private. Its only callers were the other splines' own `toBezier` methods, and SVG path serialization (which now lives in core, not a separate package). End users should reach for `Cardinal2d.toBezier`, `Hermite2d.toBezier`, or `Basis2d.toBezier` rather than constructing a basis-conversion call by hand.
@@ -130,8 +177,8 @@
     Vector2.make(0, 0),
     Vector2.make(1, 0),
     Vector2.make(1, 1),
-    Vector2.make(0, 1)
-  );
+    Vector2.make(0, 1),
+  )
   ```
 
   **New (polynomial modules):** `QuadraticPolynomial.fromPoints` and `CubicPolynomial.fromPoints` — Lagrange interpolation through 3 and 4 `(x, y)` points, completing the symmetry with `LinearPolynomial.fromPoints` (which already existed). Implementation uses Newton's divided differences collected to monomial form. The input `x` values must be distinct.
@@ -141,8 +188,8 @@
   const p = QuadraticPolynomial.fromPoints(
     Vector2.make(-1, 2),
     Vector2.make(0, 3),
-    Vector2.make(1, 6)
-  );
+    Vector2.make(1, 6),
+  )
   ```
 
   **Renamed (matrix module):** `Matrix3x3.matrix3x3` → `Matrix3x3.make`. The `Matrix2x2` and `Matrix4x4` modules already used `make`; only `Matrix3x3` had the type-name-as-constructor variant, breaking symmetry across the matrix family.
@@ -174,12 +221,12 @@
 
   ```ts
   // Before
-  Interval.contains(i, x, { includeStart: false, includeEnd: false });
+  Interval.contains(i, x, { includeStart: false, includeEnd: false })
 
   // After
-  Interval.contains(Interval.toOpen(i), x);
+  Interval.contains(Interval.toOpen(i), x)
   // or construct directly:
-  Interval.contains(Interval.makeOpen(0, 1), x);
+  Interval.contains(Interval.makeOpen(0, 1), x)
   ```
 
   **`Solution.filterInterval` is renamed to `Solution.clip`** and loses its options arg. Pass an interval of the kind you want:
@@ -189,12 +236,12 @@
   Solution.filterInterval(s, Interval.unit, {
     includeStart: false,
     includeEnd: false,
-  });
+  })
 
   // After
-  Solution.clip(s, Interval.toOpen(Interval.unit));
+  Solution.clip(s, Interval.toOpen(Interval.unit))
   // or use the new constant:
-  Solution.clip(s, Interval.unitOpen);
+  Solution.clip(s, Interval.unitOpen)
   ```
 
 - 01f7bc0: **Consolidated public module surface.** The `package.json` `exports` map is reduced from ~30 subpaths to 11. Every group exposes a single namespace-indexed subpath, and per-module subpaths are removed. The internal directory layout is unchanged; only the public import shape moves.
@@ -221,16 +268,16 @@
 
   ```ts
   // before
-  import * as Vector2 from "curvy/vector2";
-  import * as CubicCurve2d from "curvy/curve/cubic2d";
-  import * as RationalCubicPath2d from "curvy/path/rationalCubic2d";
-  import * as Bezier2d from "curvy/splines/bezier2d";
+  import * as Vector2 from 'curvy/vector2'
+  import * as CubicCurve2d from 'curvy/curve/cubic2d'
+  import * as RationalCubicPath2d from 'curvy/path/rationalCubic2d'
+  import * as Bezier2d from 'curvy/splines/bezier2d'
 
   // after
-  import { Vector2 } from "curvy/vector";
-  import { CubicCurve2d, RationalCubicCurve2d } from "curvy/curve";
-  import { RationalCubicPath2d } from "curvy/path";
-  import { Bezier2d } from "curvy/splines";
+  import { Vector2 } from 'curvy/vector'
+  import { CubicCurve2d, RationalCubicCurve2d } from 'curvy/curve'
+  import { RationalCubicPath2d } from 'curvy/path'
+  import { Bezier2d } from 'curvy/splines'
   ```
 
   The internal namespace identity (`Vector2.make`, `CubicCurve2d.solve`, etc.) is unchanged — only the path you import from moves. Tree-shaking remains intact: importing one namespace from a group index does not pull in its siblings, given `"sideEffects": false`.
@@ -239,35 +286,35 @@
 
   ```ts
   // before
-  import * as Interval from "curvy/interval";
-  import * as Solution from "curvy/solution";
-  import * as Characteristic from "curvy/characteristic";
+  import * as Interval from 'curvy/interval'
+  import * as Solution from 'curvy/solution'
+  import * as Characteristic from 'curvy/characteristic'
 
   // after
-  import { Interval } from "curvy/interval";
-  import { Solution } from "curvy/solution";
-  import { Characteristic } from "curvy/characteristic";
+  import { Interval } from 'curvy/interval'
+  import { Solution } from 'curvy/solution'
+  import { Characteristic } from 'curvy/characteristic'
   ```
 
   **New `curvy/number` module.** The math utilities (`lerp`, `clamp`, `round`, `epsEquals`, etc.) move out of `curvy/utils` into a dedicated module. The grouping reflects what each is for: `curvy/utils` is now language plumbing every other module needs (`pipe`, `dual`, `Pipeable`, `invariant`); `curvy/number` is numeric utilities.
 
   ```ts
   // before
-  import { lerp, clamp, epsEquals } from "curvy/utils";
+  import { lerp, clamp, epsEquals } from 'curvy/utils'
 
   // after
-  import { lerp, clamp, epsEquals } from "curvy/number";
+  import { lerp, clamp, epsEquals } from 'curvy/number'
   ```
 
   **`curvy/pipe` removed.** `pipe`, `dual`, and `Pipeable` move into `curvy/utils` alongside `invariant`. The `curvy/pipe` subpath is gone.
 
   ```ts
   // before
-  import { dual, pipe, Pipeable } from "curvy/pipe";
-  import { invariant } from "curvy/utils";
+  import { dual, pipe, Pipeable } from 'curvy/pipe'
+  import { invariant } from 'curvy/utils'
 
   // after
-  import { dual, pipe, Pipeable, invariant } from "curvy/utils";
+  import { dual, pipe, Pipeable, invariant } from 'curvy/utils'
   ```
 
   **Migration summary table.**
@@ -289,7 +336,6 @@
 - 55714cf: **Precision is now a property of operations, not values.** Removed the implicit `round()` from constructors and operation results across `Vector2`/`3`/`4`, `Matrix2x2`/`3x3`/`4x4`, the `Linear`/`Quadratic`/`Cubic` polynomial types, and `Interval`. Previously every value was snapped to an 8-decimal grid on construction; values are now stored as exact IEEE doubles. This is a breaking change for code that relied on strict equality (`===`, `toBe`) on computed results — comparisons must now be approximate.
 
   New APIs for explicit precision:
-
   - **`equals(a, b)`** on each value type (`Vector2`, `Vector3`, `Vector4`, `Matrix2x2`, `Matrix3x3`, `Matrix4x4`, `LinearPolynomial`, `QuadraticPolynomial`, `CubicPolynomial`, `Interval`), in both data-first and data-last forms. Uses a per-component absolute tolerance of `EPSILON = 1e-10`. For non-default tolerance, compose `epsEquals` directly (`(a, b) => epsEquals(a.x, b.x, 1e-6) && ...`).
   - **`epsEquals(a, b, eps?)`** in `curvy/number` — approximate equality for raw numbers, with optional tolerance override.
   - **`clampToZero(value, eps)`** in `curvy/number` — snaps near-zero values to exactly zero, useful for stable sign tests.
@@ -309,25 +355,24 @@
   **Type aliases:**
 
   ```ts
-  import { Solution } from "curvy/solution";
+  import { Solution } from 'curvy/solution'
 
-  Solution.None; // { _tag: 'none', length: 0, ...iterable }
-  Solution.One<T>; // { _tag: 'one', length: 1, value: T, ...iterable }
-  Solution.Two<T>; // { _tag: 'two', length: 2, value: T, values: readonly [T, T], ...iterable }
-  Solution.Three<T>; // { _tag: 'three', length: 3, value: T, values: readonly [T, T, T], ...iterable }
-  Solution.Some<T>; // One | Two | Three — every Some<T> exposes `.value: T`
-  Solution<T>; // None | Some<T> — most permissive
+  Solution.None // { _tag: 'none', length: 0, ...iterable }
+  Solution.One<T> // { _tag: 'one', length: 1, value: T, ...iterable }
+  Solution.Two<T> // { _tag: 'two', length: 2, value: T, values: readonly [T, T], ...iterable }
+  Solution.Three<T> // { _tag: 'three', length: 3, value: T, values: readonly [T, T, T], ...iterable }
+  Solution.Some<T> // One | Two | Three — every Some<T> exposes `.value: T`
+  Solution<T> // None | Some<T> — most permissive
 
   // At-most aliases for trait-narrowed return shapes
-  Solution.AtMostOne<T>; // None | One<T>
-  Solution.AtMostTwo<T>; // None | One<T> | Two<T>
-  Solution.AtMostThree<T>; // = Solution<T>
+  Solution.AtMostOne<T> // None | One<T>
+  Solution.AtMostTwo<T> // None | One<T> | Two<T>
+  Solution.AtMostThree<T> // = Solution<T>
   ```
 
   `.value` is the primary (first / leftmost) value and is uniformly available on every non-empty variant. So narrowing a `Solution<T>` via `Solution.isSome(s)` is enough to get a typed `s.value`.
 
   **Operations:**
-
   - `Solution.none`, `Solution.one(v)`, `Solution.two(a, b)`, `Solution.three(a, b, c)`, `Solution.fromArray(arr)` — constructors.
   - `Solution.isNone(s)` / `Solution.isSome(s)` — type-narrowing predicates.
   - `Solution.match(s, { onNone, onSome })` (and pipeable form) — pattern-match by emptiness; `onSome` receives the input's narrowed type so an `AtMostOne<T>` input gives `onSome` a `One<T>` to read `.value` from.
@@ -348,17 +393,17 @@
 
   ```ts
   // before
-  const t = LinearPolynomial.solveInverse(p, 5);
+  const t = LinearPolynomial.solveInverse(p, 5)
   if (t === null) {
     /* constant polynomial */
   } else {
-    use(t);
+    use(t)
   }
 
   // after — direct narrowing
-  const t = LinearPolynomial.solveInverse(p, 5);
+  const t = LinearPolynomial.solveInverse(p, 5)
   if (Solution.isSome(t)) {
-    use(t.value); // .value is type-safe under Some<T>
+    use(t.value) // .value is type-safe under Some<T>
   }
 
   // after — pattern match
@@ -366,8 +411,8 @@
     Solution.match({
       onNone: () => 0,
       onSome: ({ value }) => value * 2,
-    })
-  );
+    }),
+  )
   ```
 
   When you've earned narrower types via the trait system — e.g. `LinearPolynomial<Monotonic>.solveInverse` returns `Solution.One<number>` rather than `Solution.AtMostOne<number>` — `.value` is directly accessible without any narrowing check, since `One<T>` is non-empty by construction.
@@ -375,7 +420,6 @@
   The rest of the existing tuple-returning operations (`QuadraticPolynomial.solveInverse`, `CubicPolynomial.solveInverse`, the curve `solveAtX` / `solveAtY` helpers, etc.) are completely unchanged at runtime — only the type names move.
 
 - b99c3bf: Inline SVG path serialization into the core `*Path2d` modules and remove the separate `@curvy/svg` package. Each path type now exports `toPathData`, which serializes the path as an SVG path data string (the value of a `<path>` element's `d` attribute):
-
   - `LinearPath2d.toPathData` — emits `M` and `L` commands.
   - `QuadraticPath2d.toPathData` — emits `M` and `Q` commands.
   - `CubicPath2d.toPathData` — emits `M` and `C` commands.
@@ -386,19 +430,16 @@
 
   ```ts
   // before
-  import * as Path from "@curvy/svg/path";
-  import * as Bezier2d from "curvy/splines/bezier2d";
+  import * as Path from '@curvy/svg/path'
+  import * as Bezier2d from 'curvy/splines/bezier2d'
 
-  const d = Bezier2d.make(p0, p1, p2, p3).pipe(Path.fromBezier2d, Path.render);
+  const d = Bezier2d.make(p0, p1, p2, p3).pipe(Path.fromBezier2d, Path.render)
 
   // after
-  import { CubicPath2d } from "curvy/path";
-  import { Bezier2d } from "curvy/splines";
+  import { CubicPath2d } from 'curvy/path'
+  import { Bezier2d } from 'curvy/splines'
 
-  const d = Bezier2d.make(p0, p1, p2, p3).pipe(
-    Bezier2d.toPath,
-    CubicPath2d.toPathData
-  );
+  const d = Bezier2d.make(p0, p1, p2, p3).pipe(Bezier2d.toPath, CubicPath2d.toPathData)
   ```
 
   Because `toPathData` works on the polynomial representation, it covers any path — not just ones built from Béziers. Cardinal, Hermite, and Basis splines all serialize through their respective `toPath` outputs without needing a Bézier-specific path step.
@@ -406,13 +447,11 @@
 - eb48939: Add a type-level trait system for polynomials, curves, and paths. Traits are phantom brands carried in a generic type parameter — they exist only at the type level, the runtime value is unchanged. Refiners check the property at runtime and narrow the type accordingly; assertions throw on failure.
 
   **Polynomials.** `LinearPolynomial`, `QuadraticPolynomial`, and `CubicPolynomial` now take a covariant `Traits` type parameter (`out Traits = unknown`). The library exports three brands:
-
   - `Monotonic` — strictly monotonic (excludes constant)
   - `Increasing` — strictly increasing (implies `Monotonic`)
   - `Decreasing` — strictly decreasing (implies `Monotonic`)
 
   Each polynomial module exposes:
-
   - `isMonotonic`, `isIncreasing`, `isDecreasing` — type-narrowing predicates
   - `asMonotonic`, `asIncreasing`, `asDecreasing` — runtime-checked assertions that throw on failure
 
@@ -427,11 +466,11 @@
   | `CubicPolynomial<Monotonic>`     | `ZeroToThree`                  | `ZeroToOne`        |
 
   ```ts
-  const p = LinearPolynomial.make(0, 2); // LinearPolynomial<unknown>
-  const inv = LinearPolynomial.solveInverse(p, 4); // ZeroOrOne
+  const p = LinearPolynomial.make(0, 2) // LinearPolynomial<unknown>
+  const inv = LinearPolynomial.solveInverse(p, 4) // ZeroOrOne
   if (LinearPolynomial.isMonotonic(p)) {
     // p is now LinearPolynomial<Monotonic>
-    const tight = LinearPolynomial.solveInverse(p, 4); // number — null branch eliminated
+    const tight = LinearPolynomial.solveInverse(p, 4) // number — null branch eliminated
   }
   ```
 
@@ -440,7 +479,6 @@
   Per-axis refiners (`isMonotonicX`, `isMonotonicY`, `isIncreasingX`, `isIncreasingY`, `isDecreasingX`, `isDecreasingY`) and a combined `isMonotonic` that requires both axes monotonic. All check over the curve's natural parameter domain `[0, 1]`. Assertions follow the same `as*` naming.
 
   **Paths.** `LinearPath2d`, `QuadraticPath2d`, and `CubicPath2d` are now generic: `<out Trait = unknown>`. One brand is shipped:
-
   - `Continuous` — adjacent curves connect at their join points (G⁰)
 
   Each path module exposes `isContinuous` and `asContinuous`. Splines emit continuous paths by construction, so `Bezier2d.toPath`, `Cardinal2d.toPath`, etc. all produce paths that pass `isContinuous`.
@@ -476,12 +514,12 @@
     Vector2.make(0, 0),
     Vector2.make(0.42, 0),
     Vector2.make(0.58, 1),
-    Vector2.make(1, 1)
-  );
+    Vector2.make(1, 1),
+  )
 
   if (CubicCurve2d.isMonotonic(easing)) {
     // both axes monotonic — solveAtX returns ZeroToOne
-    const [y] = CubicCurve2d.solveAtX(easing, 0.5);
+    const [y] = CubicCurve2d.solveAtX(easing, 0.5)
   }
   ```
 
@@ -490,7 +528,6 @@
   **Bug fixes shipped alongside:** `QuadraticPolynomial.solveInverse` now correctly handles the `c2 = 0` case (degenerate quadratic — defers to linear) instead of dividing by zero. `CubicPolynomial.solveInverse` had a similar fallback that was forwarding `0` as the y-value instead of the actual argument; now forwards correctly. Both bugs were latent because `solveInverse` was rarely exercised on degenerate-degree polynomials before `solveAt{X,Y}` started routing through them.
 
 - 55714cf: Added three new `Matrix4x4` primitives:
-
   - **`Matrix4x4.identity`** — the 4×4 identity matrix as a constant.
   - **`Matrix4x4.multiply(a, b)`** — matrix-matrix multiplication, in both data-first and data-last forms.
   - **`Matrix4x4.inverse(m)`** — matrix inverse via the adjugate / determinant formula. Throws on singular input (determinant zero).
@@ -502,14 +539,14 @@
   Two new operations, both at the curve and path level:
 
   ```ts
-  import { RationalCubicCurve2d } from "curvy/curve";
-  import { RationalCubicPath2d } from "curvy/path";
+  import { RationalCubicCurve2d } from 'curvy/curve'
+  import { RationalCubicPath2d } from 'curvy/path'
 
   // Curve-level: returns ReadonlyArray<CubicCurve2d>
-  RationalCubicCurve2d.approximateAsCubicCurves(rationalCurve, tolerance);
+  RationalCubicCurve2d.approximateAsCubicCurves(rationalCurve, tolerance)
 
   // Path-level: returns CubicPath2d
-  RationalCubicPath2d.approximateAsCubicPath(rationalPath, tolerance);
+  RationalCubicPath2d.approximateAsCubicPath(rationalPath, tolerance)
   ```
 
   For each segment a polynomial-cubic candidate is built by projecting the four homogeneous Bézier control points back to 2D; if the midpoint deviates from the true rational by more than `tolerance`, the segment is split at `t = 0.5` and the procedure recurses on each half. Endpoints and endpoint tangent directions are preserved exactly. For a uniform-weight curve the result is a single exact segment.
@@ -517,9 +554,9 @@
   **New `CubicPolynomial.subdivide(p, t)`.** General de Casteljau-equivalent subdivision in monomial form. Returns `[left, right]` where the left half's evaluation on `[0, 1]` matches the input's on `[0, t]`, and the right half matches on `[t, 1]`. Available data-first and data-last.
 
   ```ts
-  import { CubicPolynomial } from "curvy/polynomial";
+  import { CubicPolynomial } from 'curvy/polynomial'
 
-  const [left, right] = CubicPolynomial.subdivide(p, 0.5);
+  const [left, right] = CubicPolynomial.subdivide(p, 0.5)
   ```
 
   Used internally by the rational approximation but exposed as a primitive because it's the natural building block for any subdivision-based algorithm over cubic polynomials.
@@ -527,8 +564,8 @@
 - **Rational cubic curves, paths, and splines.** A new `RationalCubicCurve2d` lives in `curvy/curve`, alongside the existing polynomial cubic. It stores the curve as three monomial polynomials `x(t)`, `y(t)`, `w(t)` and evaluates as `(x(t)/w(t), y(t)/w(t))` — the projection from homogeneous coordinates back to the plane. With uniform weights the curve degenerates to a polynomial cubic.
 
   ```ts
-  import { RationalCubicCurve2d } from "curvy/curve";
-  import { Vector2 } from "curvy/vector";
+  import { RationalCubicCurve2d } from 'curvy/curve'
+  import { Vector2 } from 'curvy/vector'
 
   // Four weighted Bézier control points; the matrix-based constructor
   // lifts them to homogeneous (w·x, w·y, w) and runs the same characteristic
@@ -537,9 +574,9 @@
     Vector2.makeWeighted(0, 0, 1),
     Vector2.makeWeighted(1, 2, 5),
     Vector2.makeWeighted(2, 2, 5),
-    Vector2.makeWeighted(3, 0, 1)
-  );
-  RationalCubicCurve2d.solve(c, 0.5); // → Vector2
+    Vector2.makeWeighted(3, 0, 1),
+  )
+  RationalCubicCurve2d.solve(c, 0.5) // → Vector2
   ```
 
   A matching path type (`RationalCubicPath2d` in `curvy/path`) and spline type (`RationalBezier2d` in `curvy/splines`) follow the same shape as their polynomial counterparts, with `solve`, `solveAtX`, `solveAtY`, and the standard pipeable API.
@@ -549,8 +586,8 @@
   **`makeMonotonicEasing(startSlope, endSlope)`.** A Gregory-Delbourgo style constructor for a guaranteed-monotone rational cubic easing curve. Interpolates `(0, 0)` and `(1, 1)` with the given endpoint slopes, pins `x(t) = t`, and returns a curve branded `<Increasing, Increasing>` so `solveAtX` narrows to `Solution.AtMostOne<number>` without runtime checking. Smoothstep falls out from `(0, 0)` and linear easing from `(1, 1)`.
 
   ```ts
-  const ease = RationalCubicCurve2d.makeMonotonicEasing(0.5, 1.5);
-  const result = RationalCubicCurve2d.solveAtX(ease, 0.5);
+  const ease = RationalCubicCurve2d.makeMonotonicEasing(0.5, 1.5)
+  const result = RationalCubicCurve2d.solveAtX(ease, 0.5)
   // result: Solution.AtMostOne<number> — narrowed by the Increasing brand
   ```
 
@@ -561,7 +598,6 @@
 - 55714cf: TypeScript declarations are now published as `.d.mts` rather than `.d.ts`, matching the ESM-only `.mjs` artifact convention. The `package.json` `exports` field has been updated accordingly, so consumers using modern TypeScript (5+) with `moduleResolution: "node16"`, `"nodenext"`, or `"bundler"` see no change — types resolve through `exports` like before.
 
   Two scenarios where this is observable:
-
   - **Deep imports past `exports`** (e.g. `import 'curvy/dist/vector/vector2.d.ts'`) will break — those file paths no longer exist. This was already unsupported, but worth flagging.
   - **Older TypeScript or non-`exports`-aware tooling** that fell back to `.d.ts` lookup by extension may need updating to a version that honors `exports`.
 

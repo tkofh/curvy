@@ -280,6 +280,26 @@ export const containsInterval: {
   (inner: Interval): (outer: Interval) => boolean
 } = internal.containsInterval
 
+export const union: {
+  /**
+   * Returns the smallest interval enclosing both inputs. Each endpoint's
+   * inclusivity follows the input that contributed it; when both endpoints
+   * tie, the result is closed at that point if either input includes it.
+   *
+   * @param a - The first interval.
+   * @param b - The second interval.
+   * @returns A new interval enclosing both inputs.
+   * @since 2.1.0
+   */
+  (a: Interval, b: Interval): Interval
+  /**
+   * @param b - The second interval.
+   * @returns A function that takes the first interval and returns the union.
+   * @since 2.1.0
+   */
+  (b: Interval): (a: Interval) => Interval
+} = internal.union
+
 export const filter: {
   /**
    * Filters an array of values to those contained within an interval.
