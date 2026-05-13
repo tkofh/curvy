@@ -7,6 +7,7 @@
   "changesets": [
     "arc-length-sampling",
     "bezier-subdivide",
+    "box2d",
     "characteristic-module",
     "curve-solve-at",
     "dts-mts-extension",

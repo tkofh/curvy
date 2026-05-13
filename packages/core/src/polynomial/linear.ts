@@ -1,4 +1,4 @@
-import type { Interval } from '../interval/interval'
+import type { Closed, Interval } from '../interval/interval'
 import type { Pipeable } from '../utils'
 import type * as Solution from '../solution/solution'
 import type { Vector2 } from '../vector/vector2'
@@ -318,7 +318,7 @@ export const range: {
    * @returns The range of the polynomial within the given domain.
    * @since 1.0.0
    */
-  (p: LinearPolynomial, domain: Interval): Interval
+  (p: LinearPolynomial, domain: Interval): Closed
   /**
    * Calculates the range of a linear polynomial.
    *
@@ -326,7 +326,7 @@ export const range: {
    * @returns A function that takes a `LinearPolynomial` and returns the range of the polynomial within the given domain.
    * @since 1.0.0
    */
-  (domain: Interval): (p: LinearPolynomial) => Interval
+  (domain: Interval): (p: LinearPolynomial) => Closed
 } = internal.range
 
 export const length: {

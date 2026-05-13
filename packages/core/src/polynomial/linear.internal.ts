@@ -125,10 +125,10 @@ export const domain = dual<
 })
 
 export const range = dual<
-  (domain: Interval.Interval) => (p: LinearPolynomial) => Interval.Interval,
-  (p: LinearPolynomial, domain: Interval.Interval) => Interval.Interval
+  (domain: Interval.Interval) => (p: LinearPolynomial) => Interval.Closed,
+  (p: LinearPolynomial, domain: Interval.Interval) => Interval.Closed
 >(2, (p: LinearPolynomial, d: Interval.Interval) =>
-  Interval.make(solve(p, d.start), solve(p, d.end)),
+  Interval.fromMinMax(solve(p, d.start), solve(p, d.end)),
 )
 
 export const length = dual<

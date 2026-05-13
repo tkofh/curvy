@@ -1,4 +1,5 @@
-import type { Interval } from '../interval/interval'
+import * as Box2d from '../box/box2d'
+import * as Interval from '../interval/interval'
 import { dual, Pipeable } from '../utils'
 import * as LinearPolynomial from '../polynomial/linear'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
@@ -85,9 +86,12 @@ export const solveAtY = dual(2, (c: LinearCurve2d, y: number) =>
 
 export const length = dual(
   2,
-  (c: LinearCurve2d, i: Interval) =>
+  (c: LinearCurve2d, i: Interval.Interval) =>
     Math.sqrt(c.x.c1 ** 2 + c.y.c1 ** 2) * Math.abs(i.end - i.start),
 )
+
+export const boundingBox = (c: LinearCurve2d): Box2d.Box2d<Interval.Closed, Interval.Closed> =>
+  Box2d.make(LinearPolynomial.range(c.x, Interval.unit), LinearPolynomial.range(c.y, Interval.unit))
 
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes. For per-axis checks, users can call `LinearPolynomial.isMonotonic(c.x)`

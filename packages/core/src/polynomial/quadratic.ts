@@ -1,4 +1,4 @@
-import type { Interval } from '../interval/interval'
+import type { Closed, Interval } from '../interval/interval'
 import type { Pipeable } from '../utils'
 import type * as Solution from '../solution/solution'
 import type { Vector2 } from '../vector/vector2'
@@ -352,7 +352,7 @@ export const range: {
    * @returns The range of the polynomial over the domain.
    * @since 1.0.0
    */
-  (p: QuadraticPolynomial, domain: Interval): Interval
+  (p: QuadraticPolynomial, domain: Interval): Closed
   /**
    * Computes the range of the quadratic polynomial over a given domain.
    *
@@ -360,7 +360,7 @@ export const range: {
    * @returns A function that takes a quadratic polynomial and returns the range of the polynomial over the domain.
    * @since 1.0.0
    */
-  (domain: Interval): (p: QuadraticPolynomial) => Interval
+  (domain: Interval): (p: QuadraticPolynomial) => Closed
 } = internal.range
 
 export const length: {

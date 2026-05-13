@@ -1,5 +1,6 @@
+import type { Box2d } from '../box/box2d'
 import type { TwoDimensional } from '../dimensions'
-import type { Interval } from '../interval/interval'
+import type { Closed, Interval } from '../interval/interval'
 import type { Pipeable } from '../utils'
 import type { QuadraticPolynomial } from '../polynomial/quadratic'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
@@ -209,6 +210,17 @@ export const curvature: {
    */
   (t: number): (c: QuadraticCurve2d) => number
 } = internal.curvature
+
+/**
+ * Computes the axis-aligned bounding box of the curve over its parameter
+ * domain `[0, 1]`. Accounts for interior extrema, so the box is tight against
+ * the curve and not just the control polygon.
+ *
+ * @param c - The quadratic curve.
+ * @returns A closed `Box2d` enclosing the curve.
+ * @since 2.1.0
+ */
+export const boundingBox: (c: QuadraticCurve2d) => Box2d<Closed, Closed> = internal.boundingBox
 
 /**
  * Type-narrowing predicate: refines both axes' traits to include `Monotonic`

@@ -213,8 +213,8 @@ export const domain = dual<
 })
 
 export const range = dual<
-  (domain: Interval.Interval) => (p: QuadraticPolynomial) => Interval.Interval,
-  (p: QuadraticPolynomial, domain: Interval.Interval) => Interval.Interval
+  (domain: Interval.Interval) => (p: QuadraticPolynomial) => Interval.Closed,
+  (p: QuadraticPolynomial, domain: Interval.Interval) => Interval.Closed
 >(2, (p: QuadraticPolynomial, d: Interval.Interval) => {
   if (p.c2 === 0) {
     return Linear.range(Linear.make(p.c0, p.c1), d)

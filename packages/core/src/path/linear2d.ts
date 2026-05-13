@@ -1,4 +1,6 @@
+import type { Box2d } from '../box/box2d'
 import type { LinearCurve2d } from '../curve/linear2d'
+import type { Closed } from '../interval/interval'
 import type { Pipeable } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { LinearPath2dTypeId } from './linear2d.internal'
@@ -132,3 +134,13 @@ export const isContinuous: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & Cont
  */
 export const asContinuous: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Continuous> =
   internal.asContinuous
+
+/**
+ * Computes the axis-aligned bounding box of the path — the smallest closed
+ * `Box2d` enclosing every segment.
+ *
+ * @param p - The linear path.
+ * @returns A closed `Box2d` enclosing the path.
+ * @since 2.1.0
+ */
+export const boundingBox: (p: LinearPath2d) => Box2d<Closed, Closed> = internal.boundingBox

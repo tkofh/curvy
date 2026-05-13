@@ -1,5 +1,6 @@
+import type { Box2d } from '../box/box2d'
 import type { TwoDimensional } from '../dimensions'
-import type { Interval } from '../interval/interval'
+import type { Closed, Interval } from '../interval/interval'
 import type { Pipeable } from '../utils'
 import type { LinearPolynomial } from '../polynomial/linear'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
@@ -124,6 +125,17 @@ export const length: {
    */
   (i: Interval): (c: LinearCurve2d) => number
 } = internal.length
+
+/**
+ * Computes the axis-aligned bounding box of the curve over its parameter
+ * domain `[0, 1]`. For a linear curve this is the closed box enclosing the
+ * two endpoints.
+ *
+ * @param c - The linear curve.
+ * @returns A closed `Box2d` enclosing the curve.
+ * @since 2.1.0
+ */
+export const boundingBox: (c: LinearCurve2d) => Box2d<Closed, Closed> = internal.boundingBox
 
 export const solveAtX: {
   /**

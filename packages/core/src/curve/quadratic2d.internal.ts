@@ -1,3 +1,4 @@
+import * as Box2d from '../box/box2d'
 import * as Interval from '../interval/interval'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
 import {
@@ -197,6 +198,14 @@ export const curvature = dual(2, (c: QuadraticCurve2d, t: number) => {
 
   return Math.abs(Vector2.cross(v, a)) / vMag ** 3
 })
+
+export const boundingBox = (
+  c: QuadraticCurve2d,
+): Box2d.Box2d<Interval.Closed, Interval.Closed> =>
+  Box2d.make(
+    QuadraticPolynomial.range(c.x, Interval.unit),
+    QuadraticPolynomial.range(c.y, Interval.unit),
+  )
 
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes, over the unit interval. For per-axis checks, users can call

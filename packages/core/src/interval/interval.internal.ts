@@ -106,6 +106,30 @@ export const contains = dual<
   }
 })
 
+// Whether `outer` is a superset of `inner`. For each endpoint pair (start/start
+// and end/end), the inner endpoint must be inside outer; when the endpoints
+// are numerically equal, the outer must include that boundary or the inner
+// must exclude it. Both shapes (closed-on-closed, open-on-open with matched
+// endpoints, etc.) are handled by this kind-aware comparison.
+export const containsInterval = dual<
+  (inner: Interval) => (outer: Interval) => boolean,
+  (outer: Interval, inner: Interval) => boolean
+>(2, (outer: Interval, inner: Interval): boolean => {
+  const outerIncludesStart = outer.kind === 'closed' || outer.kind === 'open-end'
+  const innerIncludesStart = inner.kind === 'closed' || inner.kind === 'open-end'
+  const outerIncludesEnd = outer.kind === 'closed' || outer.kind === 'open-start'
+  const innerIncludesEnd = inner.kind === 'closed' || inner.kind === 'open-start'
+
+  const startOk =
+    inner.start > outer.start ||
+    (inner.start === outer.start && (outerIncludesStart || !innerIncludesStart))
+  const endOk =
+    inner.end < outer.end ||
+    (inner.end === outer.end && (outerIncludesEnd || !innerIncludesEnd))
+
+  return startOk && endOk
+})
+
 export const filter = dual<
   <V extends ReadonlyArray<number>>(value: V) => (interval: Interval) => V,
   <V extends ReadonlyArray<number>>(interval: Interval, value: V) => V

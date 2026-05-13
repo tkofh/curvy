@@ -1,4 +1,6 @@
+import type { Box2d } from '../box/box2d'
 import type { CubicCurve2d } from '../curve/cubic2d'
+import type { Closed } from '../interval/interval'
 import type { Pipeable } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { CubicPath2dTypeId } from './cubic2d.internal'
@@ -153,3 +155,13 @@ export const solveByDistance: {
    */
   (s: number): (p: CubicPath2d) => Vector2
 } = internal.solveByDistance
+
+/**
+ * Computes the axis-aligned bounding box of the path — the smallest closed
+ * `Box2d` enclosing every segment.
+ *
+ * @param p - The cubic path.
+ * @returns A closed `Box2d` enclosing the path.
+ * @since 2.1.0
+ */
+export const boundingBox: (p: CubicPath2d) => Box2d<Closed, Closed> = internal.boundingBox

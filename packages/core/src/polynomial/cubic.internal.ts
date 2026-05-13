@@ -276,8 +276,8 @@ export const domain = dual<
 )
 
 export const range = dual<
-  (domain: Interval.Interval) => (p: CubicPolynomial) => Interval.Interval,
-  (p: CubicPolynomial, domain: Interval.Interval) => Interval.Interval
+  (domain: Interval.Interval) => (p: CubicPolynomial) => Interval.Closed,
+  (p: CubicPolynomial, domain: Interval.Interval) => Interval.Closed
 >(2, (p: CubicPolynomial, d: Interval.Interval) =>
   Interval.fromMinMax(
     solve(p, d.start),

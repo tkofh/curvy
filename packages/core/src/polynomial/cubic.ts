@@ -1,4 +1,4 @@
-import type { Interval } from '../interval/interval'
+import type { Closed, Interval } from '../interval/interval'
 import type { Pipeable } from '../utils'
 import type * as Solution from '../solution/solution'
 import type { Vector2 } from '../vector/vector2'
@@ -358,7 +358,7 @@ export const range: {
    * @returns The range of the cubic polynomial in the specified domain.
    * @since 1.0.0
    */
-  (p: CubicPolynomial, domain: Interval): Interval
+  (p: CubicPolynomial, domain: Interval): Closed
   /**
    * Calculates the range of a cubic polynomial.
    *
@@ -366,7 +366,7 @@ export const range: {
    * @returns A function that takes a cubic polynomial and returns the range of the cubic polynomial in the specified domain.
    * @since 1.0.0
    */
-  (domain: Interval): (p: CubicPolynomial) => Interval
+  (domain: Interval): (p: CubicPolynomial) => Closed
 } = internal.range
 
 export const length: {

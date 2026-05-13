@@ -259,6 +259,27 @@ export const contains: {
   (value: number): (interval: Interval) => boolean
 } = internal.contains
 
+export const containsInterval: {
+  /**
+   * Checks if `inner` is a subset of `outer` — every point of `inner` is also
+   * in `outer`. Respects endpoint inclusivity on both sides: a closed inner
+   * endpoint must be inside (or on a closed boundary of) the outer, while an
+   * open inner endpoint can sit exactly on an open outer boundary.
+   *
+   * @param outer - The enclosing interval.
+   * @param inner - The candidate inner interval.
+   * @returns `true` when `inner` is a subset of `outer`.
+   * @since 2.1.0
+   */
+  (outer: Interval, inner: Interval): boolean
+  /**
+   * @param inner - The candidate inner interval.
+   * @returns A function that takes the outer interval and returns the containment result.
+   * @since 2.1.0
+   */
+  (inner: Interval): (outer: Interval) => boolean
+} = internal.containsInterval
+
 export const filter: {
   /**
    * Filters an array of values to those contained within an interval.
