@@ -1,5 +1,6 @@
-import { dual, Pipeable } from '../pipe'
-import { epsEquals, invariant } from '../utils'
+import { dual, Pipeable } from '../utils'
+import { invariant } from '../utils'
+import { epsEquals } from '../number'
 import type { Vector2, Weighted } from './vector2'
 
 export const Vector2TypeId = Symbol.for('curvy/vector2')

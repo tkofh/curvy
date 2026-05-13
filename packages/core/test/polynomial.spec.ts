@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import * as interval from '../src/interval'
+import * as interval from '../src/interval/interval'
 import * as cubic from '../src/polynomial/cubic'
 import * as linear from '../src/polynomial/linear'
 import * as quadratic from '../src/polynomial/quadratic'
@@ -347,5 +347,41 @@ describe('cubic', () => {
   })
   test('curvature', () => {
     expect(cubic.curvature(cubic.make(0, 0, 0, 1), 0)).toBe(0)
+  })
+  test('subdivide: continuity at split point', () => {
+    // p(t) = 1 + 2t + 3t² + 4t³ — arbitrary non-degenerate cubic.
+    const p = cubic.make(1, 2, 3, 4)
+    for (const splitAt of [0.25, 0.5, 0.75]) {
+      const [left, right] = cubic.subdivide(p, splitAt)
+      // left(1) = right(0) = p(splitAt)
+      expect(cubic.solve(left, 1)).toBeCloseTo(cubic.solve(p, splitAt), 10)
+      expect(cubic.solve(right, 0)).toBeCloseTo(cubic.solve(p, splitAt), 10)
+      // left(0) = p(0), right(1) = p(1)
+      expect(cubic.solve(left, 0)).toBeCloseTo(cubic.solve(p, 0), 10)
+      expect(cubic.solve(right, 1)).toBeCloseTo(cubic.solve(p, 1), 10)
+    }
+  })
+  test('subdivide: left half reparameterizes p(splitAt · u)', () => {
+    const p = cubic.make(1, 2, 3, 4)
+    const splitAt = 0.3
+    const [left] = cubic.subdivide(p, splitAt)
+    for (const u of [0.1, 0.4, 0.7, 0.9]) {
+      expect(cubic.solve(left, u)).toBeCloseTo(cubic.solve(p, splitAt * u), 10)
+    }
+  })
+  test('subdivide: right half reparameterizes p(splitAt + (1-splitAt) · u)', () => {
+    const p = cubic.make(1, 2, 3, 4)
+    const splitAt = 0.3
+    const [, right] = cubic.subdivide(p, splitAt)
+    for (const u of [0.1, 0.4, 0.7, 0.9]) {
+      expect(cubic.solve(right, u)).toBeCloseTo(cubic.solve(p, splitAt + (1 - splitAt) * u), 10)
+    }
+  })
+  test('subdivide: rejects t outside (0, 1)', () => {
+    const p = cubic.make(1, 2, 3, 4)
+    expect(() => cubic.subdivide(p, 0)).toThrow()
+    expect(() => cubic.subdivide(p, 1)).toThrow()
+    expect(() => cubic.subdivide(p, -0.1)).toThrow()
+    expect(() => cubic.subdivide(p, 1.5)).toThrow()
   })
 })

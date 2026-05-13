@@ -1,5 +1,5 @@
 import type { RationalCubicPath2d } from '../path/rationalCubic2d'
-import type { Pipeable } from '../pipe'
+import type { Pipeable } from '../utils'
 import type { Vector2, Weighted } from '../vector/vector2'
 import type { Bezier2d } from './bezier2d'
 import type { RationalBezier2dTypeId } from './rationalBezier2d.internal'

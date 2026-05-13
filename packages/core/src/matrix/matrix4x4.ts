@@ -1,5 +1,5 @@
 import type { FourDimensionalComponent, FourDimensionalIndex } from '../dimensions'
-import type { Pipeable } from '../pipe'
+import type { Pipeable } from '../utils'
 import type { Vector4 } from '../vector/vector4'
 import type { Matrix3x3 } from './matrix3x3'
 import type { Matrix4x4TypeId } from './matrix4x4.internal'

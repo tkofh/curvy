@@ -5,7 +5,7 @@
 **New `curvy/characteristic` module.** The characteristic matrices that identify each cubic spline family now live in a shared module rather than being scattered across the spline modules.
 
 ```ts
-import * as Characteristic from 'curvy/characteristic'
+import { Characteristic } from 'curvy/characteristic'
 
 Characteristic.cubicBezier // Matrix4x4 — was Bezier2d.characteristic
 Characteristic.cubicHermite // Matrix4x4 — was Hermite2d.characteristic
@@ -19,6 +19,9 @@ Characteristic.cubicCatmullRom // Matrix4x4 — was Cardinal2d.catRomCharacteris
 **New `Characteristic.apply` helper.** Applies a characteristic matrix to N channels of control values, producing N cubic polynomials in monomial form. This is the operation Freya Holmér describes in _The Continuity of Splines_ — the matrix IS the spline, and `apply` is the canonical way to combine it with control points to produce a polynomial.
 
 ```ts
+import { Characteristic } from 'curvy/characteristic'
+import { Vector4 } from 'curvy/vector'
+
 // Polynomial 2D spline: two channels (x, y)
 const [x, y] = Characteristic.apply(
   Characteristic.cubicBezier,

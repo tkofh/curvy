@@ -1,6 +1,6 @@
-import type { Interval } from '../interval'
-import type { Pipeable } from '../pipe'
-import type * as Solution from '../solution'
+import type { Interval } from '../interval/interval'
+import type { Pipeable } from '../utils'
+import type * as Solution from '../solution/solution'
 import type { Vector2 } from '../vector/vector2'
 import type { Vector4 } from '../vector/vector4'
 import * as internal from './cubic.internal'
@@ -194,6 +194,30 @@ export const toInverseSolver: (p: CubicPolynomial) => (y: number) => Solution.At
  * @since 1.0.0
  */
 export const derivative: (p: CubicPolynomial) => QuadraticPolynomial = internal.derivative
+
+export const subdivide: {
+  /**
+   * Subdivides a cubic polynomial at parameter `t ∈ (0, 1)` into two new
+   * cubic polynomials. The first polynomial's evaluation on `[0, 1]` matches
+   * the original's on `[0, t]`; the second matches the original's on
+   * `[t, 1]`. Equivalent to de Casteljau subdivision in Bernstein form,
+   * performed directly in monomial form.
+   *
+   * @param p - The cubic polynomial to subdivide.
+   * @param t - The split parameter; must be in the open interval `(0, 1)`.
+   * @returns A `[left, right]` tuple of cubic polynomials.
+   * @since 2.1.0
+   */
+  (p: CubicPolynomial, t: number): [CubicPolynomial, CubicPolynomial]
+  /**
+   * Subdivides a cubic polynomial at parameter `t ∈ (0, 1)`.
+   *
+   * @param t - The split parameter; must be in the open interval `(0, 1)`.
+   * @returns A function that takes a polynomial and returns its `[left, right]` halves.
+   * @since 2.1.0
+   */
+  (t: number): (p: CubicPolynomial) => [CubicPolynomial, CubicPolynomial]
+} = internal.subdivide
 
 /**
  * Calculates the roots of a cubic polynomial.

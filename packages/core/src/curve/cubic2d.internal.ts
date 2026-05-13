@@ -1,5 +1,5 @@
-import * as Characteristic from '../characteristic'
-import * as Interval from '../interval'
+import * as Characteristic from '../characteristic/characteristic'
+import * as Interval from '../interval/interval'
 import {
   GL32_W0,
   GL32_W1,
@@ -34,11 +34,11 @@ import {
   GL32_X14,
   GL32_X15,
 } from '../length'
-import { dual, Pipeable } from '../pipe'
+import { dual, Pipeable } from '../utils'
 import * as CubicPolynomial from '../polynomial/cubic'
 import * as QuadraticPolynomial from '../polynomial/quadratic'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
-import * as Solution from '../solution'
+import * as Solution from '../solution/solution'
 import * as Vector2 from '../vector/vector2'
 import * as Vector4 from '../vector/vector4'
 import type { CubicCurve2d } from './cubic2d'

@@ -1,6 +1,7 @@
 import type { RationalCubicCurve2d } from '../curve/rationalCubic2d'
-import type { Pipeable } from '../pipe'
+import type { Pipeable } from '../utils'
 import type { Vector2 } from '../vector/vector2'
+import type { CubicPath2d } from './cubic2d'
 import type { RationalCubicPath2dTypeId } from './rationalCubic2d.internal'
 import * as internal from './rationalCubic2d.internal'
 
@@ -97,3 +98,30 @@ export const solve: {
    */
   (u: number): (p: RationalCubicPath2d) => Vector2
 } = internal.solve
+
+export const approximateAsCubicPath: {
+  /**
+   * Approximates the rational cubic path as a `CubicPath2d` via per-segment
+   * recursive subdivision. Each input segment is split until its midpoint
+   * deviates from a polynomial-cubic candidate by at most `tolerance`; the
+   * surviving candidates are concatenated into a new path.
+   *
+   * Lossy in general — only exact when every input segment has uniform
+   * weights, in which case segment count is preserved. Tighter tolerance
+   * produces more segments.
+   *
+   * @param p - The rational cubic path to approximate.
+   * @param tolerance - Maximum allowed midpoint deviation per segment; must be positive.
+   * @returns A new `CubicPath2d` approximating the input.
+   * @since 2.1.0
+   */
+  (p: RationalCubicPath2d, tolerance: number): CubicPath2d
+  /**
+   * Approximates the rational cubic path as a `CubicPath2d`.
+   *
+   * @param tolerance - Maximum allowed midpoint deviation per segment; must be positive.
+   * @returns A function that takes a rational path and returns its approximation.
+   * @since 2.1.0
+   */
+  (tolerance: number): (p: RationalCubicPath2d) => CubicPath2d
+} = internal.approximateAsCubicPath

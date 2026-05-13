@@ -4,7 +4,7 @@ import * as linearCurve2d from '../src/curve/linear2d'
 import * as quadraticCurve2d from '../src/curve/quadratic2d'
 import * as cubicPolynomial from '../src/polynomial/cubic'
 import * as quadraticPolynomial from '../src/polynomial/quadratic'
-import * as Solution from '../src/solution'
+import * as Solution from '../src/solution/solution'
 import * as vector2 from '../src/vector/vector2'
 
 describe('LinearCurve2d.solveAtX/solveAtY', () => {

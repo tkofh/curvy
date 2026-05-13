@@ -1,0 +1,9 @@
+{
+  "pid": 3668,
+  "startedAt": 1778641035927,
+  "command": "dev",
+  "cwd": "/Users/tim/projects/curvy/apps/playground",
+  "port": 3000,
+  "hostname": "::1",
+  "url": "http://[::1]:3000"
+}

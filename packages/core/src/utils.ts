@@ -1,334 +1,1091 @@
-import { dual } from './pipe'
-
 /**
- * @since 1.0.0
+ * pipe() and dual() are slightly modified versions of Effect-TS's pipe() and dual() functions.
+ * https://github.com/effect-ts/core/blob/main/src/function.ts
+ *
+ * The original versions are licensed under the MIT license.
+ * This version is licensed under the MIT license.
  */
-export const PRECISION = 8
 
-/**
- * Default tolerance for approximate equality between floating-point numbers.
- *
- * @since 1.1.0
- */
-export const EPSILON = 1e-10
+// biome-ignore lint/suspicious/noExplicitAny: any is used to allow any argument to be passed in
+type AnyFunction = (...args: Array<any>) => any
 
-/**
- * Approximate equality between two numbers, within an absolute tolerance.
- *
- * @param a - The first value.
- * @param b - The second value.
- * @param eps - The maximum allowed absolute difference. Defaults to {@link EPSILON}.
- * @returns `true` when `|a - b| <= eps`.
- * @since 1.1.0
- */
-export function epsEquals(a: number, b: number, eps: number = EPSILON): boolean {
-  return Math.abs(a - b) <= eps
-}
+// Per-arity helpers use `function` (not arrow) so they can read `arguments`
+// directly. V8 keeps `arguments` virtualized when only `arguments.length`
+// and individual `arguments[i]` accesses are used — no rest-args array
+// allocation per call. The generic / predicate paths fall back to materializing
+// the args because they need to forward an unknown number to either `apply`
+// or a deferred closure.
 
-/**
- * Snaps near-zero values to exactly zero for stable sign tests.
- *
- * @param value - The value to test.
- * @param eps - The threshold below which `value` is considered zero.
- * @returns `0` when `|value| < eps`, otherwise `value` unchanged.
- * @since 1.1.0
- */
-export function clampToZero(value: number, eps: number): number {
-  return Math.abs(value) < eps ? 0 : value
-}
-
-/**
- * Rounding function that rounds a number to a specified precision.
- *
- * @param value - The number to round.
- * @param precision - The number of decimal places to round to (default is 8).
- * @returns The rounded number.
- * @example
- * ```ts
- * import { round } from 'curvy/utils'
- *
- * const roundedValue = round(1.23456789, 4) // 1.2346
- * const roundedValue2 = round(1.23456789) // 1.23456789
- * ```
- * @since 1.0.0
- */
-export function round(value: number, precision = PRECISION): number {
-  const scale = 10 ** precision
-  const result = Math.round(value * scale) / scale
-  if (result === 0) {
-    return 0
+export const dual: {
+  <DataLast extends AnyFunction, DataFirst extends AnyFunction>(
+    arity: Parameters<DataFirst>['length'],
+    body: DataFirst,
+  ): DataLast & DataFirst
+  <DataLast extends AnyFunction, DataFirst extends AnyFunction>(
+    isDataFirst: (args: IArguments) => boolean,
+    body: DataFirst,
+  ): DataLast & DataFirst
+  // biome-ignore lint/suspicious/noExplicitAny: dual erases its types at runtime
+} = (arity: any, body: any): any => {
+  if (typeof arity === 'function') {
+    const isDataFirst = arity
+    return function (this: unknown) {
+      if (isDataFirst(arguments)) {
+        return body.apply(this, arguments)
+      }
+      const args = Array.prototype.slice.call(arguments)
+      return (self: unknown) => body(self, ...args)
+    }
   }
-  return result
-}
 
-/**
- * Rounding function that rounds a number down to a specified precision.
- *
- * @param value - The number to round down.
- * @param precision - The number of decimal places to round down to (default is 8).
- * @returns The rounded down number.
- * @example
- * ```ts
- * import { roundDown } from 'curvy/utils'
- *
- * const roundedDownValue = roundDown(1.23456789, 4) // 1.2345
- * const roundedDownValue2 = roundDown(1.23456789) // 1.23456789
- * ```
- * @since 1.0.0
- */
-export function roundDown(value: number, precision = PRECISION): number {
-  const scale = 10 ** precision
-  const result = Math.floor(value * scale) / scale
-  if (result === 0) {
-    return 0
+  switch (arity) {
+    case 0:
+    case 1:
+      throw new RangeError(`Invalid arity ${arity}`)
+
+    case 2:
+      return function () {
+        if (arguments.length >= 2) {
+          return body(arguments[0], arguments[1])
+        }
+        const a = arguments[0]
+        return (self: unknown) => body(self, a)
+      }
+
+    case 3:
+      return function () {
+        if (arguments.length >= 3) {
+          return body(arguments[0], arguments[1], arguments[2])
+        }
+        const a = arguments[0]
+        const b = arguments[1]
+        return (self: unknown) => body(self, a, b)
+      }
+
+    case 4:
+      return function () {
+        if (arguments.length >= 4) {
+          return body(arguments[0], arguments[1], arguments[2], arguments[3])
+        }
+        const a = arguments[0]
+        const b = arguments[1]
+        const c = arguments[2]
+        return (self: unknown) => body(self, a, b, c)
+      }
+
+    case 5:
+      return function () {
+        if (arguments.length >= 5) {
+          return body(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4])
+        }
+        const a = arguments[0]
+        const b = arguments[1]
+        const c = arguments[2]
+        const d = arguments[3]
+        return (self: unknown) => body(self, a, b, c, d)
+      }
+
+    default:
+      return function (this: unknown) {
+        if (arguments.length >= arity) {
+          return body.apply(this, arguments)
+        }
+        const args = Array.prototype.slice.call(arguments)
+        return (self: unknown) => body(self, ...args)
+      }
   }
-  return result
 }
 
-/**
- * Rounding function that rounds a number up to a specified precision.
- *
- * @param value - The number to round up.
- * @param precision - The number of decimal places to round up to (default is 8).
- * @returns The rounded up number.
- * @example
- * ```ts
- * import { roundUp } from 'curvy/utils'
- *
- * const roundedUpValue = roundUp(1.23456789, 4) // 1.2346
- * const roundedUpValue2 = roundUp(1.23456789) // 1.23456789
- * ```
- * @since 1.0.0
- */
-export function roundUp(value: number, precision = PRECISION): number {
-  const scale = 10 ** precision
-  const result = Math.ceil(value * scale) / scale
-  if (result === 0) {
-    return 0
+export function pipe<A>(a: A): A
+export function pipe<A, B = never>(a: A, ab: (a: A) => B): B
+export function pipe<A, B = never, C = never>(a: A, ab: (a: A) => B, bc: (b: B) => C): C
+export function pipe<A, B = never, C = never, D = never>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+): D
+export function pipe<A, B = never, C = never, D = never, E = never>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+): E
+export function pipe<A, B = never, C = never, D = never, E = never, F = never>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+): F
+export function pipe<A, B = never, C = never, D = never, E = never, F = never, G = never>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+): G
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+): H
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+): I
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+): J
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+  K = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+): K
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+  K = never,
+  L = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+  kl: (k: K) => L,
+): L
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+  K = never,
+  L = never,
+  M = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+  kl: (k: K) => L,
+  lm: (l: L) => M,
+): M
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+  K = never,
+  L = never,
+  M = never,
+  N = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+  kl: (k: K) => L,
+  lm: (l: L) => M,
+  mn: (m: M) => N,
+): N
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+  K = never,
+  L = never,
+  M = never,
+  N = never,
+  O = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+  kl: (k: K) => L,
+  lm: (l: L) => M,
+  mn: (m: M) => N,
+  no: (n: N) => O,
+): O
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+  K = never,
+  L = never,
+  M = never,
+  N = never,
+  O = never,
+  P = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+  kl: (k: K) => L,
+  lm: (l: L) => M,
+  mn: (m: M) => N,
+  no: (n: N) => O,
+  op: (o: O) => P,
+): P
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+  K = never,
+  L = never,
+  M = never,
+  N = never,
+  O = never,
+  P = never,
+  Q = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+  kl: (k: K) => L,
+  lm: (l: L) => M,
+  mn: (m: M) => N,
+  no: (n: N) => O,
+  op: (o: O) => P,
+  pq: (p: P) => Q,
+): Q
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+  K = never,
+  L = never,
+  M = never,
+  N = never,
+  O = never,
+  P = never,
+  Q = never,
+  R = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+  kl: (k: K) => L,
+  lm: (l: L) => M,
+  mn: (m: M) => N,
+  no: (n: N) => O,
+  op: (o: O) => P,
+  pq: (p: P) => Q,
+  qr: (q: Q) => R,
+): R
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+  K = never,
+  L = never,
+  M = never,
+  N = never,
+  O = never,
+  P = never,
+  Q = never,
+  R = never,
+  S = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+  kl: (k: K) => L,
+  lm: (l: L) => M,
+  mn: (m: M) => N,
+  no: (n: N) => O,
+  op: (o: O) => P,
+  pq: (p: P) => Q,
+  qr: (q: Q) => R,
+  rs: (r: R) => S,
+): S
+export function pipe<
+  A,
+  B = never,
+  C = never,
+  D = never,
+  E = never,
+  F = never,
+  G = never,
+  H = never,
+  I = never,
+  J = never,
+  K = never,
+  L = never,
+  M = never,
+  N = never,
+  O = never,
+  P = never,
+  Q = never,
+  R = never,
+  S = never,
+  T = never,
+>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+  kl: (k: K) => L,
+  lm: (l: L) => M,
+  mn: (m: M) => N,
+  no: (n: N) => O,
+  op: (o: O) => P,
+  pq: (p: P) => Q,
+  qr: (q: Q) => R,
+  rs: (r: R) => S,
+  st: (s: S) => T,
+): T
+export function pipe(...args: [unknown, ...Array<AnyFunction>]): unknown {
+  const [a, ab, bc, cd, de, ef, fg, gh, hi] = args as [
+    unknown,
+    AnyFunction,
+    AnyFunction,
+    AnyFunction,
+    AnyFunction,
+    AnyFunction,
+    AnyFunction,
+    AnyFunction,
+    AnyFunction,
+  ]
+
+  switch (args.length) {
+    case 1:
+      return a
+    case 2:
+      return ab(a)
+    case 3:
+      return bc(ab(a))
+    case 4:
+      return cd(bc(ab(a)))
+    case 5:
+      return de(cd(bc(ab(a))))
+    case 6:
+      return ef(de(cd(bc(ab(a)))))
+    case 7:
+      return fg(ef(de(cd(bc(ab(a))))))
+    case 8:
+      return gh(fg(ef(de(cd(bc(ab(a)))))))
+    case 9:
+      return hi(gh(fg(ef(de(cd(bc(ab(a))))))))
+    default: {
+      let ret = args[0]
+      for (let i = 1; i < args.length; i++) {
+        ret = (args[i] as AnyFunction)(ret)
+      }
+      return ret
+    }
   }
-  return result
 }
 
-export const lerp: {
-  /**
-   * Linearly interpolates between two values.
-   *
-   * @param t - The interpolation factor (between 0 and 1).
-   * @param a - The start value.
-   * @param b - The end value.
-   * @returns The interpolated value.
-   * @example
-   * ```ts
-   * import { lerp } from 'curvy/utils'
-   *
-   * lerp(0.5, 10, 20) // 15
-   * ```
-   * @since 1.0.0
-   */
-  (t: number, a: number, b: number): number
-  /**
-   * Linearly interpolates between two values.
-   *
-   * @param a - The start value.
-   * @param b - The end value.
-   * @returns A function that takes the interpolation factor and returns the interpolated value.
-   * @example
-   * ```ts
-   * import { lerp } from 'curvy/utils'
-   *
-   * lerp(10, 20)(0.5) // 15
-   * ```
-   * @since 1.0.0
-   */
-  (a: number, b: number): (t: number) => number
-} = dual(3, (t: number, a: number, b: number) => b * t + a * (1 - t))
-
-export const normalize: {
-  /**
-   * Normalizes a value between two bounds to the unit interval.
-   *
-   * @param x - The value to normalize.
-   * @param a - The lower bound.
-   * @param b - The upper bound.
-   * @returns The normalized value.
-   * @example
-   * ```ts
-   * import { normalize } from 'curvy/utils'
-   *
-   * normalize(15, 10, 20) // 0.5
-   * ```
-   * @since 1.0.0
-   */
-  (x: number, a: number, b: number): number
-  /**
-   * Normalizes a value between two bounds to the unit interval.
-   *
-   * @param a - The lower bound.
-   * @param b - The upper bound.
-   * @returns A function that takes a value and returns the normalized value.
-   * @example
-   * ```ts
-   * import { normalize } from 'curvy/utils'
-   *
-   * normalize(10, 20)(15) // 0.5
-   * ```
-   * @since 1.0.0
-   */
-  (a: number, b: number): (x: number) => number
-} = dual(3, (x: number, a: number, b: number) => (x - a) / (b - a))
-
-export const remap: {
-  /**
-   * Remaps a value from one range to another.
-   *
-   * @param x - The value to remap.
-   * @param x1 - The lower bound of the original range.
-   * @param x2 - The upper bound of the original range.
-   * @param y1 - The lower bound of the new range.
-   * @param y2 - The upper bound of the new range.
-   * @returns The remapped value.
-   * @example
-   * ```ts
-   * import { remap } from 'curvy/utils'
-   *
-   * remap(15, 10, 20, 0, 100) // 50
-   * ```
-   * @since 1.0.0
-   */
-  (x: number, x1: number, x2: number, y1: number, y2: number): number
-  /**
-   * Remaps a value from one range to another.
-   *
-   * @param x1 - The lower bound of the original range.
-   * @param x2 - The upper bound of the original range.
-   * @param y1 - The lower bound of the new range.
-   * @param y2 - The upper bound of the new range.
-   * @returns A function that takes a value and returns the remapped value.
-   * @example
-   * ```ts
-   * import { remap } from 'curvy/utils'
-   *
-   * remap(10, 20, 0, 100)(15) // 50
-   * ```
-   * @since 1.0.0
-   */
-  (x1: number, x2: number, y1: number, y2: number): (x: number) => number
-} = dual(
-  5,
-  (x: number, x1: number, x2: number, y1: number, y2: number) =>
-    y1 + ((x - x1) / (x2 - x1)) * (y2 - y1),
-)
-
-export const clamp: {
-  /**
-   * Clamps a value between two bounds.
-   *
-   * @param value - The value to clamp.
-   * @param min - The lower bound.
-   * @param max - The upper bound.
-   * @returns The clamped value.
-   * @example
-   * ```ts
-   * import { clamp } from 'curvy/utils'
-   *
-   * clamp(25, 10, 20) // 20
-   * ```
-   * @since 1.0.0
-   */
-  (value: number, min: number, max: number): number
-  /**
-   * Clamps a value between two bounds.
-   *
-   * @param min - The lower bound.
-   * @param max - The upper bound.
-   * @returns A function that takes a value and returns the clamped value.
-   * @example
-   * ```ts
-   * import { clamp } from 'curvy/utils'
-   *
-   * clamp(10, 20)(25) // 20
-   * ```
-   * @since 1.0.0
-   */
-  (min: number, max: number): (value: number) => number
-} = dual(3, (value: number, min: number, max: number) =>
-  value < min ? min : value > max ? max : value,
-)
-
-export const clip: {
-  /**
-   * Clips a value to a specified range, returning a fallback value if the value is outside the range.
-   *
-   * @param value - The value to clip.
-   * @param min - The lower bound.
-   * @param max - The upper bound.
-   * @param onClip - The fallback value to return if the value is outside the range.
-   * @returns The original value if within range, otherwise the fallback.
-   * @example
-   * ```ts
-   * import { clip } from 'curvy/utils'
-   *
-   * clip(25, 10, 20, 15) // 15
-   * ```
-   * @since 1.0.0
-   */
-  <T>(value: number, min: number, max: number, onClip: T): T | number
-  /**
-   * Clips a value to a specified range, returning a fallback value if the value is outside the range.
-   *
-   * @param min - The lower bound.
-   * @param max - The upper bound.
-   * @param onClip - The fallback value to return if the value is outside the range.
-   * @returns A function that takes a value and returns it if within range, otherwise the fallback.
-   * @example
-   * ```ts
-   * import { clip } from 'curvy/utils'
-   *
-   * clip(10, 20, 15)(25) // 15
-   * ```
-   * @since 1.0.0
-   */
-  <T>(min: number, max: number, onClip: T): (value: number) => T | number
-} = dual(4, (value: number, min: number, max: number, onClip: unknown) =>
-  value < min ? onClip : value > max ? onClip : value,
-)
-
-/**
- * Returns the minimum and maximum of two numbers.
- *
- * @param a - The first number.
- * @param b - The second number.
- * @returns A tuple containing the minimum and maximum values.
- * @example
- * ```ts
- * import { minMax } from 'curvy/utils'
- *
- * const [minValue, maxValue] = minMax(10, 20) // [10, 20]
- * const [minValue2, maxValue2] = minMax(20, 10) // [10, 20]
- * ```
- * @since 1.0.0
- */
-export function minMax(a: number, b: number): [number, number] {
-  return a < b ? [a, b] : [b, a]
-}
-
-/**
- * Calculates the modulus of a number.
- *
- * @param n - The number to calculate the modulus of.
- * @param m - The modulus.
- * @returns The modulus of the number.
- * @example
- * ```ts
- * import { mod } from 'curvy/utils'
- *
- * const modulus = mod(10, 3) // 1
- * const modulus2 = mod(-10, 3) // 2
- * ```
- * @since 1.0.0
- */
-export function mod(n: number, m: number): number {
-  return ((n % m) + m) % m
+export class Pipeable {
+  pipe<A>(this: A): A
+  pipe<A, B = never>(this: A, ab: (_: A) => B): B
+  pipe<A, B = never, C = never>(this: A, ab: (_: A) => B, bc: (_: B) => C): C
+  pipe<A, B = never, C = never, D = never>(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+  ): D
+  pipe<A, B = never, C = never, D = never, E = never>(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+  ): E
+  pipe<A, B = never, C = never, D = never, E = never, F = never>(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+  ): F
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never>(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+  ): G
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never>(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+  ): H
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never>(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+  ): I
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+  ): J
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+  ): K
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+  ): L
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+    M = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+    lm: (_: L) => M,
+  ): M
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+    M = never,
+    N = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+    lm: (_: L) => M,
+    mn: (_: M) => N,
+  ): N
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+    M = never,
+    N = never,
+    O = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+    lm: (_: L) => M,
+    mn: (_: M) => N,
+    no: (_: N) => O,
+  ): O
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+    M = never,
+    N = never,
+    O = never,
+    P = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+    lm: (_: L) => M,
+    mn: (_: M) => N,
+    no: (_: N) => O,
+    op: (_: O) => P,
+  ): P
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+    M = never,
+    N = never,
+    O = never,
+    P = never,
+    Q = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+    lm: (_: L) => M,
+    mn: (_: M) => N,
+    no: (_: N) => O,
+    op: (_: O) => P,
+    pq: (_: P) => Q,
+  ): Q
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+    M = never,
+    N = never,
+    O = never,
+    P = never,
+    Q = never,
+    R = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+    lm: (_: L) => M,
+    mn: (_: M) => N,
+    no: (_: N) => O,
+    op: (_: O) => P,
+    pq: (_: P) => Q,
+    qr: (_: Q) => R,
+  ): R
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+    M = never,
+    N = never,
+    O = never,
+    P = never,
+    Q = never,
+    R = never,
+    S = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+    lm: (_: L) => M,
+    mn: (_: M) => N,
+    no: (_: N) => O,
+    op: (_: O) => P,
+    pq: (_: P) => Q,
+    qr: (_: Q) => R,
+    rs: (_: R) => S,
+  ): S
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+    M = never,
+    N = never,
+    O = never,
+    P = never,
+    Q = never,
+    R = never,
+    S = never,
+    T = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+    lm: (_: L) => M,
+    mn: (_: M) => N,
+    no: (_: N) => O,
+    op: (_: O) => P,
+    pq: (_: P) => Q,
+    qr: (_: Q) => R,
+    rs: (_: R) => S,
+    st: (_: S) => T,
+  ): T
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+    M = never,
+    N = never,
+    O = never,
+    P = never,
+    Q = never,
+    R = never,
+    S = never,
+    T = never,
+    U = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+    lm: (_: L) => M,
+    mn: (_: M) => N,
+    no: (_: N) => O,
+    op: (_: O) => P,
+    pq: (_: P) => Q,
+    qr: (_: Q) => R,
+    rs: (_: R) => S,
+    st: (_: S) => T,
+    tu: (_: T) => U,
+  ): U
+  pipe<
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+    G = never,
+    H = never,
+    I = never,
+    J = never,
+    K = never,
+    L = never,
+    M = never,
+    N = never,
+    O = never,
+    P = never,
+    Q = never,
+    R = never,
+    S = never,
+    T = never,
+    U = never,
+  >(
+    this: A,
+    ab: (_: A) => B,
+    bc: (_: B) => C,
+    cd: (_: C) => D,
+    de: (_: D) => E,
+    ef: (_: E) => F,
+    fg: (_: F) => G,
+    gh: (_: G) => H,
+    hi: (_: H) => I,
+    ij: (_: I) => J,
+    jk: (_: J) => K,
+    kl: (_: K) => L,
+    lm: (_: L) => M,
+    mn: (_: M) => N,
+    no: (_: N) => O,
+    op: (_: O) => P,
+    pq: (_: P) => Q,
+    qr: (_: Q) => R,
+    rs: (_: R) => S,
+    st: (_: S) => T,
+    tu: (_: T) => U,
+  ): U
+  pipe(...args: Array<AnyFunction>) {
+    // the assertion is probably wrong but makes typescript let us spread the args into pipe()
+    return pipe(this, ...(args as [AnyFunction]))
+  }
 }
 
 /**

@@ -2,10 +2,12 @@ import { describe, expect, test } from 'vitest'
 import * as cubicCurve2d from '../src/curve/cubic2d'
 import * as linearCurve2d from '../src/curve/linear2d'
 import * as quadraticCurve2d from '../src/curve/quadratic2d'
-import * as interval from '../src/interval'
+import * as rationalCubicCurve2d from '../src/curve/rationalCubic2d'
+import * as interval from '../src/interval/interval'
 import * as cubicPath2d from '../src/path/cubic2d'
 import * as linearPath2d from '../src/path/linear2d'
 import * as quadraticPath2d from '../src/path/quadratic2d'
+import * as rationalCubicPath2d from '../src/path/rationalCubic2d'
 import * as cubicPolynomial from '../src/polynomial/cubic'
 import * as linearPolynomial from '../src/polynomial/linear'
 import * as quadraticPolynomial from '../src/polynomial/quadratic'
@@ -409,5 +411,67 @@ describe('toPathData', () => {
       )
       .pipe(quadraticPath2d.toPathData)
     expect(d).toBe('M 0,0 Q 1,1 2,0 M 10,10 Q 11,11 12,10')
+  })
+})
+
+describe('rationalCubicPath2d.approximateAsCubicPath', () => {
+  test('result segment count equals sum of per-curve approximations', () => {
+    const curveA = rationalCubicCurve2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 2, 5),
+      vector2.makeWeighted(2, 2, 5),
+      vector2.makeWeighted(3, 0, 1),
+    )
+    const curveB = rationalCubicCurve2d.fromBezierPoints(
+      vector2.makeWeighted(3, 0, 1),
+      vector2.makeWeighted(4, -1, 1),
+      vector2.makeWeighted(5, -1, 1),
+      vector2.makeWeighted(6, 0, 1),
+    )
+    const path = rationalCubicPath2d.make(curveA, curveB)
+    const tolerance = 1e-3
+    const approxA = rationalCubicCurve2d.approximateAsCubicCurves(curveA, tolerance)
+    const approxB = rationalCubicCurve2d.approximateAsCubicCurves(curveB, tolerance)
+    const approxPath = rationalCubicPath2d.approximateAsCubicPath(path, tolerance)
+    expect([...approxPath]).toHaveLength(approxA.length + approxB.length)
+  })
+
+  test('endpoints match input path at u = 0 and u = 1', () => {
+    const path = rationalCubicPath2d.make(
+      rationalCubicCurve2d.fromBezierPoints(
+        vector2.makeWeighted(0, 0, 1),
+        vector2.makeWeighted(1, 2, 5),
+        vector2.makeWeighted(2, 2, 5),
+        vector2.makeWeighted(3, 0, 1),
+      ),
+      rationalCubicCurve2d.fromBezierPoints(
+        vector2.makeWeighted(3, 0, 1),
+        vector2.makeWeighted(4, -1, 1),
+        vector2.makeWeighted(5, -1, 1),
+        vector2.makeWeighted(6, 0, 1),
+      ),
+    )
+    const approx = rationalCubicPath2d.approximateAsCubicPath(path, 1e-3)
+    expect(cubicPath2d.solve(approx, 0)).toBeCloseToValue(rationalCubicPath2d.solve(path, 0), 1e-10)
+    expect(cubicPath2d.solve(approx, 1)).toBeCloseToValue(rationalCubicPath2d.solve(path, 1), 1e-10)
+  })
+
+  test('preserves C0 continuity from a continuous input', () => {
+    const path = rationalCubicPath2d.make(
+      rationalCubicCurve2d.fromBezierPoints(
+        vector2.makeWeighted(0, 0, 1),
+        vector2.makeWeighted(1, 2, 5),
+        vector2.makeWeighted(2, 2, 5),
+        vector2.makeWeighted(3, 0, 1),
+      ),
+      rationalCubicCurve2d.fromBezierPoints(
+        vector2.makeWeighted(3, 0, 1),
+        vector2.makeWeighted(4, -1, 1),
+        vector2.makeWeighted(5, -1, 1),
+        vector2.makeWeighted(6, 0, 1),
+      ),
+    )
+    const approx = rationalCubicPath2d.approximateAsCubicPath(path, 1e-3)
+    expect(cubicPath2d.isContinuous(approx)).toBe(true)
   })
 })

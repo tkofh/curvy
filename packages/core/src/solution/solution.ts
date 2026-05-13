@@ -1,5 +1,5 @@
-import type { Interval } from './interval'
-import type { Pipeable } from './pipe'
+import type { Interval } from '../interval/interval'
+import type { Pipeable } from '../utils'
 import * as internal from './solution.internal'
 
 /**

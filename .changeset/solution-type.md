@@ -9,7 +9,7 @@ Each variant is a small tagged object with named accessors. `One<T>` exposes `.v
 **Type aliases:**
 
 ```ts
-import * as Solution from 'curvy/solution'
+import { Solution } from 'curvy/solution'
 
 Solution.None // { _tag: 'none', length: 0, ...iterable }
 Solution.One<T> // { _tag: 'one', length: 1, value: T, ...iterable }

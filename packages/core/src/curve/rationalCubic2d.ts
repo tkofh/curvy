@@ -1,8 +1,9 @@
-import type { Pipeable } from '../pipe'
+import type { Pipeable } from '../utils'
 import type { CubicPolynomial } from '../polynomial/cubic'
 import type { Increasing, Monotonic } from '../polynomial/traits'
-import type * as Solution from '../solution'
+import type * as Solution from '../solution/solution'
 import type { Vector2, Weighted } from '../vector/vector2'
+import type { CubicCurve2d } from './cubic2d'
 import type { RationalCubicCurve2dTypeId, RationalCurveTraits } from './rationalCubic2d.internal'
 import * as internal from './rationalCubic2d.internal'
 
@@ -191,3 +192,30 @@ export const solveAtY: {
     <XT, YT>(c: RationalCubicCurve2d<XT, YT>): Solution.AtMostThree<number>
   }
 } = internal.solveAtY as never
+
+export const approximateAsCubicCurves: {
+  /**
+   * Approximates the rational cubic as a sequence of polynomial cubic curves
+   * via recursive subdivision. At each level a candidate polynomial cubic is
+   * built by projecting the segment's homogeneous Bézier control points to
+   * 2D; if the candidate's midpoint deviates from the true rational midpoint
+   * by more than `tolerance`, the segment is split at `t = 0.5` and the
+   * procedure recurses on each half. Returns a non-empty array; for a curve
+   * that is already polynomial (uniform weights) the result is a single
+   * exact segment.
+   *
+   * @param c - The rational cubic curve to approximate.
+   * @param tolerance - Maximum allowed midpoint deviation; must be positive.
+   * @returns A sequence of polynomial cubic curves covering the input.
+   * @since 2.1.0
+   */
+  (c: RationalCubicCurve2d, tolerance: number): ReadonlyArray<CubicCurve2d>
+  /**
+   * Approximates the rational cubic as a sequence of polynomial cubic curves.
+   *
+   * @param tolerance - Maximum allowed midpoint deviation; must be positive.
+   * @returns A function that takes a curve and returns its polynomial approximation.
+   * @since 2.1.0
+   */
+  (tolerance: number): (c: RationalCubicCurve2d) => ReadonlyArray<CubicCurve2d>
+} = internal.approximateAsCubicCurves

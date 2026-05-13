@@ -1,6 +1,6 @@
 import type { Bounds, Closed, Interval, Open, OpenEnd, OpenStart } from './interval'
-import { dual, Pipeable } from './pipe'
-import { epsEquals } from './utils'
+import { dual, Pipeable } from '../utils'
+import { epsEquals } from '../number'
 
 const TypeId: unique symbol = Symbol.for('curvy/interval')
 type TypeId = typeof TypeId

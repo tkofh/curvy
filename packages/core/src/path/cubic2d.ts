@@ -1,5 +1,5 @@
 import type { CubicCurve2d } from '../curve/cubic2d'
-import type { Pipeable } from '../pipe'
+import type { Pipeable } from '../utils'
 import type { Vector2 } from '../vector/vector2'
 import type { CubicPath2dTypeId } from './cubic2d.internal'
 import * as internal from './cubic2d.internal'

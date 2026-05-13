@@ -1,5 +1,5 @@
-import { dual, Pipeable } from '../pipe'
-import { epsEquals } from '../utils'
+import { dual, Pipeable } from '../utils'
+import { epsEquals } from '../number'
 import type { Vector3 } from './vector3'
 
 export const Vector3TypeId: unique symbol = Symbol.for('curvy/vector3')

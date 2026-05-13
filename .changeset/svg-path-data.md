@@ -20,8 +20,8 @@ import * as Bezier2d from 'curvy/splines/bezier2d'
 const d = Bezier2d.make(p0, p1, p2, p3).pipe(Path.fromBezier2d, Path.render)
 
 // after
-import * as CubicPath2d from 'curvy/path/cubic2d'
-import * as Bezier2d from 'curvy/splines/bezier2d'
+import { CubicPath2d } from 'curvy/path'
+import { Bezier2d } from 'curvy/splines'
 
 const d = Bezier2d.make(p0, p1, p2, p3).pipe(Bezier2d.toPath, CubicPath2d.toPathData)
 ```

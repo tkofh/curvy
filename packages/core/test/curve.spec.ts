@@ -3,7 +3,7 @@ import * as cubic2d from '../src/curve/cubic2d'
 import * as linear2d from '../src/curve/linear2d'
 import * as quadratic2d from '../src/curve/quadratic2d'
 import * as rationalCubic2d from '../src/curve/rationalCubic2d'
-import * as interval from '../src/interval'
+import * as interval from '../src/interval/interval'
 import * as cubicPolynomial from '../src/polynomial/cubic'
 import * as linearPolynomial from '../src/polynomial/linear'
 import * as quadraticPolynomial from '../src/polynomial/quadratic'
@@ -342,5 +342,139 @@ describe('rationalCubic2d.solveAtY', () => {
     } else {
       throw new Error('expected single solution')
     }
+  })
+})
+
+describe('rationalCubic2d.approximateAsCubicCurves', () => {
+  test('uniform weights yield a single segment that matches exactly', () => {
+    // All weights = 1 → the rational degenerates to a polynomial cubic, so
+    // the projection-based candidate is exact at every t.
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 2, 1),
+      vector2.makeWeighted(2, 2, 1),
+      vector2.makeWeighted(3, 0, 1),
+    )
+    const segments = rationalCubic2d.approximateAsCubicCurves(rational, 1e-6)
+    expect(segments).toHaveLength(1)
+    // Sample every 0.1 — the candidate should be indistinguishable from the rational.
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10
+      expect(cubic2d.solve(segments[0]!, t)).toBeCloseToValue(
+        rationalCubic2d.solve(rational, t),
+        1e-10,
+      )
+    }
+  })
+
+  test('non-uniform weights require subdivision', () => {
+    // Symmetric weight bulge at the handles — strong pull means the
+    // projection candidate diverges noticeably from the true rational midway.
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 2, 5),
+      vector2.makeWeighted(2, 2, 5),
+      vector2.makeWeighted(3, 0, 1),
+    )
+    const segments = rationalCubic2d.approximateAsCubicCurves(rational, 1e-3)
+    expect(segments.length).toBeGreaterThan(1)
+  })
+
+  test('endpoint exactness preserved', () => {
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 2, 5),
+      vector2.makeWeighted(2, 2, 5),
+      vector2.makeWeighted(3, 0, 1),
+    )
+    const segments = rationalCubic2d.approximateAsCubicCurves(rational, 1e-3)
+    expect(cubic2d.solve(segments.at(0)!, 0)).toBeCloseToValue(
+      rationalCubic2d.solve(rational, 0),
+      1e-10,
+    )
+    expect(cubic2d.solve(segments.at(-1)!, 1)).toBeCloseToValue(
+      rationalCubic2d.solve(rational, 1),
+      1e-10,
+    )
+  })
+
+  test('C0 continuity between adjacent output segments', () => {
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 2, 5),
+      vector2.makeWeighted(2, 2, 5),
+      vector2.makeWeighted(3, 0, 1),
+    )
+    const segments = rationalCubic2d.approximateAsCubicCurves(rational, 1e-3)
+    for (let i = 0; i < segments.length - 1; i++) {
+      expect(cubic2d.solve(segments[i]!, 1)).toBeCloseToValue(
+        cubic2d.solve(segments[i + 1]!, 0),
+        1e-10,
+      )
+    }
+  })
+
+  test('tighter tolerance produces at least as many segments', () => {
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 2, 5),
+      vector2.makeWeighted(2, 2, 5),
+      vector2.makeWeighted(3, 0, 1),
+    )
+    const loose = rationalCubic2d.approximateAsCubicCurves(rational, 1e-1)
+    const tight = rationalCubic2d.approximateAsCubicCurves(rational, 1e-4)
+    expect(tight.length).toBeGreaterThanOrEqual(loose.length)
+    expect(tight.length).toBeGreaterThan(1)
+  })
+
+  test('approximated points lie close to the original rational', () => {
+    // Geometric sanity: dense-sample the output and verify every sample is
+    // near *some* point on the original rational. Catches gross divergence.
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 2, 5),
+      vector2.makeWeighted(2, 2, 5),
+      vector2.makeWeighted(3, 0, 1),
+    )
+    const tolerance = 1e-3
+    const segments = rationalCubic2d.approximateAsCubicCurves(rational, tolerance)
+
+    const rationalSamples: Array<vector2.Vector2> = []
+    for (let i = 0; i <= 2000; i++) {
+      rationalSamples.push(rationalCubic2d.solve(rational, i / 2000))
+    }
+
+    let maxError = 0
+    for (const cand of segments) {
+      for (let i = 0; i <= 20; i++) {
+        const p = cubic2d.solve(cand, i / 20)
+        let nearest = Number.POSITIVE_INFINITY
+        for (const r of rationalSamples) {
+          const d = Math.hypot(p.x - r.x, p.y - r.y)
+          if (d < nearest) {
+            nearest = d
+          }
+        }
+        if (nearest > maxError) {
+          maxError = nearest
+        }
+      }
+    }
+    // Loose bound: midpoint tolerance is local per sub-segment; the geometric
+    // distance from any output point to the input curve should comfortably
+    // beat 10× tolerance.
+    expect(maxError).toBeLessThan(tolerance * 10)
+  })
+
+  test('rejects invalid tolerance', () => {
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 1, 1),
+      vector2.makeWeighted(2, 1, 1),
+      vector2.makeWeighted(3, 0, 1),
+    )
+    expect(() => rationalCubic2d.approximateAsCubicCurves(rational, 0)).toThrowError()
+    expect(() => rationalCubic2d.approximateAsCubicCurves(rational, -1)).toThrowError()
+    expect(() => rationalCubic2d.approximateAsCubicCurves(rational, Number.NaN)).toThrowError()
   })
 })

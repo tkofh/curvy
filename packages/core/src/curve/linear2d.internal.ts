@@ -1,8 +1,8 @@
-import type { Interval } from '../interval'
-import { dual, Pipeable } from '../pipe'
+import type { Interval } from '../interval/interval'
+import { dual, Pipeable } from '../utils'
 import * as LinearPolynomial from '../polynomial/linear'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
-import * as Solution from '../solution'
+import * as Solution from '../solution/solution'
 import * as Vector2 from '../vector/vector2'
 import type { LinearCurve2d } from './linear2d'
 

@@ -1,11 +1,12 @@
-import * as Characteristic from '../characteristic'
-import * as Interval from '../interval'
-import { dual, Pipeable } from '../pipe'
+import * as Characteristic from '../characteristic/characteristic'
+import * as Interval from '../interval/interval'
+import { dual, Pipeable } from '../utils'
 import * as CubicPolynomial from '../polynomial/cubic'
-import * as Solution from '../solution'
+import * as Solution from '../solution/solution'
 import { invariant } from '../utils'
 import * as Vector2 from '../vector/vector2'
 import * as Vector4 from '../vector/vector4'
+import * as CubicCurve2d from './cubic2d'
 import type { RationalCubicCurve2d } from './rationalCubic2d'
 
 export const RationalCubicCurve2dTypeId: unique symbol = Symbol('curvy/curve/rationalCubic2d')
@@ -159,11 +160,10 @@ export const makeMonotonicEasing = (startSlope: number, endSlope: number): Ratio
     const hi = Math.min(1, t + epsilon)
     const signLo = Math.sign(CubicPolynomial.solve(monoQ, lo))
     const signHi = Math.sign(CubicPolynomial.solve(monoQ, hi))
-    if (signLo * signHi < 0) {
-      throw new Error(
-        `makeMonotonicEasing: slopes (${m0}, ${m1}) produce a non-monotonic curve with the default Gregory-Delbourgo construction. Try smaller slopes or use a different easing form.`,
-      )
-    }
+    invariant(
+      signLo * signHi >= 0,
+      `makeMonotonicEasing: slopes (${m0}, ${m1}) produce a non-monotonic curve with the default Gregory-Delbourgo construction. Try smaller slopes or use a different easing form.`,
+    )
   }
 
   return new RationalCubicCurve2dImpl(xPoly, yPoly, wPoly)
@@ -212,3 +212,92 @@ export const solveAtY = dual(
       Solution.map((t) => CubicPolynomial.solve(c.x, t) / CubicPolynomial.solve(c.w, t)),
     ),
 )
+
+// Approximation cap. At depth 20 we'd emit up to 2²⁰ ≈ 1M segments for one
+// input curve — well past any sane target — so the cap is really just a guard
+// against pathological tolerances (e.g. tolerance approaching 0).
+const MAX_APPROX_DEPTH = 20
+
+// Builds the polynomial-cubic candidate for one rational segment by:
+//   1. Inverting Bernstein → monomial on each of x, y, w to recover the four
+//      homogeneous Bézier control points (Xᵢ, Yᵢ, Wᵢ).
+//   2. Projecting each CP back to 2D as (Xᵢ/Wᵢ, Yᵢ/Wᵢ).
+//   3. Lifting those 2D CPs back to a polynomial cubic via fromBezierPoints.
+// The result matches the rational at t=0 and t=1 exactly and matches endpoint
+// tangent directions, but interior shape diverges whenever the weights are
+// not all equal.
+const buildCubicCandidate = (c: RationalCubicCurve2d): CubicCurve2d.CubicCurve2d => {
+  const x0 = c.x.c0
+  const x1 = c.x.c0 + c.x.c1 / 3
+  const x2 = c.x.c0 + (2 * c.x.c1) / 3 + c.x.c2 / 3
+  const x3 = c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3
+
+  const y0 = c.y.c0
+  const y1 = c.y.c0 + c.y.c1 / 3
+  const y2 = c.y.c0 + (2 * c.y.c1) / 3 + c.y.c2 / 3
+  const y3 = c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3
+
+  const w0 = c.w.c0
+  const w1 = c.w.c0 + c.w.c1 / 3
+  const w2 = c.w.c0 + (2 * c.w.c1) / 3 + c.w.c2 / 3
+  const w3 = c.w.c0 + c.w.c1 + c.w.c2 + c.w.c3
+
+  return CubicCurve2d.fromBezierPoints(
+    Vector2.make(x0 / w0, y0 / w0),
+    Vector2.make(x1 / w1, y1 / w1),
+    Vector2.make(x2 / w2, y2 / w2),
+    Vector2.make(x3 / w3, y3 / w3),
+  )
+}
+
+// Splits a rational cubic at t = 0.5 by applying `CubicPolynomial.subdivide`
+// independently to each of x, y, w. Equivalent to de Casteljau in Bernstein
+// space but stays in monomial form throughout.
+const splitAtHalf = (c: RationalCubicCurve2d): [RationalCubicCurve2d, RationalCubicCurve2d] => {
+  const [leftX, rightX] = CubicPolynomial.subdivide(c.x, 0.5)
+  const [leftY, rightY] = CubicPolynomial.subdivide(c.y, 0.5)
+  const [leftW, rightW] = CubicPolynomial.subdivide(c.w, 0.5)
+
+  return [
+    new RationalCubicCurve2dImpl(leftX, leftY, leftW),
+    new RationalCubicCurve2dImpl(rightX, rightY, rightW),
+  ]
+}
+
+// Parametric distance at t = 0.5 — how far the candidate polynomial drifts
+// from the true rational at the midpoint. Cheap; adequate for symmetric
+// weight distributions. A multi-sample variant (t = ¼, ½, ¾ max) or a true
+// Hausdorff bound would catch asymmetric divergence better — easy to swap
+// since it's localized here.
+const midpointError = (c: RationalCubicCurve2d, candidate: CubicCurve2d.CubicCurve2d): number => {
+  const w = CubicPolynomial.solve(c.w, 0.5)
+  const trueX = CubicPolynomial.solve(c.x, 0.5) / w
+  const trueY = CubicPolynomial.solve(c.y, 0.5) / w
+  const candX = CubicPolynomial.solve(candidate.x, 0.5)
+  const candY = CubicPolynomial.solve(candidate.y, 0.5)
+  return Math.hypot(trueX - candX, trueY - candY)
+}
+
+export const approximateAsCubicCurves = dual<
+  (tolerance: number) => (c: RationalCubicCurve2d) => ReadonlyArray<CubicCurve2d.CubicCurve2d>,
+  (c: RationalCubicCurve2d, tolerance: number) => ReadonlyArray<CubicCurve2d.CubicCurve2d>
+>(2, (c: RationalCubicCurve2d, tolerance: number) => {
+  invariant(
+    Number.isFinite(tolerance) && tolerance > 0,
+    'approximateAsCubicCurves: tolerance must be finite and > 0',
+  )
+
+  const out: Array<CubicCurve2d.CubicCurve2d> = []
+  const recurse = (curr: RationalCubicCurve2d, depth: number): void => {
+    const candidate = buildCubicCandidate(curr)
+    if (depth >= MAX_APPROX_DEPTH || midpointError(curr, candidate) <= tolerance) {
+      out.push(candidate)
+      return
+    }
+    const [left, right] = splitAtHalf(curr)
+    recurse(left, depth + 1)
+    recurse(right, depth + 1)
+  }
+  recurse(c, 0)
+  return out
+})

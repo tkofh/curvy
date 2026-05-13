@@ -1,6 +1,6 @@
 import { bench, describe } from 'vitest'
 import * as CubicCurve2d from '../src/curve/cubic2d'
-import * as Interval from '../src/interval'
+import * as Interval from '../src/interval/interval'
 import * as Matrix4x4 from '../src/matrix/matrix4x4'
 import * as CubicPath2d from '../src/path/cubic2d'
 import * as Bezier2d from '../src/splines/bezier2d'

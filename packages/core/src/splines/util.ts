@@ -1,4 +1,4 @@
-import * as Characteristic from '../characteristic'
+import * as Characteristic from '../characteristic/characteristic'
 import * as CubicCurve2d from '../curve/cubic2d'
 import type * as Matrix4x4 from '../matrix/matrix4x4'
 import type { Vector2 } from '../vector/vector2'

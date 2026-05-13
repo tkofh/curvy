@@ -1,4 +1,4 @@
-import * as Interval from '../interval'
+import * as Interval from '../interval/interval'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
 import {
   GL32_W0,
@@ -34,10 +34,10 @@ import {
   GL32_X14,
   GL32_X15,
 } from '../length'
-import { dual, Pipeable } from '../pipe'
+import { dual, Pipeable } from '../utils'
 import * as LinearPolynomial from '../polynomial/linear'
 import * as QuadraticPolynomial from '../polynomial/quadratic'
-import * as Solution from '../solution'
+import * as Solution from '../solution/solution'
 import * as Vector2 from '../vector/vector2'
 import * as LinearCurve2d from './linear2d'
 import type { QuadraticCurve2d } from './quadratic2d'

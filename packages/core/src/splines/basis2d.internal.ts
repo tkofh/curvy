@@ -1,6 +1,6 @@
-import * as Characteristic from '../characteristic'
+import * as Characteristic from '../characteristic/characteristic'
 import * as CubicPath2d from '../path/cubic2d'
-import { dual, Pipeable } from '../pipe'
+import { dual, Pipeable } from '../utils'
 import { invariant } from '../utils'
 import type * as Vector2 from '../vector/vector2'
 import type { Basis2d } from './basis2d'

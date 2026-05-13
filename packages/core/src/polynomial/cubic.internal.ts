@@ -1,4 +1,4 @@
-import * as Interval from '../interval'
+import * as Interval from '../interval/interval'
 import {
   GL32_W0,
   GL32_W1,
@@ -33,9 +33,10 @@ import {
   GL32_X14,
   GL32_X15,
 } from '../length'
-import { dual } from '../pipe'
-import * as Solution from '../solution'
-import { clampToZero, epsEquals, invariant } from '../utils'
+import { dual } from '../utils'
+import * as Solution from '../solution/solution'
+import { invariant } from '../utils'
+import { clampToZero, epsEquals } from '../number'
 import type * as Vector2 from '../vector/vector2'
 import type { Vector4 } from '../vector/vector4'
 import type { CubicPolynomial } from './cubic'
@@ -147,6 +148,30 @@ export const solveInverse = dual<
 export const toInverseSolver = (p: CubicPolynomial) => (y: number) => solveInverse(p, y)
 
 export const derivative = (p: CubicPolynomial) => Quadratic.make(p.c1, p.c2 * 2, p.c3 * 3)
+
+// Subdivides a cubic polynomial at parameter `t ∈ (0, 1)` into two new cubic
+// polynomials. The first polynomial's evaluation on `[0, 1]` matches the
+// original's evaluation on `[0, t]`; the second matches the original's
+// evaluation on `[t, 1]`. Concretely: `left(u) = p(t·u)` and
+// `right(u) = p(t + (1-t)·u)`. The left half is a uniform scale of the input
+// parameter by powers of `t`; the right half is a binomial expansion in
+// `(s + r·u)` with `s = t` and `r = 1 - t`.
+export const subdivide = dual<
+  (t: number) => (p: CubicPolynomial) => [CubicPolynomial, CubicPolynomial],
+  (p: CubicPolynomial, t: number) => [CubicPolynomial, CubicPolynomial]
+>(2, (p: CubicPolynomial, t: number): [CubicPolynomial, CubicPolynomial] => {
+  invariant(t > 0 && t < 1, 'subdivide parameter t must be in the open interval (0, 1)')
+
+  const r = 1 - t
+  const left = make(p.c0, p.c1 * t, p.c2 * t * t, p.c3 * t * t * t)
+  const right = make(
+    p.c0 + p.c1 * t + p.c2 * t * t + p.c3 * t * t * t,
+    p.c1 * r + 2 * p.c2 * t * r + 3 * p.c3 * t * t * r,
+    p.c2 * r * r + 3 * p.c3 * t * r * r,
+    p.c3 * r * r * r,
+  )
+  return [left, right]
+})
 
 export const roots = (p: CubicPolynomial): Solution.AtMostThree<number> => solveInverse(p, 0)
 

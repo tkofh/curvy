@@ -1,6 +1,7 @@
 import { defineConfig } from 'oxlint'
 
 export default defineConfig({
+  ignorePatterns: ['apps/playground/**'],
   plugins: ['typescript', 'unicorn', 'oxc', 'import'],
   categories: {
     correctness: 'error',
@@ -38,7 +39,7 @@ export default defineConfig({
       },
     },
     {
-      files: ['**/pipe.ts'],
+      files: ['**/utils.ts'],
       rules: {
         'prefer-rest-params': 'off',
       },

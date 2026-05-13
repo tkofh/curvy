@@ -1,5 +1,5 @@
-import * as Interval from './interval'
-import { dual, Pipeable } from './pipe'
+import * as Interval from '../interval/interval'
+import { dual, Pipeable } from '../utils'
 import type {
   AtMostOne,
   AtMostThree,
@@ -11,7 +11,7 @@ import type {
   Three,
   Two,
 } from './solution'
-import { invariant } from './utils'
+import { invariant } from '../utils'
 
 // Empty iterator — shared across all None instances since None has no data.
 const EMPTY_ITERATOR: Iterator<never> = {

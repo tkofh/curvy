@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import * as Interval from '../src/interval'
-import * as Solution from '../src/solution'
+import * as Interval from '../src/interval/interval'
+import * as Solution from '../src/solution/solution'
 
 describe('Solution constructors', () => {
   test('none has tag/length and is empty', () => {

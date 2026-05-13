@@ -1,4 +1,4 @@
-import { Pipeable } from '../pipe'
+import { Pipeable } from '../utils'
 import type { QuadraticPolynomial } from './quadratic'
 import { PolynomialTraits } from './traits'
 

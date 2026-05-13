@@ -1,6 +1,6 @@
 import type { CubicPath2d } from '../path/cubic2d'
-import type { Pipeable } from '../pipe'
-import type * as Solution from '../solution'
+import type { Pipeable } from '../utils'
+import type * as Solution from '../solution/solution'
 import type { Vector2 } from '../vector/vector2'
 import type { Bezier2dTypeId } from './bezier2d.internal'
 import * as internal from './bezier2d.internal'

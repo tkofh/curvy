@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import * as Interval from '../src/interval'
+import * as Interval from '../src/interval/interval'
 
 describe('interval', () => {
   test('make', () => {

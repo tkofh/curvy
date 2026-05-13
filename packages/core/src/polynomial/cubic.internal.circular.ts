@@ -1,4 +1,4 @@
-import { Pipeable } from '../pipe'
+import { Pipeable } from '../utils'
 import type { CubicPolynomial } from './cubic'
 import { PolynomialTraits } from './traits'
 
