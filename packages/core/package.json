@@ -1,6 +1,6 @@
 {
   "name": "curvy",
-  "version": "2.0.0-alpha.5",
+  "version": "2.0.0-alpha.6",
   "description": "Spline and Curve utilities",
   "homepage": "https://github.com/tkofh/curvy#readme",
   "bugs": {
@@ -19,47 +19,47 @@
   "sideEffects": false,
   "exports": {
     "./vector": {
-      "types": "./dist/vector/index.d.ts",
+      "types": "./dist/vector/index.d.mts",
       "import": "./dist/vector/index.mjs"
     },
     "./matrix": {
-      "types": "./dist/matrix/index.d.ts",
+      "types": "./dist/matrix/index.d.mts",
       "import": "./dist/matrix/index.mjs"
     },
     "./polynomial": {
-      "types": "./dist/polynomial/index.d.ts",
+      "types": "./dist/polynomial/index.d.mts",
       "import": "./dist/polynomial/index.mjs"
     },
     "./curve": {
-      "types": "./dist/curve/index.d.ts",
+      "types": "./dist/curve/index.d.mts",
       "import": "./dist/curve/index.mjs"
     },
     "./path": {
-      "types": "./dist/path/index.d.ts",
+      "types": "./dist/path/index.d.mts",
       "import": "./dist/path/index.mjs"
     },
     "./splines": {
-      "types": "./dist/splines/index.d.ts",
+      "types": "./dist/splines/index.d.mts",
       "import": "./dist/splines/index.mjs"
     },
     "./interval": {
-      "types": "./dist/interval/index.d.ts",
+      "types": "./dist/interval/index.d.mts",
       "import": "./dist/interval/index.mjs"
     },
     "./solution": {
-      "types": "./dist/solution/index.d.ts",
+      "types": "./dist/solution/index.d.mts",
       "import": "./dist/solution/index.mjs"
     },
     "./characteristic": {
-      "types": "./dist/characteristic/index.d.ts",
+      "types": "./dist/characteristic/index.d.mts",
       "import": "./dist/characteristic/index.mjs"
     },
     "./number": {
-      "types": "./dist/number.d.ts",
+      "types": "./dist/number.d.mts",
       "import": "./dist/number.mjs"
     },
     "./utils": {
-      "types": "./dist/utils.d.ts",
+      "types": "./dist/utils.d.mts",
       "import": "./dist/utils.mjs"
     }
   },
@@ -67,7 +67,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown && tsc -p tsconfig.build.json && node scripts/stripInternalTypes.mjs",
+    "build": "tsdown",
     "build:watch": "tsdown --watch",
     "test": "vitest run",
     "test:watch": "vitest",

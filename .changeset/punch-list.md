@@ -4,16 +4,6 @@
 
 A handful of ergonomics improvements surfaced by real consumer usage.
 
-**Namespace types re-exported at the index level.** Each group's `index.ts` (`curvy/vector`, `curvy/curve`, `curvy/path`, `curvy/splines`, `curvy/polynomial`, `curvy/matrix`, `curvy/interval`, `curvy/solution`) now exports each namespace's primary type at the root, so the type name and namespace name coexist:
-
-```ts
-import { Vector2 } from 'curvy/vector'
-
-const v: Vector2 = Vector2.make(1, 2)  // type and namespace both named Vector2
-```
-
-Previously the type was only reachable as `Vector2.Vector2`, which read awkwardly. The pattern violates Effect-style purity but the ergonomic win is real. Nested types (e.g. `Vector2.Weighted`, `Cardinal2d.Options`, `Interval.Closed`) still live in their namespaces.
-
 **`Solution.unsafeValue(s, message?)`.** Throws on `None`, returns `s.value` on `Some`. The data-last form requires a message — it's where the assertion is hardest to read without one:
 
 ```ts
