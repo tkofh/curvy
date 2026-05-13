@@ -1,0 +1,27 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "curvy": "1.0.9"
+  },
+  "changesets": [
+    "arc-length-sampling",
+    "bezier-subdivide",
+    "characteristic-module",
+    "curve-solve-at",
+    "dts-mts-extension",
+    "dual-perf",
+    "from-api-coherence",
+    "interval-inclusivity",
+    "matrix4x4-primitives",
+    "module-restructure",
+    "precision-model",
+    "rational-approximation",
+    "rational-curves",
+    "rename-curvature-aligned",
+    "solution-type",
+    "spline-conversion-cache",
+    "svg-path-data",
+    "type-level-traits"
+  ]
+}
