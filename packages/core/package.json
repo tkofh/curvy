@@ -19,47 +19,47 @@
   "sideEffects": false,
   "exports": {
     "./vector": {
-      "types": "./dist/vector/index.d.mts",
+      "types": "./dist/vector/index.d.ts",
       "import": "./dist/vector/index.mjs"
     },
     "./matrix": {
-      "types": "./dist/matrix/index.d.mts",
+      "types": "./dist/matrix/index.d.ts",
       "import": "./dist/matrix/index.mjs"
     },
     "./polynomial": {
-      "types": "./dist/polynomial/index.d.mts",
+      "types": "./dist/polynomial/index.d.ts",
       "import": "./dist/polynomial/index.mjs"
     },
     "./curve": {
-      "types": "./dist/curve/index.d.mts",
+      "types": "./dist/curve/index.d.ts",
       "import": "./dist/curve/index.mjs"
     },
     "./path": {
-      "types": "./dist/path/index.d.mts",
+      "types": "./dist/path/index.d.ts",
       "import": "./dist/path/index.mjs"
     },
     "./splines": {
-      "types": "./dist/splines/index.d.mts",
+      "types": "./dist/splines/index.d.ts",
       "import": "./dist/splines/index.mjs"
     },
     "./interval": {
-      "types": "./dist/interval/index.d.mts",
+      "types": "./dist/interval/index.d.ts",
       "import": "./dist/interval/index.mjs"
     },
     "./solution": {
-      "types": "./dist/solution/index.d.mts",
+      "types": "./dist/solution/index.d.ts",
       "import": "./dist/solution/index.mjs"
     },
     "./characteristic": {
-      "types": "./dist/characteristic/index.d.mts",
+      "types": "./dist/characteristic/index.d.ts",
       "import": "./dist/characteristic/index.mjs"
     },
     "./number": {
-      "types": "./dist/number.d.mts",
+      "types": "./dist/number.d.ts",
       "import": "./dist/number.mjs"
     },
     "./utils": {
-      "types": "./dist/utils.d.mts",
+      "types": "./dist/utils.d.ts",
       "import": "./dist/utils.mjs"
     }
   },
@@ -67,7 +67,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && tsc -p tsconfig.build.json && node scripts/stripInternalTypes.mjs",
     "build:watch": "tsdown --watch",
     "test": "vitest run",
     "test:watch": "vitest",

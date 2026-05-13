@@ -22,7 +22,7 @@ const points = reactive<Array<ControlPoint>>([
 const tolerance = ref(1)
 const sampleCount = 500
 
-const curve = computed(() =>
+const curve = computed<RationalCubicCurve2d>(() =>
   RationalCubicCurve2d.fromBezierPoints(
     Vector2.makeWeighted(points[0]!.x, points[0]!.y, points[0]!.weight),
     Vector2.makeWeighted(points[1]!.x, points[1]!.y, points[1]!.weight),
