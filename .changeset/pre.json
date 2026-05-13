@@ -10,6 +10,7 @@
     "cardinal-options",
     "characteristic-module",
     "curve-solve-at",
+    "dts-emission-fix",
     "dts-mts-extension",
     "dual-perf",
     "from-api-coherence",
