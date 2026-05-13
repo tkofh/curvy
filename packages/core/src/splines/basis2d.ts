@@ -50,6 +50,16 @@ export const make: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => Basis
  */
 export const fromArray: (points: ReadonlyArray<Vector2>) => Basis2d = internal.fromArray
 
+/**
+ * Creates a new `Basis2d` from an array of `[x, y]` tuples.
+ *
+ * @param tuples - The control points as `[x, y]` tuples.
+ * @returns A new `Basis2d` instance.
+ * @since 2.0.0
+ */
+export const fromTuples: (tuples: ReadonlyArray<readonly [number, number]>) => Basis2d =
+  internal.fromTuples
+
 export const append: {
   /**
    * Appends control points to a `Basis2d`.

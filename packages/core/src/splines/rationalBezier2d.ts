@@ -69,6 +69,20 @@ export const make: (p0: Weighted, p1: Weighted, p2: Weighted, p3: Weighted) => R
 export const fromArray: (points: ReadonlyArray<Weighted>) => RationalBezier2d = internal.fromArray
 
 /**
+ * Creates a new `RationalBezier2d` from an array of `[x, y, weight]` tuples.
+ * Weight is the projective denominator at each control point — `1` everywhere
+ * yields the polynomial Bézier; varying weights bend the curve toward the
+ * heavier control points.
+ *
+ * @param tuples - The weighted control points as `[x, y, weight]` tuples.
+ * @returns A new `RationalBezier2d` instance.
+ * @since 2.0.0
+ */
+export const fromTuples: (
+  tuples: ReadonlyArray<readonly [number, number, number]>,
+) => RationalBezier2d = internal.fromTuples
+
+/**
  * Creates a new single-segment `RationalBezier2d` from four points with all
  * weights equal to one.
  *

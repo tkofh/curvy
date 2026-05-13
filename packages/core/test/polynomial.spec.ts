@@ -83,6 +83,9 @@ describe('linear', () => {
     const l = linear.make(0, 2)
     expect(linear.length(l, interval.make(0, 1))).toBeCloseTo(Math.sqrt(5), 10)
   })
+  test('coefficients', () => {
+    expect(linear.coefficients(linear.make(3, 7))).toEqual([3, 7])
+  })
 })
 
 describe('quadratic', () => {
@@ -200,6 +203,9 @@ describe('quadratic', () => {
   })
   test('curvature', () => {
     expect(quadratic.curvature(quadratic.make(0, 0, 1), 0)).toBe(2)
+  })
+  test('coefficients', () => {
+    expect(quadratic.coefficients(quadratic.make(3, 5, 7))).toEqual([3, 5, 7])
   })
 })
 
@@ -383,5 +389,8 @@ describe('cubic', () => {
     expect(() => cubic.subdivide(p, 1)).toThrow()
     expect(() => cubic.subdivide(p, -0.1)).toThrow()
     expect(() => cubic.subdivide(p, 1.5)).toThrow()
+  })
+  test('coefficients', () => {
+    expect(cubic.coefficients(cubic.make(2, 3, 5, 7))).toEqual([2, 3, 5, 7])
   })
 })

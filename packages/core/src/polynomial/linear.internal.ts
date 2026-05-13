@@ -92,6 +92,8 @@ export const asDecreasing = <T>(p: LinearPolynomial<T>): LinearPolynomial<T & De
   return p
 }
 
+export const coefficients = (p: LinearPolynomial): readonly [number, number] => [p.c0, p.c1]
+
 export const derivative = (p: LinearPolynomial) => p.c1
 
 export const antiderivative = dual<

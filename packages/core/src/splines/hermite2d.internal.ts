@@ -2,7 +2,7 @@ import * as Characteristic from '../characteristic/characteristic'
 import * as CubicPath2d from '../path/cubic2d'
 import { dual, Pipeable } from '../utils'
 import { invariant } from '../utils'
-import type * as Vector2 from '../vector/vector2'
+import * as Vector2 from '../vector/vector2'
 import type { Bezier2d } from './bezier2d'
 import * as bezierInternal from './bezier2d.internal'
 import type { Hermite2d } from './hermite2d'
@@ -40,6 +40,9 @@ export const make = (
 ) => new Hermite2dImpl([p0, v0, p1, v1])
 
 export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) => new Hermite2dImpl(points)
+
+export const fromTuples = (tuples: ReadonlyArray<readonly [number, number]>) =>
+  new Hermite2dImpl(tuples.map(([x, y]) => Vector2.make(x, y)))
 
 export const append = dual<
   (p1: Vector2.Vector2, v1: Vector2.Vector2) => (p: Hermite2d) => Hermite2d,

@@ -261,6 +261,16 @@ export const asDecreasing: <T>(p: LinearPolynomial<T>) => LinearPolynomial<T & D
   internal.asDecreasing
 
 /**
+ * Returns the polynomial's coefficients as a tuple `[c0, c1]`.
+ *
+ * @param p - The linear polynomial.
+ * @returns The coefficients in monomial order.
+ * @since 2.0.0
+ */
+export const coefficients: (p: LinearPolynomial) => readonly [number, number] =
+  internal.coefficients
+
+/**
  * Calculates the derivative of a linear polynomial.
  *
  * @param p - The linear polynomial to differentiate.

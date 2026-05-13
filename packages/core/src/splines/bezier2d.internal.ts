@@ -59,6 +59,9 @@ export const make = (
 
 export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) => new Bezier2dImpl(points)
 
+export const fromTuples = (tuples: ReadonlyArray<readonly [number, number]>) =>
+  new Bezier2dImpl(tuples.map(([x, y]) => Vector2.make(x, y)))
+
 export const append = dual<
   (p1: Vector2.Vector2, p2: Vector2.Vector2, p3: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
   (p: Bezier2d, p1: Vector2.Vector2, p2: Vector2.Vector2, p3: Vector2.Vector2) => Bezier2d

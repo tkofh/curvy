@@ -99,6 +99,19 @@ export const make: {
 export const fromArray: (points: ReadonlyArray<Vector2>, options?: Options) => Cardinal2d =
   internal.fromArray
 
+/**
+ * Creates a new `Cardinal2d` from an array of `[x, y]` tuples.
+ *
+ * @param tuples - The control points as `[x, y]` tuples.
+ * @param options - Tension and alpha. See {@link Options}. Defaults to centripetal Catmull-Rom.
+ * @returns A new `Cardinal2d` instance.
+ * @since 2.0.0
+ */
+export const fromTuples: (
+  tuples: ReadonlyArray<readonly [number, number]>,
+  options?: Options,
+) => Cardinal2d = internal.fromTuples
+
 export const append: {
   /**
    * Appends control points to a `Cardinal2d`. Tension and alpha are preserved.
@@ -149,6 +162,22 @@ export const prepend: {
  */
 export const withDuplicatedEndpoints: (c: Cardinal2d) => Cardinal2d =
   internal.withDuplicatedEndpoints
+
+/**
+ * Pads the spline so that it interpolates its first and last control points.
+ * The resulting path passes through `points[0]` at `u = 0` and `points[points.length - 1]`
+ * at `u = 1`. Equivalent to {@link withReflectedEndpoints} called with
+ * `scale = 0` (and to {@link withDuplicatedEndpoints}), but reads more
+ * directly as the user-facing intent.
+ *
+ * Tension and alpha are preserved.
+ *
+ * @param c - The `Cardinal2d` to pad.
+ * @returns A new `Cardinal2d` instance whose first and last control points are interpolated.
+ * @since 2.0.0
+ */
+export const withInterpolatedEndpoints: (c: Cardinal2d) => Cardinal2d =
+  internal.withInterpolatedEndpoints
 
 export const withReflectedEndpoints: {
   /**

@@ -52,6 +52,13 @@ export const make = (
 export const fromArray = (points: ReadonlyArray<Vector2.Weighted>): RationalBezier2d =>
   new RationalBezier2dImpl(points.map(lift))
 
+export const fromTuples = (
+  tuples: ReadonlyArray<readonly [number, number, number]>,
+): RationalBezier2d =>
+  new RationalBezier2dImpl(
+    tuples.map(([x, y, weight]) => Vector3.make(x * weight, y * weight, weight)),
+  )
+
 export const fromPoints = (
   p0: Vector2.Vector2,
   p1: Vector2.Vector2,

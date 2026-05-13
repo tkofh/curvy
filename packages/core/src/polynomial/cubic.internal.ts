@@ -147,6 +147,10 @@ export const solveInverse = dual<
 
 export const toInverseSolver = (p: CubicPolynomial) => (y: number) => solveInverse(p, y)
 
+export const coefficients = (
+  p: CubicPolynomial,
+): readonly [number, number, number, number] => [p.c0, p.c1, p.c2, p.c3]
+
 export const derivative = (p: CubicPolynomial) => Quadratic.make(p.c1, p.c2 * 2, p.c3 * 3)
 
 // Subdivides a cubic polynomial at parameter `t ∈ (0, 1)` into two new cubic

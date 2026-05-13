@@ -88,6 +88,12 @@ export const toInverseSolver =
   (y: number): Solution.AtMostTwo<number> =>
     solveInverse(p, y)
 
+export const coefficients = (p: QuadraticPolynomial): readonly [number, number, number] => [
+  p.c0,
+  p.c1,
+  p.c2,
+]
+
 export const derivative = (p: QuadraticPolynomial) => Linear.make(p.c1, p.c2 * 2)
 
 export const roots = (p: QuadraticPolynomial) => solveInverse(p, 0)

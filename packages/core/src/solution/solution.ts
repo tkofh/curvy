@@ -186,6 +186,33 @@ export const max: {
 } = internal.max
 
 /**
+ * Returns the primary value of the solution (i.e. `s.value`). Throws on
+ * `None`, optionally with a caller-provided message.
+ *
+ * Useful when the type system can't prove non-emptiness but you have a domain
+ * reason to assert it — e.g. inverting a polynomial you know to be monotonic
+ * without going through the trait refiner first:
+ *
+ * ```ts
+ * const x = CubicPolynomial.solveInverse(p, y).pipe(
+ *   Solution.unsafeValue('expected a monotonic inverse'),
+ * )
+ * ```
+ *
+ * @since 2.0.0
+ */
+export const unsafeValue: {
+  <T>(s: Solution<T>, message?: string): T
+  (message: string): <T>(s: Solution<T>) => T
+} = ((...args: ReadonlyArray<unknown>) => {
+  if (args.length >= 1 && typeof args[0] === 'object' && args[0] !== null) {
+    return internal.unsafeValue(args[0] as Solution<unknown>, args[1] as string | undefined)
+  }
+  const message = args[0] as string
+  return <T>(s: Solution<T>) => internal.unsafeValue(s, message)
+}) as never
+
+/**
  * Returns the last value in the solution. Throws if empty.
  *
  * @since 2.0.0

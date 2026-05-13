@@ -187,6 +187,17 @@ export const toInverseSolver: (p: CubicPolynomial) => (y: number) => Solution.At
   internal.toInverseSolver
 
 /**
+ * Returns the polynomial's coefficients as a tuple `[c0, c1, c2, c3]`.
+ *
+ * @param p - The cubic polynomial.
+ * @returns The coefficients in monomial order.
+ * @since 2.0.0
+ */
+export const coefficients: (
+  p: CubicPolynomial,
+) => readonly [number, number, number, number] = internal.coefficients
+
+/**
  * Calculates the derivative of a cubic polynomial.
  *
  * @param p - The cubic polynomial to differentiate.

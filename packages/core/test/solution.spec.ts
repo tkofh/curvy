@@ -83,6 +83,26 @@ describe('Solution accessors', () => {
     expect(Solution.unsafeMin(Solution.three(3, 1, 2))).toBe(1)
     expect(Solution.unsafeMax(Solution.three(3, 1, 2))).toBe(3)
   })
+  test('unsafeValue returns the primary value', () => {
+    expect(Solution.unsafeValue(Solution.one(7))).toBe(7)
+    expect(Solution.unsafeValue(Solution.two(1, 2))).toBe(1)
+    expect(Solution.unsafeValue(Solution.three(1, 2, 3))).toBe(1)
+  })
+  test('unsafeValue throws on None with default message', () => {
+    expect(() => Solution.unsafeValue(Solution.none)).toThrow(/empty Solution/)
+  })
+  test('unsafeValue throws on None with caller-supplied message', () => {
+    expect(() => Solution.unsafeValue(Solution.none, 'expected monotonic root')).toThrow(
+      /expected monotonic root/,
+    )
+  })
+  test('unsafeValue data-last form pipes from a Solution', () => {
+    const result = Solution.one(42).pipe(Solution.unsafeValue('always non-empty'))
+    expect(result).toBe(42)
+    expect(() =>
+      Solution.none.pipe(Solution.unsafeValue('expected something')),
+    ).toThrow(/expected something/)
+  })
 })
 
 describe('Solution transformations', () => {

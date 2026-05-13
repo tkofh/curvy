@@ -68,6 +68,18 @@ export const fromArray = (
   return new Cardinal2dImpl(points, tension, alpha)
 }
 
+export const fromTuples = (
+  tuples: ReadonlyArray<readonly [number, number]>,
+  options?: Options,
+): Cardinal2d => {
+  const { tension, alpha } = resolveOptions(options)
+  return new Cardinal2dImpl(
+    tuples.map(([x, y]) => Vector2.make(x, y)),
+    tension,
+    alpha,
+  )
+}
+
 export const append = dual<
   (...points: ReadonlyArray<Vector2.Vector2>) => (p: Cardinal2d) => Cardinal2d,
   (p: Cardinal2d, ...points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d
@@ -98,6 +110,11 @@ export const withDuplicatedEndpoints = (p: Cardinal2d) => {
     p.alpha,
   )
 }
+
+// Pinned alias for `withReflectedEndpoints(c, 0)`. The semantics — the spline
+// now interpolates its first and last control points — read more directly
+// than either of the mechanism-named helpers.
+export const withInterpolatedEndpoints = (p: Cardinal2d) => withDuplicatedEndpoints(p)
 
 export const withReflectedEndpoints = dual(
   (args) => isCardinal2d(args[0]),

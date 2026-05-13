@@ -515,3 +515,114 @@ describe('rational bezier', () => {
     expect(() => Vector2.makeWeighted(1, 2, Number.NaN)).toThrowError()
   })
 })
+
+describe('fromTuples', () => {
+  test('Bezier2d.fromTuples matches make', () => {
+    const a = Bezier2d.make(
+      Vector2.make(0, 0),
+      Vector2.make(1, 2),
+      Vector2.make(3, 2),
+      Vector2.make(4, 0),
+    )
+    const b = Bezier2d.fromTuples([
+      [0, 0],
+      [1, 2],
+      [3, 2],
+      [4, 0],
+    ])
+    expect([...a]).toEqual([...b])
+  })
+  test('Hermite2d.fromTuples treats tuples as alternating point/velocity', () => {
+    const tuples = Hermite2d.fromTuples([
+      [0, 0],
+      [1, 1],
+      [1, 0],
+      [1, -1],
+    ])
+    const made = Hermite2d.make(
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(1, 0),
+      Vector2.make(1, -1),
+    )
+    expect([...tuples]).toEqual([...made])
+  })
+  test('Cardinal2d.fromTuples carries options', () => {
+    const c = Cardinal2d.fromTuples(
+      [
+        [0, 0],
+        [1, 1],
+        [2, 0],
+        [3, 1],
+      ],
+      { tension: 0.7, alpha: 0 },
+    )
+    expect(c.tension).toBe(0.7)
+    expect(c.alpha).toBe(0)
+  })
+  test('Basis2d.fromTuples matches fromArray', () => {
+    const tuples = Basis2d.fromTuples([
+      [0, 0],
+      [1, 1],
+      [2, 0],
+      [3, 1],
+    ])
+    const arr = Basis2d.fromArray([
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(2, 0),
+      Vector2.make(3, 1),
+    ])
+    expect([...tuples]).toEqual([...arr])
+  })
+  test('RationalBezier2d.fromTuples carries weights through projection', () => {
+    const tuples = RationalBezier2d.fromTuples([
+      [0, 0, 1],
+      [1, 2, 2],
+      [3, 2, 2],
+      [4, 0, 1],
+    ])
+    // Iterating a RationalBezier2d yields Weighted vectors with the original
+    // x, y, and weight preserved.
+    const weighted = [...tuples]
+    expect(weighted).toHaveLength(4)
+    expect(weighted[0]).toMatchObject({ x: 0, y: 0, weight: 1 })
+    expect(weighted[1]).toMatchObject({ x: 1, y: 2, weight: 2 })
+    expect(weighted[2]).toMatchObject({ x: 3, y: 2, weight: 2 })
+    expect(weighted[3]).toMatchObject({ x: 4, y: 0, weight: 1 })
+  })
+})
+
+describe('Cardinal2d.withInterpolatedEndpoints', () => {
+  test('matches withDuplicatedEndpoints structurally', () => {
+    const c = Cardinal2d.make(
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(2, 0),
+    )
+    const dup = Cardinal2d.withDuplicatedEndpoints(c)
+    const interp = Cardinal2d.withInterpolatedEndpoints(c)
+    expect([...interp]).toEqual([...dup])
+  })
+  test('preserves tension and alpha', () => {
+    const c = Cardinal2d.make(
+      { tension: 0.7, alpha: 0.25 },
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(2, 0),
+    )
+    const interp = Cardinal2d.withInterpolatedEndpoints(c)
+    expect(interp.tension).toBe(0.7)
+    expect(interp.alpha).toBe(0.25)
+  })
+  test('resulting path interpolates first and last control points', () => {
+    const c = Cardinal2d.make(
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(2, 0),
+    ).pipe(Cardinal2d.withInterpolatedEndpoints)
+    const path = Cardinal2d.toPath(c)
+    expect(CubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, 0))
+    expect(CubicPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(2, 0))
+  })
+})

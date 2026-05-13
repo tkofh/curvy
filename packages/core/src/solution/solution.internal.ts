@@ -154,6 +154,11 @@ export const max: {
   }
 }) as never
 
+export const unsafeValue = <T>(s: Solution<T>, message?: string): T => {
+  invariant(isSome(s), message ?? 'Solution.unsafeValue on empty Solution')
+  return s.value
+}
+
 export const unsafeLast = <T>(s: Solution<T>): T => {
   invariant(isSome(s), 'Solution.unsafeLast on empty Solution')
   return last(s)

@@ -51,6 +51,17 @@ export const make: (p0: Vector2, v0: Vector2, p1: Vector2, v1: Vector2) => Hermi
  */
 export const fromArray: (points: ReadonlyArray<Vector2>) => Hermite2d = internal.fromArray
 
+/**
+ * Creates a new `Hermite2d` from an array of `[x, y]` tuples, alternating
+ * `[position, velocity]` pairs.
+ *
+ * @param tuples - The point/velocity pairs as `[x, y]` tuples.
+ * @returns A new `Hermite2d` instance.
+ * @since 2.0.0
+ */
+export const fromTuples: (tuples: ReadonlyArray<readonly [number, number]>) => Hermite2d =
+  internal.fromTuples
+
 export const append: {
   /**
    * Appends a new control point and tangent vector to the Hermite spline.

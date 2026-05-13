@@ -43,6 +43,17 @@ export const make: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => Bezie
 export const fromArray: (points: ReadonlyArray<Vector2>) => Bezier2d = internal.fromArray
 
 /**
+ * Creates a new `Bezier2d` from an array of `[x, y]` tuples. Convenient for
+ * data sourced from JSON, CSV, or other tuple-shaped formats.
+ *
+ * @param tuples - The control points as `[x, y]` tuples.
+ * @returns A new `Bezier2d` instance.
+ * @since 2.0.0
+ */
+export const fromTuples: (tuples: ReadonlyArray<readonly [number, number]>) => Bezier2d =
+  internal.fromTuples
+
+/**
  * Checks if a value is a `Bezier2d`.
  *
  * @param p - The value to check.

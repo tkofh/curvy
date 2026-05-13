@@ -2,7 +2,7 @@ import * as Characteristic from '../characteristic/characteristic'
 import * as CubicPath2d from '../path/cubic2d'
 import { dual, Pipeable } from '../utils'
 import { invariant } from '../utils'
-import type * as Vector2 from '../vector/vector2'
+import * as Vector2 from '../vector/vector2'
 import type { Basis2d } from './basis2d'
 import type { Bezier2d } from './bezier2d'
 import * as bezierInternal from './bezier2d.internal'
@@ -38,6 +38,9 @@ export const make = (
 ) => new Basis2dImpl([p0, p1, p2, p3])
 
 export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) => new Basis2dImpl(points)
+
+export const fromTuples = (tuples: ReadonlyArray<readonly [number, number]>) =>
+  new Basis2dImpl(tuples.map(([x, y]) => Vector2.make(x, y)))
 
 export const append = dual<
   (...points: ReadonlyArray<Vector2.Vector2>) => (p: Basis2d) => Basis2d,

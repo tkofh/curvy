@@ -184,6 +184,16 @@ export const toInverseSolver: (
 ) => (y: number) => Solution.AtMostTwo<number> = internal.toInverseSolver
 
 /**
+ * Returns the polynomial's coefficients as a tuple `[c0, c1, c2]`.
+ *
+ * @param p - The quadratic polynomial.
+ * @returns The coefficients in monomial order.
+ * @since 2.0.0
+ */
+export const coefficients: (p: QuadraticPolynomial) => readonly [number, number, number] =
+  internal.coefficients
+
+/**
  * Computes the derivative of the quadratic polynomial.
  *
  * @param p - The quadratic polynomial.
