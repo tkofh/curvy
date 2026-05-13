@@ -269,13 +269,13 @@ export const containsInterval: {
    * @param outer - The enclosing interval.
    * @param inner - The candidate inner interval.
    * @returns `true` when `inner` is a subset of `outer`.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (outer: Interval, inner: Interval): boolean
   /**
    * @param inner - The candidate inner interval.
    * @returns A function that takes the outer interval and returns the containment result.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (inner: Interval): (outer: Interval) => boolean
 } = internal.containsInterval
@@ -289,13 +289,13 @@ export const union: {
    * @param a - The first interval.
    * @param b - The second interval.
    * @returns A new interval enclosing both inputs.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (a: Interval, b: Interval): Interval
   /**
    * @param b - The second interval.
    * @returns A function that takes the first interval and returns the union.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (b: Interval): (a: Interval) => Interval
 } = internal.union
@@ -481,7 +481,7 @@ export const unit: Closed = internal.unit
  * convenient for "strict interior" use cases such as filtering roots that
  * must lie strictly inside the unit parameter range.
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const unitOpen: Open = internal.unitOpen
 

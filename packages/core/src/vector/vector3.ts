@@ -83,7 +83,7 @@ export const make: {
  * @param inputs - Exactly three items of any type.
  * @param project - A function returning a fixed-arity tuple of numbers — one per output channel.
  * @returns A tuple of `Vector3`s with the same arity as the projection's return tuple.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const transpose: <T, const Channels extends ReadonlyArray<number>>(
   inputs: readonly [T, T, T],

@@ -15,7 +15,7 @@ import * as internal from './interval2d.internal'
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export interface Interval2d<
   X extends Interval = Interval,
@@ -32,7 +32,7 @@ export interface Interval2d<
  * {@link size}) accept `Bounds2d` so the signature itself documents what the
  * operation depends on. Mirrors the {@link Bounds}/{@link Interval} split in 1D.
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export interface Bounds2d {
   readonly x: Bounds
@@ -44,7 +44,7 @@ export interface Bounds2d {
  *
  * @param v - The value to check.
  * @returns `true` if the value is an `Interval2d`, `false` otherwise.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const isInterval2d: (v: unknown) => v is Interval2d = internal.isInterval2d
 
@@ -55,7 +55,7 @@ export const isInterval2d: (v: unknown) => v is Interval2d = internal.isInterval
  * @param x - The x-axis interval.
  * @param y - The y-axis interval.
  * @returns A new `Interval2d` instance.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const make: <X extends Interval, Y extends Interval>(x: X, y: Y) => Interval2d<X, Y> =
   internal.make
@@ -67,7 +67,7 @@ export const make: <X extends Interval, Y extends Interval>(x: X, y: Y) => Inter
  * @param p0 - The first corner.
  * @param p1 - The second corner.
  * @returns A new `Interval2d<Closed, Closed>` enclosing both corners.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const fromCorners: (p0: Vector2, p1: Vector2) => Interval2d<Closed, Closed> =
   internal.fromCorners
@@ -79,7 +79,7 @@ export const fromCorners: (p0: Vector2, p1: Vector2) => Interval2d<Closed, Close
  * @param points - One or more points to enclose.
  * @returns A new `Interval2d<Closed, Closed>` enclosing all input points.
  * @throws When called with zero points.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const fromVectors: (...points: ReadonlyArray<Vector2>) => Interval2d<Closed, Closed> =
   internal.fromVectors
@@ -92,13 +92,13 @@ export const containsVector: {
    * @param box - The 2D interval to test against.
    * @param v - The vector to test.
    * @returns `true` when the vector lies within the box on both axes.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (box: Interval2d, v: Vector2): boolean
   /**
    * @param v - The vector to test.
    * @returns A function that takes a 2D interval and returns the containment result.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (v: Vector2): (box: Interval2d) => boolean
 } = internal.containsVector
@@ -112,13 +112,13 @@ export const containsInterval2d: {
    * @param outer - The enclosing 2D interval.
    * @param inner - The candidate inner 2D interval.
    * @returns `true` when every point of `inner` is also in `outer`.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (outer: Interval2d, inner: Interval2d): boolean
   /**
    * @param inner - The candidate inner 2D interval.
    * @returns A function that takes the outer 2D interval and returns the containment result.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (inner: Interval2d): (outer: Interval2d) => boolean
 } = internal.containsInterval2d
@@ -129,7 +129,7 @@ export const containsInterval2d: {
  *
  * @param box - The 2D interval (or bounds-shaped value) to measure.
  * @returns The size as a `Vector2`.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const size: (box: Bounds2d) => Vector2 = internal.size
 
@@ -149,7 +149,7 @@ export const union: {
    * @param a - The first 2D interval.
    * @param b - The second 2D interval.
    * @returns A new `Interval2d` enclosing both inputs.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   <AX extends Interval, AY extends Interval, BX extends Interval, BY extends Interval>(
     a: Interval2d<AX, AY>,
@@ -161,7 +161,7 @@ export const union: {
   /**
    * @param b - The second 2D interval.
    * @returns A function that takes the first 2D interval and returns the union.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   <BX extends Interval, BY extends Interval>(
     b: Interval2d<BX, BY>,
@@ -182,13 +182,13 @@ export const equals: {
    * @param a - The first 2D interval.
    * @param b - The second 2D interval.
    * @returns `true` when both axes are equal.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (a: Interval2d, b: Interval2d): boolean
   /**
    * @param b - The second 2D interval.
    * @returns A function that takes the first 2D interval and returns the comparison result.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (b: Interval2d): (a: Interval2d) => boolean
 } = internal.equals

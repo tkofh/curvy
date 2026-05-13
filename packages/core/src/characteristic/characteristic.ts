@@ -11,7 +11,7 @@ import type * as Vector4 from '../vector/vector4'
  * IS the Bézier spline family — combined with control points (via {@link apply}),
  * it produces the cubic polynomial that parameterizes the curve.
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const cubicBezier: Matrix4x4.Matrix4x4 = Matrix4x4.make(
   1,
@@ -38,7 +38,7 @@ export const cubicBezier: Matrix4x4.Matrix4x4 = Matrix4x4.make(
  * Maps Hermite control data `(P₀, V₀, P₁, V₁)` — two endpoints and two
  * tangent vectors — to monomial cubic coefficients.
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const cubicHermite: Matrix4x4.Matrix4x4 = Matrix4x4.make(
   1,
@@ -67,7 +67,7 @@ export const cubicHermite: Matrix4x4.Matrix4x4 = Matrix4x4.make(
  * application produces a C² piecewise spline; the curve does not generally
  * pass through the control points.
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const cubicBasisSpline: Matrix4x4.Matrix4x4 = Matrix4x4.make(
   1 / 6,
@@ -105,7 +105,7 @@ const cardinalCache = new Map<number, Matrix4x4.Matrix4x4>()
  *
  * @param tension - The tension parameter.
  * @returns The characteristic matrix for that tension.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const cubicCardinal = (tension: number): Matrix4x4.Matrix4x4 => {
   let m = cardinalCache.get(tension)
@@ -138,7 +138,7 @@ export const cubicCardinal = (tension: number): Matrix4x4.Matrix4x4 => {
  * The most common Cardinal-family variant; reused widely enough to deserve
  * a constant.
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const cubicCatmullRom: Matrix4x4.Matrix4x4 = cubicCardinal(0.5)
 
@@ -159,7 +159,7 @@ export const cubicCatmullRom: Matrix4x4.Matrix4x4 = cubicCardinal(0.5)
  * @param matrix - The characteristic matrix of the spline family.
  * @param channels - One `Vector4` per output polynomial, packing the four control values for that channel.
  * @returns A tuple of cubic polynomials, one per input channel.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const apply = <const Channels extends ReadonlyArray<Vector4.Vector4>>(
   matrix: Matrix4x4.Matrix4x4,

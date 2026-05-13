@@ -174,7 +174,7 @@ export const toPath: (p: Bezier2d) => CubicPath2d = internal.toPath
  *
  * @param r - The rational bezier to convert.
  * @returns Either a `Bezier2d` instance or `Solution.none`.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const fromRational: (r: RationalBezier2d) => Solution.AtMostOne<Bezier2d> =
   internal.fromRational

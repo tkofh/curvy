@@ -23,7 +23,7 @@ import * as internal from './rationalBezier2d.internal'
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export interface RationalBezier2d extends Pipeable {
   readonly [RationalBezier2dTypeId]: RationalBezier2dTypeId
@@ -35,7 +35,7 @@ export interface RationalBezier2d extends Pipeable {
  *
  * @param p - The value to check.
  * @returns `true` if the value is a `RationalBezier2d`, `false` otherwise.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const isRationalBezier2d: (p: unknown) => p is RationalBezier2d = internal.isRationalBezier2d
 
@@ -51,7 +51,7 @@ export const isRationalBezier2d: (p: unknown) => p is RationalBezier2d = interna
  * @param p2 - The third weighted control point (end handle).
  * @param p3 - The fourth weighted control point (curve end).
  * @returns A new `RationalBezier2d` instance.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const make: (p0: Weighted, p1: Weighted, p2: Weighted, p3: Weighted) => RationalBezier2d =
   internal.make
@@ -64,7 +64,7 @@ export const make: (p0: Weighted, p1: Weighted, p2: Weighted, p3: Weighted) => R
  *
  * @param points - The weighted control points.
  * @returns A new `RationalBezier2d` instance.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const fromArray: (points: ReadonlyArray<Weighted>) => RationalBezier2d = internal.fromArray
 
@@ -83,7 +83,7 @@ export const fromArray: (points: ReadonlyArray<Weighted>) => RationalBezier2d = 
  * @param p2 - The third control point (end handle).
  * @param p3 - The fourth control point (curve end).
  * @returns A new `RationalBezier2d` with unit weights.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const fromPoints: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => RationalBezier2d =
   internal.fromPoints
@@ -94,7 +94,7 @@ export const fromPoints: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) =>
  *
  * @param b - The non-rational bezier to lift.
  * @returns A new `RationalBezier2d` with unit weights.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const fromBezier: (b: Bezier2d) => RationalBezier2d = internal.fromBezier
 
@@ -112,7 +112,7 @@ export const fromBezier: (b: Bezier2d) => RationalBezier2d = internal.fromBezier
  *
  * @param r - The rational bezier to convert.
  * @returns A new `RationalCubicPath2d` instance representing the same curve.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const toPath: (r: RationalBezier2d) => RationalCubicPath2d = internal.toPath
 
@@ -130,7 +130,7 @@ export const subdivide: {
    * @param r - The rational bezier to split.
    * @param u - The split parameter in the open interval `(0, 1)`.
    * @returns A two-element tuple of the left and right halves.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (r: RationalBezier2d, u: number): [RationalBezier2d, RationalBezier2d]
   /**
@@ -138,7 +138,7 @@ export const subdivide: {
    *
    * @param u - The split parameter in the open interval `(0, 1)`.
    * @returns A function that takes a rational bezier and returns the halves.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (u: number): (r: RationalBezier2d) => [RationalBezier2d, RationalBezier2d]
 } = internal.subdivide

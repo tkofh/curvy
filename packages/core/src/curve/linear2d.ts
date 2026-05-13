@@ -133,7 +133,7 @@ export const length: {
  *
  * @param c - The linear curve.
  * @returns A closed `Box2d` enclosing the curve.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const boundingBox: (c: LinearCurve2d) => Interval2d<Closed, Closed> = internal.boundingBox
 

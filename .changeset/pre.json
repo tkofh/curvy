@@ -7,6 +7,7 @@
   "changesets": [
     "arc-length-sampling",
     "bezier-subdivide",
+    "cardinal-options",
     "characteristic-module",
     "curve-solve-at",
     "dts-mts-extension",

@@ -134,6 +134,6 @@ export const asContinuous: <T>(p: QuadraticPath2d<T>) => QuadraticPath2d<T & Con
  *
  * @param p - The quadratic path.
  * @returns A closed `Box2d` enclosing the path.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const boundingBox: (p: QuadraticPath2d) => Interval2d<Closed, Closed> = internal.boundingBox

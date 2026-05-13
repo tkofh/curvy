@@ -218,7 +218,7 @@ export const curvature: {
  *
  * @param c - The quadratic curve.
  * @returns A closed `Box2d` enclosing the curve.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const boundingBox: (c: QuadraticCurve2d) => Interval2d<Closed, Closed> = internal.boundingBox
 

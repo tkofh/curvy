@@ -144,21 +144,114 @@ describe('hermite', () => {
 })
 
 describe('cardinal', () => {
-  test('makes a path', () => {
-    const points = Cardinal2d.make(
-      Vector2.zero,
-      Vector2.make(0, 1),
-      Vector2.make(1, 1),
-      Vector2.make(1, 0),
-    )
-    const path = Cardinal2d.toPath(points.pipe(Cardinal2d.withDuplicatedEndpoints))
+  const fourPoints = Cardinal2d.make(
+    Vector2.zero,
+    Vector2.make(0, 1),
+    Vector2.make(1, 1),
+    Vector2.make(1, 0),
+  ).pipe(Cardinal2d.withDuplicatedEndpoints)
 
+  test('make: defaults are centripetal Catmull-Rom', () => {
+    const c = Cardinal2d.make(Vector2.zero, Vector2.make(1, 1))
+    expect(c.tension).toBe(0.5)
+    expect(c.alpha).toBe(0.5)
+  })
+
+  test('make: options-first overload', () => {
+    const c = Cardinal2d.make({ tension: 0.7, alpha: 0.3 }, Vector2.zero, Vector2.make(1, 1))
+    expect(c.tension).toBe(0.7)
+    expect(c.alpha).toBe(0.3)
+  })
+
+  test('fromArray: accepts options', () => {
+    const c = Cardinal2d.fromArray([Vector2.zero, Vector2.make(1, 1)], { tension: 0.7 })
+    expect(c.tension).toBe(0.7)
+    expect(c.alpha).toBe(0.5) // alpha defaulted
+  })
+
+  test('withTension / withAlpha / withOptions are pipeable and preserve points', () => {
+    const c = Cardinal2d.make(Vector2.zero, Vector2.make(1, 1))
+    const withT = c.pipe(Cardinal2d.withTension(0.9))
+    expect(withT.tension).toBe(0.9)
+    expect(withT.alpha).toBe(0.5)
+    expect(withT.points).toBe(c.points)
+
+    const withA = c.pipe(Cardinal2d.withAlpha(0))
+    expect(withA.tension).toBe(0.5)
+    expect(withA.alpha).toBe(0)
+
+    const withBoth = c.pipe(Cardinal2d.withOptions({ tension: 0.2, alpha: 1 }))
+    expect(withBoth.tension).toBe(0.2)
+    expect(withBoth.alpha).toBe(1)
+
+    // withOptions preserves omitted fields
+    const partial = c.pipe(Cardinal2d.withOptions({ tension: 0.3 }))
+    expect(partial.tension).toBe(0.3)
+    expect(partial.alpha).toBe(0.5)
+  })
+
+  test('append / prepend / endpoint helpers preserve tension and alpha', () => {
+    const c = Cardinal2d.make({ tension: 0.7, alpha: 0.25 }, Vector2.zero, Vector2.make(1, 1))
+    const appended = c.pipe(Cardinal2d.append(Vector2.make(2, 0)))
+    expect(appended.tension).toBe(0.7)
+    expect(appended.alpha).toBe(0.25)
+
+    const dup = c.pipe(Cardinal2d.withDuplicatedEndpoints)
+    expect(dup.tension).toBe(0.7)
+    expect(dup.alpha).toBe(0.25)
+
+    const refl = c.pipe(Cardinal2d.withReflectedEndpoints)
+    expect(refl.tension).toBe(0.7)
+    expect(refl.alpha).toBe(0.25)
+  })
+
+  test('toPath: endpoints interpolated exactly', () => {
+    const path = Cardinal2d.toPath(fourPoints)
     expect(CubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, 0))
+    expect(CubicPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(1, 0))
+  })
 
-    // for (let i = 0; i <= 50; i++) {
-    //   const t = i / 50
-    //   console.log(CubicPath2d.solve(path, t).toString())
-    // }
+  test('toPath: alpha = 0 reproduces classical Catmull-Rom values', () => {
+    // Uniform Catmull-Rom (tension = 0.5, alpha = 0) at midpoint of a
+    // straight horizontal control polygon is exactly the midpoint between
+    // segment endpoints.
+    const cardinal = Cardinal2d.make(
+      { alpha: 0 },
+      Vector2.make(0, 0),
+      Vector2.make(1, 0),
+      Vector2.make(2, 0),
+      Vector2.make(3, 0),
+    )
+    expect(CubicPath2d.solve(Cardinal2d.toPath(cardinal), 0.5)).toBeCloseToValue(
+      Vector2.make(1.5, 0),
+    )
+  })
+
+  test('toPath: tension = 0 yields smoothstep-shaped segments', () => {
+    const path = fourPoints.pipe(Cardinal2d.withTension(0), Cardinal2d.toPath)
+    // Zero-tangent endpoints → each segment is `3t² - 2t³`. Three segments
+    // span u in equal thirds; segment midpoints (u = 1/6, 1/2, 5/6) sit at
+    // the midpoint of their endpoints (smoothstep value 0.5).
+    expect(CubicPath2d.solve(path, 1 / 6)).toBeCloseToValue(Vector2.make(0, 0.5))
+    expect(CubicPath2d.solve(path, 5 / 6)).toBeCloseToValue(Vector2.make(1, 0.5))
+  })
+
+  test('toPath: centripetal handles coincident endpoints without NaN', () => {
+    // withDuplicatedEndpoints produces P0 = P1; with alpha > 0 the chord
+    // length goes to zero. Implementation handles the limit explicitly.
+    const path = Cardinal2d.toPath(fourPoints)
+    for (let i = 0; i <= 20; i++) {
+      const point = CubicPath2d.solve(path, i / 20)
+      expect(Number.isFinite(point.x) && Number.isFinite(point.y)).toBe(true)
+    }
+  })
+
+  test('toBezier: matches toPath at endpoints', () => {
+    const path = Cardinal2d.toPath(fourPoints)
+    const bezier = Cardinal2d.toBezier(fourPoints)
+    const pathStart = CubicPath2d.solve(path, 0)
+    const bezierStart = [...bezier][0] as Vector2.Vector2
+    expect(pathStart).toBeCloseToValue(bezierStart)
   })
 })
 

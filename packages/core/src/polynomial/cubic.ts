@@ -206,7 +206,7 @@ export const subdivide: {
    * @param p - The cubic polynomial to subdivide.
    * @param t - The split parameter; must be in the open interval `(0, 1)`.
    * @returns A `[left, right]` tuple of cubic polynomials.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (p: CubicPolynomial, t: number): [CubicPolynomial, CubicPolynomial]
   /**
@@ -214,7 +214,7 @@ export const subdivide: {
    *
    * @param t - The split parameter; must be in the open interval `(0, 1)`.
    * @returns A function that takes a polynomial and returns its `[left, right]` halves.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (t: number): (p: CubicPolynomial) => [CubicPolynomial, CubicPolynomial]
 } = internal.subdivide

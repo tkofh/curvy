@@ -19,7 +19,7 @@ import * as internal from './rationalCubic2d.internal'
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export interface RationalCubicPath2d extends Pipeable, Iterable<RationalCubicCurve2d> {
   readonly [RationalCubicPath2dTypeId]: RationalCubicPath2dTypeId
@@ -30,7 +30,7 @@ export interface RationalCubicPath2d extends Pipeable, Iterable<RationalCubicCur
  *
  * @param p - The value to check.
  * @returns `true` if the value is a `RationalCubicPath2d`, `false` otherwise.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const isRationalCubicPath2d: (p: unknown) => p is RationalCubicPath2d =
   internal.isRationalCubicPath2d
@@ -40,7 +40,7 @@ export const isRationalCubicPath2d: (p: unknown) => p is RationalCubicPath2d =
  *
  * @param curves - The curves to create the path from.
  * @returns A new `RationalCubicPath2d` instance.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const make: (...curves: ReadonlyArray<RationalCubicCurve2d>) => RationalCubicPath2d =
   internal.make
@@ -50,7 +50,7 @@ export const make: (...curves: ReadonlyArray<RationalCubicCurve2d>) => RationalC
  *
  * @param curves - The curves to create the path from.
  * @returns A new `RationalCubicPath2d` instance.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const fromArray: (curves: ReadonlyArray<RationalCubicCurve2d>) => RationalCubicPath2d =
   internal.fromArray
@@ -61,7 +61,7 @@ export const append: {
    *
    * @param c - The curve to append.
    * @returns A function that takes a path and returns a new path with the appended curve.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (c: RationalCubicCurve2d): (p: RationalCubicPath2d) => RationalCubicPath2d
   /**
@@ -70,7 +70,7 @@ export const append: {
    * @param p - The path to append to.
    * @param c - The curve to append.
    * @returns A new path with the appended curve.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (p: RationalCubicPath2d, c: RationalCubicCurve2d): RationalCubicPath2d
 } = internal.append
@@ -86,7 +86,7 @@ export const solve: {
    * @param p - The path to evaluate.
    * @param u - The path parameter in `[0, 1]`.
    * @returns The point on the path at parameter `u`.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (p: RationalCubicPath2d, u: number): Vector2
   /**
@@ -94,7 +94,7 @@ export const solve: {
    *
    * @param u - The path parameter in `[0, 1]`.
    * @returns A function that takes a path and returns the point at `u`.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (u: number): (p: RationalCubicPath2d) => Vector2
 } = internal.solve
@@ -113,7 +113,7 @@ export const approximateAsCubicPath: {
    * @param p - The rational cubic path to approximate.
    * @param tolerance - Maximum allowed midpoint deviation per segment; must be positive.
    * @returns A new `CubicPath2d` approximating the input.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (p: RationalCubicPath2d, tolerance: number): CubicPath2d
   /**
@@ -121,7 +121,7 @@ export const approximateAsCubicPath: {
    *
    * @param tolerance - Maximum allowed midpoint deviation per segment; must be positive.
    * @returns A function that takes a rational path and returns its approximation.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (tolerance: number): (p: RationalCubicPath2d) => CubicPath2d
 } = internal.approximateAsCubicPath

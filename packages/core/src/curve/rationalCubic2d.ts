@@ -31,7 +31,7 @@ export { RationalCurveTraits } from './rationalCubic2d.internal'
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export interface RationalCubicCurve2d<
   out XTraits = unknown,
@@ -49,7 +49,7 @@ export interface RationalCubicCurve2d<
  *
  * @param c - The value to check.
  * @returns `true` if the value is a `RationalCubicCurve2d`, `false` otherwise.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const isRationalCubicCurve2d: (c: unknown) => c is RationalCubicCurve2d =
   internal.isRationalCubicCurve2d
@@ -62,7 +62,7 @@ export const isRationalCubicCurve2d: (c: unknown) => c is RationalCubicCurve2d =
  * @param y - The y numerator polynomial.
  * @param w - The shared denominator polynomial (must be non-zero on `[0, 1]`).
  * @returns A new `RationalCubicCurve2d` instance.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const fromPolynomials: (
   x: CubicPolynomial,
@@ -81,7 +81,7 @@ export const fromPolynomials: (
  * @param p2 - The third weighted control point (end handle).
  * @param p3 - The fourth weighted control point (curve end).
  * @returns A new `RationalCubicCurve2d` instance.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const fromBezierPoints: (
   p0: Weighted,
@@ -110,7 +110,7 @@ export const fromBezierPoints: (
  * @param endSlope - The easing function's slope at the end (`dy/dx` at `x = 1`); must be finite and non-negative.
  * @returns A monotone-by-construction rational cubic easing curve.
  * @throws When slopes are negative, non-finite, or produce a non-monotonic curve under the default construction.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const makeMonotonicEasing: (
   startSlope: number,
@@ -125,7 +125,7 @@ export const solve: {
    * @param c - The curve to evaluate.
    * @param t - The parameter value.
    * @returns The point on the curve at parameter `t`.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (c: RationalCubicCurve2d, t: number): Vector2
   /**
@@ -133,7 +133,7 @@ export const solve: {
    *
    * @param t - The parameter value.
    * @returns A function that takes a curve and returns the point at `t`.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (t: number): (c: RationalCubicCurve2d) => Vector2
 } = internal.solve
@@ -146,7 +146,7 @@ export const solveAtX: {
    * @param c - The rational cubic curve with monotonic x.
    * @param x - The x coordinate.
    * @returns Zero or one y values.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   <XT extends Monotonic, YT>(c: RationalCubicCurve2d<XT, YT>, x: number): Solution.AtMostOne<number>
   /**
@@ -156,10 +156,10 @@ export const solveAtX: {
    * @param c - The rational cubic curve.
    * @param x - The x coordinate.
    * @returns The y values at x, in t-ascending order.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   <XT, YT>(c: RationalCubicCurve2d<XT, YT>, x: number): Solution.AtMostThree<number>
-  /** @since 2.1.0 */
+  /** @since 2.0.0 */
   (x: number): {
     <XT extends Monotonic, YT>(c: RationalCubicCurve2d<XT, YT>): Solution.AtMostOne<number>
     <XT, YT>(c: RationalCubicCurve2d<XT, YT>): Solution.AtMostThree<number>
@@ -174,7 +174,7 @@ export const solveAtY: {
    * @param c - The rational cubic curve with monotonic y.
    * @param y - The y coordinate.
    * @returns Zero or one x values.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   <XT, YT extends Monotonic>(c: RationalCubicCurve2d<XT, YT>, y: number): Solution.AtMostOne<number>
   /**
@@ -183,10 +183,10 @@ export const solveAtY: {
    * @param c - The rational cubic curve.
    * @param y - The y coordinate.
    * @returns The x values at y, in t-ascending order.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   <XT, YT>(c: RationalCubicCurve2d<XT, YT>, y: number): Solution.AtMostThree<number>
-  /** @since 2.1.0 */
+  /** @since 2.0.0 */
   (y: number): {
     <XT, YT extends Monotonic>(c: RationalCubicCurve2d<XT, YT>): Solution.AtMostOne<number>
     <XT, YT>(c: RationalCubicCurve2d<XT, YT>): Solution.AtMostThree<number>
@@ -207,7 +207,7 @@ export const approximateAsCubicCurves: {
    * @param c - The rational cubic curve to approximate.
    * @param tolerance - Maximum allowed midpoint deviation; must be positive.
    * @returns A sequence of polynomial cubic curves covering the input.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (c: RationalCubicCurve2d, tolerance: number): ReadonlyArray<CubicCurve2d>
   /**
@@ -215,7 +215,7 @@ export const approximateAsCubicCurves: {
    *
    * @param tolerance - Maximum allowed midpoint deviation; must be positive.
    * @returns A function that takes a curve and returns its polynomial approximation.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (tolerance: number): (c: RationalCubicCurve2d) => ReadonlyArray<CubicCurve2d>
 } = internal.approximateAsCubicCurves

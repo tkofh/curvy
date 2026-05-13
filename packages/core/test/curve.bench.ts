@@ -97,20 +97,27 @@ describe('arc-length sampling', () => {
 })
 
 describe('cardinal -> bezier', () => {
-  const cardinal = Cardinal2d.make(
+  const points = [
     Vector2.make(0, 0),
     Vector2.make(1, 1),
     Vector2.make(2, 0),
     Vector2.make(3, 1),
     Vector2.make(4, 0),
     Vector2.make(5, 1),
-  ).pipe(Cardinal2d.withDuplicatedEndpoints)
+  ] as const
+  const centripetal = Cardinal2d.make(...points).pipe(Cardinal2d.withDuplicatedEndpoints)
+  const customTension = centripetal.pipe(Cardinal2d.withTension(0.7))
+  const uniform = centripetal.pipe(Cardinal2d.withAlpha(0))
 
-  bench('toBezier (default scale)', () => {
-    _sink = Cardinal2d.toBezier(cardinal)
+  bench('toBezier (centripetal default)', () => {
+    _sink = Cardinal2d.toBezier(centripetal)
   })
 
-  bench('toBezier (custom scale)', () => {
-    _sink = Cardinal2d.toBezier(cardinal, 0.7)
+  bench('toBezier (custom tension)', () => {
+    _sink = Cardinal2d.toBezier(customTension)
+  })
+
+  bench('toBezier (uniform alpha = 0)', () => {
+    _sink = Cardinal2d.toBezier(uniform)
   })
 })

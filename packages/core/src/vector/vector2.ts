@@ -26,7 +26,7 @@ export interface Vector2 extends Pipeable, TwoDimensional<number> {
  * Construct via {@link makeWeighted} (from raw components) or
  * {@link withWeight} (from an existing `Vector2`).
  *
- * @since 2.1.0
+ * @since 2.0.0
  */
 export interface Weighted extends Pipeable {
   readonly [WeightedVector2TypeId]: WeightedVector2TypeId
@@ -49,7 +49,7 @@ export const isVector2: (v: unknown) => v is Vector2 = internal.isVector2
  *
  * @param v - The value to check.
  * @returns `true` if the value is a `Vector2.Weighted`, `false` otherwise.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const isWeighted: (v: unknown) => v is Weighted = internal.isWeighted
 
@@ -61,7 +61,7 @@ export const isWeighted: (v: unknown) => v is Weighted = internal.isWeighted
  * @param y - The y component.
  * @param weight - The positive scalar weight.
  * @returns A new `Vector2.Weighted` instance.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const makeWeighted: (x: number, y: number, weight: number) => Weighted =
   internal.makeWeighted
@@ -74,7 +74,7 @@ export const withWeight: {
    * @param v - The point to weight.
    * @param weight - The positive scalar weight.
    * @returns A new `Vector2.Weighted` instance.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (v: Vector2, weight: number): Weighted
   /**
@@ -83,7 +83,7 @@ export const withWeight: {
    *
    * @param weight - The positive scalar weight.
    * @returns A function that takes a `Vector2` and returns a weighted point.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (weight: number): (v: Vector2) => Weighted
 } = internal.withWeight
@@ -93,7 +93,7 @@ export const withWeight: {
  *
  * @param w - The weighted point.
  * @returns A new `Vector2` instance with the same x and y components.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const unweighted: (w: Weighted) => Vector2 = internal.unweighted
 
@@ -105,7 +105,7 @@ export const weightedEquals: {
    * @param a - The first weighted point.
    * @param b - The second weighted point.
    * @returns `true` when components and weight are within tolerance.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (a: Weighted, b: Weighted): boolean
   /**
@@ -113,7 +113,7 @@ export const weightedEquals: {
    *
    * @param b - The second weighted point.
    * @returns A function that takes the first weighted point and returns the comparison result.
-   * @since 2.1.0
+   * @since 2.0.0
    */
   (b: Weighted): (a: Weighted) => boolean
 } = internal.weightedEquals
@@ -168,7 +168,7 @@ export const make: {
  * @param inputs - Exactly two items of any type.
  * @param project - A function returning a fixed-arity tuple of numbers — one per output channel.
  * @returns A tuple of `Vector2`s with the same arity as the projection's return tuple.
- * @since 2.1.0
+ * @since 2.0.0
  */
 export const transpose: <T, const Channels extends ReadonlyArray<number>>(
   inputs: readonly [T, T],
