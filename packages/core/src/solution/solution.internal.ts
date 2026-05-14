@@ -1,5 +1,5 @@
-import * as Interval from '../interval/interval'
-import { dual, Pipeable } from '../utils'
+import * as Interval from '../interval/interval.ts'
+import { dual, Pipeable } from '../utils.ts'
 import type {
   AtMostOne,
   AtMostThree,
@@ -10,8 +10,8 @@ import type {
   Some,
   Three,
   Two,
-} from './solution'
-import { invariant } from '../utils'
+} from './solution.ts'
+import { invariant } from '../utils.ts'
 
 // Empty iterator — shared across all None instances since None has no data.
 const EMPTY_ITERATOR: Iterator<never> = {
@@ -74,16 +74,22 @@ class ThreeImpl<T> extends Pipeable implements Three<T> {
   }
 }
 
+/** @internal */
 export const NONE_INSTANCE: None = new NoneImpl()
 
+/** @internal */
 export const none: None = NONE_INSTANCE
 
+/** @internal */
 export const one = <T>(value: T): One<T> => new OneImpl(value)
 
+/** @internal */
 export const two = <T>(a: T, b: T): Two<T> => new TwoImpl([a, b])
 
+/** @internal */
 export const three = <T>(a: T, b: T, c: T): Three<T> => new ThreeImpl([a, b, c])
 
+/** @internal */
 export const fromArray = <T>(arr: ReadonlyArray<T>): Solution<T> => {
   switch (arr.length) {
     case 0:
@@ -99,13 +105,17 @@ export const fromArray = <T>(arr: ReadonlyArray<T>): Solution<T> => {
   }
 }
 
+/** @internal */
 export const isNone = <T>(s: Solution<T>): s is None => s._tag === 'none'
 
+/** @internal */
 export const isSome = <T>(s: Solution<T>): s is Some<T> => s._tag !== 'none'
 
+/** @internal */
 export const valueOrUndefined = <T>(s: Solution<T>): T | undefined =>
   isNone(s) ? undefined : s.value
 
+/** @internal */
 export const last: {
   <T>(s: Some<T>): T
   <T>(s: Solution<T>): T | undefined
@@ -122,6 +132,7 @@ export const last: {
   }
 }) as never
 
+/** @internal */
 export const min: {
   (s: Some<number>): number
   (s: Solution<number>): number | undefined
@@ -138,6 +149,7 @@ export const min: {
   }
 }) as never
 
+/** @internal */
 export const max: {
   (s: Some<number>): number
   (s: Solution<number>): number | undefined
@@ -154,26 +166,31 @@ export const max: {
   }
 }) as never
 
+/** @internal */
 export const unsafeValue = <T>(s: Solution<T>, message?: string): T => {
   invariant(isSome(s), message ?? 'Solution.unsafeValue on empty Solution')
   return s.value
 }
 
+/** @internal */
 export const unsafeLast = <T>(s: Solution<T>): T => {
   invariant(isSome(s), 'Solution.unsafeLast on empty Solution')
   return last(s)
 }
 
+/** @internal */
 export const unsafeMin = (s: Solution<number>): number => {
   invariant(isSome(s), 'Solution.unsafeMin on empty Solution')
   return min(s)
 }
 
+/** @internal */
 export const unsafeMax = (s: Solution<number>): number => {
   invariant(isSome(s), 'Solution.unsafeMax on empty Solution')
   return max(s)
 }
 
+/** @internal */
 export const filter = <T>(s: Solution<T>, predicate: (v: T) => boolean): Solution<T> => {
   switch (s._tag) {
     case 'none':
@@ -210,12 +227,14 @@ export const filter = <T>(s: Solution<T>, predicate: (v: T) => boolean): Solutio
   }
 }
 
+/** @internal */
 export const clip = dual(
   2,
   (s: Solution<number>, i: Interval.Interval): Solution<number> =>
     filter(s, (v) => Interval.contains(i, v)),
 )
 
+/** @internal */
 export const map = dual(2, <A, B>(s: Solution<A>, f: (v: A) => B): Solution<B> => {
   switch (s._tag) {
     case 'none':
@@ -229,6 +248,7 @@ export const map = dual(2, <A, B>(s: Solution<A>, f: (v: A) => B): Solution<B> =
   }
 })
 
+/** @internal */
 export const match = dual(
   2,
   <T, A, B>(

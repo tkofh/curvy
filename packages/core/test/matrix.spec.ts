@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import * as matrix2x2 from '../src/matrix/matrix2x2'
-import * as matrix3x3 from '../src/matrix/matrix3x3'
-import * as matrix4x4 from '../src/matrix/matrix4x4'
-import * as vector2 from '../src/vector/vector2'
-import * as vector3 from '../src/vector/vector3'
-import * as vector4 from '../src/vector/vector4'
+import * as matrix2x2 from '../src/matrix/matrix2x2.ts'
+import * as matrix3x3 from '../src/matrix/matrix3x3.ts'
+import * as matrix4x4 from '../src/matrix/matrix4x4.ts'
+import * as vector2 from '../src/vector/vector2.ts'
+import * as vector3 from '../src/vector/vector3.ts'
+import * as vector4 from '../src/vector/vector4.ts'
 
 describe('matrix2x2', () => {
   test('make', () => {

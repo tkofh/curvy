@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'vitest'
-import * as interval2d from '../src/interval/interval2d'
-import * as cubic2d from '../src/curve/cubic2d'
-import * as linear2d from '../src/curve/linear2d'
-import * as quadratic2d from '../src/curve/quadratic2d'
-import * as interval from '../src/interval/interval'
-import * as cubicPath2d from '../src/path/cubic2d'
-import * as linearPath2d from '../src/path/linear2d'
-import * as quadraticPath2d from '../src/path/quadratic2d'
-import * as vector2 from '../src/vector/vector2'
+import * as interval2d from '../src/interval/interval2d.ts'
+import * as cubic2d from '../src/curve/cubic2d.ts'
+import * as linear2d from '../src/curve/linear2d.ts'
+import * as quadratic2d from '../src/curve/quadratic2d.ts'
+import * as interval from '../src/interval/interval.ts'
+import * as cubicPath2d from '../src/path/cubic2d.ts'
+import * as linearPath2d from '../src/path/linear2d.ts'
+import * as quadraticPath2d from '../src/path/quadratic2d.ts'
+import * as vector2 from '../src/vector/vector2.ts'
 
 describe('interval2d', () => {
   test('make builds from two intervals', () => {
@@ -165,6 +165,72 @@ describe('interval2d', () => {
     expect(u.start).toBe(0)
     expect(u.end).toBe(10)
     expect(u.kind).toBe('open')
+  })
+
+  test('minDistance is zero for overlapping boxes', () => {
+    const a = interval2d.make(interval.make(0, 10), interval.make(0, 10))
+    const b = interval2d.make(interval.make(5, 15), interval.make(5, 15))
+    expect(interval2d.minDistance(a, b)).toBeCloseTo(0, 10)
+  })
+
+  test('minDistance is zero for touching boxes', () => {
+    // Boxes share an edge — closest points coincide.
+    const a = interval2d.make(interval.make(0, 5), interval.make(0, 5))
+    const b = interval2d.make(interval.make(5, 10), interval.make(0, 5))
+    expect(interval2d.minDistance(a, b)).toBeCloseTo(0, 10)
+  })
+
+  test('minDistance is the gap when boxes are axis-separated', () => {
+    // x-separated by 5, y-overlapping → min distance is 5.
+    const a = interval2d.make(interval.make(0, 5), interval.make(0, 10))
+    const b = interval2d.make(interval.make(10, 15), interval.make(3, 7))
+    expect(interval2d.minDistance(a, b)).toBeCloseTo(5, 10)
+  })
+
+  test('minDistance is corner-to-corner Euclidean when boxes are diagonally separated', () => {
+    // a = [0,1]×[0,1], b = [4,5]×[5,6] — closest corners (1,1) and (4,5), distance hypot(3,4) = 5.
+    const a = interval2d.make(interval.make(0, 1), interval.make(0, 1))
+    const b = interval2d.make(interval.make(4, 5), interval.make(5, 6))
+    expect(interval2d.minDistance(a, b)).toBeCloseTo(5, 10)
+  })
+
+  test('minDistance is symmetric', () => {
+    const a = interval2d.make(interval.make(0, 1), interval.make(0, 1))
+    const b = interval2d.make(interval.make(4, 5), interval.make(5, 6))
+    expect(interval2d.minDistance(a, b)).toBeCloseTo(interval2d.minDistance(b, a), 10)
+  })
+
+  test('minDistance ignores endpoint kind', () => {
+    // Touching closed and open boxes: closest points still coincide geometrically.
+    const a = interval2d.make(interval.make(0, 5), interval.make(0, 5))
+    const b = interval2d.make(interval.makeOpen(5, 10), interval.makeOpen(0, 5))
+    expect(interval2d.minDistance(a, b)).toBeCloseTo(0, 10)
+  })
+
+  test('maxDistance equals diagonal of identical box', () => {
+    // 3×4 box, diagonal = 5.
+    const a = interval2d.make(interval.make(0, 3), interval.make(0, 4))
+    expect(interval2d.maxDistance(a, a)).toBeCloseTo(5, 10)
+  })
+
+  test('maxDistance is the union-AABB diagonal', () => {
+    // a = [0,1]×[0,1], b = [4,5]×[5,6] — union AABB is [0,5]×[0,6], diagonal hypot(5,6).
+    const a = interval2d.make(interval.make(0, 1), interval.make(0, 1))
+    const b = interval2d.make(interval.make(4, 5), interval.make(5, 6))
+    expect(interval2d.maxDistance(a, b)).toBeCloseTo(Math.hypot(5, 6), 10)
+  })
+
+  test('maxDistance is symmetric', () => {
+    const a = interval2d.make(interval.make(0, 1), interval.make(0, 1))
+    const b = interval2d.make(interval.make(4, 5), interval.make(5, 6))
+    expect(interval2d.maxDistance(a, b)).toBeCloseTo(interval2d.maxDistance(b, a), 10)
+  })
+
+  test('min and max distance bracket the curried form', () => {
+    const a = interval2d.make(interval.make(0, 1), interval.make(0, 1))
+    const b = interval2d.make(interval.make(4, 5), interval.make(5, 6))
+    expect(interval2d.minDistance(b)(a)).toBeCloseTo(interval2d.minDistance(a, b), 10)
+    expect(interval2d.maxDistance(b)(a)).toBeCloseTo(interval2d.maxDistance(a, b), 10)
   })
 })
 

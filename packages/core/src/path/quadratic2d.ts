@@ -1,13 +1,13 @@
-import type { Interval2d } from '../interval/interval2d'
-import type { QuadraticCurve2d } from '../curve/quadratic2d'
-import type { Closed } from '../interval/interval'
-import type { Pipeable } from '../utils'
-import type { Vector2 } from '../vector/vector2'
-import type { QuadraticPath2dTypeId } from './quadratic2d.internal'
-import * as internal from './quadratic2d.internal'
-import type { Continuous, PathTraits } from './traits'
+import type { Interval2d } from '../interval/interval2d.ts'
+import type { QuadraticCurve2d } from '../curve/quadratic2d.ts'
+import type { Closed } from '../interval/interval.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { QuadraticPath2dTypeId } from './quadratic2d.internal.ts'
+import * as internal from './quadratic2d.internal.ts'
+import type { Continuous, PathTraits } from './traits.ts'
 
-export type { Continuous } from './traits'
+export type { Continuous } from './traits.ts'
 
 /**
  * A quadratic path in 2D space.

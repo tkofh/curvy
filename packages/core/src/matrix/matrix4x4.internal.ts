@@ -1,12 +1,12 @@
-import { toFourDimensionalIndex } from '../dimensions'
-import { dual, Pipeable } from '../utils'
-import { invariant } from '../utils'
-import { epsEquals } from '../number'
-import type { Vector4 } from '../vector/vector4'
-import * as vector4 from '../vector/vector4.internal'
-import type { Matrix3x3 } from './matrix3x3'
-import * as matrix3x3 from './matrix3x3.internal'
-import type { Matrix4x4, Matrix4x4Coordinate } from './matrix4x4'
+import { toFourDimensionalIndex } from '../dimensions.ts'
+import { dual, Pipeable } from '../utils.ts'
+import { invariant } from '../utils.ts'
+import { epsEquals } from '../number.ts'
+import type { Vector4 } from '../vector/vector4.ts'
+import * as vector4 from '../vector/vector4.internal.ts'
+import type { Matrix3x3 } from './matrix3x3.ts'
+import * as matrix3x3 from './matrix3x3.internal.ts'
+import type { Matrix4x4, Matrix4x4Coordinate } from './matrix4x4.ts'
 
 export const Matrix4x4TypeId: unique symbol = Symbol.for('curvy/matrix4x4')
 export type Matrix4x4TypeId = typeof Matrix4x4TypeId
@@ -85,9 +85,11 @@ class Matrix4x4Impl extends Pipeable implements Matrix4x4 {
   }
 }
 
+/** @internal */
 export const isMatrix4x4 = (m: unknown): m is Matrix4x4 =>
   typeof m === 'object' && m !== null && Matrix4x4TypeId in m
 
+/** @internal */
 export const equals = dual<
   (b: Matrix4x4) => (a: Matrix4x4) => boolean,
   (a: Matrix4x4, b: Matrix4x4) => boolean
@@ -114,10 +116,12 @@ export const equals = dual<
 
 /**
  * The 4x4 identity matrix.
+ * @internal
  */
 export const identity: Matrix4x4 = new Matrix4x4Impl(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
 
 // first four arguments are the top row
+/** @internal */
 export const make = (
   m00 = 0,
   m01 = m00,
@@ -138,6 +142,7 @@ export const make = (
 ) =>
   new Matrix4x4Impl(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33)
 
+/** @internal */
 export const fromRows = (v0: Vector4, v1: Vector4, v2: Vector4, v3: Vector4) =>
   new Matrix4x4Impl(
     v0.x,
@@ -158,6 +163,7 @@ export const fromRows = (v0: Vector4, v1: Vector4, v2: Vector4, v3: Vector4) =>
     v3.w,
   )
 
+/** @internal */
 export const fromColumns = (v0: Vector4, v1: Vector4, v2: Vector4, v3: Vector4) =>
   new Matrix4x4Impl(
     v0.x,
@@ -178,6 +184,7 @@ export const fromColumns = (v0: Vector4, v1: Vector4, v2: Vector4, v3: Vector4) 
     v3.w,
   )
 
+/** @internal */
 export const setRow = dual<
   (row: Matrix4x4Coordinate, v: Vector4) => (m: Matrix4x4) => Matrix4x4,
   (m: Matrix4x4, row: Matrix4x4Coordinate, v: Vector4) => Matrix4x4
@@ -187,6 +194,7 @@ export const setRow = dual<
   ),
 )
 
+/** @internal */
 export const setColumn = dual<
   (column: Matrix4x4Coordinate, v: Vector4) => (m: Matrix4x4) => Matrix4x4,
   (m: Matrix4x4, column: Matrix4x4Coordinate, v: Vector4) => Matrix4x4
@@ -201,12 +209,14 @@ export const setColumn = dual<
   ),
 )
 
+/** @internal */
 export const determinant = (m: Matrix4x4) =>
   m.m00 * matrix3x3.determinant(minor(m, 0, 0)) -
   m.m01 * matrix3x3.determinant(minor(m, 0, 1)) +
   m.m02 * matrix3x3.determinant(minor(m, 0, 2)) -
   m.m03 * matrix3x3.determinant(minor(m, 0, 3))
 
+/** @internal */
 export const minor = dual<
   (row: Matrix4x4Coordinate, column: Matrix4x4Coordinate) => (m: Matrix4x4) => Matrix3x3,
   (m: Matrix4x4, row: Matrix4x4Coordinate, column: Matrix4x4Coordinate) => Matrix3x3
@@ -236,6 +246,7 @@ export const minor = dual<
   return matrix3x3.make(m00, m01, m02, m10, m11, m12, m20, m21, m22)
 })
 
+/** @internal */
 export const vectorProductLeft = dual<
   (v: Vector4) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, v: Vector4) => Vector4
@@ -249,6 +260,7 @@ export const vectorProductLeft = dual<
   )
 })
 
+/** @internal */
 export const vectorProductRight = dual<
   (v: Vector4) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, v: Vector4) => Vector4
@@ -263,6 +275,7 @@ export const vectorProductRight = dual<
   )
 })
 
+/** @internal */
 export const multiply = dual<
   (b: Matrix4x4) => (a: Matrix4x4) => Matrix4x4,
   (a: Matrix4x4, b: Matrix4x4) => Matrix4x4
@@ -289,6 +302,7 @@ export const multiply = dual<
     ),
 )
 
+/** @internal */
 export const inverse = (m: Matrix4x4): Matrix4x4 => {
   const det = determinant(m)
   invariant(det !== 0, 'cannot invert singular matrix')
@@ -320,6 +334,7 @@ export const inverse = (m: Matrix4x4): Matrix4x4 => {
   )
 }
 
+/** @internal */
 export const solveSystem = dual<
   (v: Vector4) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, v: Vector4) => Vector4
@@ -339,6 +354,7 @@ export const solveSystem = dual<
   )
 })
 
+/** @internal */
 export const toRows = (m: Matrix4x4) =>
   [
     vector4.make(m.m00, m.m01, m.m02, m.m03),
@@ -347,6 +363,7 @@ export const toRows = (m: Matrix4x4) =>
     vector4.make(m.m30, m.m31, m.m32, m.m33),
   ] as const
 
+/** @internal */
 export const toColumns = (m: Matrix4x4) =>
   [
     vector4.make(m.m00, m.m10, m.m20, m.m30),
@@ -355,23 +372,28 @@ export const toColumns = (m: Matrix4x4) =>
     vector4.make(m.m03, m.m13, m.m23, m.m33),
   ] as const
 
+/** @internal */
 export const rowVector = dual<
   (row: Matrix4x4Coordinate) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, row: Matrix4x4Coordinate) => Vector4
 >(2, (m: Matrix4x4, row: Matrix4x4Coordinate) => toRows(m)[toFourDimensionalIndex(row)])
 
+/** @internal */
 export const columnVector = dual<
   (column: Matrix4x4Coordinate) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, column: Matrix4x4Coordinate) => Vector4
 >(2, (m: Matrix4x4, column: Matrix4x4Coordinate) => toColumns(m)[toFourDimensionalIndex(column)])
 
+/** @internal */
 export const transpose = (m: Matrix4x4) => fromColumns(...toRows(m)) as Matrix4x4
 
+/** @internal */
 export const reverseRows = (m: Matrix4x4) => {
   const [v0, v1, v2, v3] = toRows(m) as [Vector4, Vector4, Vector4, Vector4]
   return fromRows(v3, v2, v1, v0)
 }
 
+/** @internal */
 export const reverseColumns = (m: Matrix4x4) => {
   const [v0, v1, v2, v3] = toColumns(m) as [Vector4, Vector4, Vector4, Vector4]
   return fromColumns(v3, v2, v1, v0)

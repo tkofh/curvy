@@ -1,11 +1,11 @@
 import { describe, expect, expectTypeOf, test } from 'vitest'
-import * as cubicCurve2d from '../src/curve/cubic2d'
-import * as linearCurve2d from '../src/curve/linear2d'
-import * as quadraticCurve2d from '../src/curve/quadratic2d'
-import * as cubicPolynomial from '../src/polynomial/cubic'
-import * as quadraticPolynomial from '../src/polynomial/quadratic'
-import * as Solution from '../src/solution/solution'
-import * as vector2 from '../src/vector/vector2'
+import * as cubicCurve2d from '../src/curve/cubic2d.ts'
+import * as linearCurve2d from '../src/curve/linear2d.ts'
+import * as quadraticCurve2d from '../src/curve/quadratic2d.ts'
+import * as cubicPolynomial from '../src/polynomial/cubic.ts'
+import * as quadraticPolynomial from '../src/polynomial/quadratic.ts'
+import * as Solution from '../src/solution/solution.ts'
+import * as vector2 from '../src/vector/vector2.ts'
 
 describe('LinearCurve2d.solveAtX/solveAtY', () => {
   test('on a line within the [0, 1] parameter domain', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import * as Interval from '../src/interval/interval'
-import * as Solution from '../src/solution/solution'
+import * as Interval from '../src/interval/interval.ts'
+import * as Solution from '../src/solution/solution.ts'
 
 describe('Solution constructors', () => {
   test('none has tag/length and is empty', () => {
@@ -99,9 +99,9 @@ describe('Solution accessors', () => {
   test('unsafeValue data-last form pipes from a Solution', () => {
     const result = Solution.one(42).pipe(Solution.unsafeValue('always non-empty'))
     expect(result).toBe(42)
-    expect(() =>
-      Solution.none.pipe(Solution.unsafeValue('expected something')),
-    ).toThrow(/expected something/)
+    expect(() => Solution.none.pipe(Solution.unsafeValue('expected something'))).toThrow(
+      /expected something/,
+    )
   })
 })
 

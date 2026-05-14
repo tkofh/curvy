@@ -1,9 +1,9 @@
-import type { ThreeDimensionalComponent, ThreeDimensionalIndex } from '../dimensions'
-import type { Pipeable } from '../utils'
-import type { Vector3 } from '../vector/vector3'
-import type { Matrix2x2 } from './matrix2x2'
-import type { Matrix3x3TypeId } from './matrix3x3.internal'
-import * as internal from './matrix3x3.internal'
+import type { ThreeDimensionalComponent, ThreeDimensionalIndex } from '../dimensions.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector3 } from '../vector/vector3.ts'
+import type { Matrix2x2 } from './matrix2x2.ts'
+import type { Matrix3x3TypeId } from './matrix3x3.internal.ts'
+import * as internal from './matrix3x3.internal.ts'
 
 /**
  * A coordinate in a 3x3 matrix.

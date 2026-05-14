@@ -1,16 +1,17 @@
-import * as Interval2d from '../interval/interval2d'
-import * as QuadraticCurve2d from '../curve/quadratic2d'
-import * as Interval from '../interval/interval'
-import { dual, Pipeable } from '../utils'
-import { invariant } from '../utils'
-import { epsEquals } from '../number'
-import type { Vector2 } from '../vector/vector2'
-import type { QuadraticPath2d } from './quadratic2d'
-import { PathTraits, type Continuous } from './traits'
+import * as Interval2d from '../interval/interval2d.ts'
+import * as QuadraticCurve2d from '../curve/quadratic2d.ts'
+import * as Interval from '../interval/interval.ts'
+import { dual, Pipeable } from '../utils.ts'
+import { invariant } from '../utils.ts'
+import { epsEquals } from '../number.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { QuadraticPath2d } from './quadratic2d.ts'
+import { PathTraits, type Continuous } from './traits.ts'
 
 export const QuadraticPath2dTypeId: unique symbol = Symbol('curvy/path/quadratic2d')
 export type QuadraticPath2dTypeId = typeof QuadraticPath2dTypeId
 
+/** @internal */
 export class QuadraticPath2dImpl extends Pipeable implements QuadraticPath2d<unknown> {
   readonly [QuadraticPath2dTypeId]: QuadraticPath2dTypeId = QuadraticPath2dTypeId
   declare readonly [PathTraits]: unknown
@@ -27,22 +28,27 @@ export class QuadraticPath2dImpl extends Pipeable implements QuadraticPath2d<unk
   }
 }
 
+/** @internal */
 export const isQuadraticPath2d = (p: unknown): p is QuadraticPath2d =>
   typeof p === 'object' && p !== null && QuadraticPath2dTypeId in p
 
+/** @internal */
 export const make = (
   ...curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>
 ): QuadraticPath2d => new QuadraticPath2dImpl(curves)
 
+/** @internal */
 export const fromArray = (
   curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>,
 ): QuadraticPath2d => new QuadraticPath2dImpl(curves)
 
+/** @internal */
 export const append = dual<
   (c: QuadraticCurve2d.QuadraticCurve2d) => (p: QuadraticPath2d) => QuadraticPath2d,
   (p: QuadraticPath2d, c: QuadraticCurve2d.QuadraticCurve2d) => QuadraticPath2d
 >(2, (p: QuadraticPath2d, c: QuadraticCurve2d.QuadraticCurve2d) => fromArray([...p, c]))
 
+/** @internal */
 export const length = (p: QuadraticPath2d) => {
   let total = 0
   for (const curve of p) {
@@ -52,6 +58,7 @@ export const length = (p: QuadraticPath2d) => {
   return total
 }
 
+/** @internal */
 export const solve = dual<
   (u: number) => (p: QuadraticPath2d) => Vector2,
   (p: QuadraticPath2d, u: number) => Vector2
@@ -72,6 +79,7 @@ export const solve = dual<
 // Quadratic Bernstein basis: P(t) = (1-t)²·p0 + 2(1-t)t·p1 + t²·p2
 // expanded gives c0 = p0, c1 = -2p0 + 2p1, c2 = p0 - 2p1 + p2, so:
 //   p0 = c0, p1 = c0 + c1/2, p2 = c0 + c1 + c2.
+/** @internal */
 export const toPathData = (p: QuadraticPath2d): string => {
   let result = ''
   let prevEndX = Number.NaN
@@ -104,6 +112,7 @@ export const toPathData = (p: QuadraticPath2d): string => {
   return result.slice(1)
 }
 
+/** @internal */
 export const isContinuous = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & Continuous> => {
   let prevEndX = Number.NaN
   let prevEndY = Number.NaN
@@ -122,11 +131,13 @@ export const isContinuous = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T &
   return true
 }
 
+/** @internal */
 export const asContinuous = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & Continuous> => {
   invariant(isContinuous(p), 'quadratic path is not continuous')
   return p
 }
 
+/** @internal */
 export const boundingBox = (
   p: QuadraticPath2d,
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {

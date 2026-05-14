@@ -1,6 +1,6 @@
-import type { Bounds, Closed, Interval, Open, OpenEnd, OpenStart } from './interval'
-import { dual, Pipeable } from '../utils'
-import { epsEquals } from '../number'
+import type { Bounds, Closed, Interval, Open, OpenEnd, OpenStart } from './interval.ts'
+import { dual, Pipeable } from '../utils.ts'
+import { epsEquals } from '../number.ts'
 
 const TypeId: unique symbol = Symbol.for('curvy/interval')
 type TypeId = typeof TypeId
@@ -51,9 +51,11 @@ class OpenImpl extends IntervalImpl implements Open {
   readonly kind = 'open' as const
 }
 
+/** @internal */
 export const isInterval = (v: unknown): v is Interval =>
   typeof v === 'object' && v !== null && TypeId in v
 
+/** @internal */
 export const equals = dual<
   (b: Interval) => (a: Interval) => boolean,
   (a: Interval, b: Interval) => boolean
@@ -63,21 +65,27 @@ export const equals = dual<
     a.kind === b.kind && epsEquals(a.start, b.start) && epsEquals(a.end, b.end),
 )
 
+/** @internal */
 export const aligned = dual<
   (b: Bounds) => (a: Bounds) => boolean,
   (a: Bounds, b: Bounds) => boolean
 >(2, (a: Bounds, b: Bounds) => epsEquals(a.start, b.start) && epsEquals(a.end, b.end))
 
+/** @internal */
 export const make = (start: number, end?: number): Closed => new ClosedImpl(start, end ?? start)
 
+/** @internal */
 export const makeOpenStart = (start: number, end?: number): OpenStart =>
   new OpenStartImpl(start, end ?? start)
 
+/** @internal */
 export const makeOpenEnd = (start: number, end?: number): OpenEnd =>
   new OpenEndImpl(start, end ?? start)
 
+/** @internal */
 export const makeOpen = (start: number, end?: number): Open => new OpenImpl(start, end ?? start)
 
+/** @internal */
 export const fromSize = (a: number, b?: number): Closed => {
   if (b === undefined) {
     return new ClosedImpl(0, a)
@@ -85,11 +93,14 @@ export const fromSize = (a: number, b?: number): Closed => {
   return new ClosedImpl(a, a + b)
 }
 
+/** @internal */
 export const fromMinMax = (...values: ReadonlyArray<number>): Closed =>
   new ClosedImpl(Math.min(...values), Math.max(...values))
 
+/** @internal */
 export const size = (i: Bounds): number => Math.abs(i.end - i.start)
 
+/** @internal */
 export const contains = dual<
   (value: number) => (interval: Interval) => boolean,
   (interval: Interval, value: number) => boolean
@@ -114,6 +125,7 @@ const includesEnd = (i: Interval): boolean => i.kind === 'closed' || i.kind === 
 // are numerically equal, the outer must include that boundary or the inner
 // must exclude it. Both shapes (closed-on-closed, open-on-open with matched
 // endpoints, etc.) are handled by this kind-aware comparison.
+/** @internal */
 export const containsInterval = dual<
   (inner: Interval) => (outer: Interval) => boolean,
   (outer: Interval, inner: Interval) => boolean
@@ -134,6 +146,7 @@ export const containsInterval = dual<
 // extremum of (a.start, b.start) / (a.end, b.end), and its inclusivity follows
 // whichever input contributed it. When endpoints tie, the result is closed at
 // that point if EITHER input includes it.
+/** @internal */
 export const union = dual<
   (b: Interval) => (a: Interval) => Interval,
   (a: Interval, b: Interval) => Interval
@@ -176,6 +189,7 @@ export const union = dual<
   return makeOpen(startVal, endVal)
 })
 
+/** @internal */
 export const filter = dual<
   <V extends ReadonlyArray<number>>(value: V) => (interval: Interval) => V,
   <V extends ReadonlyArray<number>>(interval: Interval, value: V) => V
@@ -185,6 +199,7 @@ export const filter = dual<
     value.filter((v) => contains(interval, v)) as unknown as V,
 )
 
+/** @internal */
 export const clamp = dual<
   <V extends number | ReadonlyArray<number>>(value: V) => (interval: Bounds) => V,
   <V extends number | ReadonlyArray<number>>(interval: Bounds, value: V) => V
@@ -202,6 +217,7 @@ export const clamp = dual<
   return v as V
 })
 
+/** @internal */
 export const toStartOpen = ((i: Interval): OpenStart | Open => {
   switch (i.kind) {
     case 'closed':
@@ -217,6 +233,7 @@ export const toStartOpen = ((i: Interval): OpenStart | Open => {
   (i: OpenEnd | Open): Open
 }
 
+/** @internal */
 export const toStartClosed = ((i: Interval): Closed | OpenEnd => {
   switch (i.kind) {
     case 'open-start':
@@ -232,6 +249,7 @@ export const toStartClosed = ((i: Interval): Closed | OpenEnd => {
   (i: OpenStart | Open): OpenEnd
 }
 
+/** @internal */
 export const toEndOpen = ((i: Interval): OpenEnd | Open => {
   switch (i.kind) {
     case 'closed':
@@ -247,6 +265,7 @@ export const toEndOpen = ((i: Interval): OpenEnd | Open => {
   (i: OpenStart | Open): Open
 }
 
+/** @internal */
 export const toEndClosed = ((i: Interval): Closed | OpenStart => {
   switch (i.kind) {
     case 'open-end':
@@ -262,6 +281,7 @@ export const toEndClosed = ((i: Interval): Closed | OpenStart => {
   (i: OpenStart | Open): OpenStart
 }
 
+/** @internal */
 export const toClosed = (i: Interval): Closed => {
   if (i.kind === 'closed') {
     return i
@@ -269,6 +289,7 @@ export const toClosed = (i: Interval): Closed => {
   return new ClosedImpl(i.start, i.end)
 }
 
+/** @internal */
 export const toOpen = (i: Interval): Open => {
   if (i.kind === 'open') {
     return i
@@ -276,50 +297,68 @@ export const toOpen = (i: Interval): Open => {
   return new OpenImpl(i.start, i.end)
 }
 
+/** @internal */
 export const isClosed = (i: Interval): i is Closed => i.kind === 'closed'
+/** @internal */
 export const isOpen = (i: Interval): i is Open => i.kind === 'open'
+/** @internal */
 export const isOpenStart = (i: Interval): i is OpenStart => i.kind === 'open-start'
+/** @internal */
 export const isOpenEnd = (i: Interval): i is OpenEnd => i.kind === 'open-end'
 
+/** @internal */
 export const isOpenAtStart = (i: Interval): i is OpenStart | Open =>
   i.kind === 'open-start' || i.kind === 'open'
+/** @internal */
 export const isOpenAtEnd = (i: Interval): i is OpenEnd | Open =>
   i.kind === 'open-end' || i.kind === 'open'
+/** @internal */
 export const isClosedAtStart = (i: Interval): i is Closed | OpenEnd =>
   i.kind === 'closed' || i.kind === 'open-end'
+/** @internal */
 export const isClosedAtEnd = (i: Interval): i is Closed | OpenStart =>
   i.kind === 'closed' || i.kind === 'open-start'
 
+/** @internal */
 export const unit: Closed = make(0, 1)
 
+/** @internal */
 export const unitOpen: Open = new OpenImpl(0, 1)
 
+/** @internal */
 export const biunit: Closed = make(-1, 1)
 
+/** @internal */
 export const lerp = (interval: Bounds, t: number): number =>
   (1 - t) * interval.start + t * interval.end
 
+/** @internal */
 export const toLerpFn =
   (interval: Bounds) =>
   (t: number): number =>
     lerp(interval, t)
 
+/** @internal */
 export const normalize = (interval: Bounds, x: number): number =>
   (x - interval.start) / size(interval)
 
+/** @internal */
 export const toNormalizeFn =
   (interval: Bounds) =>
   (x: number): number =>
     normalize(interval, x)
 
+/** @internal */
 export const remap = (source: Bounds, target: Bounds, x: number): number =>
   target.start + ((x - source.start) * size(target)) / size(source)
 
+/** @internal */
 export const toRemapFn =
   (source: Bounds, target: Bounds) =>
   (x: number): number =>
     remap(source, target, x)
 
+/** @internal */
 export const scaleShift = (source: Bounds, target: Bounds) => {
   const scale = size(target) / size(source)
 

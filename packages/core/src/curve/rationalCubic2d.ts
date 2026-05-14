@@ -1,14 +1,16 @@
-import type { Pipeable } from '../utils'
-import type { CubicPolynomial } from '../polynomial/cubic'
-import type { Increasing, Monotonic } from '../polynomial/traits'
-import type * as Solution from '../solution/solution'
-import type { Vector2, Weighted } from '../vector/vector2'
-import type { CubicCurve2d } from './cubic2d'
-import type { RationalCubicCurve2dTypeId, RationalCurveTraits } from './rationalCubic2d.internal'
-import * as internal from './rationalCubic2d.internal'
+import type { Closed } from '../interval/interval.ts'
+import type { Interval2d } from '../interval/interval2d.ts'
+import type { Pipeable } from '../utils.ts'
+import type { CubicPolynomial } from '../polynomial/cubic.ts'
+import type { Increasing, Monotonic } from '../polynomial/traits.ts'
+import type * as Solution from '../solution/solution.ts'
+import type { Vector2, Weighted } from '../vector/vector2.ts'
+import type { CubicCurve2d } from './cubic2d.ts'
+import type { RationalCubicCurve2dTypeId, RationalCurveTraits } from './rationalCubic2d.internal.ts'
+import * as internal from './rationalCubic2d.internal.ts'
 
-export type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
-export { RationalCurveTraits } from './rationalCubic2d.internal'
+export type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
+export { RationalCurveTraits } from './rationalCubic2d.internal.ts'
 
 /**
  * A rational cubic curve in 2D space.
@@ -193,19 +195,67 @@ export const solveAtY: {
   }
 } = internal.solveAtY as never
 
+export const subdivide: {
+  /**
+   * Subdivides a rational cubic curve at parameter `t ∈ (0, 1)` into two new
+   * rational cubic curves. The first curve's evaluation on `[0, 1]` matches
+   * the original's on `[0, t]`; the second matches the original's on `[t, 1]`.
+   * Equivalent to de Casteljau subdivision on the homogeneous control polygon,
+   * but performed directly on the per-axis monomial polynomials.
+   *
+   * @param c - The rational cubic curve to subdivide.
+   * @param t - The split parameter; must be in the open interval `(0, 1)`.
+   * @returns A `[left, right]` tuple of rational cubic curves.
+   * @since 2.0.0
+   */
+  (c: RationalCubicCurve2d, t: number): [RationalCubicCurve2d, RationalCubicCurve2d]
+  /**
+   * Subdivides a rational cubic curve at parameter `t ∈ (0, 1)`.
+   *
+   * @param t - The split parameter; must be in the open interval `(0, 1)`.
+   * @returns A function that takes a curve and returns its `[left, right]` halves.
+   * @since 2.0.0
+   */
+  (t: number): (c: RationalCubicCurve2d) => [RationalCubicCurve2d, RationalCubicCurve2d]
+} = internal.subdivide
+
+/**
+ * Computes a closed axis-aligned bounding box for a rational cubic curve from
+ * its projected control polygon. Looser than the tight extrema-based box used
+ * by `CubicCurve2d.boundingBox` — finding tight extrema of `x(t)/w(t)` and
+ * `y(t)/w(t)` requires solving degree-5 polynomials — but always valid: a
+ * positive-weight rational Bézier curve lies inside the convex hull of its
+ * projected control points, so the AABB of those points contains the curve.
+ *
+ * Suitable for subdivision-based geometric queries, where bound looseness is
+ * compensated by recursion depth.
+ *
+ * @param c - The rational cubic curve.
+ * @returns A closed `Interval2d` enclosing the curve.
+ * @since 2.0.0
+ */
+export const boundingBox: (c: RationalCubicCurve2d) => Interval2d<Closed, Closed> =
+  internal.boundingBox
+
 export const approximateAsCubicCurves: {
   /**
    * Approximates the rational cubic as a sequence of polynomial cubic curves
    * via recursive subdivision. At each level a candidate polynomial cubic is
    * built by projecting the segment's homogeneous Bézier control points to
-   * 2D; if the candidate's midpoint deviates from the true rational midpoint
-   * by more than `tolerance`, the segment is split at `t = 0.5` and the
-   * procedure recurses on each half. Returns a non-empty array; for a curve
-   * that is already polynomial (uniform weights) the result is a single
-   * exact segment.
+   * 2D; if the symmetric Hausdorff distance between the rational segment and
+   * its candidate exceeds `tolerance` (verified via a certified subdivision
+   * bound, not a single-point sample), the segment is split at `t = 0.5` and
+   * the procedure recurses on each half. Returns a non-empty array; for a
+   * curve that is already polynomial (uniform weights) the result is a
+   * single exact segment.
+   *
+   * The Hausdorff guarantee means: every point on the rational lies within
+   * `tolerance` of some output segment, and every point on the output lies
+   * within `tolerance` of the rational — a true two-sided bound on geometric
+   * deviation, not just a parametric error at one sample.
    *
    * @param c - The rational cubic curve to approximate.
-   * @param tolerance - Maximum allowed midpoint deviation; must be positive.
+   * @param tolerance - Maximum allowed Hausdorff distance; must be positive.
    * @returns A sequence of polynomial cubic curves covering the input.
    * @since 2.0.0
    */
@@ -213,7 +263,7 @@ export const approximateAsCubicCurves: {
   /**
    * Approximates the rational cubic as a sequence of polynomial cubic curves.
    *
-   * @param tolerance - Maximum allowed midpoint deviation; must be positive.
+   * @param tolerance - Maximum allowed Hausdorff distance; must be positive.
    * @returns A function that takes a curve and returns its polynomial approximation.
    * @since 2.0.0
    */

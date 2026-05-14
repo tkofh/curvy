@@ -1,6 +1,6 @@
-import * as Interval2d from '../interval/interval2d'
-import * as Interval from '../interval/interval'
-import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
+import * as Interval2d from '../interval/interval2d.ts'
+import * as Interval from '../interval/interval.ts'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import {
   GL32_W0,
   GL32_W1,
@@ -34,18 +34,19 @@ import {
   GL32_X13,
   GL32_X14,
   GL32_X15,
-} from '../length'
-import { dual, Pipeable } from '../utils'
-import * as LinearPolynomial from '../polynomial/linear'
-import * as QuadraticPolynomial from '../polynomial/quadratic'
-import * as Solution from '../solution/solution'
-import * as Vector2 from '../vector/vector2'
-import * as LinearCurve2d from './linear2d'
-import type { QuadraticCurve2d } from './quadratic2d'
+} from '../length.ts'
+import { dual, Pipeable } from '../utils.ts'
+import * as LinearPolynomial from '../polynomial/linear.ts'
+import * as QuadraticPolynomial from '../polynomial/quadratic.ts'
+import * as Solution from '../solution/solution.ts'
+import * as Vector2 from '../vector/vector2.ts'
+import * as LinearCurve2d from './linear2d.ts'
+import type { QuadraticCurve2d } from './quadratic2d.ts'
 
 export const QuadraticCurve2dTypeId: unique symbol = Symbol('curvy/curve/quadratic2d')
 export type QuadraticCurve2dTypeId = typeof QuadraticCurve2dTypeId
 
+/** @internal */
 export class QuadraticCurve2dImpl extends Pipeable implements QuadraticCurve2d<unknown, unknown> {
   readonly [QuadraticCurve2dTypeId]: QuadraticCurve2dTypeId = QuadraticCurve2dTypeId
 
@@ -70,11 +71,13 @@ export class QuadraticCurve2dImpl extends Pipeable implements QuadraticCurve2d<u
   }
 }
 
+/** @internal */
 export const fromPolynomials: (
   c0: QuadraticPolynomial.QuadraticPolynomial,
   c1: QuadraticPolynomial.QuadraticPolynomial,
 ) => QuadraticCurve2d = (c0, c1) => new QuadraticCurve2dImpl(c0, c1)
 
+/** @internal */
 export const fromCoefficients: (
   c0: Vector2.Vector2,
   c1: Vector2.Vector2,
@@ -90,6 +93,7 @@ export const fromCoefficients: (
 //   c0 = p0
 //   c1 = -2p0 + 2p1
 //   c2 = p0 - 2p1 + p2
+/** @internal */
 export const fromBezierPoints: (
   p0: Vector2.Vector2,
   p1: Vector2.Vector2,
@@ -100,9 +104,11 @@ export const fromBezierPoints: (
     QuadraticPolynomial.make(p0.y, -2 * p0.y + 2 * p1.y, p0.y - 2 * p1.y + p2.y),
   )
 
+/** @internal */
 export const isQuadraticCurve2d = (c: unknown): c is QuadraticCurve2d =>
   typeof c === 'object' && c !== null && QuadraticCurve2dTypeId in c
 
+/** @internal */
 export const solve = dual<
   (t: number) => (c: QuadraticCurve2d) => Vector2.Vector2,
   (c: QuadraticCurve2d, t: number) => Vector2.Vector2
@@ -113,22 +119,26 @@ export const solve = dual<
 // solveAtX: invert the x polynomial to find ts within the unit interval, then
 // evaluate y at each surviving t. Result order matches solveInverse order
 // (t-ascending).
+/** @internal */
 export const solveAtX = dual(2, (c: QuadraticCurve2d, x: number) => {
   const ts = Solution.clip(QuadraticPolynomial.solveInverse(c.x, x), Interval.unit)
   return Solution.map(ts, (t) => QuadraticPolynomial.solve(c.y, t))
 })
 
+/** @internal */
 export const solveAtY = dual(2, (c: QuadraticCurve2d, y: number) => {
   const ts = Solution.clip(QuadraticPolynomial.solveInverse(c.y, y), Interval.unit)
   return Solution.map(ts, (t) => QuadraticPolynomial.solve(c.x, t))
 })
 
+/** @internal */
 export const derivative = (c: QuadraticCurve2d) =>
   LinearCurve2d.fromPolynomials(
     QuadraticPolynomial.derivative(c.x),
     QuadraticPolynomial.derivative(c.y),
   )
 
+/** @internal */
 export const length = dual(2, (c: QuadraticCurve2d, i: Interval.Interval) => {
   if (Interval.size(i) === 0) {
     return 0
@@ -185,6 +195,7 @@ export const length = dual(2, (c: QuadraticCurve2d, i: Interval.Interval) => {
   )
 })
 
+/** @internal */
 export const curvature = dual(2, (c: QuadraticCurve2d, t: number) => {
   const d = derivative(c)
   const v = LinearCurve2d.solve(d, t)
@@ -199,6 +210,7 @@ export const curvature = dual(2, (c: QuadraticCurve2d, t: number) => {
   return Math.abs(Vector2.cross(v, a)) / vMag ** 3
 })
 
+/** @internal */
 export const boundingBox = (
   c: QuadraticCurve2d,
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> =>
@@ -210,18 +222,21 @@ export const boundingBox = (
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes, over the unit interval. For per-axis checks, users can call
 // `QuadraticPolynomial.isMonotonic(c.x, Interval.unit)` directly.
+/** @internal */
 export const isMonotonic = <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ): c is QuadraticCurve2d<XT & Monotonic, YT & Monotonic> =>
   QuadraticPolynomial.isMonotonic(c.x, Interval.unit) &&
   QuadraticPolynomial.isMonotonic(c.y, Interval.unit)
 
+/** @internal */
 export const isIncreasing = <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ): c is QuadraticCurve2d<XT & Increasing, YT & Increasing> =>
   QuadraticPolynomial.isIncreasing(c.x, Interval.unit) &&
   QuadraticPolynomial.isIncreasing(c.y, Interval.unit)
 
+/** @internal */
 export const isDecreasing = <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ): c is QuadraticCurve2d<XT & Decreasing, YT & Decreasing> =>
@@ -232,16 +247,19 @@ const fail = (m: string): never => {
   throw new Error(m)
 }
 
+/** @internal */
 export const asMonotonic = <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ): QuadraticCurve2d<XT & Monotonic, YT & Monotonic> =>
   isMonotonic(c) ? c : fail('quadratic curve is not monotonic in both axes')
 
+/** @internal */
 export const asIncreasing = <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ): QuadraticCurve2d<XT & Increasing, YT & Increasing> =>
   isIncreasing(c) ? c : fail('quadratic curve is not increasing in both axes')
 
+/** @internal */
 export const asDecreasing = <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ): QuadraticCurve2d<XT & Decreasing, YT & Decreasing> =>

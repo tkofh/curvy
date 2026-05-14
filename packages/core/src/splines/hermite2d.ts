@@ -1,9 +1,9 @@
-import type { CubicPath2d } from '../path/cubic2d'
-import type { Pipeable } from '../utils'
-import type { Vector2 } from '../vector/vector2'
-import type { Bezier2d } from './bezier2d'
-import * as internal from './hermite2d.internal'
-import type { Hermite2dTypeId } from './hermite2d.internal'
+import type { CubicPath2d } from '../path/cubic2d.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { Bezier2d } from './bezier2d.ts'
+import * as internal from './hermite2d.internal.ts'
+import type { Hermite2dTypeId } from './hermite2d.internal.ts'
 
 /**
  * A Hermite spline in 2D space.

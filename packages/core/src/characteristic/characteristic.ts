@@ -1,7 +1,7 @@
-import * as Matrix4x4 from '../matrix/matrix4x4'
-import * as CubicPolynomial from '../polynomial/cubic'
-import { roundDown } from '../number'
-import type * as Vector4 from '../vector/vector4'
+import * as Matrix4x4 from '../matrix/matrix4x4.ts'
+import * as CubicPolynomial from '../polynomial/cubic.ts'
+import { roundDown } from '../number.ts'
+import type * as Vector4 from '../vector/vector4.ts'
 
 /**
  * The cubic Bézier characteristic matrix.

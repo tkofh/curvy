@@ -15,7 +15,7 @@ export default defineConfig({
     'src/characteristic/index.ts',
   ],
   format: 'esm',
-  dts: true,
+  dts: false,
   sourcemap: true,
   target: 'es2022',
   clean: true,

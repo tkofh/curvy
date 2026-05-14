@@ -9,8 +9,8 @@ import { Cardinal2d } from 'curvy/splines'
 
 interface Cardinal2d {
   readonly points: ReadonlyArray<Vector2>
-  readonly tension: number  // default 0.5
-  readonly alpha: number    // default 0.5
+  readonly tension: number // default 0.5
+  readonly alpha: number // default 0.5
   // ...
 }
 ```
@@ -42,7 +42,7 @@ const both = spline.pipe(Cardinal2d.withOptions({ tension: 0.2, alpha: 1 }))
 **`toPath` and `toBezier` are nullary now** — they read tension/alpha off the spline:
 
 ```ts
-spline.pipe(Cardinal2d.toPath)    // before: Cardinal2d.toPath(0.5)
+spline.pipe(Cardinal2d.toPath) // before: Cardinal2d.toPath(0.5)
 spline.pipe(Cardinal2d.toBezier)
 ```
 

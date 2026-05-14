@@ -1,7 +1,7 @@
-import type { FourDimensional } from '../dimensions'
-import type { Pipeable } from '../utils'
-import type { Vector4TypeId } from './vector4.internal'
-import * as internal from './vector4.internal'
+import type { FourDimensional } from '../dimensions.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector4TypeId } from './vector4.internal.ts'
+import * as internal from './vector4.internal.ts'
 
 /**
  * A 4D vector.

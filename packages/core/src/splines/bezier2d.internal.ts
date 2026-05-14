@@ -1,15 +1,15 @@
-import * as Characteristic from '../characteristic/characteristic'
-import * as Matrix4x4 from '../matrix/matrix4x4'
-import * as CubicPath2d from '../path/cubic2d'
-import { dual, Pipeable } from '../utils'
-import * as Solution from '../solution/solution'
-import { invariant } from '../utils'
-import * as Vector2 from '../vector/vector2'
-import * as Vector4 from '../vector/vector4'
-import type { Bezier2d } from './bezier2d'
-import type { RationalBezier2d } from './rationalBezier2d'
-import * as RationalBezier2dInternal from './rationalBezier2d.internal'
-import { toCurves, toPointQuads } from './util'
+import * as Characteristic from '../characteristic/characteristic.ts'
+import * as Matrix4x4 from '../matrix/matrix4x4.ts'
+import * as CubicPath2d from '../path/cubic2d.ts'
+import { dual, Pipeable } from '../utils.ts'
+import * as Solution from '../solution/solution.ts'
+import { invariant } from '../utils.ts'
+import * as Vector2 from '../vector/vector2.ts'
+import * as Vector4 from '../vector/vector4.ts'
+import type { Bezier2d } from './bezier2d.ts'
+import type { RationalBezier2d } from './rationalBezier2d.ts'
+import * as RationalBezier2dInternal from './rationalBezier2d.internal.ts'
+import { toCurves, toPointQuads } from './util.ts'
 
 const characteristicInverse = Matrix4x4.inverse(Characteristic.cubicBezier)
 
@@ -47,9 +47,11 @@ class Bezier2dImpl extends Pipeable implements Bezier2d {
   }
 }
 
+/** @internal */
 export const isCubicBezier2d = (p: unknown): p is Bezier2d =>
   typeof p === 'object' && p !== null && Bezier2dTypeId in p
 
+/** @internal */
 export const make = (
   p0: Vector2.Vector2,
   p1: Vector2.Vector2,
@@ -57,11 +59,14 @@ export const make = (
   p3: Vector2.Vector2,
 ) => new Bezier2dImpl([p0, p1, p2, p3])
 
+/** @internal */
 export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) => new Bezier2dImpl(points)
 
+/** @internal */
 export const fromTuples = (tuples: ReadonlyArray<readonly [number, number]>) =>
   new Bezier2dImpl(tuples.map(([x, y]) => Vector2.make(x, y)))
 
+/** @internal */
 export const append = dual<
   (p1: Vector2.Vector2, p2: Vector2.Vector2, p3: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
   (p: Bezier2d, p1: Vector2.Vector2, p2: Vector2.Vector2, p3: Vector2.Vector2) => Bezier2d
@@ -71,6 +76,7 @@ export const append = dual<
     new Bezier2dImpl((p instanceof Bezier2dImpl ? p.points : Array.from(p)).concat(p1, p2, p3)),
 )
 
+/** @internal */
 export const fromBasis = (
   p: Iterable<Vector2.Vector2>,
   matrix: Matrix4x4.Matrix4x4,
@@ -97,6 +103,7 @@ export const fromBasis = (
   return fromArray(points)
 }
 
+/** @internal */
 export const appendTangentAligned = dual<
   (a: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
   (p: Bezier2d, a: number, p5: Vector2.Vector2, p6: Vector2.Vector2) => Bezier2d
@@ -109,6 +116,7 @@ export const appendTangentAligned = dual<
   return append(p, p4, p5, p6)
 })
 
+/** @internal */
 export const appendCurvatureAligned = dual(
   4,
   (p: Bezier2d, a: number, b: number, p6: Vector2.Vector2) => {
@@ -127,11 +135,13 @@ export const appendCurvatureAligned = dual(
   },
 )
 
+/** @internal */
 export const appendVelocityAligned = dual<
   (p5: Vector2.Vector2, p6: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
   (p: Bezier2d, p5: Vector2.Vector2, p6: Vector2.Vector2) => Bezier2d
 >(3, (p: Bezier2d, p5: Vector2.Vector2, p6: Vector2.Vector2) => appendTangentAligned(p, 1, p5, p6))
 
+/** @internal */
 export const appendAccelerationAligned = dual<
   (p6: Vector2.Vector2) => (p: Bezier2d) => Bezier2d,
   (p: Bezier2d, p6: Vector2.Vector2) => Bezier2d
@@ -147,9 +157,11 @@ export const appendAccelerationAligned = dual<
   return append(p, p4, p5, p6)
 })
 
+/** @internal */
 export const toPath = (p: Bezier2d) =>
   CubicPath2d.make(...toCurves(p, Characteristic.cubicBezier, 3))
 
+/** @internal */
 export const fromRational = (r: RationalBezier2d): Solution.AtMostOne<Bezier2d> => {
   const points = RationalBezier2dInternal.toBezierPoints(r)
   if (points._tag === 'none') {
@@ -158,6 +170,7 @@ export const fromRational = (r: RationalBezier2d): Solution.AtMostOne<Bezier2d> 
   return Solution.one(new Bezier2dImpl(points.value))
 }
 
+/** @internal */
 export const subdivide = dual<
   (u: number) => (b: Bezier2d) => [Bezier2d, Bezier2d],
   (b: Bezier2d, u: number) => [Bezier2d, Bezier2d]

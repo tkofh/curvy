@@ -1,13 +1,13 @@
-import type { Interval2d } from '../interval/interval2d'
-import type { LinearCurve2d } from '../curve/linear2d'
-import type { Closed } from '../interval/interval'
-import type { Pipeable } from '../utils'
-import type { Vector2 } from '../vector/vector2'
-import type { LinearPath2dTypeId } from './linear2d.internal'
-import * as internal from './linear2d.internal'
-import type { Continuous, PathTraits } from './traits'
+import type { Interval2d } from '../interval/interval2d.ts'
+import type { LinearCurve2d } from '../curve/linear2d.ts'
+import type { Closed } from '../interval/interval.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { LinearPath2dTypeId } from './linear2d.internal.ts'
+import * as internal from './linear2d.internal.ts'
+import type { Continuous, PathTraits } from './traits.ts'
 
-export type { Continuous } from './traits'
+export type { Continuous } from './traits.ts'
 
 /**
  * A linear path in 2D space.

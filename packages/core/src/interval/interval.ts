@@ -1,5 +1,5 @@
-import * as internal from './interval.internal'
-import type { Pipeable } from '../utils'
+import * as internal from './interval.internal.ts'
+import type { Pipeable } from '../utils.ts'
 
 /**
  * The structural minimum: any value with numeric `start` and `end` fields.

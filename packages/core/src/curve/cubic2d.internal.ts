@@ -1,6 +1,6 @@
-import * as Interval2d from '../interval/interval2d'
-import * as Characteristic from '../characteristic/characteristic'
-import * as Interval from '../interval/interval'
+import * as Interval2d from '../interval/interval2d.ts'
+import * as Characteristic from '../characteristic/characteristic.ts'
+import * as Interval from '../interval/interval.ts'
 import {
   GL32_W0,
   GL32_W1,
@@ -34,21 +34,22 @@ import {
   GL32_X13,
   GL32_X14,
   GL32_X15,
-} from '../length'
-import { dual, Pipeable } from '../utils'
-import * as CubicPolynomial from '../polynomial/cubic'
-import * as QuadraticPolynomial from '../polynomial/quadratic'
-import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits'
-import * as Solution from '../solution/solution'
-import * as Vector2 from '../vector/vector2'
-import * as Vector4 from '../vector/vector4'
-import type { CubicCurve2d } from './cubic2d'
-import * as LinearCurve2d from './linear2d'
-import * as QuadraticCurve2d from './quadratic2d'
+} from '../length.ts'
+import { dual, Pipeable } from '../utils.ts'
+import * as CubicPolynomial from '../polynomial/cubic.ts'
+import * as QuadraticPolynomial from '../polynomial/quadratic.ts'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
+import * as Solution from '../solution/solution.ts'
+import * as Vector2 from '../vector/vector2.ts'
+import * as Vector4 from '../vector/vector4.ts'
+import type { CubicCurve2d } from './cubic2d.ts'
+import * as LinearCurve2d from './linear2d.ts'
+import * as QuadraticCurve2d from './quadratic2d.ts'
 
 export const CubicCurve2dTypeId: unique symbol = Symbol('curvy/curve/cubic2d')
 export type CubicCurve2dTypeId = typeof CubicCurve2dTypeId
 
+/** @internal */
 export class CubicCurve2dImpl extends Pipeable implements CubicCurve2d<unknown, unknown> {
   readonly [CubicCurve2dTypeId]: CubicCurve2dTypeId = CubicCurve2dTypeId
 
@@ -70,11 +71,13 @@ export class CubicCurve2dImpl extends Pipeable implements CubicCurve2d<unknown, 
   }
 }
 
+/** @internal */
 export const fromPolynomials: (
   c0: CubicPolynomial.CubicPolynomial,
   c1: CubicPolynomial.CubicPolynomial,
 ) => CubicCurve2d = (c0, c1) => new CubicCurve2dImpl(c0, c1)
 
+/** @internal */
 export const fromCoefficients: (
   c0: Vector2.Vector2,
   c1: Vector2.Vector2,
@@ -90,6 +93,7 @@ export const fromCoefficients: (
 // vectors, producing monomial polynomials. The matrix encodes the cubic
 // Bernstein → monomial expansion `(c₀, c₁, c₂, c₃) = M · (p₀, p₁, p₂, p₃)`
 // for each axis independently.
+/** @internal */
 export const fromBezierPoints: (
   p0: Vector2.Vector2,
   p1: Vector2.Vector2,
@@ -100,9 +104,11 @@ export const fromBezierPoints: (
   return new CubicCurve2dImpl(...Characteristic.apply(Characteristic.cubicBezier, ...channels))
 }
 
+/** @internal */
 export const isCubicCurve2d = (c: unknown): c is CubicCurve2d =>
   typeof c === 'object' && c !== null && CubicCurve2dTypeId in c
 
+/** @internal */
 export const solve = dual<
   (t: number) => (c: CubicCurve2d) => Vector2.Vector2,
   (c: CubicCurve2d, t: number) => Vector2.Vector2
@@ -113,19 +119,23 @@ export const solve = dual<
 // solveAtX: invert the x polynomial to find ts within the unit interval, then
 // evaluate y at each surviving t. Result order matches solveInverse order
 // (t-ascending).
+/** @internal */
 export const solveAtX = dual(2, (c: CubicCurve2d, x: number) => {
   const ts = Solution.clip(CubicPolynomial.solveInverse(c.x, x), Interval.unit)
   return Solution.map(ts, (t) => CubicPolynomial.solve(c.y, t))
 })
 
+/** @internal */
 export const solveAtY = dual(2, (c: CubicCurve2d, y: number) => {
   const ts = Solution.clip(CubicPolynomial.solveInverse(c.y, y), Interval.unit)
   return Solution.map(ts, (t) => CubicPolynomial.solve(c.x, t))
 })
 
+/** @internal */
 export const derivative = (c: CubicCurve2d) =>
   QuadraticCurve2d.fromPolynomials(CubicPolynomial.derivative(c.x), CubicPolynomial.derivative(c.y))
 
+/** @internal */
 export const length = dual(2, (c: CubicCurve2d, i: Interval.Interval) => {
   if (Interval.size(i) === 0) {
     return 0
@@ -182,6 +192,7 @@ export const length = dual(2, (c: CubicCurve2d, i: Interval.Interval) => {
   )
 })
 
+/** @internal */
 export const curvature = dual(2, (c: CubicCurve2d, t: number) => {
   const d = derivative(c)
 
@@ -197,6 +208,7 @@ export const curvature = dual(2, (c: CubicCurve2d, t: number) => {
   return Math.abs(Vector2.cross(v, a)) / vMag ** 3
 })
 
+/** @internal */
 export const boundingBox = (
   c: CubicCurve2d,
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> =>
@@ -208,17 +220,20 @@ export const boundingBox = (
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes, over the unit interval. For per-axis checks, users can call
 // `CubicPolynomial.isMonotonic(c.x, Interval.unit)` directly.
+/** @internal */
 export const isMonotonic = <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ): c is CubicCurve2d<XT & Monotonic, YT & Monotonic> =>
   CubicPolynomial.isMonotonic(c.x, Interval.unit) && CubicPolynomial.isMonotonic(c.y, Interval.unit)
 
+/** @internal */
 export const isIncreasing = <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ): c is CubicCurve2d<XT & Increasing, YT & Increasing> =>
   CubicPolynomial.isIncreasing(c.x, Interval.unit) &&
   CubicPolynomial.isIncreasing(c.y, Interval.unit)
 
+/** @internal */
 export const isDecreasing = <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ): c is CubicCurve2d<XT & Decreasing, YT & Decreasing> =>
@@ -229,16 +244,19 @@ const fail = (m: string): never => {
   throw new Error(m)
 }
 
+/** @internal */
 export const asMonotonic = <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ): CubicCurve2d<XT & Monotonic, YT & Monotonic> =>
   isMonotonic(c) ? c : fail('cubic curve is not monotonic in both axes')
 
+/** @internal */
 export const asIncreasing = <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ): CubicCurve2d<XT & Increasing, YT & Increasing> =>
   isIncreasing(c) ? c : fail('cubic curve is not increasing in both axes')
 
+/** @internal */
 export const asDecreasing = <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ): CubicCurve2d<XT & Decreasing, YT & Decreasing> =>

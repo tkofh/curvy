@@ -1,15 +1,15 @@
-import type { Closed, Interval } from '../interval/interval'
-import type { Pipeable } from '../utils'
-import type * as Solution from '../solution/solution'
-import type { Vector2 } from '../vector/vector2'
-import type { Vector4 } from '../vector/vector4'
-import * as internal from './cubic.internal'
-import type { CubicPolynomialTypeId } from './cubic.internal.circular'
-import type { Monotonicity } from './monotonicity'
-import type { QuadraticPolynomial } from './quadratic'
-import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits'
+import type { Closed, Interval } from '../interval/interval.ts'
+import type { Pipeable } from '../utils.ts'
+import type * as Solution from '../solution/solution.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { Vector4 } from '../vector/vector4.ts'
+import * as internal from './cubic.internal.ts'
+import type { CubicPolynomialTypeId } from './cubic.internal.circular.ts'
+import type { Monotonicity } from './monotonicity.ts'
+import type { QuadraticPolynomial } from './quadratic.ts'
+import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits.ts'
 
-export type { Monotonic, Increasing, Decreasing } from './traits'
+export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 
 /**
  * A cubic polynomial.
@@ -193,9 +193,8 @@ export const toInverseSolver: (p: CubicPolynomial) => (y: number) => Solution.At
  * @returns The coefficients in monomial order.
  * @since 2.0.0
  */
-export const coefficients: (
-  p: CubicPolynomial,
-) => readonly [number, number, number, number] = internal.coefficients
+export const coefficients: (p: CubicPolynomial) => readonly [number, number, number, number] =
+  internal.coefficients
 
 /**
  * Calculates the derivative of a cubic polynomial.

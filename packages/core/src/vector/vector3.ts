@@ -1,7 +1,7 @@
-import type { ThreeDimensional } from '../dimensions'
-import type { Pipeable } from '../utils'
-import type { Vector3TypeId } from './vector3.internal'
-import * as internal from './vector3.internal'
+import type { ThreeDimensional } from '../dimensions.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector3TypeId } from './vector3.internal.ts'
+import * as internal from './vector3.internal.ts'
 
 /**
  * A 3D vector.

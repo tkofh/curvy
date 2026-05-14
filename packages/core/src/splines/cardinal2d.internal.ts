@@ -1,11 +1,11 @@
-import * as CubicCurve2d from '../curve/cubic2d'
-import * as CubicPath2d from '../path/cubic2d'
-import { dual, invariant, Pipeable } from '../utils'
-import * as Vector2 from '../vector/vector2'
-import type { Bezier2d } from './bezier2d'
-import * as bezierInternal from './bezier2d.internal'
-import type { Cardinal2d, Options } from './cardinal2d'
-import { toPointQuads } from './util'
+import * as CubicCurve2d from '../curve/cubic2d.ts'
+import * as CubicPath2d from '../path/cubic2d.ts'
+import { dual, invariant, Pipeable } from '../utils.ts'
+import * as Vector2 from '../vector/vector2.ts'
+import type { Bezier2d } from './bezier2d.ts'
+import * as bezierInternal from './bezier2d.internal.ts'
+import type { Cardinal2d, Options } from './cardinal2d.ts'
+import { toPointQuads } from './util.ts'
 
 export const Cardinal2dTypeId: unique symbol = Symbol.for('curvy/splines/cardinal2d')
 export type Cardinal2dTypeId = typeof Cardinal2dTypeId
@@ -13,6 +13,7 @@ export type Cardinal2dTypeId = typeof Cardinal2dTypeId
 const DEFAULT_TENSION = 0.5
 const DEFAULT_ALPHA = 0.5
 
+/** @internal */
 export class Cardinal2dImpl extends Pipeable implements Cardinal2d {
   readonly [Cardinal2dTypeId]: Cardinal2dTypeId = Cardinal2dTypeId
 
@@ -33,6 +34,7 @@ export class Cardinal2dImpl extends Pipeable implements Cardinal2d {
   }
 }
 
+/** @internal */
 export const isCardinal2d = (p: unknown): p is Cardinal2d =>
   typeof p === 'object' && p !== null && Cardinal2dTypeId in p
 
@@ -43,6 +45,7 @@ const resolveOptions = (options?: Options): { tension: number; alpha: number } =
 
 // Overload: `make(options, p0, p1, ...points)` vs `make(p0, p1, ...points)`.
 // First-arg-is-Vector2 ⇒ no options, defaults apply.
+/** @internal */
 export const make = (
   ...args:
     | [Vector2.Vector2, Vector2.Vector2, ...Array<Vector2.Vector2>]
@@ -60,6 +63,7 @@ export const make = (
   return new Cardinal2dImpl(points, tension, alpha)
 }
 
+/** @internal */
 export const fromArray = (
   points: ReadonlyArray<Vector2.Vector2>,
   options?: Options,
@@ -68,6 +72,7 @@ export const fromArray = (
   return new Cardinal2dImpl(points, tension, alpha)
 }
 
+/** @internal */
 export const fromTuples = (
   tuples: ReadonlyArray<readonly [number, number]>,
   options?: Options,
@@ -80,6 +85,7 @@ export const fromTuples = (
   )
 }
 
+/** @internal */
 export const append = dual<
   (...points: ReadonlyArray<Vector2.Vector2>) => (p: Cardinal2d) => Cardinal2d,
   (p: Cardinal2d, ...points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d
@@ -89,6 +95,7 @@ export const append = dual<
     new Cardinal2dImpl([...p, ...points], p.tension, p.alpha),
 )
 
+/** @internal */
 export const prepend = dual<
   (...points: ReadonlyArray<Vector2.Vector2>) => (p: Cardinal2d) => Cardinal2d,
   (p: Cardinal2d, ...points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d
@@ -98,14 +105,11 @@ export const prepend = dual<
     new Cardinal2dImpl([...points, ...p], p.tension, p.alpha),
 )
 
+/** @internal */
 export const withDuplicatedEndpoints = (p: Cardinal2d) => {
   const points = p instanceof Cardinal2dImpl ? p.points : [...p]
   return new Cardinal2dImpl(
-    [
-      points[0] as Vector2.Vector2,
-      ...points,
-      points[points.length - 1] as Vector2.Vector2,
-    ],
+    [points[0] as Vector2.Vector2, ...points, points[points.length - 1] as Vector2.Vector2],
     p.tension,
     p.alpha,
   )
@@ -114,8 +118,10 @@ export const withDuplicatedEndpoints = (p: Cardinal2d) => {
 // Pinned alias for `withReflectedEndpoints(c, 0)`. The semantics — the spline
 // now interpolates its first and last control points — read more directly
 // than either of the mechanism-named helpers.
+/** @internal */
 export const withInterpolatedEndpoints = (p: Cardinal2d) => withDuplicatedEndpoints(p)
 
+/** @internal */
 export const withReflectedEndpoints = dual(
   (args) => isCardinal2d(args[0]),
   (p: Cardinal2d, scale = 1) => {
@@ -142,16 +148,19 @@ export const withReflectedEndpoints = dual(
   },
 )
 
+/** @internal */
 export const withTension = dual<
   (tension: number) => (p: Cardinal2d) => Cardinal2d,
   (p: Cardinal2d, tension: number) => Cardinal2d
 >(2, (p: Cardinal2d, tension: number) => new Cardinal2dImpl(p.points, tension, p.alpha))
 
+/** @internal */
 export const withAlpha = dual<
   (alpha: number) => (p: Cardinal2d) => Cardinal2d,
   (p: Cardinal2d, alpha: number) => Cardinal2d
 >(2, (p: Cardinal2d, alpha: number) => new Cardinal2dImpl(p.points, p.tension, alpha))
 
+/** @internal */
 export const withOptions = dual<
   (options: Options) => (p: Cardinal2d) => Cardinal2d,
   (p: Cardinal2d, options: Options) => Cardinal2d
@@ -203,8 +212,8 @@ const buildCardinalSegment = (
   const v1y = factor * ((p1.y - p0.y) * lead - (p2.y - p0.y) * mid01 + (p2.y - p1.y))
 
   // Local-parameter tangent at p2.
-  const v2x = factor * ((p2.x - p1.x) - (p3.x - p1.x) * mid23 + (p3.x - p2.x) * trail)
-  const v2y = factor * ((p2.y - p1.y) - (p3.y - p1.y) * mid23 + (p3.y - p2.y) * trail)
+  const v2x = factor * (p2.x - p1.x - (p3.x - p1.x) * mid23 + (p3.x - p2.x) * trail)
+  const v2y = factor * (p2.y - p1.y - (p3.y - p1.y) * mid23 + (p3.y - p2.y) * trail)
 
   // Monomial cubic from Hermite (P1, v1, P2, v2):
   //   c0 = P1
@@ -228,6 +237,7 @@ function* cardinalCurves(p: Cardinal2d): IterableIterator<CubicCurve2d.CubicCurv
   }
 }
 
+/** @internal */
 export const toPath = (p: Cardinal2d) => CubicPath2d.make(...cardinalCurves(p))
 
 // Converts each segment's monomial cubic to four Bézier control points and
@@ -237,6 +247,7 @@ export const toPath = (p: Cardinal2d) => CubicPath2d.make(...cardinalCurves(p))
 //   p1 = c0 + c1/3
 //   p2 = c0 + 2c1/3 + c2/3
 //   p3 = c0 + c1 + c2 + c3   (== next segment's p0 — shared)
+/** @internal */
 export const toBezier = (p: Cardinal2d): Bezier2d => {
   const points: Array<Vector2.Vector2> = []
   let first = true

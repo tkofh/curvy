@@ -1,4 +1,4 @@
-import { dual } from './utils'
+import { dual } from './utils.ts'
 
 const PRECISION = 8
 

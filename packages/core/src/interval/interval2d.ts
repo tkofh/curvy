@@ -1,8 +1,8 @@
-import type { Pipeable } from '../utils'
-import type { Vector2 } from '../vector/vector2'
-import type { Bounds, Closed, Interval } from './interval'
-import type { Interval2dTypeId } from './interval2d.internal'
-import * as internal from './interval2d.internal'
+import type { Pipeable } from '../utils.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { Bounds, Closed, Interval } from './interval.ts'
+import type { Interval2dTypeId } from './interval2d.internal.ts'
+import * as internal from './interval2d.internal.ts'
 
 /**
  * An axis-aligned 2D interval — the Cartesian product of two 1D intervals.
@@ -192,3 +192,46 @@ export const equals: {
    */
   (b: Interval2d): (a: Interval2d) => boolean
 } = internal.equals
+
+export const minDistance: {
+  /**
+   * Euclidean distance between the two closest points of two axis-aligned 2D
+   * intervals. Returns `0` when the boxes overlap (including edge or corner
+   * touching). Accepts the broader {@link Bounds2d} type — endpoint
+   * inclusivity is not consulted, so a "touching" pair of open intervals still
+   * returns `0` because the closest *points* coincide geometrically.
+   *
+   * @param a - The first 2D interval.
+   * @param b - The second 2D interval.
+   * @returns The minimum Euclidean distance between any point of `a` and any point of `b`.
+   * @since 2.0.0
+   */
+  (a: Bounds2d, b: Bounds2d): number
+  /**
+   * @param b - The second 2D interval.
+   * @returns A function that takes the first 2D interval and returns the minimum distance.
+   * @since 2.0.0
+   */
+  (b: Bounds2d): (a: Bounds2d) => number
+} = internal.minDistance
+
+export const maxDistance: {
+  /**
+   * Euclidean distance between the two farthest points of two axis-aligned 2D
+   * intervals. Equals the diagonal of the union AABB enclosing both inputs.
+   * Accepts the broader {@link Bounds2d} type — endpoint inclusivity is not
+   * consulted.
+   *
+   * @param a - The first 2D interval.
+   * @param b - The second 2D interval.
+   * @returns The maximum Euclidean distance between any point of `a` and any point of `b`.
+   * @since 2.0.0
+   */
+  (a: Bounds2d, b: Bounds2d): number
+  /**
+   * @param b - The second 2D interval.
+   * @returns A function that takes the first 2D interval and returns the maximum distance.
+   * @since 2.0.0
+   */
+  (b: Bounds2d): (a: Bounds2d) => number
+} = internal.maxDistance

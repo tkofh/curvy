@@ -1,16 +1,16 @@
-import type { Closed, Interval } from '../interval/interval'
-import type { Pipeable } from '../utils'
-import type * as Solution from '../solution/solution'
-import type { Vector2 } from '../vector/vector2'
-import type { Vector3 } from '../vector/vector3'
-import type { CubicPolynomial } from './cubic'
-import type { LinearPolynomial } from './linear'
-import type { Monotonicity } from './monotonicity'
-import * as internal from './quadratic.internal'
-import type { QuadraticPolynomialTypeId } from './quadratic.internal.circular'
-import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits'
+import type { Closed, Interval } from '../interval/interval.ts'
+import type { Pipeable } from '../utils.ts'
+import type * as Solution from '../solution/solution.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { Vector3 } from '../vector/vector3.ts'
+import type { CubicPolynomial } from './cubic.ts'
+import type { LinearPolynomial } from './linear.ts'
+import type { Monotonicity } from './monotonicity.ts'
+import * as internal from './quadratic.internal.ts'
+import type { QuadraticPolynomialTypeId } from './quadratic.internal.circular.ts'
+import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits.ts'
 
-export type { Monotonic, Increasing, Decreasing } from './traits'
+export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 
 /**
  * A quadratic polynomial.

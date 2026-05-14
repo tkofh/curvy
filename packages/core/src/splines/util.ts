@@ -1,8 +1,8 @@
-import * as Characteristic from '../characteristic/characteristic'
-import * as CubicCurve2d from '../curve/cubic2d'
-import type * as Matrix4x4 from '../matrix/matrix4x4'
-import type { Vector2 } from '../vector/vector2'
-import * as Vector4 from '../vector/vector4'
+import * as Characteristic from '../characteristic/characteristic.ts'
+import * as CubicCurve2d from '../curve/cubic2d.ts'
+import type * as Matrix4x4 from '../matrix/matrix4x4.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import * as Vector4 from '../vector/vector4.ts'
 
 export function* toPointQuads(points: Iterable<Vector2>, stride: 1 | 2 | 3) {
   let p0: Vector2 | undefined

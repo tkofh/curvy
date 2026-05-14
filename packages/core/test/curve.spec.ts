@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'vitest'
-import * as cubic2d from '../src/curve/cubic2d'
-import * as linear2d from '../src/curve/linear2d'
-import * as quadratic2d from '../src/curve/quadratic2d'
-import * as rationalCubic2d from '../src/curve/rationalCubic2d'
-import * as interval from '../src/interval/interval'
-import * as cubicPolynomial from '../src/polynomial/cubic'
-import * as linearPolynomial from '../src/polynomial/linear'
-import * as quadraticPolynomial from '../src/polynomial/quadratic'
-import * as vector2 from '../src/vector/vector2'
+import * as cubic2d from '../src/curve/cubic2d.ts'
+import * as linear2d from '../src/curve/linear2d.ts'
+import * as quadratic2d from '../src/curve/quadratic2d.ts'
+import * as rationalCubic2d from '../src/curve/rationalCubic2d.ts'
+import * as interval from '../src/interval/interval.ts'
+import * as cubicPolynomial from '../src/polynomial/cubic.ts'
+import * as linearPolynomial from '../src/polynomial/linear.ts'
+import * as quadraticPolynomial from '../src/polynomial/quadratic.ts'
+import * as vector2 from '../src/vector/vector2.ts'
 
 describe('linear2d', () => {
   test('make', () => {
@@ -476,5 +476,111 @@ describe('rationalCubic2d.approximateAsCubicCurves', () => {
     expect(() => rationalCubic2d.approximateAsCubicCurves(rational, 0)).toThrowError()
     expect(() => rationalCubic2d.approximateAsCubicCurves(rational, -1)).toThrowError()
     expect(() => rationalCubic2d.approximateAsCubicCurves(rational, Number.NaN)).toThrowError()
+  })
+})
+
+describe('rationalCubic2d.subdivide', () => {
+  test('halves agree with the original at the split parameter and at endpoints', () => {
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 4, 3),
+      vector2.makeWeighted(3, 4, 2),
+      vector2.makeWeighted(4, 0, 1),
+    )
+    const [left, right] = rationalCubic2d.subdivide(rational, 0.3)
+
+    // Left curve covers [0, 0.3] of the original.
+    expect(rationalCubic2d.solve(left, 0)).toBeCloseToValue(rationalCubic2d.solve(rational, 0))
+    expect(rationalCubic2d.solve(left, 1)).toBeCloseToValue(rationalCubic2d.solve(rational, 0.3))
+    // Right curve covers [0.3, 1] of the original.
+    expect(rationalCubic2d.solve(right, 0)).toBeCloseToValue(rationalCubic2d.solve(rational, 0.3))
+    expect(rationalCubic2d.solve(right, 1)).toBeCloseToValue(rationalCubic2d.solve(rational, 1))
+  })
+
+  test('halves trace the original at interior parameters', () => {
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(2, 3, 4),
+      vector2.makeWeighted(5, 3, 0.5),
+      vector2.makeWeighted(7, 0, 1),
+    )
+    const tSplit = 0.4
+    const [left, right] = rationalCubic2d.subdivide(rational, tSplit)
+    for (const u of [0.1, 0.5, 0.9]) {
+      // Map u ∈ [0, 1] on left back to [0, tSplit] on the original.
+      expect(rationalCubic2d.solve(left, u)).toBeCloseToValue(
+        rationalCubic2d.solve(rational, u * tSplit),
+      )
+      // Map u ∈ [0, 1] on right back to [tSplit, 1] on the original.
+      expect(rationalCubic2d.solve(right, u)).toBeCloseToValue(
+        rationalCubic2d.solve(rational, tSplit + u * (1 - tSplit)),
+      )
+    }
+  })
+})
+
+describe('rationalCubic2d.boundingBox', () => {
+  test('encloses the curve over its parameter domain', () => {
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 4, 3),
+      vector2.makeWeighted(3, 4, 2),
+      vector2.makeWeighted(4, 0, 1),
+    )
+    const box = rationalCubic2d.boundingBox(rational)
+    for (let i = 0; i <= 200; i++) {
+      const t = i / 200
+      const p = rationalCubic2d.solve(rational, t)
+      expect(p.x).toBeGreaterThanOrEqual(box.x.start - 1e-9)
+      expect(p.x).toBeLessThanOrEqual(box.x.end + 1e-9)
+      expect(p.y).toBeGreaterThanOrEqual(box.y.start - 1e-9)
+      expect(p.y).toBeLessThanOrEqual(box.y.end + 1e-9)
+    }
+  })
+
+  test('tightens monotonically under subdivision', () => {
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 4, 3),
+      vector2.makeWeighted(3, 4, 2),
+      vector2.makeWeighted(4, 0, 1),
+    )
+    const whole = rationalCubic2d.boundingBox(rational)
+    const [left, right] = rationalCubic2d.subdivide(rational, 0.5)
+    const leftBox = rationalCubic2d.boundingBox(left)
+    const rightBox = rationalCubic2d.boundingBox(right)
+
+    // Each sub-box is contained in the parent box (subdivision can only tighten).
+    expect(leftBox.x.start).toBeGreaterThanOrEqual(whole.x.start - 1e-9)
+    expect(leftBox.x.end).toBeLessThanOrEqual(whole.x.end + 1e-9)
+    expect(leftBox.y.start).toBeGreaterThanOrEqual(whole.y.start - 1e-9)
+    expect(leftBox.y.end).toBeLessThanOrEqual(whole.y.end + 1e-9)
+    expect(rightBox.x.start).toBeGreaterThanOrEqual(whole.x.start - 1e-9)
+    expect(rightBox.x.end).toBeLessThanOrEqual(whole.x.end + 1e-9)
+  })
+
+  test('matches polynomial bounding box for a unit-weight rational', () => {
+    // Uniform weights → the rational coincides with the polynomial cubic
+    // built from the same control points. The projected-CP AABB has the four
+    // control points as corners; the polynomial's tight box may be smaller
+    // (since it doesn't enclose the off-curve handles), so projected-CP only
+    // needs to be a superset.
+    const p0 = vector2.make(0, 0)
+    const p1 = vector2.make(1, 5)
+    const p2 = vector2.make(3, 5)
+    const p3 = vector2.make(4, 0)
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 5, 1),
+      vector2.makeWeighted(3, 5, 1),
+      vector2.makeWeighted(4, 0, 1),
+    )
+    const box = rationalCubic2d.boundingBox(rational)
+    // For unit weights, the projected CPs ARE the input control points, so
+    // the AABB is exactly min/max over those four points.
+    expect(box.x.start).toBeCloseTo(Math.min(p0.x, p1.x, p2.x, p3.x), 10)
+    expect(box.x.end).toBeCloseTo(Math.max(p0.x, p1.x, p2.x, p3.x), 10)
+    expect(box.y.start).toBeCloseTo(Math.min(p0.y, p1.y, p2.y, p3.y), 10)
+    expect(box.y.end).toBeCloseTo(Math.max(p0.y, p1.y, p2.y, p3.y), 10)
   })
 })

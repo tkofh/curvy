@@ -1,12 +1,12 @@
-import { toThreeDimensionalIndex } from '../dimensions'
-import { dual, Pipeable } from '../utils'
-import { invariant } from '../utils'
-import { epsEquals } from '../number'
-import type { Vector3 } from '../vector/vector3'
-import * as vector3 from '../vector/vector3.internal'
-import type { Matrix2x2 } from './matrix2x2'
-import * as matrix2x2 from './matrix2x2.internal'
-import type { Matrix3x3, Matrix3x3Coordinate } from './matrix3x3'
+import { toThreeDimensionalIndex } from '../dimensions.ts'
+import { dual, Pipeable } from '../utils.ts'
+import { invariant } from '../utils.ts'
+import { epsEquals } from '../number.ts'
+import type { Vector3 } from '../vector/vector3.ts'
+import * as vector3 from '../vector/vector3.internal.ts'
+import type { Matrix2x2 } from './matrix2x2.ts'
+import * as matrix2x2 from './matrix2x2.internal.ts'
+import type { Matrix3x3, Matrix3x3Coordinate } from './matrix3x3.ts'
 
 export const Matrix3x3TypeId: unique symbol = Symbol.for('curvy/matrix3x3')
 export type Matrix3x3TypeId = typeof Matrix3x3TypeId
@@ -54,9 +54,11 @@ class Matrix3x3Impl extends Pipeable implements Matrix3x3 {
 
 export type { Matrix3x3 }
 
+/** @internal */
 export const isMatrix3x3 = (m: unknown): m is Matrix3x3 =>
   typeof m === 'object' && m !== null && Matrix3x3TypeId in m
 
+/** @internal */
 export const equals = dual<
   (b: Matrix3x3) => (a: Matrix3x3) => boolean,
   (a: Matrix3x3, b: Matrix3x3) => boolean
@@ -74,6 +76,7 @@ export const equals = dual<
     epsEquals(a.m22, b.m22),
 )
 
+/** @internal */
 export const make = (
   m00 = 0,
   m01 = m00,
@@ -88,12 +91,15 @@ export const make = (
   return new Matrix3x3Impl(m00, m01, m02, m10, m11, m12, m20, m21, m22)
 }
 
+/** @internal */
 export const fromRows = (v0: Vector3, v1: Vector3, v2: Vector3): Matrix3x3 =>
   new Matrix3x3Impl(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z)
 
+/** @internal */
 export const fromColumns = (v0: Vector3, v1: Vector3, v2: Vector3): Matrix3x3 =>
   new Matrix3x3Impl(v0.x, v1.x, v2.x, v0.y, v1.y, v2.y, v0.z, v1.z, v2.z)
 
+/** @internal */
 export const setRow = dual<
   (row: Matrix3x3Coordinate, v: Vector3) => (m: Matrix3x3) => Matrix3x3,
   (m: Matrix3x3, row: Matrix3x3Coordinate, v: Vector3) => Matrix3x3
@@ -101,6 +107,7 @@ export const setRow = dual<
   fromRows(...(toRows(m).with(toThreeDimensionalIndex(row), v) as [Vector3, Vector3, Vector3])),
 )
 
+/** @internal */
 export const setColumn = dual<
   (column: Matrix3x3Coordinate, v: Vector3) => (m: Matrix3x3) => Matrix3x3,
   (m: Matrix3x3, column: Matrix3x3Coordinate, v: Vector3) => Matrix3x3
@@ -110,11 +117,13 @@ export const setColumn = dual<
   ),
 )
 
+/** @internal */
 export const determinant = (m: Matrix3x3) =>
   m.m00 * matrix2x2.determinant(minor(m, 0, 0)) -
   m.m01 * matrix2x2.determinant(minor(m, 0, 1)) +
   m.m02 * matrix2x2.determinant(minor(m, 0, 2))
 
+/** @internal */
 export const minor = dual<
   (row: Matrix3x3Coordinate, column: Matrix3x3Coordinate) => (m: Matrix3x3) => Matrix2x2,
   (m: Matrix3x3, row: Matrix3x3Coordinate, column: Matrix3x3Coordinate) => Matrix2x2
@@ -127,6 +136,7 @@ export const minor = dual<
   return matrix2x2.make(m00, m01, m10, m11) as Matrix2x2
 })
 
+/** @internal */
 export const vectorProductLeft = dual<
   (v: Vector3) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, v: Vector3) => Vector3
@@ -135,6 +145,7 @@ export const vectorProductLeft = dual<
   return vector3.make(vector3.dot(v0, v), vector3.dot(v1, v), vector3.dot(v2, v))
 })
 
+/** @internal */
 export const vectorProductRight = dual<
   (v: Vector3) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, v: Vector3) => Vector3
@@ -143,6 +154,7 @@ export const vectorProductRight = dual<
   return vector3.make(vector3.dot(v, v0), vector3.dot(v, v1), vector3.dot(v, v2))
 })
 
+/** @internal */
 export const solveSystem = dual<
   (v: Vector3) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, v: Vector3) => Vector3
@@ -161,35 +173,42 @@ export const solveSystem = dual<
   )
 })
 
+/** @internal */
 export const toRows = (m: Matrix3x3): [Vector3, Vector3, Vector3] => [
   vector3.make(m.m00, m.m01, m.m02),
   vector3.make(m.m10, m.m11, m.m12),
   vector3.make(m.m20, m.m21, m.m22),
 ]
 
+/** @internal */
 export const toColumns = (m: Matrix3x3): [Vector3, Vector3, Vector3] => [
   vector3.make(m.m00, m.m10, m.m20),
   vector3.make(m.m01, m.m11, m.m21),
   vector3.make(m.m02, m.m12, m.m22),
 ]
 
+/** @internal */
 export const rowVector = dual<
   (row: Matrix3x3Coordinate) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, row: Matrix3x3Coordinate) => Vector3
 >(2, (m: Matrix3x3, row: Matrix3x3Coordinate) => toRows(m)[toThreeDimensionalIndex(row)])
 
+/** @internal */
 export const columnVector = dual<
   (column: Matrix3x3Coordinate) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, column: Matrix3x3Coordinate) => Vector3
 >(2, (m: Matrix3x3, column: Matrix3x3Coordinate) => toColumns(m)[toThreeDimensionalIndex(column)])
 
+/** @internal */
 export const transpose = (m: Matrix3x3) => fromColumns(...toRows(m))
 
+/** @internal */
 export const reverseRows = (m: Matrix3x3) => {
   const [v0, v1, v2] = toRows(m)
   return fromRows(v2, v1, v0)
 }
 
+/** @internal */
 export const reverseColumns = (m: Matrix3x3) => {
   const [v0, v1, v2] = toColumns(m)
   return fromColumns(v2, v1, v0)

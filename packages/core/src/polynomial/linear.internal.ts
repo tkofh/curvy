@@ -1,14 +1,14 @@
-import * as Interval from '../interval/interval'
-import { dual, Pipeable } from '../utils'
-import * as Solution from '../solution/solution'
-import { invariant } from '../utils'
-import { epsEquals } from '../number'
-import type { Vector2 } from '../vector/vector2'
-import type { LinearPolynomial } from './linear'
-import type { Decreasing, Increasing, Monotonic } from './traits'
-import { PolynomialTraits } from './traits'
-import type { QuadraticPolynomial } from './quadratic'
-import { QuadraticPolynomialImpl } from './quadratic.internal.circular'
+import * as Interval from '../interval/interval.ts'
+import { dual, Pipeable } from '../utils.ts'
+import * as Solution from '../solution/solution.ts'
+import { invariant } from '../utils.ts'
+import { epsEquals } from '../number.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { LinearPolynomial } from './linear.ts'
+import type { Decreasing, Increasing, Monotonic } from './traits.ts'
+import { PolynomialTraits } from './traits.ts'
+import type { QuadraticPolynomial } from './quadratic.ts'
+import { QuadraticPolynomialImpl } from './quadratic.internal.circular.ts'
 
 export const LinearPolynomialTypeId: unique symbol = Symbol.for('curvy/linear')
 export type LinearPolynomialTypeId = typeof LinearPolynomialTypeId
@@ -28,31 +28,40 @@ class LinearPolynomialImpl extends Pipeable implements LinearPolynomial<unknown>
   }
 }
 
+/** @internal */
 export const isLinearPolynomial = (v: unknown): v is LinearPolynomial =>
   typeof v === 'object' && v !== null && LinearPolynomialTypeId in v
 
+/** @internal */
 export const equals = dual<
   (b: LinearPolynomial) => (a: LinearPolynomial) => boolean,
   (a: LinearPolynomial, b: LinearPolynomial) => boolean
 >(2, (a: LinearPolynomial, b: LinearPolynomial) => epsEquals(a.c0, b.c0) && epsEquals(a.c1, b.c1))
 
+/** @internal */
 export const make = (c0 = 0, c1 = 0): LinearPolynomial => new LinearPolynomialImpl(c0, c1)
 
+/** @internal */
 export const fromVector = (v: Vector2) => new LinearPolynomialImpl(v.x, v.y)
 
+/** @internal */
 export const fromPointSlope = (p: Vector2, slope: number) =>
   new LinearPolynomialImpl(p.y - slope * p.x, slope)
 
+/** @internal */
 export const fromPoints = (p1: Vector2, p2: Vector2) =>
   fromPointSlope(p1, (p2.y - p1.y) / (p2.x - p1.x))
 
+/** @internal */
 export const solve = dual<
   (x: number) => (p: LinearPolynomial) => number,
   (p: LinearPolynomial, x: number) => number
 >(2, (p: LinearPolynomial, x: number) => p.c0 + x * p.c1)
 
+/** @internal */
 export const toSolver = (p: LinearPolynomial) => (x: number) => solve(p, x)
 
+/** @internal */
 export const solveInverse = dual<
   (y: number) => (p: LinearPolynomial) => Solution.AtMostOne<number>,
   (p: LinearPolynomial, y: number) => Solution.AtMostOne<number>
@@ -63,39 +72,50 @@ export const solveInverse = dual<
   return Solution.one((y - p.c0) / p.c1)
 })
 
+/** @internal */
 export const toInverseSolver = (p: LinearPolynomial) => (y: number) => solveInverse(p, y)
 
+/** @internal */
 export const monotonicity = (p: LinearPolynomial) =>
   p.c1 === 0 ? 'constant' : p.c1 > 0 ? 'increasing' : 'decreasing'
 
+/** @internal */
 export const isMonotonic = <T>(p: LinearPolynomial<T>): p is LinearPolynomial<T & Monotonic> =>
   p.c1 !== 0
 
+/** @internal */
 export const isIncreasing = <T>(p: LinearPolynomial<T>): p is LinearPolynomial<T & Increasing> =>
   p.c1 > 0
 
+/** @internal */
 export const isDecreasing = <T>(p: LinearPolynomial<T>): p is LinearPolynomial<T & Decreasing> =>
   p.c1 < 0
 
+/** @internal */
 export const asMonotonic = <T>(p: LinearPolynomial<T>): LinearPolynomial<T & Monotonic> => {
   invariant(isMonotonic(p), 'linear polynomial is not monotonic')
   return p
 }
 
+/** @internal */
 export const asIncreasing = <T>(p: LinearPolynomial<T>): LinearPolynomial<T & Increasing> => {
   invariant(isIncreasing(p), 'linear polynomial is not increasing')
   return p
 }
 
+/** @internal */
 export const asDecreasing = <T>(p: LinearPolynomial<T>): LinearPolynomial<T & Decreasing> => {
   invariant(isDecreasing(p), 'linear polynomial is not decreasing')
   return p
 }
 
+/** @internal */
 export const coefficients = (p: LinearPolynomial): readonly [number, number] => [p.c0, p.c1]
 
+/** @internal */
 export const derivative = (p: LinearPolynomial) => p.c1
 
+/** @internal */
 export const antiderivative = dual<
   (integrationConstant: number) => (p: LinearPolynomial) => QuadraticPolynomial,
   (p: LinearPolynomial, integrationConstant?: number) => QuadraticPolynomial
@@ -105,6 +125,7 @@ export const antiderivative = dual<
     new QuadraticPolynomialImpl(integrationConstant, p.c0, p.c1 / 2),
 )
 
+/** @internal */
 export const domain = dual<
   (range: Interval.Interval) => (p: LinearPolynomial) => Solution.AtMostOne<Interval.Interval>,
   (p: LinearPolynomial, range: Interval.Interval) => Solution.AtMostOne<Interval.Interval>
@@ -126,6 +147,7 @@ export const domain = dual<
   return Solution.one(Interval.make(start.value, end.value))
 })
 
+/** @internal */
 export const range = dual<
   (domain: Interval.Interval) => (p: LinearPolynomial) => Interval.Closed,
   (p: LinearPolynomial, domain: Interval.Interval) => Interval.Closed
@@ -133,6 +155,7 @@ export const range = dual<
   Interval.fromMinMax(solve(p, d.start), solve(p, d.end)),
 )
 
+/** @internal */
 export const length = dual<
   (domain: Interval.Interval) => (p: LinearPolynomial) => number,
   (p: LinearPolynomial, domain: Interval.Interval) => number

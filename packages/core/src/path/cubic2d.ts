@@ -1,13 +1,13 @@
-import type { Interval2d } from '../interval/interval2d'
-import type { CubicCurve2d } from '../curve/cubic2d'
-import type { Closed } from '../interval/interval'
-import type { Pipeable } from '../utils'
-import type { Vector2 } from '../vector/vector2'
-import type { CubicPath2dTypeId } from './cubic2d.internal'
-import * as internal from './cubic2d.internal'
-import type { Continuous, PathTraits } from './traits'
+import type { Interval2d } from '../interval/interval2d.ts'
+import type { CubicCurve2d } from '../curve/cubic2d.ts'
+import type { Closed } from '../interval/interval.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { CubicPath2dTypeId } from './cubic2d.internal.ts'
+import * as internal from './cubic2d.internal.ts'
+import type { Continuous, PathTraits } from './traits.ts'
 
-export type { Continuous } from './traits'
+export type { Continuous } from './traits.ts'
 
 /**
  * A cubic path in 2D space.

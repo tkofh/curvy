@@ -1,6 +1,6 @@
-import type { Interval } from '../interval/interval'
-import type { Pipeable } from '../utils'
-import * as internal from './solution.internal'
+import type { Interval } from '../interval/interval.ts'
+import type { Pipeable } from '../utils.ts'
+import * as internal from './solution.internal.ts'
 
 /**
  * A `Solution<T>` represents the result of an operation that may produce

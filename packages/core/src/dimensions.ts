@@ -1,4 +1,4 @@
-import { invariant } from './utils'
+import { invariant } from './utils.ts'
 
 export type TwoDimensionalIndex = 0 | 1
 export type TwoDimensionalComponent = 'x' | 'y'

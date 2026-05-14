@@ -1,18 +1,19 @@
-import * as Interval2d from '../interval/interval2d'
-import * as CubicCurve2d from '../curve/cubic2d'
-import * as cubicCurveInternal from '../curve/cubic2d.internal'
-import * as QuadraticCurve2d from '../curve/quadratic2d'
-import * as Interval from '../interval/interval'
-import { dual, Pipeable } from '../utils'
-import { invariant } from '../utils'
-import { epsEquals } from '../number'
-import * as Vector2 from '../vector/vector2'
-import type { CubicPath2d } from './cubic2d'
-import { PathTraits, type Continuous } from './traits'
+import * as Interval2d from '../interval/interval2d.ts'
+import * as CubicCurve2d from '../curve/cubic2d.ts'
+import * as cubicCurveInternal from '../curve/cubic2d.internal.ts'
+import * as QuadraticCurve2d from '../curve/quadratic2d.ts'
+import * as Interval from '../interval/interval.ts'
+import { dual, Pipeable } from '../utils.ts'
+import { invariant } from '../utils.ts'
+import { epsEquals } from '../number.ts'
+import * as Vector2 from '../vector/vector2.ts'
+import type { CubicPath2d } from './cubic2d.ts'
+import { PathTraits, type Continuous } from './traits.ts'
 
 export const CubicPath2dTypeId: unique symbol = Symbol('curvy/path/cubic2d')
 export type CubicPath2dTypeId = typeof CubicPath2dTypeId
 
+/** @internal */
 export class CubicPath2dImpl extends Pipeable implements CubicPath2d<unknown> {
   readonly [CubicPath2dTypeId]: CubicPath2dTypeId = CubicPath2dTypeId
   declare readonly [PathTraits]: unknown
@@ -30,20 +31,25 @@ export class CubicPath2dImpl extends Pipeable implements CubicPath2d<unknown> {
   }
 }
 
+/** @internal */
 export const isCubicPath2d = (p: unknown): p is CubicPath2d =>
   typeof p === 'object' && p !== null && CubicPath2dTypeId in p
 
+/** @internal */
 export const make = (...curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d =>
   new CubicPath2dImpl(curves)
 
+/** @internal */
 export const fromArray = (curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d =>
   new CubicPath2dImpl(curves)
 
+/** @internal */
 export const append = dual<
   (c: CubicCurve2d.CubicCurve2d) => (p: CubicPath2d) => CubicPath2d,
   (p: CubicPath2d, c: CubicCurve2d.CubicCurve2d) => CubicPath2d
 >(2, (p: CubicPath2d, c: CubicCurve2d.CubicCurve2d) => fromArray([...p, c]))
 
+/** @internal */
 export const length = (p: CubicPath2d) => {
   let total = 0
   for (const curve of p) {
@@ -53,6 +59,7 @@ export const length = (p: CubicPath2d) => {
   return total
 }
 
+/** @internal */
 export const solve = dual<
   (u: number) => (p: CubicPath2d) => Vector2.Vector2,
   (p: CubicPath2d, u: number) => Vector2.Vector2
@@ -143,6 +150,7 @@ const solveCurveByDistance = (
 // Cubic Bernstein basis: P(t) = (1-t)³·p0 + 3(1-t)²t·p1 + 3(1-t)t²·p2 + t³·p3
 // expanded gives c0 = p0, c1 = -3p0 + 3p1, c2 = 3p0 - 6p1 + 3p2, c3 = -p0 + 3p1 - 3p2 + p3,
 // so: p0 = c0, p1 = c0 + c1/3, p2 = c0 + 2c1/3 + c2/3, p3 = c0 + c1 + c2 + c3.
+/** @internal */
 export const toPathData = (p: CubicPath2d): string => {
   let result = ''
   let prevEndX = Number.NaN
@@ -179,6 +187,7 @@ export const toPathData = (p: CubicPath2d): string => {
   return result.slice(1)
 }
 
+/** @internal */
 export const isContinuous = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & Continuous> => {
   let prevEndX = Number.NaN
   let prevEndY = Number.NaN
@@ -197,11 +206,13 @@ export const isContinuous = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & Continu
   return true
 }
 
+/** @internal */
 export const asContinuous = <T>(p: CubicPath2d<T>): CubicPath2d<T & Continuous> => {
   invariant(isContinuous(p), 'cubic path is not continuous')
   return p
 }
 
+/** @internal */
 export const solveByDistance = dual<
   (s: number) => (p: CubicPath2d) => Vector2.Vector2,
   (p: CubicPath2d, s: number) => Vector2.Vector2
@@ -235,6 +246,7 @@ export const solveByDistance = dual<
   return CubicCurve2d.solve(curve, localT)
 })
 
+/** @internal */
 export const boundingBox = (
   p: CubicPath2d,
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {

@@ -1,16 +1,17 @@
-import * as Interval2d from '../interval/interval2d'
-import * as LinearCurve2d from '../curve/linear2d'
-import * as Interval from '../interval/interval'
-import { dual, Pipeable } from '../utils'
-import { invariant } from '../utils'
-import { epsEquals } from '../number'
-import type { Vector2 } from '../vector/vector2'
-import type { LinearPath2d } from './linear2d'
-import { PathTraits, type Continuous } from './traits'
+import * as Interval2d from '../interval/interval2d.ts'
+import * as LinearCurve2d from '../curve/linear2d.ts'
+import * as Interval from '../interval/interval.ts'
+import { dual, Pipeable } from '../utils.ts'
+import { invariant } from '../utils.ts'
+import { epsEquals } from '../number.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { LinearPath2d } from './linear2d.ts'
+import { PathTraits, type Continuous } from './traits.ts'
 
 export const LinearPath2dTypeId: unique symbol = Symbol('curvy/path/linear2d')
 export type LinearPath2dTypeId = typeof LinearPath2dTypeId
 
+/** @internal */
 export class LinearPath2dImpl extends Pipeable implements LinearPath2d<unknown> {
   readonly [LinearPath2dTypeId]: LinearPath2dTypeId = LinearPath2dTypeId
   declare readonly [PathTraits]: unknown
@@ -27,20 +28,25 @@ export class LinearPath2dImpl extends Pipeable implements LinearPath2d<unknown> 
   }
 }
 
+/** @internal */
 export const isLinearPath2d = (p: unknown): p is LinearPath2d =>
   typeof p === 'object' && p !== null && LinearPath2dTypeId in p
 
+/** @internal */
 export const make = (...curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>): LinearPath2d =>
   new LinearPath2dImpl(curves)
 
+/** @internal */
 export const fromArray = (curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>) =>
   new LinearPath2dImpl(curves)
 
+/** @internal */
 export const append = dual<
   (c: LinearCurve2d.LinearCurve2d) => (p: LinearPath2d) => LinearPath2d,
   (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) => LinearPath2d
 >(2, (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) => fromArray([...p, c]))
 
+/** @internal */
 export const length = (p: LinearPath2d) => {
   let total = 0
   for (const curve of p) {
@@ -50,6 +56,7 @@ export const length = (p: LinearPath2d) => {
   return total
 }
 
+/** @internal */
 export const solve = dual<
   (u: number) => (p: LinearPath2d) => Vector2,
   (p: LinearPath2d, u: number) => Vector2
@@ -67,6 +74,7 @@ export const solve = dual<
   return LinearCurve2d.solve(curve, t - i)
 })
 
+/** @internal */
 export const toPathData = (p: LinearPath2d): string => {
   let result = ''
   let prevEndX = Number.NaN
@@ -90,6 +98,7 @@ export const toPathData = (p: LinearPath2d): string => {
   return result.slice(1)
 }
 
+/** @internal */
 export const isContinuous = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & Continuous> => {
   let prevEndX = Number.NaN
   let prevEndY = Number.NaN
@@ -108,11 +117,13 @@ export const isContinuous = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & Conti
   return true
 }
 
+/** @internal */
 export const asContinuous = <T>(p: LinearPath2d<T>): LinearPath2d<T & Continuous> => {
   invariant(isContinuous(p), 'linear path is not continuous')
   return p
 }
 
+/** @internal */
 export const boundingBox = (
   p: LinearPath2d,
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {

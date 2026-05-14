@@ -1,6 +1,6 @@
-import { dual, Pipeable } from '../utils'
-import { epsEquals } from '../number'
-import type { Vector4 } from './vector4'
+import { dual, Pipeable } from '../utils.ts'
+import { epsEquals } from '../number.ts'
+import type { Vector4 } from './vector4.ts'
 
 export const Vector4TypeId: unique symbol = Symbol.for('curvy/vector4')
 export type Vector4TypeId = typeof Vector4TypeId
@@ -47,9 +47,11 @@ class Vector4Impl extends Pipeable implements Vector4 {
   }
 }
 
+/** @internal */
 export const isVector4 = (v: unknown): v is Vector4 =>
   typeof v === 'object' && v !== null && Vector4TypeId in v
 
+/** @internal */
 export const equals = dual<
   (b: Vector4) => (a: Vector4) => boolean,
   (a: Vector4, b: Vector4) => boolean
@@ -59,9 +61,11 @@ export const equals = dual<
     epsEquals(a.x, b.x) && epsEquals(a.y, b.y) && epsEquals(a.z, b.z) && epsEquals(a.w, b.w),
 )
 
+/** @internal */
 export const make = (v0: number, v1 = v0, v2 = v1, v3 = v2): Vector4 =>
   new Vector4Impl(v0, v1, v2, v3)
 
+/** @internal */
 export const transpose = <T, const Channels extends ReadonlyArray<number>>(
   inputs: readonly [T, T, T, T],
   project: (item: T) => Channels,
@@ -77,20 +81,24 @@ export const transpose = <T, const Channels extends ReadonlyArray<number>>(
   return result as never
 }
 
+/** @internal */
 export const magnitude: (vector: Vector4) => number = (vector: Vector4) =>
   Math.hypot(vector.x, vector.y, vector.z, vector.w)
 
+/** @internal */
 export const normalize: (vector: Vector4) => Vector4 = (vector: Vector4) => {
   const m = magnitude(vector)
 
   return make(vector.x / m, vector.y / m, vector.z / m, vector.w / m)
 }
 
+/** @internal */
 export const dot = dual<(b: Vector4) => (a: Vector4) => number, (a: Vector4, b: Vector4) => number>(
   2,
   (a: Vector4, b: Vector4) => a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w,
 )
 
+/** @internal */
 export const components: (v: Vector4) => [number, number, number, number] = (v: Vector4) => [
   v.x,
   v.y,
@@ -98,6 +106,7 @@ export const components: (v: Vector4) => [number, number, number, number] = (v: 
   v.w,
 ]
 
+/** @internal */
 export const softmax: (v: Vector4) => Vector4 = (v: Vector4) => {
   const max = Math.max(v.x, v.y, v.z, v.w)
 
@@ -111,20 +120,24 @@ export const softmax: (v: Vector4) => Vector4 = (v: Vector4) => {
   return make(v0 / sum, v1 / sum, v2 / sum, v3 / sum)
 }
 
+/** @internal */
 export const add = dual<
   (b: Vector4) => (a: Vector4) => Vector4,
   (a: Vector4, b: Vector4) => Vector4
 >(2, (a: Vector4, b: Vector4) => make(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w))
 
+/** @internal */
 export const subtract = dual<
   (b: Vector4) => (a: Vector4) => Vector4,
   (a: Vector4, b: Vector4) => Vector4
 >(2, (a: Vector4, b: Vector4) => make(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w))
 
+/** @internal */
 export const hadamard = dual<
   (b: Vector4) => (a: Vector4) => Vector4,
   (a: Vector4, b: Vector4) => Vector4
 >(2, (a: Vector4, b: Vector4) => make(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w))
+/** @internal */
 export const scale = dual<
   (s: number) => (v: Vector4) => Vector4,
   (v: Vector4, s: number) => Vector4

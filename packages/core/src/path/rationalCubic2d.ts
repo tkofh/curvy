@@ -1,9 +1,9 @@
-import type { RationalCubicCurve2d } from '../curve/rationalCubic2d'
-import type { Pipeable } from '../utils'
-import type { Vector2 } from '../vector/vector2'
-import type { CubicPath2d } from './cubic2d'
-import type { RationalCubicPath2dTypeId } from './rationalCubic2d.internal'
-import * as internal from './rationalCubic2d.internal'
+import type { RationalCubicCurve2d } from '../curve/rationalCubic2d.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { CubicPath2d } from './cubic2d.ts'
+import type { RationalCubicPath2dTypeId } from './rationalCubic2d.internal.ts'
+import * as internal from './rationalCubic2d.internal.ts'
 
 /**
  * A rational cubic path in 2D space.

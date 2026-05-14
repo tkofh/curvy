@@ -1,14 +1,15 @@
-import type * as CubicCurve2d from '../curve/cubic2d'
-import * as RationalCubicCurve2d from '../curve/rationalCubic2d'
-import { dual, Pipeable } from '../utils'
-import { invariant } from '../utils'
-import type * as Vector2 from '../vector/vector2'
-import * as CubicPath2d from './cubic2d'
-import type { RationalCubicPath2d } from './rationalCubic2d'
+import type * as CubicCurve2d from '../curve/cubic2d.ts'
+import * as RationalCubicCurve2d from '../curve/rationalCubic2d.ts'
+import { dual, Pipeable } from '../utils.ts'
+import { invariant } from '../utils.ts'
+import type * as Vector2 from '../vector/vector2.ts'
+import * as CubicPath2d from './cubic2d.ts'
+import type { RationalCubicPath2d } from './rationalCubic2d.ts'
 
 export const RationalCubicPath2dTypeId: unique symbol = Symbol('curvy/path/rationalCubic2d')
 export type RationalCubicPath2dTypeId = typeof RationalCubicPath2dTypeId
 
+/** @internal */
 export class RationalCubicPath2dImpl extends Pipeable implements RationalCubicPath2d {
   readonly [RationalCubicPath2dTypeId]: RationalCubicPath2dTypeId = RationalCubicPath2dTypeId
 
@@ -25,22 +26,27 @@ export class RationalCubicPath2dImpl extends Pipeable implements RationalCubicPa
   }
 }
 
+/** @internal */
 export const isRationalCubicPath2d = (p: unknown): p is RationalCubicPath2d =>
   typeof p === 'object' && p !== null && RationalCubicPath2dTypeId in p
 
+/** @internal */
 export const make = (
   ...curves: ReadonlyArray<RationalCubicCurve2d.RationalCubicCurve2d>
 ): RationalCubicPath2d => new RationalCubicPath2dImpl(curves)
 
+/** @internal */
 export const fromArray = (
   curves: ReadonlyArray<RationalCubicCurve2d.RationalCubicCurve2d>,
 ): RationalCubicPath2d => new RationalCubicPath2dImpl(curves)
 
+/** @internal */
 export const append = dual<
   (c: RationalCubicCurve2d.RationalCubicCurve2d) => (p: RationalCubicPath2d) => RationalCubicPath2d,
   (p: RationalCubicPath2d, c: RationalCubicCurve2d.RationalCubicCurve2d) => RationalCubicPath2d
 >(2, (p, c) => fromArray([...p, c]))
 
+/** @internal */
 export const solve = dual<
   (u: number) => (p: RationalCubicPath2d) => Vector2.Vector2,
   (p: RationalCubicPath2d, u: number) => Vector2.Vector2
@@ -62,6 +68,7 @@ export const solve = dual<
 // curve module; we just concat the results. Segment count grows from N
 // (input) to roughly N × k where k depends on weight magnitude and tolerance —
 // uniform-weight segments stay 1:1.
+/** @internal */
 export const approximateAsCubicPath = dual<
   (tolerance: number) => (p: RationalCubicPath2d) => CubicPath2d.CubicPath2d,
   (p: RationalCubicPath2d, tolerance: number) => CubicPath2d.CubicPath2d

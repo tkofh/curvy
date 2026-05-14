@@ -1,14 +1,14 @@
-import type { Closed, Interval } from '../interval/interval'
-import type { Pipeable } from '../utils'
-import type * as Solution from '../solution/solution'
-import type { Vector2 } from '../vector/vector2'
-import type { LinearPolynomialTypeId } from './linear.internal'
-import * as internal from './linear.internal'
-import type { GuaranteedMonotonicity } from './monotonicity'
-import type { QuadraticPolynomial } from './quadratic'
-import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits'
+import type { Closed, Interval } from '../interval/interval.ts'
+import type { Pipeable } from '../utils.ts'
+import type * as Solution from '../solution/solution.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { LinearPolynomialTypeId } from './linear.internal.ts'
+import * as internal from './linear.internal.ts'
+import type { GuaranteedMonotonicity } from './monotonicity.ts'
+import type { QuadraticPolynomial } from './quadratic.ts'
+import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits.ts'
 
-export type { Monotonic, Increasing, Decreasing } from './traits'
+export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 
 /**
  * A linear polynomial.

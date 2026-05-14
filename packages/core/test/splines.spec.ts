@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'vitest'
-import * as CubicCurve2d from '../src/curve/cubic2d'
-import * as CubicPath2d from '../src/path/cubic2d'
-import * as RationalCubicPath2d from '../src/path/rationalCubic2d'
-import * as Basis2d from '../src/splines/basis2d'
-import * as Bezier2d from '../src/splines/bezier2d'
-import * as Cardinal2d from '../src/splines/cardinal2d'
-import * as Hermite2d from '../src/splines/hermite2d'
-import * as RationalBezier2d from '../src/splines/rationalBezier2d'
-import * as Vector2 from '../src/vector/vector2'
+import * as CubicCurve2d from '../src/curve/cubic2d.ts'
+import * as CubicPath2d from '../src/path/cubic2d.ts'
+import * as RationalCubicPath2d from '../src/path/rationalCubic2d.ts'
+import * as Basis2d from '../src/splines/basis2d.ts'
+import * as Bezier2d from '../src/splines/bezier2d.ts'
+import * as Cardinal2d from '../src/splines/cardinal2d.ts'
+import * as Hermite2d from '../src/splines/hermite2d.ts'
+import * as RationalBezier2d from '../src/splines/rationalBezier2d.ts'
+import * as Vector2 from '../src/vector/vector2.ts'
 
 describe('bezier', () => {
   test('makes a path', () => {
@@ -595,11 +595,7 @@ describe('fromTuples', () => {
 
 describe('Cardinal2d.withInterpolatedEndpoints', () => {
   test('matches withDuplicatedEndpoints structurally', () => {
-    const c = Cardinal2d.make(
-      Vector2.make(0, 0),
-      Vector2.make(1, 1),
-      Vector2.make(2, 0),
-    )
+    const c = Cardinal2d.make(Vector2.make(0, 0), Vector2.make(1, 1), Vector2.make(2, 0))
     const dup = Cardinal2d.withDuplicatedEndpoints(c)
     const interp = Cardinal2d.withInterpolatedEndpoints(c)
     expect([...interp]).toEqual([...dup])
@@ -616,11 +612,9 @@ describe('Cardinal2d.withInterpolatedEndpoints', () => {
     expect(interp.alpha).toBe(0.25)
   })
   test('resulting path interpolates first and last control points', () => {
-    const c = Cardinal2d.make(
-      Vector2.make(0, 0),
-      Vector2.make(1, 1),
-      Vector2.make(2, 0),
-    ).pipe(Cardinal2d.withInterpolatedEndpoints)
+    const c = Cardinal2d.make(Vector2.make(0, 0), Vector2.make(1, 1), Vector2.make(2, 0)).pipe(
+      Cardinal2d.withInterpolatedEndpoints,
+    )
     const path = Cardinal2d.toPath(c)
     expect(CubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, 0))
     expect(CubicPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(2, 0))

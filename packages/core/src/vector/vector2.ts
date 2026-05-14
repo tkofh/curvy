@@ -1,7 +1,7 @@
-import type { TwoDimensional } from '../dimensions'
-import type { Pipeable } from '../utils'
-import type { Vector2TypeId, WeightedVector2TypeId } from './vector2.internal'
-import * as internal from './vector2.internal'
+import type { TwoDimensional } from '../dimensions.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector2TypeId, WeightedVector2TypeId } from './vector2.internal.ts'
+import * as internal from './vector2.internal.ts'
 
 /**
  * A 2D vector.

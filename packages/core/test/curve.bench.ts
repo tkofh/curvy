@@ -1,11 +1,11 @@
 import { bench, describe } from 'vitest'
-import * as CubicCurve2d from '../src/curve/cubic2d'
-import * as Interval from '../src/interval/interval'
-import * as Matrix4x4 from '../src/matrix/matrix4x4'
-import * as CubicPath2d from '../src/path/cubic2d'
-import * as Bezier2d from '../src/splines/bezier2d'
-import * as Cardinal2d from '../src/splines/cardinal2d'
-import * as Vector2 from '../src/vector/vector2'
+import * as CubicCurve2d from '../src/curve/cubic2d.ts'
+import * as Interval from '../src/interval/interval.ts'
+import * as Matrix4x4 from '../src/matrix/matrix4x4.ts'
+import * as CubicPath2d from '../src/path/cubic2d.ts'
+import * as Bezier2d from '../src/splines/bezier2d.ts'
+import * as Cardinal2d from '../src/splines/cardinal2d.ts'
+import * as Vector2 from '../src/vector/vector2.ts'
 
 // Module-scoped sink: writing benchmark results here forces V8 to actually
 // produce them (the binding could be observed externally), preventing escape

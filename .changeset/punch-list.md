@@ -25,11 +25,37 @@ spline.pipe(Cardinal2d.withInterpolatedEndpoints, Cardinal2d.toPath)
 ```ts
 import { Bezier2d, RationalBezier2d } from 'curvy/splines'
 
-Bezier2d.fromTuples([[0, 0], [1, 2], [3, 2], [4, 0]])
-Hermite2d.fromTuples([[0, 0], [1, 1], [1, 0], [1, -1]]) // alternating point/velocity
-Cardinal2d.fromTuples([[0, 0], [1, 1], [2, 0]], { tension: 0.5 })
-Basis2d.fromTuples([[0, 0], [1, 1], [2, 0]])
-RationalBezier2d.fromTuples([[0, 0, 1], [1, 2, 5], [3, 2, 5], [4, 0, 1]]) // (x, y, weight)
+Bezier2d.fromTuples([
+  [0, 0],
+  [1, 2],
+  [3, 2],
+  [4, 0],
+])
+Hermite2d.fromTuples([
+  [0, 0],
+  [1, 1],
+  [1, 0],
+  [1, -1],
+]) // alternating point/velocity
+Cardinal2d.fromTuples(
+  [
+    [0, 0],
+    [1, 1],
+    [2, 0],
+  ],
+  { tension: 0.5 },
+)
+Basis2d.fromTuples([
+  [0, 0],
+  [1, 1],
+  [2, 0],
+])
+RationalBezier2d.fromTuples([
+  [0, 0, 1],
+  [1, 2, 5],
+  [3, 2, 5],
+  [4, 0, 1],
+]) // (x, y, weight)
 ```
 
 **`coefficients(p)` on every polynomial.** Returns the monomial coefficients as a typed tuple — useful for downstream consumers who want destructuring or array-style access alongside the existing `.c0`/`.c1`/etc. properties:

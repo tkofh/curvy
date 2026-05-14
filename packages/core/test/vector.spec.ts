@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import * as vector2 from '../src/vector/vector2'
-import * as vector3 from '../src/vector/vector3'
-import * as vector4 from '../src/vector/vector4'
+import * as vector2 from '../src/vector/vector2.ts'
+import * as vector3 from '../src/vector/vector3.ts'
+import * as vector4 from '../src/vector/vector4.ts'
 
 describe('vector2', () => {
   test('make', () => {

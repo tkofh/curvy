@@ -1,13 +1,13 @@
-import * as RationalCubicCurve2d from '../curve/rationalCubic2d'
-import * as RationalCubicPath2d from '../path/rationalCubic2d'
-import { dual, Pipeable } from '../utils'
-import * as Solution from '../solution/solution'
-import { invariant } from '../utils'
-import { epsEquals } from '../number'
-import * as Vector2 from '../vector/vector2'
-import * as Vector3 from '../vector/vector3'
-import type { Bezier2d } from './bezier2d'
-import type { RationalBezier2d } from './rationalBezier2d'
+import * as RationalCubicCurve2d from '../curve/rationalCubic2d.ts'
+import * as RationalCubicPath2d from '../path/rationalCubic2d.ts'
+import { dual, Pipeable } from '../utils.ts'
+import * as Solution from '../solution/solution.ts'
+import { invariant } from '../utils.ts'
+import { epsEquals } from '../number.ts'
+import * as Vector2 from '../vector/vector2.ts'
+import * as Vector3 from '../vector/vector3.ts'
+import type { Bezier2d } from './bezier2d.ts'
+import type { RationalBezier2d } from './rationalBezier2d.ts'
 
 export const RationalBezier2dTypeId = Symbol('curvy/splines/rationalBezier2d')
 export type RationalBezier2dTypeId = typeof RationalBezier2dTypeId
@@ -36,12 +36,14 @@ class RationalBezier2dImpl extends Pipeable implements RationalBezier2d {
   }
 }
 
+/** @internal */
 export const isRationalBezier2d = (p: unknown): p is RationalBezier2d =>
   typeof p === 'object' && p !== null && RationalBezier2dTypeId in p
 
 const lift = (p: Vector2.Weighted): Vector3.Vector3 =>
   Vector3.make(p.x * p.weight, p.y * p.weight, p.weight)
 
+/** @internal */
 export const make = (
   p0: Vector2.Weighted,
   p1: Vector2.Weighted,
@@ -49,9 +51,11 @@ export const make = (
   p3: Vector2.Weighted,
 ): RationalBezier2d => new RationalBezier2dImpl([lift(p0), lift(p1), lift(p2), lift(p3)])
 
+/** @internal */
 export const fromArray = (points: ReadonlyArray<Vector2.Weighted>): RationalBezier2d =>
   new RationalBezier2dImpl(points.map(lift))
 
+/** @internal */
 export const fromTuples = (
   tuples: ReadonlyArray<readonly [number, number, number]>,
 ): RationalBezier2d =>
@@ -59,6 +63,7 @@ export const fromTuples = (
     tuples.map(([x, y, weight]) => Vector3.make(x * weight, y * weight, weight)),
   )
 
+/** @internal */
 export const fromPoints = (
   p0: Vector2.Vector2,
   p1: Vector2.Vector2,
@@ -72,6 +77,7 @@ export const fromPoints = (
     Vector3.make(p3.x, p3.y, 1),
   ])
 
+/** @internal */
 export const fromBezier = (b: Bezier2d): RationalBezier2d => {
   const homogeneous: Array<Vector3.Vector3> = []
   for (const p of b) {
@@ -88,6 +94,7 @@ const homogeneousOf = (r: RationalBezier2d): ReadonlyArray<Vector3.Vector3> =>
 // Each segment's four homogeneous control points expand into three cubic
 // polynomials — x, y, w — via the same Bernstein-to-monomial mapping that
 // drives `Bezier2d.toPath`, just running on three channels instead of two.
+/** @internal */
 export const toPath = (r: RationalBezier2d): RationalCubicPath2d.RationalCubicPath2d => {
   const homogeneous = homogeneousOf(r)
   const segmentCount = (homogeneous.length - 1) / 3
@@ -117,6 +124,7 @@ export const toPath = (r: RationalBezier2d): RationalCubicPath2d.RationalCubicPa
   return RationalCubicPath2d.fromArray(curves)
 }
 
+/** @internal */
 export const subdivide = dual<
   (u: number) => (r: RationalBezier2d) => [RationalBezier2d, RationalBezier2d],
   (r: RationalBezier2d, u: number) => [RationalBezier2d, RationalBezier2d]
@@ -183,6 +191,7 @@ export const subdivide = dual<
 // module) so the value-import dependency is one-directional: the rational
 // module pulls only types from `./bezier2d`, never vice versa. Returns the
 // raw control-point array; the bezier module wraps it in its own type.
+/** @internal */
 export const toBezierPoints = (
   r: RationalBezier2d,
 ): Solution.AtMostOne<ReadonlyArray<Vector2.Vector2>> => {

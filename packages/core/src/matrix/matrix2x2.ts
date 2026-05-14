@@ -1,8 +1,8 @@
-import type { TwoDimensionalComponent, TwoDimensionalIndex } from '../dimensions'
-import type { Pipeable } from '../utils'
-import type { Vector2 } from '../vector/vector2'
-import type { Matrix2x2TypeId } from './matrix2x2.internal'
-import * as internal from './matrix2x2.internal'
+import type { TwoDimensionalComponent, TwoDimensionalIndex } from '../dimensions.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector2 } from '../vector/vector2.ts'
+import type { Matrix2x2TypeId } from './matrix2x2.internal.ts'
+import * as internal from './matrix2x2.internal.ts'
 
 /**
  * A type representing the coordinate of a 2D matrix.

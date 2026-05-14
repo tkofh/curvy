@@ -1,9 +1,9 @@
-import type { FourDimensionalComponent, FourDimensionalIndex } from '../dimensions'
-import type { Pipeable } from '../utils'
-import type { Vector4 } from '../vector/vector4'
-import type { Matrix3x3 } from './matrix3x3'
-import type { Matrix4x4TypeId } from './matrix4x4.internal'
-import * as internal from './matrix4x4.internal'
+import type { FourDimensionalComponent, FourDimensionalIndex } from '../dimensions.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector4 } from '../vector/vector4.ts'
+import type { Matrix3x3 } from './matrix3x3.ts'
+import type { Matrix4x4TypeId } from './matrix4x4.internal.ts'
+import * as internal from './matrix4x4.internal.ts'
 
 /**
  * A coordinate in a 4x4 matrix.

@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest'
-import * as interval from '../src/interval/interval'
-import * as cubic from '../src/polynomial/cubic'
-import * as linear from '../src/polynomial/linear'
-import * as quadratic from '../src/polynomial/quadratic'
-import * as vector2 from '../src/vector/vector2'
-import * as vector3 from '../src/vector/vector3'
-import * as vector4 from '../src/vector/vector4'
+import * as interval from '../src/interval/interval.ts'
+import * as cubic from '../src/polynomial/cubic.ts'
+import * as linear from '../src/polynomial/linear.ts'
+import * as quadratic from '../src/polynomial/quadratic.ts'
+import * as vector2 from '../src/vector/vector2.ts'
+import * as vector3 from '../src/vector/vector3.ts'
+import * as vector4 from '../src/vector/vector4.ts'
 
 describe('linear', () => {
   test('make', () => {

@@ -3,6 +3,8 @@ import { computed, reactive, ref } from 'vue'
 import { RationalCubicCurve2d } from 'curvy/curve'
 import { CubicPath2d, RationalCubicPath2d } from 'curvy/path'
 import { Vector2 } from 'curvy/vector'
+import { hausdorffEstimate } from '~/utils/hausdorff'
+import { hausdorffCertified } from '~/utils/hausdorffCertified'
 
 interface ControlPoint {
   x: number
@@ -15,14 +17,14 @@ interface ControlPoint {
 const points = reactive<Array<ControlPoint>>([
   { x: 0, y: 300, weight: 1 },
   { x: 150, y: 50, weight: 1 },
-  { x: 250, y: 50, weight: 1 },
+  { x: 250, y: 200, weight: 1 },
   { x: 400, y: 0, weight: 1 },
 ])
 
 const tolerance = ref(1)
 const sampleCount = 500
 
-const curve = computed<RationalCubicCurve2d>(() =>
+const curve = computed(() =>
   RationalCubicCurve2d.fromBezierPoints(
     Vector2.makeWeighted(points[0]!.x, points[0]!.y, points[0]!.weight),
     Vector2.makeWeighted(points[1]!.x, points[1]!.y, points[1]!.weight),
@@ -53,6 +55,12 @@ const approximationPathData = computed(() => CubicPath2d.toPathData(approximatio
 const segmentCount = computed(() => [...approximation.value].length)
 
 const controlPolygon = computed(() => points.map((p) => `${p.x},${p.y}`).join(' '))
+
+const hausdorff = computed(() => hausdorffEstimate(curve.value, approximation.value, 500))
+
+const certified = computed(() =>
+  hausdorffCertified(curve.value, approximation.value, Math.max(1e-4, tolerance.value * 0.1)),
+)
 </script>
 
 <template>
@@ -62,12 +70,32 @@ const controlPolygon = computed(() => points.map((p) => `${p.x},${p.y}`).join(' 
         <polyline :points="controlPolygon" class="control-polygon" />
         <polyline :points="sampledPolyline" class="rational" />
         <path :d="approximationPathData" class="approximation" />
+        <line
+          :x1="hausdorff.witness.x"
+          :y1="hausdorff.witness.y"
+          :x2="hausdorff.nearest.x"
+          :y2="hausdorff.nearest.y"
+          class="hausdorff-line"
+        />
+        <circle
+          :cx="hausdorff.witness.x"
+          :cy="hausdorff.witness.y"
+          r="4"
+          class="hausdorff-witness"
+        />
+        <circle
+          :cx="hausdorff.nearest.x"
+          :cy="hausdorff.nearest.y"
+          r="3"
+          class="hausdorff-nearest"
+        />
         <circle v-for="(p, i) in points" :key="i" :cx="p.x" :cy="p.y" r="5" class="cp" />
       </svg>
       <div class="legend">
         <div><span class="swatch rational" /> Rational (dense sample)</div>
         <div><span class="swatch approximation" /> Polynomial approximation</div>
         <div><span class="swatch control-polygon" /> Control polygon</div>
+        <div><span class="swatch hausdorff" /> Hausdorff witness</div>
       </div>
     </div>
 
@@ -90,6 +118,29 @@ const controlPolygon = computed(() => points.map((p) => `${p.x},${p.y}`).join(' 
       </div>
       <p class="readout">
         Output segments: <strong>{{ segmentCount }}</strong>
+      </p>
+      <p class="readout">
+        Hausdorff (sampled): <strong>{{ hausdorff.distance.toFixed(3) }}</strong>
+        <br />
+        <small> worst direction: {{ hausdorff.direction }} </small>
+        <br />
+        <small>
+          R→C: {{ hausdorff.rationalToPolynomial.distance.toFixed(3) }} · C→R:
+          {{ hausdorff.polynomialToRational.distance.toFixed(3) }}
+        </small>
+      </p>
+      <p class="readout">
+        Hausdorff (certified):
+        <strong> [{{ certified.lower.toFixed(3) }}, {{ certified.upper.toFixed(3) }}] </strong>
+        <br />
+        <small> worst direction: {{ certified.direction }} </small>
+        <br />
+        <small>
+          R→C: [{{ certified.rationalToPolynomial.lower.toFixed(3) }},
+          {{ certified.rationalToPolynomial.upper.toFixed(3) }}] · C→R: [{{
+            certified.polynomialToRational.lower.toFixed(3)
+          }}, {{ certified.polynomialToRational.upper.toFixed(3) }}]
+        </small>
       </p>
     </aside>
   </section>
@@ -144,6 +195,23 @@ const controlPolygon = computed(() => points.map((p) => `${p.x},${p.y}`).join(' 
   stroke-width: 1.5;
 }
 
+.hausdorff-line {
+  stroke: #d946ef;
+  stroke-width: 1.5;
+}
+
+.hausdorff-witness {
+  fill: #d946ef;
+  stroke: white;
+  stroke-width: 1.5;
+}
+
+.hausdorff-nearest {
+  fill: white;
+  stroke: #d946ef;
+  stroke-width: 1.5;
+}
+
 .legend {
   display: flex;
   gap: 1.5rem;
@@ -181,6 +249,10 @@ const controlPolygon = computed(() => points.map((p) => `${p.x},${p.y}`).join(' 
     transparent 3px,
     transparent 6px
   );
+}
+
+.legend .swatch.hausdorff {
+  background: #d946ef;
 }
 
 .controls {

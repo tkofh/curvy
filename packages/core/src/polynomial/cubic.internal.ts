@@ -1,4 +1,4 @@
-import * as Interval from '../interval/interval'
+import * as Interval from '../interval/interval.ts'
 import {
   GL32_W0,
   GL32_W1,
@@ -32,26 +32,29 @@ import {
   GL32_X13,
   GL32_X14,
   GL32_X15,
-} from '../length'
-import { dual } from '../utils'
-import * as Solution from '../solution/solution'
-import { invariant } from '../utils'
-import { clampToZero, epsEquals } from '../number'
-import type * as Vector2 from '../vector/vector2'
-import type { Vector4 } from '../vector/vector4'
-import type { CubicPolynomial } from './cubic'
-import { CubicPolynomialImpl, CubicPolynomialTypeId } from './cubic.internal.circular'
-import type { Decreasing, Increasing, Monotonic } from './traits'
-import * as Linear from './linear.internal'
-import { guaranteedMonotonicityFromComparison, type Monotonicity } from './monotonicity'
-import * as Quadratic from './quadratic.internal'
+} from '../length.ts'
+import { dual } from '../utils.ts'
+import * as Solution from '../solution/solution.ts'
+import { invariant } from '../utils.ts'
+import { clampToZero, epsEquals } from '../number.ts'
+import type * as Vector2 from '../vector/vector2.ts'
+import type { Vector4 } from '../vector/vector4.ts'
+import type { CubicPolynomial } from './cubic.ts'
+import { CubicPolynomialImpl, CubicPolynomialTypeId } from './cubic.internal.circular.ts'
+import type { Decreasing, Increasing, Monotonic } from './traits.ts'
+import * as Linear from './linear.internal.ts'
+import { guaranteedMonotonicityFromComparison, type Monotonicity } from './monotonicity.ts'
+import * as Quadratic from './quadratic.internal.ts'
 
+/** @internal */
 export const make = (c0 = 0, c1 = 0, c2 = 0, c3 = 0): CubicPolynomial =>
   new CubicPolynomialImpl(c0, c1, c2, c3)
 
+/** @internal */
 export const isCubicPolynomial = (v: unknown): v is CubicPolynomial =>
   typeof v === 'object' && v !== null && CubicPolynomialTypeId in v
 
+/** @internal */
 export const equals = dual<
   (b: CubicPolynomial) => (a: CubicPolynomial) => boolean,
   (a: CubicPolynomial, b: CubicPolynomial) => boolean
@@ -64,8 +67,10 @@ export const equals = dual<
     epsEquals(a.c3, b.c3),
 )
 
+/** @internal */
 export const fromVector = (v: Vector4) => new CubicPolynomialImpl(v.x, v.y, v.z, v.w)
 
+/** @internal */
 export const fromPoints = (
   p0: Vector2.Vector2,
   p1: Vector2.Vector2,
@@ -88,13 +93,16 @@ export const fromPoints = (
   )
 }
 
+/** @internal */
 export const solve = dual<
   (x: number) => (p: CubicPolynomial) => number,
   (p: CubicPolynomial, x: number) => number
 >(2, (p: CubicPolynomial, x: number) => p.c0 + x * p.c1 + x ** 2 * p.c2 + x ** 3 * p.c3)
 
+/** @internal */
 export const toSolver = (p: CubicPolynomial) => (x: number) => solve(p, x)
 
+/** @internal */
 export const solveInverse = dual<
   (y: number) => (p: CubicPolynomial) => Solution.AtMostThree<number>,
   (p: CubicPolynomial, y: number) => Solution.AtMostThree<number>
@@ -145,12 +153,18 @@ export const solveInverse = dual<
   return Solution.fromArray(Array.from(roots).toSorted((a, b) => a - b))
 })
 
+/** @internal */
 export const toInverseSolver = (p: CubicPolynomial) => (y: number) => solveInverse(p, y)
 
-export const coefficients = (
-  p: CubicPolynomial,
-): readonly [number, number, number, number] => [p.c0, p.c1, p.c2, p.c3]
+/** @internal */
+export const coefficients = (p: CubicPolynomial): readonly [number, number, number, number] => [
+  p.c0,
+  p.c1,
+  p.c2,
+  p.c3,
+]
 
+/** @internal */
 export const derivative = (p: CubicPolynomial) => Quadratic.make(p.c1, p.c2 * 2, p.c3 * 3)
 
 // Subdivides a cubic polynomial at parameter `t ∈ (0, 1)` into two new cubic
@@ -160,6 +174,7 @@ export const derivative = (p: CubicPolynomial) => Quadratic.make(p.c1, p.c2 * 2,
 // `right(u) = p(t + (1-t)·u)`. The left half is a uniform scale of the input
 // parameter by powers of `t`; the right half is a binomial expansion in
 // `(s + r·u)` with `s = t` and `r = 1 - t`.
+/** @internal */
 export const subdivide = dual<
   (t: number) => (p: CubicPolynomial) => [CubicPolynomial, CubicPolynomial],
   (p: CubicPolynomial, t: number) => [CubicPolynomial, CubicPolynomial]
@@ -177,11 +192,14 @@ export const subdivide = dual<
   return [left, right]
 })
 
+/** @internal */
 export const roots = (p: CubicPolynomial): Solution.AtMostThree<number> => solveInverse(p, 0)
 
+/** @internal */
 export const extrema = (p: CubicPolynomial): Solution.AtMostTwo<number> =>
   Quadratic.roots(derivative(p))
 
+/** @internal */
 export const monotonicity = dual<
   (i: Interval.Interval) => (p: CubicPolynomial) => Monotonicity,
   (p: CubicPolynomial, i?: Interval.Interval) => Monotonicity
@@ -222,6 +240,7 @@ export const monotonicity = dual<
   },
 )
 
+/** @internal */
 export const isMonotonic = dual<
   (i: Interval.Interval) => <T>(p: CubicPolynomial<T>) => p is CubicPolynomial<T & Monotonic>,
   <T>(p: CubicPolynomial<T>, i?: Interval.Interval) => p is CubicPolynomial<T & Monotonic>
@@ -230,6 +249,7 @@ export const isMonotonic = dual<
   return m === 'increasing' || m === 'decreasing'
 }) as never)
 
+/** @internal */
 export const isIncreasing = dual<
   (i: Interval.Interval) => <T>(p: CubicPolynomial<T>) => p is CubicPolynomial<T & Increasing>,
   <T>(p: CubicPolynomial<T>, i?: Interval.Interval) => p is CubicPolynomial<T & Increasing>
@@ -239,6 +259,7 @@ export const isIncreasing = dual<
     monotonicity(p, i as Interval.Interval) === 'increasing') as never,
 )
 
+/** @internal */
 export const isDecreasing = dual<
   (i: Interval.Interval) => <T>(p: CubicPolynomial<T>) => p is CubicPolynomial<T & Decreasing>,
   <T>(p: CubicPolynomial<T>, i?: Interval.Interval) => p is CubicPolynomial<T & Decreasing>
@@ -248,6 +269,7 @@ export const isDecreasing = dual<
     monotonicity(p, i as Interval.Interval) === 'decreasing') as never,
 )
 
+/** @internal */
 export const asMonotonic = <T>(
   p: CubicPolynomial<T>,
   i?: Interval.Interval,
@@ -256,6 +278,7 @@ export const asMonotonic = <T>(
   return p
 }
 
+/** @internal */
 export const asIncreasing = <T>(
   p: CubicPolynomial<T>,
   i?: Interval.Interval,
@@ -264,6 +287,7 @@ export const asIncreasing = <T>(
   return p
 }
 
+/** @internal */
 export const asDecreasing = <T>(
   p: CubicPolynomial<T>,
   i?: Interval.Interval,
@@ -272,6 +296,7 @@ export const asDecreasing = <T>(
   return p
 }
 
+/** @internal */
 export const domain = dual<
   (range: Interval.Interval) => (p: CubicPolynomial) => Interval.Interval,
   (p: CubicPolynomial, range: Interval.Interval) => Interval.Interval
@@ -279,6 +304,7 @@ export const domain = dual<
   Interval.fromMinMax(...solveInverse(p, r.start), ...solveInverse(p, r.end)),
 )
 
+/** @internal */
 export const range = dual<
   (domain: Interval.Interval) => (p: CubicPolynomial) => Interval.Closed,
   (p: CubicPolynomial, domain: Interval.Interval) => Interval.Closed
@@ -290,6 +316,7 @@ export const range = dual<
   ),
 )
 
+/** @internal */
 export const length = dual<
   (domain: Interval.Interval) => (p: CubicPolynomial) => number,
   (p: CubicPolynomial, domain: Interval.Interval) => number
@@ -347,6 +374,7 @@ export const length = dual<
   )
 })
 
+/** @internal */
 export const curvature = dual(2, (p: CubicPolynomial, x: number) => {
   const d = derivative(p)
   const dd = Quadratic.derivative(d)

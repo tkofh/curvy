@@ -1,9 +1,9 @@
-import type { RationalCubicPath2d } from '../path/rationalCubic2d'
-import type { Pipeable } from '../utils'
-import type { Vector2, Weighted } from '../vector/vector2'
-import type { Bezier2d } from './bezier2d'
-import type { RationalBezier2dTypeId } from './rationalBezier2d.internal'
-import * as internal from './rationalBezier2d.internal'
+import type { RationalCubicPath2d } from '../path/rationalCubic2d.ts'
+import type { Pipeable } from '../utils.ts'
+import type { Vector2, Weighted } from '../vector/vector2.ts'
+import type { Bezier2d } from './bezier2d.ts'
+import type { RationalBezier2dTypeId } from './rationalBezier2d.internal.ts'
+import * as internal from './rationalBezier2d.internal.ts'
 
 /**
  * A piecewise rational cubic Bézier curve in 2D space.

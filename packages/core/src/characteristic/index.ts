@@ -1,1 +1,1 @@
-export * as Characteristic from './characteristic'
+export * as Characteristic from './characteristic.ts'

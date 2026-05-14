@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import * as Curve from '../src/curve'
-import * as Matrix from '../src/matrix'
-import * as Path from '../src/path'
-import * as Polynomial from '../src/polynomial'
-import * as Splines from '../src/splines'
-import * as Vector from '../src/vector'
+import * as Curve from '../src/curve/index.ts'
+import * as Matrix from '../src/matrix/index.ts'
+import * as Path from '../src/path/index.ts'
+import * as Polynomial from '../src/polynomial/index.ts'
+import * as Splines from '../src/splines/index.ts'
+import * as Vector from '../src/vector/index.ts'
 
 describe('per-domain index re-exports', () => {
   test('curve index exposes namespaces by type name', () => {
