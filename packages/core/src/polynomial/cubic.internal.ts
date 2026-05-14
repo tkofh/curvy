@@ -33,6 +33,7 @@ import {
   GL32_X14,
   GL32_X15,
 } from '../length.ts'
+import * as Monotonicity from '../monotonicity/monotonicity.ts'
 import { dual } from '../utils.ts'
 import * as Solution from '../solution/solution.ts'
 import { invariant } from '../utils.ts'
@@ -43,7 +44,6 @@ import type { CubicPolynomial } from './cubic.ts'
 import { CubicPolynomialImpl, CubicPolynomialTypeId } from './cubic.internal.circular.ts'
 import type { Decreasing, Increasing, Monotonic } from './traits.ts'
 import * as Linear from './linear.internal.ts'
-import { guaranteedMonotonicityFromComparison, type Monotonicity } from './monotonicity.ts'
 import * as Quadratic from './quadratic.internal.ts'
 
 /** @internal */
@@ -201,8 +201,8 @@ export const extrema = (p: CubicPolynomial): Solution.AtMostTwo<number> =>
 
 /** @internal */
 export const monotonicity = dual<
-  (i: Interval.Interval) => (p: CubicPolynomial) => Monotonicity,
-  (p: CubicPolynomial, i?: Interval.Interval) => Monotonicity
+  (i: Interval.Interval) => (p: CubicPolynomial) => Monotonicity.Monotonicity,
+  (p: CubicPolynomial, i?: Interval.Interval) => Monotonicity.Monotonicity
 >(
   (args) => isCubicPolynomial(args[0]),
   (p: CubicPolynomial, i?: Interval.Interval) => {
@@ -213,7 +213,7 @@ export const monotonicity = dual<
 
     // shortcut to check for a horizontal line
     if (p.c3 === 0 && p.c2 === 0 && p.c1 === 0) {
-      return 'constant'
+      return Monotonicity.Constant
     }
 
     // shortcut to check for a non-horizontal line
@@ -223,7 +223,7 @@ export const monotonicity = dual<
 
     // without an interval, the monotonicity will be none if c3 or c2 are nonzero
     if (i === undefined) {
-      return 'none'
+      return Monotonicity.None
     }
 
     if (p.c3 === 0) {
@@ -233,10 +233,10 @@ export const monotonicity = dual<
     const e = Interval.filter(Interval.toOpen(i), [...extrema(p)])
 
     if (e.length > 0) {
-      return 'none'
+      return Monotonicity.None
     }
 
-    return guaranteedMonotonicityFromComparison(solve(p, i.start), solve(p, i.end))
+    return Monotonicity.fromComparison(solve(p, i.start), solve(p, i.end))
   },
 )
 
@@ -244,10 +244,8 @@ export const monotonicity = dual<
 export const isMonotonic = dual<
   (i: Interval.Interval) => <T>(p: CubicPolynomial<T>) => p is CubicPolynomial<T & Monotonic>,
   <T>(p: CubicPolynomial<T>, i?: Interval.Interval) => p is CubicPolynomial<T & Monotonic>
->((args) => isCubicPolynomial(args[0]), ((p: CubicPolynomial, i?: Interval.Interval) => {
-  const m = monotonicity(p, i as Interval.Interval)
-  return m === 'increasing' || m === 'decreasing'
-}) as never)
+>((args) => isCubicPolynomial(args[0]), ((p: CubicPolynomial, i?: Interval.Interval) =>
+  Monotonicity.isStrict(monotonicity(p, i as Interval.Interval))) as never)
 
 /** @internal */
 export const isIncreasing = dual<
@@ -256,7 +254,7 @@ export const isIncreasing = dual<
 >(
   (args) => isCubicPolynomial(args[0]),
   ((p: CubicPolynomial, i?: Interval.Interval) =>
-    monotonicity(p, i as Interval.Interval) === 'increasing') as never,
+    monotonicity(p, i as Interval.Interval) === Monotonicity.Increasing) as never,
 )
 
 /** @internal */
@@ -266,7 +264,7 @@ export const isDecreasing = dual<
 >(
   (args) => isCubicPolynomial(args[0]),
   ((p: CubicPolynomial, i?: Interval.Interval) =>
-    monotonicity(p, i as Interval.Interval) === 'decreasing') as never,
+    monotonicity(p, i as Interval.Interval) === Monotonicity.Decreasing) as never,
 )
 
 /** @internal */

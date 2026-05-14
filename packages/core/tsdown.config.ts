@@ -11,6 +11,7 @@ export default defineConfig({
     'src/path/index.ts',
     'src/splines/index.ts',
     'src/interval/index.ts',
+    'src/monotonicity/index.ts',
     'src/solution/index.ts',
     'src/characteristic/index.ts',
   ],

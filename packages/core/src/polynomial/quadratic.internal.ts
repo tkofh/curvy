@@ -8,7 +8,7 @@ import type { Vector3 } from '../vector/vector3.ts'
 import type { CubicPolynomial } from './cubic.ts'
 import { CubicPolynomialImpl } from './cubic.internal.circular.ts'
 import * as Linear from './linear.internal.ts'
-import { guaranteedMonotonicityFromComparison, type Monotonicity } from './monotonicity.ts'
+import * as Monotonicity from '../monotonicity/monotonicity.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
 import {
   QuadraticPolynomialImpl,
@@ -125,8 +125,8 @@ export const extreme = (p: QuadraticPolynomial) =>
 
 /** @internal */
 export const monotonicity = dual<
-  (i: Interval.Interval) => (p: QuadraticPolynomial) => Monotonicity,
-  (p: QuadraticPolynomial, i?: Interval.Interval) => Monotonicity
+  (i: Interval.Interval) => (p: QuadraticPolynomial) => Monotonicity.Monotonicity,
+  (p: QuadraticPolynomial, i?: Interval.Interval) => Monotonicity.Monotonicity
 >(
   (args) => isQuadraticPolynomial(args[0]),
   (p: QuadraticPolynomial, i?: Interval.Interval) => {
@@ -136,7 +136,7 @@ export const monotonicity = dual<
     )
 
     if (p.c2 === 0 && p.c1 === 0) {
-      return 'constant'
+      return Monotonicity.Constant
     }
 
     if (p.c2 === 0) {
@@ -149,10 +149,10 @@ export const monotonicity = dual<
     // if there is no interval, or the extreme is within the interval,
     // the monotonicity is none
     if (i === undefined || Interval.contains(Interval.toOpen(i), e.x)) {
-      return 'none'
+      return Monotonicity.None
     }
 
-    return guaranteedMonotonicityFromComparison(solve(p, i.start), solve(p, i.end))
+    return Monotonicity.fromComparison(solve(p, i.start), solve(p, i.end))
   },
 )
 
@@ -162,10 +162,8 @@ export const isMonotonic = dual<
     i: Interval.Interval,
   ) => <T>(p: QuadraticPolynomial<T>) => p is QuadraticPolynomial<T & Monotonic>,
   <T>(p: QuadraticPolynomial<T>, i?: Interval.Interval) => p is QuadraticPolynomial<T & Monotonic>
->((args) => isQuadraticPolynomial(args[0]), ((p: QuadraticPolynomial, i?: Interval.Interval) => {
-  const m = monotonicity(p, i as Interval.Interval)
-  return m === 'increasing' || m === 'decreasing'
-}) as never)
+>((args) => isQuadraticPolynomial(args[0]), ((p: QuadraticPolynomial, i?: Interval.Interval) =>
+  Monotonicity.isStrict(monotonicity(p, i as Interval.Interval))) as never)
 
 /** @internal */
 export const isIncreasing = dual<
@@ -176,7 +174,7 @@ export const isIncreasing = dual<
 >(
   (args) => isQuadraticPolynomial(args[0]),
   ((p: QuadraticPolynomial, i?: Interval.Interval) =>
-    monotonicity(p, i as Interval.Interval) === 'increasing') as never,
+    monotonicity(p, i as Interval.Interval) === Monotonicity.Increasing) as never,
 )
 
 /** @internal */
@@ -188,7 +186,7 @@ export const isDecreasing = dual<
 >(
   (args) => isQuadraticPolynomial(args[0]),
   ((p: QuadraticPolynomial, i?: Interval.Interval) =>
-    monotonicity(p, i as Interval.Interval) === 'decreasing') as never,
+    monotonicity(p, i as Interval.Interval) === Monotonicity.Decreasing) as never,
 )
 
 /** @internal */

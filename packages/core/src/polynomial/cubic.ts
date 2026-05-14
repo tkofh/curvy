@@ -5,7 +5,7 @@ import type { Vector2 } from '../vector/vector2.ts'
 import type { Vector4 } from '../vector/vector4.ts'
 import * as internal from './cubic.internal.ts'
 import type { CubicPolynomialTypeId } from './cubic.internal.circular.ts'
-import type { Monotonicity } from './monotonicity.ts'
+import type { Monotonicity } from '../monotonicity/monotonicity.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
 import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits.ts'
 
@@ -277,7 +277,7 @@ export const monotonicity: {
  *
  * @param p - The cubic polynomial to check.
  * @param i - Optional interval over which to check monotonicity.
- * @returns `true` when monotonicity is `'increasing'` or `'decreasing'`.
+ * @returns `true` when monotonicity is `Increasing` or `Decreasing`.
  * @since 2.0.0
  */
 export const isMonotonic: {

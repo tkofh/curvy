@@ -46,6 +46,10 @@
       "types": "./dist/interval/index.d.ts",
       "import": "./dist/interval/index.mjs"
     },
+    "./monotonicity": {
+      "types": "./dist/monotonicity/index.d.ts",
+      "import": "./dist/monotonicity/index.mjs"
+    },
     "./solution": {
       "types": "./dist/solution/index.d.ts",
       "import": "./dist/solution/index.mjs"

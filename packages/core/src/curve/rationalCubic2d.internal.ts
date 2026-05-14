@@ -1,9 +1,11 @@
 import * as Characteristic from '../characteristic/characteristic.ts'
 import * as Interval from '../interval/interval.ts'
 import * as Interval2d from '../interval/interval2d.ts'
+import * as Monotonicity from '../monotonicity/monotonicity.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
 import * as Solution from '../solution/solution.ts'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import { invariant } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Vector4 from '../vector/vector4.ts'
@@ -223,6 +225,168 @@ export const solveAtY = dual(
       Solution.map((t) => CubicPolynomial.solve(c.x, t) / CubicPolynomial.solve(c.w, t)),
     ),
 )
+
+// Monomial coefficients of the quartic q(t) = N'(t)·D(t) − N(t)·D'(t).
+//
+// Since `r(t) = N(t)/D(t)` and `r'(t) = (N'·D − N·D')/D²`, with D² > 0 wherever
+// D ≠ 0, the sign of `r'` equals the sign of `q` on the unit interval (the
+// documented invariant assumes D is nonvanishing on `[0, 1]`). So per-axis
+// monotonicity of the rational reduces to sign analysis of `q`.
+//
+// `q` is the difference of two degree-5 products, but the leading t⁵ terms of
+// `N'·D` and `N·D'` both equal `3·n₃·d₃` and cancel — so `q` is actually
+// degree 4. (For equal-degree-n rationals, the derivative-numerator has degree
+// `2n − 2`.) Five monomial coefficients suffice.
+const derivativeNumeratorQuartic = (
+  n: CubicPolynomial.CubicPolynomial,
+  d: CubicPolynomial.CubicPolynomial,
+): readonly [number, number, number, number, number] => [
+  n.c1 * d.c0 - n.c0 * d.c1,
+  2 * (n.c2 * d.c0 - n.c0 * d.c2),
+  n.c2 * d.c1 - n.c1 * d.c2 + 3 * (n.c3 * d.c0 - n.c0 * d.c3),
+  2 * (n.c3 * d.c1 - n.c1 * d.c3),
+  n.c3 * d.c2 - n.c2 * d.c3,
+]
+
+// Monomial → Bernstein basis conversion for degree 4 on [0, 1].
+//
+//   bⱼ = Σᵢ₌₀..ⱼ C(j, i)/C(4, i) · cᵢ
+//
+// Closed-form for n = 4 using C(4,·) = (1, 4, 6, 4, 1). Five outputs.
+const bernsteinFromQuarticMonomial = (
+  c0: number,
+  c1: number,
+  c2: number,
+  c3: number,
+  c4: number,
+): readonly [number, number, number, number, number] => [
+  c0,
+  c0 + c1 / 4,
+  c0 + c1 / 2 + c2 / 6,
+  c0 + (3 * c1) / 4 + c2 / 2 + c3 / 4,
+  c0 + c1 + c2 + c3 + c4,
+]
+
+// At depth 32 the recursion has bracketed any sign change to an interval of
+// width 2⁻³² ≈ 2 × 10⁻¹⁰ — well below floating-point noise for typical
+// curve coefficients. Surviving ambiguity at this depth indicates a
+// tangential zero (touches but does not cross), which we report as
+// `Monotonicity.None`.
+const BERNSTEIN_SIGN_MAX_DEPTH = 32
+
+// Bernstein sign convexity check on `[0, 1]`, returning the monotonicity
+// implied for a function whose derivative is the polynomial described by
+// these Bernstein coefficients. The encoding of `Monotonicity` is the same
+// 2-bit sign-coverage bitmask used internally here (bit 0 = "polynomial
+// takes positive values", bit 1 = "takes negative values"), so we can build
+// up the result and return it without translation.
+//
+// Single-level: by the convex-hull property of Bernstein form, a polynomial's
+// range on `[0, 1]` is contained in the convex hull of its Bernstein control
+// values — so the sign coverage of those values upper-bounds the sign
+// coverage of the polynomial. When the control values are sign-uniform we're
+// done; when not, the polynomial *might* still be sign-uniform (the hull is
+// only an outer bound), so we subdivide and check on tighter intervals.
+//
+// Recursive: split at t = 0.5 via de Casteljau (exact in Bernstein basis),
+// classify each half, then OR the coverages — `Increasing | Decreasing`
+// (subintervals of opposite sign) automatically degenerates to `None`,
+// matching the convex-union semantics of the sign sets. The depth cap turns
+// this into a decision procedure except at tangential zeros.
+const certifyBernsteinSign = (
+  bs: readonly [number, number, number, number, number],
+  depth = 0,
+): Monotonicity.Monotonicity => {
+  let m: Monotonicity.Monotonicity = Monotonicity.Constant
+  for (let i = 0; i < 5; i++) {
+    const b = bs[i] as number
+    if (b > 0) {
+      m = (m | Monotonicity.Increasing) as Monotonicity.Monotonicity
+    } else if (b < 0) {
+      m = (m | Monotonicity.Decreasing) as Monotonicity.Monotonicity
+    }
+  }
+  if (m !== Monotonicity.None) {
+    return m
+  }
+  if (depth >= BERNSTEIN_SIGN_MAX_DEPTH) {
+    return Monotonicity.None
+  }
+
+  // de Casteljau at t = 0.5: each level averages adjacent values. Left half
+  // Bernstein coefficients are the first entry of each column; right half are
+  // the last entry of each column, read in reverse.
+  const [b0, b1, b2, b3, b4] = bs
+  const c0 = (b0 + b1) * 0.5
+  const c1 = (b1 + b2) * 0.5
+  const c2 = (b2 + b3) * 0.5
+  const c3 = (b3 + b4) * 0.5
+  const d0 = (c0 + c1) * 0.5
+  const d1 = (c1 + c2) * 0.5
+  const d2 = (c2 + c3) * 0.5
+  const e0 = (d0 + d1) * 0.5
+  const e1 = (d1 + d2) * 0.5
+  const f = (e0 + e1) * 0.5
+
+  return (certifyBernsteinSign([b0, c0, d0, e0, f], depth + 1) |
+    certifyBernsteinSign([f, e1, d2, c3, b4], depth + 1)) as Monotonicity.Monotonicity
+}
+
+const axisMonotonicity = (
+  numerator: CubicPolynomial.CubicPolynomial,
+  denominator: CubicPolynomial.CubicPolynomial,
+): Monotonicity.Monotonicity => {
+  const [q0, q1, q2, q3, q4] = derivativeNumeratorQuartic(numerator, denominator)
+  return certifyBernsteinSign(bernsteinFromQuarticMonomial(q0, q1, q2, q3, q4))
+}
+
+/** @internal */
+export const xMonotonicity = (c: RationalCubicCurve2d): Monotonicity.Monotonicity =>
+  axisMonotonicity(c.x, c.w)
+
+/** @internal */
+export const yMonotonicity = (c: RationalCubicCurve2d): Monotonicity.Monotonicity =>
+  axisMonotonicity(c.y, c.w)
+
+/** @internal */
+export const isMonotonic = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): c is RationalCubicCurve2d<XT & Monotonic, YT & Monotonic> =>
+  Monotonicity.isStrict(xMonotonicity(c)) && Monotonicity.isStrict(yMonotonicity(c))
+
+/** @internal */
+export const isIncreasing = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): c is RationalCubicCurve2d<XT & Increasing, YT & Increasing> =>
+  xMonotonicity(c) === Monotonicity.Increasing && yMonotonicity(c) === Monotonicity.Increasing
+
+/** @internal */
+export const isDecreasing = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): c is RationalCubicCurve2d<XT & Decreasing, YT & Decreasing> =>
+  xMonotonicity(c) === Monotonicity.Decreasing && yMonotonicity(c) === Monotonicity.Decreasing
+
+const fail = (m: string): never => {
+  throw new Error(m)
+}
+
+/** @internal */
+export const asMonotonic = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): RationalCubicCurve2d<XT & Monotonic, YT & Monotonic> =>
+  isMonotonic(c) ? c : fail('rational cubic curve is not monotonic in both axes')
+
+/** @internal */
+export const asIncreasing = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): RationalCubicCurve2d<XT & Increasing, YT & Increasing> =>
+  isIncreasing(c) ? c : fail('rational cubic curve is not increasing in both axes')
+
+/** @internal */
+export const asDecreasing = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): RationalCubicCurve2d<XT & Decreasing, YT & Decreasing> =>
+  isDecreasing(c) ? c : fail('rational cubic curve is not decreasing in both axes')
 
 // Approximation cap. At depth 20 we'd emit up to 2²⁰ ≈ 1M segments for one
 // input curve — well past any sane target — so the cap is really just a guard

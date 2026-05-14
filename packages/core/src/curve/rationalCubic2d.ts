@@ -1,8 +1,9 @@
 import type { Closed } from '../interval/interval.ts'
 import type { Interval2d } from '../interval/interval2d.ts'
+import type { Monotonicity } from '../monotonicity/monotonicity.ts'
 import type { Pipeable } from '../utils.ts'
 import type { CubicPolynomial } from '../polynomial/cubic.ts'
-import type { Increasing, Monotonic } from '../polynomial/traits.ts'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Vector2, Weighted } from '../vector/vector2.ts'
 import type { CubicCurve2d } from './cubic2d.ts'
@@ -236,6 +237,104 @@ export const subdivide: {
  */
 export const boundingBox: (c: RationalCubicCurve2d) => Interval2d<Closed, Closed> =
   internal.boundingBox
+
+/**
+ * Classifies the monotonicity of the curve's `x(t) = X(t)/W(t)` projection on
+ * the unit interval `[0, 1]`.
+ *
+ * Decided via Bernstein sign convexity on the derivative-numerator polynomial
+ * `q(t) = X'·W − X·W'`. Since `W² > 0` wherever the curve is well-defined,
+ * the sign of `dx/dt` equals the sign of `q`. Although `q` is a difference of
+ * degree-5 products, the leading terms cancel and `q` is in fact a quartic —
+ * its 5 Bernstein coefficients on `[0, 1]` are evaluated for uniform sign,
+ * with de Casteljau subdivision to resolve mixed-sign cases. The procedure is
+ * exact except at tangential zeros, where it conservatively reports `None`.
+ *
+ * Returning `Increasing` or `Decreasing` is the trigger for
+ * {@link asMonotonic} / {@link asIncreasing} / {@link asDecreasing}.
+ *
+ * @param c - The rational cubic curve.
+ * @returns The monotonicity of the curve's x projection on `[0, 1]`.
+ * @since 2.0.0
+ */
+export const xMonotonicity: (c: RationalCubicCurve2d) => Monotonicity = internal.xMonotonicity
+
+/**
+ * Classifies the monotonicity of the curve's `y(t) = Y(t)/W(t)` projection on
+ * the unit interval `[0, 1]`. See {@link xMonotonicity} for the method.
+ *
+ * @param c - The rational cubic curve.
+ * @returns The monotonicity of the curve's y projection on `[0, 1]`.
+ * @since 2.0.0
+ */
+export const yMonotonicity: (c: RationalCubicCurve2d) => Monotonicity = internal.yMonotonicity
+
+/**
+ * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
+ * when both `x(t)/w(t)` and `y(t)/w(t)` are strictly monotonic on `[0, 1]`.
+ *
+ * The constant case is excluded — `Monotonic` is the *strict* brand.
+ *
+ * @param c - The rational cubic curve.
+ * @returns `true` when both axes are strictly monotonic on `[0, 1]`.
+ * @since 2.0.0
+ */
+export const isMonotonic: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => c is RationalCubicCurve2d<XT & Monotonic, YT & Monotonic> = internal.isMonotonic
+
+/**
+ * Type-narrowing predicate: refines both axes' traits to include `Increasing`
+ * when both `x(t)/w(t)` and `y(t)/w(t)` are strictly increasing on `[0, 1]`.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasing: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => c is RationalCubicCurve2d<XT & Increasing, YT & Increasing> = internal.isIncreasing
+
+/**
+ * Type-narrowing predicate: refines both axes' traits to include `Decreasing`
+ * when both `x(t)/w(t)` and `y(t)/w(t)` are strictly decreasing on `[0, 1]`.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasing: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => c is RationalCubicCurve2d<XT & Decreasing, YT & Decreasing> = internal.isDecreasing
+
+/**
+ * Asserts that the curve is strictly monotonic in both axes on `[0, 1]`,
+ * returning the same curve with both axes branded `Monotonic`.
+ *
+ * @param c - The rational cubic curve.
+ * @returns The same curve, refined with the `Monotonic` brand on both axes.
+ * @throws When either axis is not strictly monotonic on `[0, 1]`.
+ * @since 2.0.0
+ */
+export const asMonotonic: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => RationalCubicCurve2d<XT & Monotonic, YT & Monotonic> = internal.asMonotonic
+
+/**
+ * Asserts that the curve is strictly increasing in both axes on `[0, 1]`,
+ * returning the same curve with both axes branded `Increasing`.
+ *
+ * @since 2.0.0
+ */
+export const asIncreasing: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => RationalCubicCurve2d<XT & Increasing, YT & Increasing> = internal.asIncreasing
+
+/**
+ * Asserts that the curve is strictly decreasing in both axes on `[0, 1]`,
+ * returning the same curve with both axes branded `Decreasing`.
+ *
+ * @since 2.0.0
+ */
+export const asDecreasing: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => RationalCubicCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing
 
 export const approximateAsCubicCurves: {
   /**

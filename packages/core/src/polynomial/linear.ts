@@ -4,7 +4,7 @@ import type * as Solution from '../solution/solution.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearPolynomialTypeId } from './linear.internal.ts'
 import * as internal from './linear.internal.ts'
-import type { GuaranteedMonotonicity } from './monotonicity.ts'
+import type { GuaranteedMonotonicity } from '../monotonicity/monotonicity.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
 import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits.ts'
 
@@ -201,7 +201,7 @@ export const monotonicity: (p: LinearPolynomial) => GuaranteedMonotonicity = int
  * `LinearPolynomial<T & Monotonic>` when the polynomial is strictly monotonic.
  *
  * @param p - The linear polynomial to check.
- * @returns `true` when `monotonicity(p)` is `'increasing'` or `'decreasing'`.
+ * @returns `true` when `monotonicity(p)` is `Increasing` or `Decreasing`.
  * @since 2.0.0
  */
 export const isMonotonic: <T>(p: LinearPolynomial<T>) => p is LinearPolynomial<T & Monotonic> =
@@ -211,7 +211,7 @@ export const isMonotonic: <T>(p: LinearPolynomial<T>) => p is LinearPolynomial<T
  * Type-narrowing predicate: refines to `LinearPolynomial<T & Increasing>`.
  *
  * @param p - The linear polynomial to check.
- * @returns `true` when `monotonicity(p)` is `'increasing'`.
+ * @returns `true` when `monotonicity(p)` is `Increasing`.
  * @since 2.0.0
  */
 export const isIncreasing: <T>(p: LinearPolynomial<T>) => p is LinearPolynomial<T & Increasing> =
@@ -221,7 +221,7 @@ export const isIncreasing: <T>(p: LinearPolynomial<T>) => p is LinearPolynomial<
  * Type-narrowing predicate: refines to `LinearPolynomial<T & Decreasing>`.
  *
  * @param p - The linear polynomial to check.
- * @returns `true` when `monotonicity(p)` is `'decreasing'`.
+ * @returns `true` when `monotonicity(p)` is `Decreasing`.
  * @since 2.0.0
  */
 export const isDecreasing: <T>(p: LinearPolynomial<T>) => p is LinearPolynomial<T & Decreasing> =
@@ -232,7 +232,7 @@ export const isDecreasing: <T>(p: LinearPolynomial<T>) => p is LinearPolynomial<
  *
  * @param p - The linear polynomial to assert against.
  * @returns The same polynomial, typed with the `Monotonic` brand.
- * @throws When `monotonicity(p)` is `'constant'`.
+ * @throws When `monotonicity(p)` is `Constant`.
  * @since 2.0.0
  */
 export const asMonotonic: <T>(p: LinearPolynomial<T>) => LinearPolynomial<T & Monotonic> =
@@ -243,7 +243,7 @@ export const asMonotonic: <T>(p: LinearPolynomial<T>) => LinearPolynomial<T & Mo
  *
  * @param p - The linear polynomial to assert against.
  * @returns The same polynomial, typed with the `Increasing` brand.
- * @throws When `monotonicity(p)` is not `'increasing'`.
+ * @throws When `monotonicity(p)` is not `Increasing`.
  * @since 2.0.0
  */
 export const asIncreasing: <T>(p: LinearPolynomial<T>) => LinearPolynomial<T & Increasing> =
@@ -254,7 +254,7 @@ export const asIncreasing: <T>(p: LinearPolynomial<T>) => LinearPolynomial<T & I
  *
  * @param p - The linear polynomial to assert against.
  * @returns The same polynomial, typed with the `Decreasing` brand.
- * @throws When `monotonicity(p)` is not `'decreasing'`.
+ * @throws When `monotonicity(p)` is not `Decreasing`.
  * @since 2.0.0
  */
 export const asDecreasing: <T>(p: LinearPolynomial<T>) => LinearPolynomial<T & Decreasing> =

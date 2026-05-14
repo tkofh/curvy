@@ -11,10 +11,7 @@ The motivating use case is "build a polyline from a list of (x, y) values, then 
 const segments: Array<LinearCurve2d> = []
 for (let i = 1; i < xs.length; i++) {
   segments.push(
-    LinearCurve2d.fromEndpoints(
-      Vector2.make(xs[i - 1]!, ys[i - 1]!),
-      Vector2.make(xs[i]!, ys[i]!),
-    ),
+    LinearCurve2d.fromEndpoints(Vector2.make(xs[i - 1]!, ys[i - 1]!), Vector2.make(xs[i]!, ys[i]!)),
   )
 }
 const path = LinearPath2d.fromArray(segments)

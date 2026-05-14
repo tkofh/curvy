@@ -1,4 +1,5 @@
 import * as Interval from '../interval/interval.ts'
+import * as Monotonicity from '../monotonicity/monotonicity.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as Solution from '../solution/solution.ts'
 import { invariant } from '../utils.ts'
@@ -76,8 +77,8 @@ export const solveInverse = dual<
 export const toInverseSolver = (p: LinearPolynomial) => (y: number) => solveInverse(p, y)
 
 /** @internal */
-export const monotonicity = (p: LinearPolynomial) =>
-  p.c1 === 0 ? 'constant' : p.c1 > 0 ? 'increasing' : 'decreasing'
+export const monotonicity = (p: LinearPolynomial): Monotonicity.GuaranteedMonotonicity =>
+  p.c1 === 0 ? Monotonicity.Constant : p.c1 > 0 ? Monotonicity.Increasing : Monotonicity.Decreasing
 
 /** @internal */
 export const isMonotonic = <T>(p: LinearPolynomial<T>): p is LinearPolynomial<T & Monotonic> =>
