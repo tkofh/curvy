@@ -346,6 +346,26 @@ export const setX: {
   (x: number): (v: Vector3) => Vector3
 } = internal.setX
 
+export const mapX: {
+  /**
+   * Returns a new `Vector3` with the x component replaced by `f(v.x)`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the x component.
+   * @returns A new `Vector3` with the updated x.
+   * @since 2.0.0
+   */
+  (v: Vector3, f: (x: number) => number): Vector3
+  /**
+   * Returns a new `Vector3` with the x component replaced by `f(v.x)`.
+   *
+   * @param f - The function to apply to the x component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (x: number) => number): (v: Vector3) => Vector3
+} = internal.mapX
+
 /**
  * Gets the y component of a `Vector3`.
  *
@@ -374,6 +394,26 @@ export const setY: {
    */
   (y: number): (v: Vector3) => Vector3
 } = internal.setY
+
+export const mapY: {
+  /**
+   * Returns a new `Vector3` with the y component replaced by `f(v.y)`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the y component.
+   * @returns A new `Vector3` with the updated y.
+   * @since 2.0.0
+   */
+  (v: Vector3, f: (y: number) => number): Vector3
+  /**
+   * Returns a new `Vector3` with the y component replaced by `f(v.y)`.
+   *
+   * @param f - The function to apply to the y component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (y: number) => number): (v: Vector3) => Vector3
+} = internal.mapY
 
 /**
  * Gets the z component of a `Vector3`.
@@ -404,6 +444,26 @@ export const setZ: {
   (z: number): (v: Vector3) => Vector3
 } = internal.setZ
 
+export const mapZ: {
+  /**
+   * Returns a new `Vector3` with the z component replaced by `f(v.z)`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the z component.
+   * @returns A new `Vector3` with the updated z.
+   * @since 2.0.0
+   */
+  (v: Vector3, f: (z: number) => number): Vector3
+  /**
+   * Returns a new `Vector3` with the z component replaced by `f(v.z)`.
+   *
+   * @param f - The function to apply to the z component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (z: number) => number): (v: Vector3) => Vector3
+} = internal.mapZ
+
 /**
  * Gets the radius of a `Vector3`.
  *
@@ -432,6 +492,28 @@ export const setR: {
    */
   (r: number): (v: Vector3) => Vector3
 } = internal.setR
+
+export const mapR: {
+  /**
+   * Returns a new `Vector3` with the radius replaced by `f(magnitude(v))`,
+   * preserving direction.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the radius.
+   * @returns A new `Vector3` with the updated radius.
+   * @since 2.0.0
+   */
+  (v: Vector3, f: (r: number) => number): Vector3
+  /**
+   * Returns a new `Vector3` with the radius replaced by `f(magnitude(v))`,
+   * preserving direction.
+   *
+   * @param f - The function to apply to the radius.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (r: number) => number): (v: Vector3) => Vector3
+} = internal.mapR
 
 /**
  * Gets the polar angle (theta) of a `Vector3`.
@@ -462,6 +544,28 @@ export const setTheta: {
   (theta: number): (v: Vector3) => Vector3
 } = internal.setTheta
 
+export const mapTheta: {
+  /**
+   * Returns a new `Vector3` with the polar angle replaced by
+   * `f(getTheta(v))`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the polar angle (in radians).
+   * @returns A new `Vector3` with the updated polar angle.
+   * @since 2.0.0
+   */
+  (v: Vector3, f: (theta: number) => number): Vector3
+  /**
+   * Returns a new `Vector3` with the polar angle replaced by
+   * `f(getTheta(v))`.
+   *
+   * @param f - The function to apply to the polar angle (in radians).
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (theta: number) => number): (v: Vector3) => Vector3
+} = internal.mapTheta
+
 /**
  * Gets the azimuthal angle (phi) of a `Vector3`.
  *
@@ -490,3 +594,25 @@ export const setPhi: {
    */
   (phi: number): (v: Vector3) => Vector3
 } = internal.setPhi
+
+export const mapPhi: {
+  /**
+   * Returns a new `Vector3` with the azimuthal angle replaced by
+   * `f(getPhi(v))`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the azimuthal angle (in radians).
+   * @returns A new `Vector3` with the updated azimuthal angle.
+   * @since 2.0.0
+   */
+  (v: Vector3, f: (phi: number) => number): Vector3
+  /**
+   * Returns a new `Vector3` with the azimuthal angle replaced by
+   * `f(getPhi(v))`.
+   *
+   * @param f - The function to apply to the azimuthal angle (in radians).
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (phi: number) => number): (v: Vector3) => Vector3
+} = internal.mapPhi

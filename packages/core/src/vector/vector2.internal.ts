@@ -197,6 +197,12 @@ export const setX = dual<
 >(2, (v: Vector2, x: number) => make(x, v.y))
 
 /** @internal */
+export const mapX = dual<
+  (f: (x: number) => number) => (v: Vector2) => Vector2,
+  (v: Vector2, f: (x: number) => number) => Vector2
+>(2, (v: Vector2, f: (x: number) => number) => make(f(v.x), v.y))
+
+/** @internal */
 export const getY = (v: Vector2) => v.y
 /** @internal */
 export const setY = dual<
@@ -205,10 +211,25 @@ export const setY = dual<
 >(2, (v: Vector2, y: number) => make(v.x, y))
 
 /** @internal */
+export const mapY = dual<
+  (f: (y: number) => number) => (v: Vector2) => Vector2,
+  (v: Vector2, f: (y: number) => number) => Vector2
+>(2, (v: Vector2, f: (y: number) => number) => make(v.x, f(v.y)))
+
+/** @internal */
 export const setR = dual<
   (r: number) => (v: Vector2) => Vector2,
   (v: Vector2, r: number) => Vector2
 >(2, (v: Vector2, r: number) => scale(r / magnitude(v))(v))
+
+/** @internal */
+export const mapR = dual<
+  (f: (r: number) => number) => (v: Vector2) => Vector2,
+  (v: Vector2, f: (r: number) => number) => Vector2
+>(2, (v: Vector2, f: (r: number) => number) => {
+  const r = magnitude(v)
+  return scale(f(r) / r)(v)
+})
 
 /** @internal */
 export const getTheta = (v: Vector2) => Math.atan2(v.y, v.x)
@@ -218,5 +239,15 @@ export const setTheta = dual<
   (v: Vector2, theta: number) => Vector2
 >(2, (v: Vector2, theta: number) => {
   const r = magnitude(v)
+  return make(r * Math.cos(theta), r * Math.sin(theta))
+})
+
+/** @internal */
+export const mapTheta = dual<
+  (f: (theta: number) => number) => (v: Vector2) => Vector2,
+  (v: Vector2, f: (theta: number) => number) => Vector2
+>(2, (v: Vector2, f: (theta: number) => number) => {
+  const r = magnitude(v)
+  const theta = f(Math.atan2(v.y, v.x))
   return make(r * Math.cos(theta), r * Math.sin(theta))
 })

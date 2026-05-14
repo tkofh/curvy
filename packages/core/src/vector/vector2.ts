@@ -397,6 +397,26 @@ export const setX: {
   (x: number): (v: Vector2) => Vector2
 } = internal.setX
 
+export const mapX: {
+  /**
+   * Returns a new `Vector2` with the x component replaced by `f(v.x)`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the x component.
+   * @returns A new `Vector2` with the updated x.
+   * @since 2.0.0
+   */
+  (v: Vector2, f: (x: number) => number): Vector2
+  /**
+   * Returns a new `Vector2` with the x component replaced by `f(v.x)`.
+   *
+   * @param f - The function to apply to the x component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (x: number) => number): (v: Vector2) => Vector2
+} = internal.mapX
+
 /**
  * Gets the y component of a `Vector2`.
  *
@@ -425,6 +445,26 @@ export const setY: {
    */
   (y: number): (v: Vector2) => Vector2
 } = internal.setY
+
+export const mapY: {
+  /**
+   * Returns a new `Vector2` with the y component replaced by `f(v.y)`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the y component.
+   * @returns A new `Vector2` with the updated y.
+   * @since 2.0.0
+   */
+  (v: Vector2, f: (y: number) => number): Vector2
+  /**
+   * Returns a new `Vector2` with the y component replaced by `f(v.y)`.
+   *
+   * @param f - The function to apply to the y component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (y: number) => number): (v: Vector2) => Vector2
+} = internal.mapY
 
 /**
  * Gets the radius of a `Vector2`.
@@ -455,6 +495,28 @@ export const setR: {
   (r: number): (v: Vector2) => Vector2
 } = internal.setR
 
+export const mapR: {
+  /**
+   * Returns a new `Vector2` with the radius replaced by `f(magnitude(v))`,
+   * preserving the angle.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the radius.
+   * @returns A new `Vector2` with the updated radius.
+   * @since 2.0.0
+   */
+  (v: Vector2, f: (r: number) => number): Vector2
+  /**
+   * Returns a new `Vector2` with the radius replaced by `f(magnitude(v))`,
+   * preserving the angle.
+   *
+   * @param f - The function to apply to the radius.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (r: number) => number): (v: Vector2) => Vector2
+} = internal.mapR
+
 /**
  * Gets the angle of a `Vector2`.
  *
@@ -483,3 +545,25 @@ export const setTheta: {
    */
   (theta: number): (v: Vector2) => Vector2
 } = internal.setTheta
+
+export const mapTheta: {
+  /**
+   * Returns a new `Vector2` with the angle replaced by `f(getTheta(v))`,
+   * preserving the radius.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the angle (in radians).
+   * @returns A new `Vector2` with the updated angle.
+   * @since 2.0.0
+   */
+  (v: Vector2, f: (theta: number) => number): Vector2
+  /**
+   * Returns a new `Vector2` with the angle replaced by `f(getTheta(v))`,
+   * preserving the radius.
+   *
+   * @param f - The function to apply to the angle (in radians).
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (theta: number) => number): (v: Vector2) => Vector2
+} = internal.mapTheta

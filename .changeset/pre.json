@@ -28,6 +28,8 @@
     "spline-conversion-cache",
     "svg-path-data",
     "type-level-traits",
-    "vector-from-tuple"
+    "vector-from-tuple",
+    "vector-map-coord",
+    "vector3-spherical-fix"
   ]
 }

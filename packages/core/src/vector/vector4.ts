@@ -277,3 +277,199 @@ export const scale: {
    */
   (v: Vector4, s: number): Vector4
 } = internal.scale
+
+/**
+ * Gets the x component of a `Vector4`.
+ *
+ * @param v - The vector to get the x component of.
+ * @returns The x component of the vector.
+ * @since 2.0.0
+ */
+export const getX: (v: Vector4) => number = internal.getX
+
+export const setX: {
+  /**
+   * Sets the x component of a `Vector4`.
+   *
+   * @param v - The vector to set the x component of.
+   * @param x - The new x component.
+   * @returns A new `Vector4` instance with the updated x component.
+   * @since 2.0.0
+   */
+  (v: Vector4, x: number): Vector4
+  /**
+   * Sets the x component of a `Vector4`.
+   *
+   * @param x - The new x component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (x: number): (v: Vector4) => Vector4
+} = internal.setX
+
+export const mapX: {
+  /**
+   * Returns a new `Vector4` with the x component replaced by `f(v.x)`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the x component.
+   * @returns A new `Vector4` with the updated x.
+   * @since 2.0.0
+   */
+  (v: Vector4, f: (x: number) => number): Vector4
+  /**
+   * Returns a new `Vector4` with the x component replaced by `f(v.x)`.
+   *
+   * @param f - The function to apply to the x component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (x: number) => number): (v: Vector4) => Vector4
+} = internal.mapX
+
+/**
+ * Gets the y component of a `Vector4`.
+ *
+ * @param v - The vector to get the y component of.
+ * @returns The y component of the vector.
+ * @since 2.0.0
+ */
+export const getY: (v: Vector4) => number = internal.getY
+
+export const setY: {
+  /**
+   * Sets the y component of a `Vector4`.
+   *
+   * @param v - The vector to set the y component of.
+   * @param y - The new y component.
+   * @returns A new `Vector4` instance with the updated y component.
+   * @since 2.0.0
+   */
+  (v: Vector4, y: number): Vector4
+  /**
+   * Sets the y component of a `Vector4`.
+   *
+   * @param y - The new y component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (y: number): (v: Vector4) => Vector4
+} = internal.setY
+
+export const mapY: {
+  /**
+   * Returns a new `Vector4` with the y component replaced by `f(v.y)`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the y component.
+   * @returns A new `Vector4` with the updated y.
+   * @since 2.0.0
+   */
+  (v: Vector4, f: (y: number) => number): Vector4
+  /**
+   * Returns a new `Vector4` with the y component replaced by `f(v.y)`.
+   *
+   * @param f - The function to apply to the y component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (y: number) => number): (v: Vector4) => Vector4
+} = internal.mapY
+
+/**
+ * Gets the z component of a `Vector4`.
+ *
+ * @param v - The vector to get the z component of.
+ * @returns The z component of the vector.
+ * @since 2.0.0
+ */
+export const getZ: (v: Vector4) => number = internal.getZ
+
+export const setZ: {
+  /**
+   * Sets the z component of a `Vector4`.
+   *
+   * @param v - The vector to set the z component of.
+   * @param z - The new z component.
+   * @returns A new `Vector4` instance with the updated z component.
+   * @since 2.0.0
+   */
+  (v: Vector4, z: number): Vector4
+  /**
+   * Sets the z component of a `Vector4`.
+   *
+   * @param z - The new z component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (z: number): (v: Vector4) => Vector4
+} = internal.setZ
+
+export const mapZ: {
+  /**
+   * Returns a new `Vector4` with the z component replaced by `f(v.z)`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the z component.
+   * @returns A new `Vector4` with the updated z.
+   * @since 2.0.0
+   */
+  (v: Vector4, f: (z: number) => number): Vector4
+  /**
+   * Returns a new `Vector4` with the z component replaced by `f(v.z)`.
+   *
+   * @param f - The function to apply to the z component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (z: number) => number): (v: Vector4) => Vector4
+} = internal.mapZ
+
+/**
+ * Gets the w component of a `Vector4`.
+ *
+ * @param v - The vector to get the w component of.
+ * @returns The w component of the vector.
+ * @since 2.0.0
+ */
+export const getW: (v: Vector4) => number = internal.getW
+
+export const setW: {
+  /**
+   * Sets the w component of a `Vector4`.
+   *
+   * @param v - The vector to set the w component of.
+   * @param w - The new w component.
+   * @returns A new `Vector4` instance with the updated w component.
+   * @since 2.0.0
+   */
+  (v: Vector4, w: number): Vector4
+  /**
+   * Sets the w component of a `Vector4`.
+   *
+   * @param w - The new w component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (w: number): (v: Vector4) => Vector4
+} = internal.setW
+
+export const mapW: {
+  /**
+   * Returns a new `Vector4` with the w component replaced by `f(v.w)`.
+   *
+   * @param v - The vector to update.
+   * @param f - The function to apply to the w component.
+   * @returns A new `Vector4` with the updated w.
+   * @since 2.0.0
+   */
+  (v: Vector4, f: (w: number) => number): Vector4
+  /**
+   * Returns a new `Vector4` with the w component replaced by `f(v.w)`.
+   *
+   * @param f - The function to apply to the w component.
+   * @returns A function that takes a vector and returns the updated vector.
+   * @since 2.0.0
+   */
+  (f: (w: number) => number): (v: Vector4) => Vector4
+} = internal.mapW

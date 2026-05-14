@@ -33,6 +33,22 @@ describe('vector2', () => {
   test('fromTuple', () => {
     expect(vector2.fromTuple([1, 2])).toBeCloseToValue(vector2.make(1, 2))
   })
+  test('mapX / mapY apply a function to a single component', () => {
+    const v = vector2.make(2, 3)
+    expect(vector2.mapX(v, (x) => x * 10)).toBeCloseToValue(vector2.make(20, 3))
+    expect(vector2.mapY(v, (y) => y + 1)).toBeCloseToValue(vector2.make(2, 4))
+    // curried form
+    expect(vector2.mapX((x: number) => -x)(v)).toBeCloseToValue(vector2.make(-2, 3))
+  })
+  test('mapR scales radius, preserving angle', () => {
+    const v = vector2.make(3, 4) // r=5
+    expect(vector2.mapR(v, (r) => r * 2)).toBeCloseToValue(vector2.make(6, 8))
+  })
+  test('mapTheta rotates, preserving radius', () => {
+    const v = vector2.make(1, 0)
+    // rotate by π/2 → should land near (0, 1)
+    expect(vector2.mapTheta(v, (t) => t + Math.PI / 2)).toBeCloseToValue(vector2.make(0, 1))
+  })
   test('softmax', () => {
     expect(vector2.softmax(vector2.make(1, 2))).toBeCloseToValue(
       vector2.make(0.2689414213699951, 0.7310585786300049),
@@ -83,6 +99,44 @@ describe('vector3', () => {
   })
   test('fromTuple', () => {
     expect(vector3.fromTuple([1, 2, 3])).toBeCloseToValue(vector3.make(1, 2, 3))
+  })
+  test('mapX / mapY / mapZ apply a function to a single component', () => {
+    const v = vector3.make(2, 3, 4)
+    expect(vector3.mapX(v, (x) => x * 10)).toBeCloseToValue(vector3.make(20, 3, 4))
+    expect(vector3.mapY(v, (y) => y + 1)).toBeCloseToValue(vector3.make(2, 4, 4))
+    expect(vector3.mapZ(v, (z) => -z)).toBeCloseToValue(vector3.make(2, 3, -4))
+  })
+  test('mapR scales radius, preserving direction', () => {
+    const v = vector3.make(1, 2, 2) // magnitude 3
+    expect(vector3.magnitude(vector3.mapR(v, (r) => r * 2))).toBeCloseTo(6, 10)
+    // direction is preserved
+    expect(vector3.normalize(vector3.mapR(v, (r) => r * 2))).toBeCloseToValue(vector3.normalize(v))
+  })
+  test('setTheta changes only the polar angle, preserving r and phi', () => {
+    const v = vector3.make(1, 2, 3)
+    const newTheta = Math.PI / 4
+    const result = vector3.setTheta(v, newTheta)
+    expect(vector3.getTheta(result)).toBeCloseTo(newTheta, 10)
+    expect(vector3.magnitude(result)).toBeCloseTo(vector3.magnitude(v), 10)
+    expect(vector3.getPhi(result)).toBeCloseTo(vector3.getPhi(v), 10)
+  })
+  test('setPhi changes only the azimuthal angle, preserving r and theta', () => {
+    const v = vector3.make(1, 2, 3)
+    const newPhi = Math.PI / 3
+    const result = vector3.setPhi(v, newPhi)
+    expect(vector3.getPhi(result)).toBeCloseTo(newPhi, 10)
+    expect(vector3.magnitude(result)).toBeCloseTo(vector3.magnitude(v), 10)
+    expect(vector3.getTheta(result)).toBeCloseTo(vector3.getTheta(v), 10)
+  })
+  test('mapTheta and mapPhi with identity preserve the vector', () => {
+    const v = vector3.make(1, 2, 3)
+    expect(vector3.mapTheta(v, (t) => t)).toBeCloseToValue(v)
+    expect(vector3.mapPhi(v, (p) => p)).toBeCloseToValue(v)
+  })
+  test('mapPhi rotates around z', () => {
+    const v = vector3.make(1, 0, 5)
+    // rotate by π/2 in the xy plane → (0, 1, 5)
+    expect(vector3.mapPhi(v, (p) => p + Math.PI / 2)).toBeCloseToValue(vector3.make(0, 1, 5))
   })
   test('softmax', () => {
     expect(vector3.softmax(vector3.make(1, 2, 3))).toBeCloseToValue(
@@ -150,6 +204,18 @@ describe('vector4', () => {
   })
   test('fromTuple', () => {
     expect(vector4.fromTuple([1, 2, 3, 4])).toBeCloseToValue(vector4.make(1, 2, 3, 4))
+  })
+  test('getX / setX / mapX (and y, z, w) round-trip', () => {
+    const v = vector4.make(2, 3, 4, 5)
+    expect(vector4.getX(v)).toBe(2)
+    expect(vector4.getY(v)).toBe(3)
+    expect(vector4.getZ(v)).toBe(4)
+    expect(vector4.getW(v)).toBe(5)
+    expect(vector4.setX(v, 10)).toBeCloseToValue(vector4.make(10, 3, 4, 5))
+    expect(vector4.setW(v, 99)).toBeCloseToValue(vector4.make(2, 3, 4, 99))
+    expect(vector4.mapY(v, (y) => y * 10)).toBeCloseToValue(vector4.make(2, 30, 4, 5))
+    expect(vector4.mapZ(v, (z) => -z)).toBeCloseToValue(vector4.make(2, 3, -4, 5))
+    expect(vector4.mapW((w: number) => w + 1)(v)).toBeCloseToValue(vector4.make(2, 3, 4, 6))
   })
   test('softmax', () => {
     expect(vector4.softmax(vector4.make(1, 2, 3, 4))).toBeCloseToValue(

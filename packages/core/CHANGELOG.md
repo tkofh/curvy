@@ -1,5 +1,37 @@
 # Change Log
 
+## 2.0.0-alpha.8
+
+### Minor Changes
+
+- Added per-axis and per-polar `map` to all vector modules, plus filled in `Vector4`'s missing per-axis `get{X,Y,Z,W}` / `set{X,Y,Z,W}` so all three vector modules now have the full get/set/map trio.
+
+  **Vector2**: `mapX`, `mapY`, `mapR` (radius), `mapTheta` (angle).
+  **Vector3**: `mapX`, `mapY`, `mapZ`, `mapR`, `mapTheta` (polar), `mapPhi` (azimuthal).
+  **Vector4**: full `get{X,Y,Z,W}` / `set{X,Y,Z,W}` / `map{X,Y,Z,W}` surface, matching Vector2/3's per-axis API.
+
+  Each `map[coord]` takes a `(component: number) => number` and returns a new vector with that component replaced. Both data-first and data-last forms via `dual`, like the existing setters.
+
+  ```ts
+  const flipped = Vector2.mapY(v, (y) => -y);
+  const doubled = v.pipe(Vector2.mapX((x) => x * 2));
+  const rotated = v.pipe(Vector2.mapTheta((t) => t + Math.PI / 2));
+  const scaled = v.pipe(Vector3.mapR((r) => r * 2));
+  ```
+
+  `Vector4` still doesn't get a polar/spherical surface — no canonical 4D analog.
+
+### Patch Changes
+
+- Fixed `Vector3.setTheta` and `Vector3.setPhi`, which weren't holding their documented invariants.
+
+  - `setTheta(v, theta)` was using `v.y` directly in place of the azimuthal angle, so it didn't actually preserve `φ` and produced garbage for any vector with `v.y` not coincidentally equal to its azimuthal angle in radians.
+  - `setPhi(v, phi)` was rotating around the origin using `magnitude(v)` as the xy-projection length, so the result didn't lie on the original sphere — magnitude wasn't preserved.
+
+  Both now correctly hold "change one spherical component, preserve the other two" — `setTheta` keeps `r` and `φ`, `setPhi` keeps `r` and `θ`. The fix also corrects the internal parameter names (`setTheta`'s arg was named `phi` and vice versa). Public TypeScript types are unchanged.
+
+  `mapTheta` / `mapPhi` (added in the same release) are unaffected — they compose on top of these setters and now produce correct results automatically.
+
 ## 2.0.0-alpha.7
 
 ### Minor Changes

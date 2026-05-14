@@ -157,12 +157,24 @@ export const setX = dual<
 >(2, (v: Vector3, x: number) => make(x, v.y, v.z))
 
 /** @internal */
+export const mapX = dual<
+  (f: (x: number) => number) => (v: Vector3) => Vector3,
+  (v: Vector3, f: (x: number) => number) => Vector3
+>(2, (v: Vector3, f: (x: number) => number) => make(f(v.x), v.y, v.z))
+
+/** @internal */
 export const getY: (v: Vector3) => number = (v: Vector3) => v.y
 /** @internal */
 export const setY = dual<
   (y: number) => (v: Vector3) => Vector3,
   (v: Vector3, y: number) => Vector3
 >(2, (v: Vector3, y: number) => make(v.x, y, v.z))
+
+/** @internal */
+export const mapY = dual<
+  (f: (y: number) => number) => (v: Vector3) => Vector3,
+  (v: Vector3, f: (y: number) => number) => Vector3
+>(2, (v: Vector3, f: (y: number) => number) => make(v.x, f(v.y), v.z))
 
 /** @internal */
 export const getZ: (v: Vector3) => number = (v: Vector3) => v.z
@@ -173,30 +185,60 @@ export const setZ = dual<
 >(2, (v: Vector3, z: number) => make(v.x, v.y, z))
 
 /** @internal */
+export const mapZ = dual<
+  (f: (z: number) => number) => (v: Vector3) => Vector3,
+  (v: Vector3, f: (z: number) => number) => Vector3
+>(2, (v: Vector3, f: (z: number) => number) => make(v.x, v.y, f(v.z)))
+
+/** @internal */
 export const setR = dual<
   (r: number) => (v: Vector3) => Vector3,
   (v: Vector3, r: number) => Vector3
 >(2, (v: Vector3, r: number) => scale(r / magnitude(v))(v))
 
 /** @internal */
-export const getTheta = (v: Vector3) => Math.acos(v.z / magnitude(v))
-/** @internal */
-export const setTheta = dual<
-  (phi: number) => (v: Vector3) => Vector3,
-  (v: Vector3, phi: number) => Vector3
->(2, (v: Vector3, phi: number) => {
-  const m = magnitude(v)
-  const sinTheta = Math.sin(phi)
-  return make(m * sinTheta * Math.cos(v.y), m * sinTheta * Math.sin(v.y), m * Math.cos(phi))
+export const mapR = dual<
+  (f: (r: number) => number) => (v: Vector3) => Vector3,
+  (v: Vector3, f: (r: number) => number) => Vector3
+>(2, (v: Vector3, f: (r: number) => number) => {
+  const r = magnitude(v)
+  return scale(f(r) / r)(v)
 })
 
 /** @internal */
-export const getPhi = (v: Vector3) => Math.atan2(v.y, v.x)
+export const getTheta = (v: Vector3) => Math.acos(v.z / magnitude(v))
 /** @internal */
-export const setPhi = dual<
+export const setTheta = dual<
   (theta: number) => (v: Vector3) => Vector3,
   (v: Vector3, theta: number) => Vector3
 >(2, (v: Vector3, theta: number) => {
-  const m = magnitude(v)
-  return make(m * Math.cos(theta), m * Math.sin(theta), v.z)
+  const r = magnitude(v)
+  const phi = Math.atan2(v.y, v.x)
+  const sinTheta = Math.sin(theta)
+  return make(r * sinTheta * Math.cos(phi), r * sinTheta * Math.sin(phi), r * Math.cos(theta))
 })
+
+/** @internal */
+export const mapTheta = dual<
+  (f: (theta: number) => number) => (v: Vector3) => Vector3,
+  (v: Vector3, f: (theta: number) => number) => Vector3
+>(2, (v: Vector3, f: (theta: number) => number) => setTheta(v, f(getTheta(v))))
+
+/** @internal */
+export const getPhi = (v: Vector3) => Math.atan2(v.y, v.x)
+// setPhi rotates only in the xy plane: preserve z and the xy-projection
+// length ρ = r·sin(θ) = hypot(v.x, v.y). That keeps both r and θ invariant.
+/** @internal */
+export const setPhi = dual<
+  (phi: number) => (v: Vector3) => Vector3,
+  (v: Vector3, phi: number) => Vector3
+>(2, (v: Vector3, phi: number) => {
+  const rho = Math.hypot(v.x, v.y)
+  return make(rho * Math.cos(phi), rho * Math.sin(phi), v.z)
+})
+
+/** @internal */
+export const mapPhi = dual<
+  (f: (phi: number) => number) => (v: Vector3) => Vector3,
+  (v: Vector3, f: (phi: number) => number) => Vector3
+>(2, (v: Vector3, f: (phi: number) => number) => setPhi(v, f(getPhi(v))))
