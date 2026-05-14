@@ -214,10 +214,7 @@ export const curvature = dual(2, (c: QuadraticCurve2d, t: number) => {
 export const boundingBox = (
   c: QuadraticCurve2d,
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> =>
-  Interval2d.make(
-    QuadraticPolynomial.range(c.x, Interval.unit),
-    QuadraticPolynomial.range(c.y, Interval.unit),
-  )
+  Interval2d.make(QuadraticPolynomial.unitRange(c.x), QuadraticPolynomial.unitRange(c.y))
 
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes, over the unit interval. For per-axis checks, users can call

@@ -1,5 +1,47 @@
 # Change Log
 
+## 2.0.0-alpha.10
+
+### Minor Changes
+
+- Added `unitRange` helpers on each polynomial module and a float-tolerant `containsApprox` on `Interval`.
+
+  **`LinearPolynomial.unitRange(p)`, `QuadraticPolynomial.unitRange(p)`, `CubicPolynomial.unitRange(p)`** — equivalent to `range(p, Interval.unit)` but without needing to import `Interval.unit` at the call site. Same semantics: accounts for any interior extrema in `[0, 1]`. Used internally to clean up the curve-level `boundingBox` implementations.
+
+  ```ts
+  // before
+  Interval2d.make(
+    CubicPolynomial.range(c.x, Interval.unit),
+    CubicPolynomial.range(c.y, Interval.unit)
+  );
+  // after
+  Interval2d.make(
+    CubicPolynomial.unitRange(c.x),
+    CubicPolynomial.unitRange(c.y)
+  );
+  ```
+
+  **`Interval.containsApprox(interval, value, eps?)`** — returns `true` when `value` is in the interval or within `eps` of either boundary. Defaults `eps` to `EPSILON` (`1e-10`). Endpoint inclusivity is ignored — at the EPSILON scale the open/closed distinction loses meaning, and the use case is float-tolerant containment checks. Use `contains` for kind-strict semantics.
+
+  ```ts
+  Interval.containsApprox(Interval.make(0, 1), 1.0000000001); // true
+  Interval.containsApprox(Interval.make(0, 1), 1.5); // false
+  Interval.containsApprox(Interval.make(0, 1), 1.5, 1); // true (explicit eps)
+  ```
+
+### Patch Changes
+
+- Fixed `solveAt{X,Y}` on `MonotonicX`/`MonotonicY` paths returning `Solution.none` at most interior knots.
+
+  At an interior knot, two adjacent segments both bracket the query within float tolerance — the leftward segment's right endpoint and the rightward segment's left endpoint are (nominally) the same value. For cubic paths, the per-segment polynomial-inverse solver could return `none` for _both_ of those brackets when accumulated drift in `c0 + c1 + c2 + c3` pushed the cubic's true root just outside `[0, 1]`. The path-level loop then short-circuited on the first `none` and returned the empty solution even though one of the segment endpoints was the answer.
+
+  The reproducer (Catmull-Rom from 6 knots, queried at interior knot x-values) used to return `none` for 3 of 4 interior knots; now returns the expected y at all 6.
+
+  Two-part fix in `LinearPath2d`, `QuadraticPath2d`, `CubicPath2d`:
+
+  - Snap to the segment endpoint y when the query is within `EPSILON` of the segment's start or end x — avoids the polynomial inversion entirely at the knot case.
+  - Fall through to the next bracketing segment on `none` rather than short-circuiting. The `MonotonicX/Y` brand guarantees at most one real solution across the path, so retrying after `none` is safe.
+
 ## 2.0.0-alpha.8
 
 ### Minor Changes

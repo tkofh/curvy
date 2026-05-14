@@ -255,10 +255,13 @@ export const asMonotonicY = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & Mono
   return p
 }
 
-// solveAtX/Y on a monotonic-axis path: locate the segment whose axis range
-// contains the queried value, then delegate to the curve solver. Since the
-// path is monotonic in that axis, at most one segment matches and the
-// curve-level call is single-valued.
+// solveAtX/Y on a monotonic-axis path. Two defenses against float drift at
+// interior knots, where two adjacent segments both bracket the query and the
+// polynomial-inverse solver may return `none` for both:
+//   1. Snap to t=0/t=1 endpoint y when the query is within EPSILON of a
+//      segment's start or end — bypasses polynomial inversion at knots.
+//   2. Fall through to the next bracketing segment on `none`. `MonotonicX/Y`
+//      admits at most one real solution across the path, so retrying is safe.
 /** @internal */
 export const solveAtX = dual(2, (p: QuadraticPath2d, x: number): Solution.AtMostOne<number> => {
   for (const c of p) {
@@ -267,7 +270,16 @@ export const solveAtX = dual(2, (p: QuadraticPath2d, x: number): Solution.AtMost
     const lo = Math.min(sx, ex)
     const hi = Math.max(sx, ex)
     if (x >= lo - EPSILON && x <= hi + EPSILON) {
-      return QuadraticCurve2d.solveAtX(c, x) as Solution.AtMostOne<number>
+      if (epsEquals(x, sx)) {
+        return Solution.one(c.y.c0)
+      }
+      if (epsEquals(x, ex)) {
+        return Solution.one(c.y.c0 + c.y.c1 + c.y.c2)
+      }
+      const sol = QuadraticCurve2d.solveAtX(c, x) as Solution.AtMostOne<number>
+      if (!Solution.isNone(sol)) {
+        return sol
+      }
     }
   }
   return Solution.none
@@ -281,7 +293,16 @@ export const solveAtY = dual(2, (p: QuadraticPath2d, y: number): Solution.AtMost
     const lo = Math.min(sy, ey)
     const hi = Math.max(sy, ey)
     if (y >= lo - EPSILON && y <= hi + EPSILON) {
-      return QuadraticCurve2d.solveAtY(c, y) as Solution.AtMostOne<number>
+      if (epsEquals(y, sy)) {
+        return Solution.one(c.x.c0)
+      }
+      if (epsEquals(y, ey)) {
+        return Solution.one(c.x.c0 + c.x.c1 + c.x.c2)
+      }
+      const sol = QuadraticCurve2d.solveAtY(c, y) as Solution.AtMostOne<number>
+      if (!Solution.isNone(sol)) {
+        return sol
+      }
     }
   }
   return Solution.none

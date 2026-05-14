@@ -79,6 +79,12 @@ describe('linear', () => {
       interval.make(0, 2),
     )
   })
+  test('unitRange evaluates over [0, 1]', () => {
+    // p(t) = 3 + 2t  →  [3, 5] on [0, 1]
+    expect(linear.unitRange(linear.make(3, 2))).toBeCloseToValue(interval.make(3, 5))
+    // p(t) = 5 - 2t  →  same range, fromMinMax normalizes order
+    expect(linear.unitRange(linear.make(5, -2))).toBeCloseToValue(interval.make(3, 5))
+  })
   test('length', () => {
     const l = linear.make(0, 2)
     expect(linear.length(l, interval.make(0, 1))).toBeCloseTo(Math.sqrt(5), 10)
@@ -197,6 +203,11 @@ describe('quadratic', () => {
     const p = quadratic.make(0, 0, 1)
 
     expect(quadratic.range(p, interval.make(-2, -1))).toBeCloseToValue(interval.make(1, 4))
+  })
+  test('unitRange captures an interior extremum on [0, 1]', () => {
+    // p(t) = -4t² + 4t  →  peak at t = 0.5, p(0.5) = 1; endpoints both 0.
+    const p = quadratic.make(0, 4, -4)
+    expect(quadratic.unitRange(p)).toBeCloseToValue(interval.make(0, 1))
   })
   test('length', () => {
     expect(quadratic.length(quadratic.make(0, 0, 1), interval.unit)).toBeCloseTo(1.47894286, 7)
@@ -346,6 +357,11 @@ describe('cubic', () => {
     expect(cubic.range(p, interval.make(-3, -2))).toBeCloseToValue(interval.make(-9, -1))
     expect(cubic.range(p, interval.make(-2, -1))).toBeCloseToValue(interval.make(-1, 1))
     expect(cubic.range(p, interval.make(-1, 0))).toBeCloseToValue(interval.make(0, 1))
+  })
+  test('unitRange agrees with range over [0, 1]', () => {
+    // p(t) = t³ - 1.5t² + 1 — has an extremum inside [0, 1]
+    const p = cubic.make(1, 0, -1.5, 1)
+    expect(cubic.unitRange(p)).toBeCloseToValue(cubic.range(p, interval.unit))
   })
   test('length', () => {
     const p = cubic.make(0, 100, 200, -300)

@@ -373,6 +373,17 @@ export const range: {
   (domain: Interval): (p: QuadraticPolynomial) => Closed
 } = internal.range
 
+/**
+ * Computes the range of the quadratic polynomial over the unit interval
+ * `[0, 1]`. Equivalent to `range(p, Interval.unit)` — accounts for any
+ * interior extremum in `[0, 1]`.
+ *
+ * @param p - The quadratic polynomial.
+ * @returns The closed range of the polynomial over `[0, 1]`.
+ * @since 2.0.0
+ */
+export const unitRange: (p: QuadraticPolynomial) => Closed = internal.unitRange
+
 export const length: {
   /**
    * Computes the length of the quadratic polynomial over a given interval.

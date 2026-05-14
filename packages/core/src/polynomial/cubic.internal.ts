@@ -317,6 +317,9 @@ export const range = dual<
 )
 
 /** @internal */
+export const unitRange = (p: CubicPolynomial): Interval.Closed => range(p, Interval.unit)
+
+/** @internal */
 export const length = dual<
   (domain: Interval.Interval) => (p: CubicPolynomial) => number,
   (p: CubicPolynomial, domain: Interval.Interval) => number

@@ -259,6 +259,22 @@ export const contains: {
   (value: number): (interval: Interval) => boolean
 } = internal.contains
 
+/**
+ * Float-tolerant containment: returns `true` if `value` is in the interval or
+ * within `eps` of either boundary. Endpoint inclusivity is ignored — at the
+ * `EPSILON` scale the open/closed distinction loses meaning, and the use case
+ * is "is this query approximately in this range, accounting for float drift?".
+ * Use {@link contains} if you need kind-strict semantics.
+ *
+ * @param interval - The interval to check against.
+ * @param value - The value to check.
+ * @param eps - The absolute tolerance. Defaults to {@link EPSILON}.
+ * @returns `true` when `interval.start - eps <= value <= interval.end + eps`.
+ * @since 2.0.0
+ */
+export const containsApprox: (interval: Interval, value: number, eps?: number) => boolean =
+  internal.containsApprox
+
 export const containsInterval: {
   /**
    * Checks if `inner` is a subset of `outer` — every point of `inner` is also

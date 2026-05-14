@@ -1,6 +1,6 @@
 import type { Bounds, Closed, Interval, Open, OpenEnd, OpenStart } from './interval.ts'
 import { dual, Pipeable } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { EPSILON, epsEquals } from '../number.ts'
 
 const TypeId: unique symbol = Symbol.for('curvy/interval')
 type TypeId = typeof TypeId
@@ -116,6 +116,15 @@ export const contains = dual<
       return value > interval.start && value < interval.end
   }
 })
+
+// Approximate containment: value is in the interval *or* within eps of either
+// boundary. Endpoint inclusivity is ignored — at the EPSILON scale the
+// open/closed distinction loses meaning, and the use case is float-tolerant
+// containment checks (e.g. "is this query in the segment's range?"). Use
+// `contains` if you need kind-strict semantics.
+/** @internal */
+export const containsApprox = (interval: Interval, value: number, eps = EPSILON): boolean =>
+  value >= interval.start - eps && value <= interval.end + eps
 
 const includesStart = (i: Interval): boolean => i.kind === 'closed' || i.kind === 'open-end'
 const includesEnd = (i: Interval): boolean => i.kind === 'closed' || i.kind === 'open-start'

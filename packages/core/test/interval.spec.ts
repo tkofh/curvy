@@ -62,6 +62,27 @@ describe('interval', () => {
     expect(Interval.contains(Interval.makeOpen(0, 1), 0.5)).toBe(true)
   })
 
+  test('containsApprox accepts values within EPSILON of either boundary', () => {
+    const i = Interval.make(0, 1)
+    // strict-inside values are obviously fine
+    expect(Interval.containsApprox(i, 0.5)).toBe(true)
+    // values just past either boundary, within EPSILON
+    expect(Interval.containsApprox(i, -1e-11)).toBe(true)
+    expect(Interval.containsApprox(i, 1 + 1e-11)).toBe(true)
+    // values past the EPSILON window are rejected
+    expect(Interval.containsApprox(i, -1)).toBe(false)
+    expect(Interval.containsApprox(i, 2)).toBe(false)
+  })
+  test('containsApprox honors an explicit eps', () => {
+    const i = Interval.make(0, 1)
+    expect(Interval.containsApprox(i, 1.5, 1)).toBe(true)
+    expect(Interval.containsApprox(i, 1.5, 0.1)).toBe(false)
+  })
+  test('containsApprox ignores interval kind (treats all as closed)', () => {
+    expect(Interval.containsApprox(Interval.makeOpen(0, 1), 0)).toBe(true)
+    expect(Interval.containsApprox(Interval.makeOpen(0, 1), 1)).toBe(true)
+  })
+
   test('clamp is kind-agnostic', () => {
     expect(Interval.clamp(Interval.make(0, 1), -0.5)).toBe(0)
     expect(Interval.clamp(Interval.make(0, 1), 0)).toBe(0)

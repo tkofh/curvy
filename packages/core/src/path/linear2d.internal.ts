@@ -243,10 +243,13 @@ export const asMonotonicY = <T>(p: LinearPath2d<T>): LinearPath2d<T & MonotonicY
   return p
 }
 
-// solveAtX/solveAtY for `Monotonic{X,Y}` paths: locate the segment whose axis
-// range contains the queried value, then delegate to the curve-level solver.
-// Caller-side trait constraints guarantee a single solution; the runtime
-// function returns `None` when the value is outside the path's range.
+// solveAtX/solveAtY for `Monotonic{X,Y}` paths. Two defenses against float
+// drift at interior knots (where adjacent segments both bracket the query):
+//   1. Snap to t=0/t=1 endpoint y when the query is within EPSILON of a
+//      segment's start or end.
+//   2. Fall through to the next bracketing segment on `none`. Linear paths
+//      don't currently surface drift (degree-1 `c0 + c1 = x` is stable), but
+//      the same shape applies for symmetry with quadratic / cubic.
 /** @internal */
 export const solveAtX = dual(2, (p: LinearPath2d, x: number): Solution.AtMostOne<number> => {
   for (const c of p) {
@@ -255,7 +258,16 @@ export const solveAtX = dual(2, (p: LinearPath2d, x: number): Solution.AtMostOne
     const lo = Math.min(sx, ex)
     const hi = Math.max(sx, ex)
     if (x >= lo - EPSILON && x <= hi + EPSILON) {
-      return LinearCurve2d.solveAtX(c, x)
+      if (epsEquals(x, sx)) {
+        return Solution.one(c.y.c0)
+      }
+      if (epsEquals(x, ex)) {
+        return Solution.one(c.y.c0 + c.y.c1)
+      }
+      const sol = LinearCurve2d.solveAtX(c, x)
+      if (!Solution.isNone(sol)) {
+        return sol
+      }
     }
   }
   return Solution.none
@@ -269,7 +281,16 @@ export const solveAtY = dual(2, (p: LinearPath2d, y: number): Solution.AtMostOne
     const lo = Math.min(sy, ey)
     const hi = Math.max(sy, ey)
     if (y >= lo - EPSILON && y <= hi + EPSILON) {
-      return LinearCurve2d.solveAtY(c, y)
+      if (epsEquals(y, sy)) {
+        return Solution.one(c.x.c0)
+      }
+      if (epsEquals(y, ey)) {
+        return Solution.one(c.x.c0 + c.x.c1)
+      }
+      const sol = LinearCurve2d.solveAtY(c, y)
+      if (!Solution.isNone(sol)) {
+        return sol
+      }
     }
   }
   return Solution.none

@@ -339,6 +339,17 @@ export const range: {
   (domain: Interval): (p: LinearPolynomial) => Closed
 } = internal.range
 
+/**
+ * Calculates the range of a linear polynomial over the unit interval `[0, 1]`.
+ * Equivalent to `range(p, Interval.unit)` but without the import and call
+ * overhead — directly evaluates the endpoints.
+ *
+ * @param p - The linear polynomial.
+ * @returns The closed range of the polynomial over `[0, 1]`.
+ * @since 2.0.0
+ */
+export const unitRange: (p: LinearPolynomial) => Closed = internal.unitRange
+
 export const length: {
   /**
    * Calculates the length of a linear polynomial within a particular domain `Interval`.

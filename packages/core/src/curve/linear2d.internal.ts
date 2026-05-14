@@ -1,5 +1,5 @@
 import * as Interval2d from '../interval/interval2d.ts'
-import * as Interval from '../interval/interval.ts'
+import type * as Interval from '../interval/interval.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as LinearPolynomial from '../polynomial/linear.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
@@ -104,10 +104,7 @@ export const length = dual(
 export const boundingBox = (
   c: LinearCurve2d,
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> =>
-  Interval2d.make(
-    LinearPolynomial.range(c.x, Interval.unit),
-    LinearPolynomial.range(c.y, Interval.unit),
-  )
+  Interval2d.make(LinearPolynomial.unitRange(c.x), LinearPolynomial.unitRange(c.y))
 
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes. For per-axis checks, users can call `LinearPolynomial.isMonotonic(c.x)`

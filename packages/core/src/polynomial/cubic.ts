@@ -379,6 +379,17 @@ export const range: {
   (domain: Interval): (p: CubicPolynomial) => Closed
 } = internal.range
 
+/**
+ * Calculates the range of a cubic polynomial over the unit interval `[0, 1]`.
+ * Equivalent to `range(p, Interval.unit)` — accounts for up to two interior
+ * extrema in `[0, 1]`.
+ *
+ * @param p - The cubic polynomial.
+ * @returns The closed range of the polynomial over `[0, 1]`.
+ * @since 2.0.0
+ */
+export const unitRange: (p: CubicPolynomial) => Closed = internal.unitRange
+
 export const length: {
   /**
    * Calculates the length of a cubic polynomial.

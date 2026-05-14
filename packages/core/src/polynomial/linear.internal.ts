@@ -156,6 +156,10 @@ export const range = dual<
 )
 
 /** @internal */
+export const unitRange = (p: LinearPolynomial): Interval.Closed =>
+  Interval.fromMinMax(p.c0, p.c0 + p.c1)
+
+/** @internal */
 export const length = dual<
   (domain: Interval.Interval) => (p: LinearPolynomial) => number,
   (p: LinearPolynomial, domain: Interval.Interval) => number

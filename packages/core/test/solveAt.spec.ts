@@ -8,6 +8,7 @@ import * as quadraticPath2d from '../src/path/quadratic2d.ts'
 import * as cubicPolynomial from '../src/polynomial/cubic.ts'
 import * as quadraticPolynomial from '../src/polynomial/quadratic.ts'
 import * as Solution from '../src/solution/solution.ts'
+import * as Cardinal2d from '../src/splines/cardinal2d.ts'
 import * as vector2 from '../src/vector/vector2.ts'
 
 describe('LinearCurve2d.solveAtX/solveAtY', () => {
@@ -266,6 +267,37 @@ describe('Path solveAtX / solveAtY (Monotonic-axis required)', () => {
       linearPath2d.make(linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 4))),
     )
     expect([...linearPath2d.solveAtX(1)(p)]).toEqual([2])
+  })
+  test('CubicPath: solveAtX resolves at interior knots (regression)', () => {
+    // Catmull-Rom-derived cubic path. At an interior knot, two adjacent
+    // segments both bracket x within float drift; the leftward segment's
+    // cubic-root solver can miss the root if the bracket end falls just
+    // outside [0, 1]. Previously the loop short-circuited on `none` from
+    // the first bracket and never tried the next segment.
+    const path = Cardinal2d.fromTuples([
+      [-2, 12],
+      [-1, 14],
+      [0, 16],
+      [1, 20],
+      [2, 24],
+      [3, 32],
+    ]).pipe(Cardinal2d.withInterpolatedEndpoints, Cardinal2d.toPath, cubicPath2d.asMonotonicX)
+
+    const expectations: ReadonlyArray<readonly [number, number]> = [
+      [-2, 12], // outer endpoint
+      [-1, 14], // interior knot
+      [0, 16], // interior knot
+      [1, 20], // interior knot
+      [2, 24], // interior knot
+      [3, 32], // outer endpoint
+    ]
+    for (const [x, y] of expectations) {
+      const sol = cubicPath2d.solveAtX(path, x)
+      expect(Solution.isNone(sol), `x=${x} returned none`).toBe(false)
+      if (Solution.isSome(sol)) {
+        expect(sol.value).toBeCloseTo(y, 8)
+      }
+    }
   })
 })
 

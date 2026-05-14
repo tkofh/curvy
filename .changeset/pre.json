@@ -18,6 +18,8 @@
     "matrix4x4-primitives",
     "module-restructure",
     "path-axis-monotonicity",
+    "path-solveAt-knot-fix",
+    "polynomial-unit-range-interval-approx",
     "precision-model",
     "punch-list",
     "rational-approximation",

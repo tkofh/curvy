@@ -330,6 +330,16 @@ export const asMonotonicY = <T>(p: CubicPath2d<T>): CubicPath2d<T & MonotonicY> 
   return p
 }
 
+// At an interior knot, two adjacent segments both bracket the query — one's
+// right endpoint and the next's left endpoint are (within float drift) the
+// same value. The per-curve cubic-root solver can return `none` for both
+// brackets when the true root sits just outside [0, 1] due to that drift. We
+// handle this two ways:
+//   1. If the query is within EPSILON of a segment's start or end, evaluate y
+//      directly at t=0 or t=1 — skips polynomial inversion entirely.
+//   2. Otherwise, if a bracketing segment returns `none`, fall through to the
+//      next bracketing segment. `MonotonicX` admits at most one real solution
+//      across the path, so retrying after `none` is safe.
 /** @internal */
 export const solveAtX = dual(2, (p: CubicPath2d, x: number): Solution.AtMostOne<number> => {
   for (const c of p) {
@@ -338,7 +348,16 @@ export const solveAtX = dual(2, (p: CubicPath2d, x: number): Solution.AtMostOne<
     const lo = Math.min(sx, ex)
     const hi = Math.max(sx, ex)
     if (x >= lo - EPSILON && x <= hi + EPSILON) {
-      return CubicCurve2d.solveAtX(c, x) as Solution.AtMostOne<number>
+      if (epsEquals(x, sx)) {
+        return Solution.one(c.y.c0)
+      }
+      if (epsEquals(x, ex)) {
+        return Solution.one(c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3)
+      }
+      const sol = CubicCurve2d.solveAtX(c, x) as Solution.AtMostOne<number>
+      if (!Solution.isNone(sol)) {
+        return sol
+      }
     }
   }
   return Solution.none
@@ -352,7 +371,16 @@ export const solveAtY = dual(2, (p: CubicPath2d, y: number): Solution.AtMostOne<
     const lo = Math.min(sy, ey)
     const hi = Math.max(sy, ey)
     if (y >= lo - EPSILON && y <= hi + EPSILON) {
-      return CubicCurve2d.solveAtY(c, y) as Solution.AtMostOne<number>
+      if (epsEquals(y, sy)) {
+        return Solution.one(c.x.c0)
+      }
+      if (epsEquals(y, ey)) {
+        return Solution.one(c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3)
+      }
+      const sol = CubicCurve2d.solveAtY(c, y) as Solution.AtMostOne<number>
+      if (!Solution.isNone(sol)) {
+        return sol
+      }
     }
   }
   return Solution.none
