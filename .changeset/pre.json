@@ -15,6 +15,7 @@
     "from-api-coherence",
     "interval-inclusivity",
     "interval2d",
+    "linear2d-spline",
     "matrix4x4-primitives",
     "module-restructure",
     "path-axis-monotonicity",

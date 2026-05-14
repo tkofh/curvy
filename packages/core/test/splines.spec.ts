@@ -1,11 +1,13 @@
 import { describe, expect, test } from 'vitest'
 import * as CubicCurve2d from '../src/curve/cubic2d.ts'
 import * as CubicPath2d from '../src/path/cubic2d.ts'
+import * as LinearPath2d from '../src/path/linear2d.ts'
 import * as RationalCubicPath2d from '../src/path/rationalCubic2d.ts'
 import * as Basis2d from '../src/splines/basis2d.ts'
 import * as Bezier2d from '../src/splines/bezier2d.ts'
 import * as Cardinal2d from '../src/splines/cardinal2d.ts'
 import * as Hermite2d from '../src/splines/hermite2d.ts'
+import * as Linear2d from '../src/splines/linear2d.ts'
 import * as RationalBezier2d from '../src/splines/rationalBezier2d.ts'
 import * as Vector2 from '../src/vector/vector2.ts'
 
@@ -618,5 +620,56 @@ describe('Cardinal2d.withInterpolatedEndpoints', () => {
     const path = Cardinal2d.toPath(c)
     expect(CubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, 0))
     expect(CubicPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(2, 0))
+  })
+})
+
+describe('Linear2d', () => {
+  test('toPath produces N-1 segments from N points', () => {
+    const l = Linear2d.make(
+      Vector2.make(0, 0),
+      Vector2.make(1, 2),
+      Vector2.make(3, 1),
+      Vector2.make(5, 4),
+    )
+    const path = Linear2d.toPath(l)
+    expect([...path]).toHaveLength(3)
+    // path visits each original point at u=0, u=1/3, u=2/3, u=1
+    expect(LinearPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, 0))
+    expect(LinearPath2d.solve(path, 1 / 3)).toBeCloseToValue(Vector2.make(1, 2))
+    expect(LinearPath2d.solve(path, 2 / 3)).toBeCloseToValue(Vector2.make(3, 1))
+    expect(LinearPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(5, 4))
+  })
+  test('append / prepend round-trip', () => {
+    const base = Linear2d.make(Vector2.make(0, 0), Vector2.make(1, 1))
+    const appended = Linear2d.append(base, Vector2.make(2, 2), Vector2.make(3, 3))
+    const prepended = Linear2d.prepend(base, Vector2.make(-1, -1))
+    expect([...appended]).toEqual([
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(2, 2),
+      Vector2.make(3, 3),
+    ])
+    expect([...prepended]).toEqual([Vector2.make(-1, -1), Vector2.make(0, 0), Vector2.make(1, 1)])
+  })
+  test('fromTuples matches fromArray', () => {
+    const tuples = Linear2d.fromTuples([
+      [0, 0],
+      [1, 1],
+      [2, 0],
+    ])
+    const arr = Linear2d.fromArray([Vector2.make(0, 0), Vector2.make(1, 1), Vector2.make(2, 0)])
+    expect([...tuples]).toEqual([...arr])
+  })
+  test('toPath then asMonotonicX brands when the polyline is x-monotonic', () => {
+    const path = Linear2d.fromTuples([
+      [0, 0],
+      [1, 2],
+      [2, 5],
+      [3, 4],
+    ]).pipe(Linear2d.toPath, LinearPath2d.asMonotonicX)
+    expect(LinearPath2d.isMonotonicX(path)).toBe(true)
+  })
+  test('requires at least 2 points', () => {
+    expect(() => Linear2d.fromArray([Vector2.make(0, 0)])).toThrow(/2 or more/)
   })
 })

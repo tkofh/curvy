@@ -2,6 +2,7 @@ import * as Bezier2dNs from './bezier2d.ts'
 import * as Cardinal2dNs from './cardinal2d.ts'
 import * as Hermite2dNs from './hermite2d.ts'
 import * as Basis2dNs from './basis2d.ts'
+import * as Linear2dNs from './linear2d.ts'
 import * as RationalBezier2dNs from './rationalBezier2d.ts'
 
 export type Bezier2d = Bezier2dNs.Bezier2d
@@ -15,6 +16,9 @@ export { Hermite2dNs as Hermite2d }
 
 export type Basis2d = Basis2dNs.Basis2d
 export { Basis2dNs as Basis2d }
+
+export type Linear2d = Linear2dNs.Linear2d
+export { Linear2dNs as Linear2d }
 
 export type RationalBezier2d = RationalBezier2dNs.RationalBezier2d
 export { RationalBezier2dNs as RationalBezier2d }
