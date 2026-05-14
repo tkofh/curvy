@@ -363,8 +363,8 @@ describe('toPathData', () => {
   test('linear path renders M and L commands', () => {
     const d = linearPath2d
       .make(
-        linearCurve2d.fromBezierPoints(vector2.make(0, 0), vector2.make(1, 1)),
-        linearCurve2d.fromBezierPoints(vector2.make(1, 1), vector2.make(2, 0)),
+        linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(1, 1)),
+        linearCurve2d.fromEndpoints(vector2.make(1, 1), vector2.make(2, 0)),
       )
       .pipe(linearPath2d.toPathData)
     expect(d).toBe('M 0,0 L 1,1 L 2,0')
@@ -372,8 +372,8 @@ describe('toPathData', () => {
   test('linear path emits fresh M on discontinuity', () => {
     const d = linearPath2d
       .make(
-        linearCurve2d.fromBezierPoints(vector2.make(0, 0), vector2.make(1, 1)),
-        linearCurve2d.fromBezierPoints(vector2.make(5, 5), vector2.make(6, 6)),
+        linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(1, 1)),
+        linearCurve2d.fromEndpoints(vector2.make(5, 5), vector2.make(6, 6)),
       )
       .pipe(linearPath2d.toPathData)
     expect(d).toBe('M 0,0 L 1,1 M 5,5 L 6,6')

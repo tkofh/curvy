@@ -1,13 +1,31 @@
 import type { Interval2d } from '../interval/interval2d.ts'
 import type { LinearCurve2d } from '../curve/linear2d.ts'
 import type { Closed } from '../interval/interval.ts'
+import type * as Solution from '../solution/solution.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearPath2dTypeId } from './linear2d.internal.ts'
 import * as internal from './linear2d.internal.ts'
-import type { Continuous, PathTraits } from './traits.ts'
+import type {
+  Continuous,
+  DecreasingX,
+  DecreasingY,
+  IncreasingX,
+  IncreasingY,
+  MonotonicX,
+  MonotonicY,
+  PathTraits,
+} from './traits.ts'
 
-export type { Continuous } from './traits.ts'
+export type {
+  Continuous,
+  DecreasingX,
+  DecreasingY,
+  IncreasingX,
+  IncreasingY,
+  MonotonicX,
+  MonotonicY,
+} from './traits.ts'
 
 /**
  * A linear path in 2D space.
@@ -134,6 +152,145 @@ export const isContinuous: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & Cont
  */
 export const asContinuous: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Continuous> =
   internal.asContinuous
+
+/**
+ * Type-narrowing predicate: refines `LinearPath2d<T>` to
+ * `LinearPath2d<T & IncreasingX>` when every segment's x-polynomial is
+ * strictly increasing and adjacent segments' x-ranges don't overlap.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasingX: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & IncreasingX> =
+  internal.isIncreasingX
+
+/**
+ * Type-narrowing predicate: refines `LinearPath2d<T>` to
+ * `LinearPath2d<T & DecreasingX>` when every segment's x-polynomial is
+ * strictly decreasing and adjacent segments' x-ranges don't overlap.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasingX: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & DecreasingX> =
+  internal.isDecreasingX
+
+/**
+ * Type-narrowing predicate: refines `LinearPath2d<T>` to
+ * `LinearPath2d<T & MonotonicX>` when the path is either increasing or
+ * decreasing in x along its full parameter domain.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonicX: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & MonotonicX> =
+  internal.isMonotonicX
+
+/**
+ * Type-narrowing predicate: refines `LinearPath2d<T>` to
+ * `LinearPath2d<T & IncreasingY>`. The y-axis analog of {@link isIncreasingX}.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasingY: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & IncreasingY> =
+  internal.isIncreasingY
+
+/**
+ * Type-narrowing predicate: refines `LinearPath2d<T>` to
+ * `LinearPath2d<T & DecreasingY>`. The y-axis analog of {@link isDecreasingX}.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasingY: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & DecreasingY> =
+  internal.isDecreasingY
+
+/**
+ * Type-narrowing predicate: refines `LinearPath2d<T>` to
+ * `LinearPath2d<T & MonotonicY>`. The y-axis analog of {@link isMonotonicX}.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonicY: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & MonotonicY> =
+  internal.isMonotonicY
+
+/**
+ * Asserts that the path is strictly increasing in x, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asIncreasingX: <T>(p: LinearPath2d<T>) => LinearPath2d<T & IncreasingX> =
+  internal.asIncreasingX
+
+/**
+ * Asserts that the path is strictly decreasing in x, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asDecreasingX: <T>(p: LinearPath2d<T>) => LinearPath2d<T & DecreasingX> =
+  internal.asDecreasingX
+
+/**
+ * Asserts that the path is monotonic in x, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asMonotonicX: <T>(p: LinearPath2d<T>) => LinearPath2d<T & MonotonicX> =
+  internal.asMonotonicX
+
+/**
+ * Asserts that the path is strictly increasing in y, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asIncreasingY: <T>(p: LinearPath2d<T>) => LinearPath2d<T & IncreasingY> =
+  internal.asIncreasingY
+
+/**
+ * Asserts that the path is strictly decreasing in y, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asDecreasingY: <T>(p: LinearPath2d<T>) => LinearPath2d<T & DecreasingY> =
+  internal.asDecreasingY
+
+/**
+ * Asserts that the path is monotonic in y, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asMonotonicY: <T>(p: LinearPath2d<T>) => LinearPath2d<T & MonotonicY> =
+  internal.asMonotonicY
+
+export const solveAtX: {
+  /**
+   * Evaluates the path's y value at a given x. Requires the path to carry the
+   * `MonotonicX` brand — without it, an x query could match multiple
+   * segments and the return cardinality would be unbounded.
+   *
+   * Returns `Solution.none` when x falls outside the path's x-range.
+   *
+   * @param p - A path branded `MonotonicX`.
+   * @param x - The x coordinate.
+   * @returns The y value at x, or `none` when x is outside the path's range.
+   * @since 2.0.0
+   */
+  <T extends MonotonicX>(p: LinearPath2d<T>, x: number): Solution.AtMostOne<number>
+  /** @since 2.0.0 */
+  (x: number): <T extends MonotonicX>(p: LinearPath2d<T>) => Solution.AtMostOne<number>
+} = internal.solveAtX as never
+
+export const solveAtY: {
+  /**
+   * Evaluates the path's x value at a given y. Requires the path to carry the
+   * `MonotonicY` brand. Returns `Solution.none` when y is outside the path's
+   * y-range.
+   *
+   * @param p - A path branded `MonotonicY`.
+   * @param y - The y coordinate.
+   * @returns The x value at y, or `none` when y is outside the path's range.
+   * @since 2.0.0
+   */
+  <T extends MonotonicY>(p: LinearPath2d<T>, y: number): Solution.AtMostOne<number>
+  /** @since 2.0.0 */
+  (y: number): <T extends MonotonicY>(p: LinearPath2d<T>) => Solution.AtMostOne<number>
+} = internal.solveAtY as never
 
 /**
  * Computes the axis-aligned bounding box of the path — the smallest closed

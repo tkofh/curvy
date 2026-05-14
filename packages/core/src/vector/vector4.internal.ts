@@ -66,6 +66,10 @@ export const make = (v0: number, v1 = v0, v2 = v1, v3 = v2): Vector4 =>
   new Vector4Impl(v0, v1, v2, v3)
 
 /** @internal */
+export const fromTuple = (t: readonly [number, number, number, number]): Vector4 =>
+  new Vector4Impl(t[0], t[1], t[2], t[3])
+
+/** @internal */
 export const transpose = <T, const Channels extends ReadonlyArray<number>>(
   inputs: readonly [T, T, T, T],
   project: (item: T) => Channels,

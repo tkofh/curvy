@@ -34,8 +34,8 @@ describe('linear2d', () => {
     expect(c.x).toMatchObject({ c0: 1, c1: 3 })
     expect(c.y).toMatchObject({ c0: 2, c1: 4 })
   })
-  test('fromBezierPoints reproduces the line at t=0 and t=1', () => {
-    const c = linear2d.fromBezierPoints(vector2.make(2, 3), vector2.make(7, 11))
+  test('fromEndpoints reproduces the line at t=0 and t=1', () => {
+    const c = linear2d.fromEndpoints(vector2.make(2, 3), vector2.make(7, 11))
     expect(linear2d.solve(c, 0)).toBeCloseToValue(vector2.make(2, 3))
     expect(linear2d.solve(c, 1)).toBeCloseToValue(vector2.make(7, 11))
   })

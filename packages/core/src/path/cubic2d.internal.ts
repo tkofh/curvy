@@ -3,12 +3,23 @@ import * as CubicCurve2d from '../curve/cubic2d.ts'
 import * as cubicCurveInternal from '../curve/cubic2d.internal.ts'
 import * as QuadraticCurve2d from '../curve/quadratic2d.ts'
 import * as Interval from '../interval/interval.ts'
+import * as CubicPolynomial from '../polynomial/cubic.ts'
+import * as Solution from '../solution/solution.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { EPSILON, epsEquals } from '../number.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { CubicPath2d } from './cubic2d.ts'
-import { PathTraits, type Continuous } from './traits.ts'
+import {
+  PathTraits,
+  type Continuous,
+  type DecreasingX,
+  type DecreasingY,
+  type IncreasingX,
+  type IncreasingY,
+  type MonotonicX,
+  type MonotonicY,
+} from './traits.ts'
 
 export const CubicPath2dTypeId: unique symbol = Symbol('curvy/path/cubic2d')
 export type CubicPath2dTypeId = typeof CubicPath2dTypeId
@@ -211,6 +222,141 @@ export const asContinuous = <T>(p: CubicPath2d<T>): CubicPath2d<T & Continuous> 
   invariant(isContinuous(p), 'cubic path is not continuous')
   return p
 }
+
+// Per-axis monotonicity for the path: every segment's axis polynomial must be
+// strictly monotonic over the unit interval AND adjacent segments' axis
+// ranges must not overlap (modulo EPSILON for float drift).
+/** @internal */
+export const isIncreasingX = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & IncreasingX> => {
+  let prevEnd = Number.NEGATIVE_INFINITY
+  for (const c of p) {
+    if (!CubicPolynomial.isIncreasing(c.x, Interval.unit)) {
+      return false
+    }
+    if (c.x.c0 < prevEnd - EPSILON) {
+      return false
+    }
+    prevEnd = c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3
+  }
+  return true
+}
+
+/** @internal */
+export const isDecreasingX = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & DecreasingX> => {
+  let prevEnd = Number.POSITIVE_INFINITY
+  for (const c of p) {
+    if (!CubicPolynomial.isDecreasing(c.x, Interval.unit)) {
+      return false
+    }
+    if (c.x.c0 > prevEnd + EPSILON) {
+      return false
+    }
+    prevEnd = c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3
+  }
+  return true
+}
+
+/** @internal */
+export const isMonotonicX = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & MonotonicX> =>
+  isIncreasingX(p) || isDecreasingX(p)
+
+/** @internal */
+export const isIncreasingY = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & IncreasingY> => {
+  let prevEnd = Number.NEGATIVE_INFINITY
+  for (const c of p) {
+    if (!CubicPolynomial.isIncreasing(c.y, Interval.unit)) {
+      return false
+    }
+    if (c.y.c0 < prevEnd - EPSILON) {
+      return false
+    }
+    prevEnd = c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3
+  }
+  return true
+}
+
+/** @internal */
+export const isDecreasingY = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & DecreasingY> => {
+  let prevEnd = Number.POSITIVE_INFINITY
+  for (const c of p) {
+    if (!CubicPolynomial.isDecreasing(c.y, Interval.unit)) {
+      return false
+    }
+    if (c.y.c0 > prevEnd + EPSILON) {
+      return false
+    }
+    prevEnd = c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3
+  }
+  return true
+}
+
+/** @internal */
+export const isMonotonicY = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & MonotonicY> =>
+  isIncreasingY(p) || isDecreasingY(p)
+
+/** @internal */
+export const asIncreasingX = <T>(p: CubicPath2d<T>): CubicPath2d<T & IncreasingX> => {
+  invariant(isIncreasingX(p), 'cubic path is not increasing in x')
+  return p
+}
+
+/** @internal */
+export const asDecreasingX = <T>(p: CubicPath2d<T>): CubicPath2d<T & DecreasingX> => {
+  invariant(isDecreasingX(p), 'cubic path is not decreasing in x')
+  return p
+}
+
+/** @internal */
+export const asMonotonicX = <T>(p: CubicPath2d<T>): CubicPath2d<T & MonotonicX> => {
+  invariant(isMonotonicX(p), 'cubic path is not monotonic in x')
+  return p
+}
+
+/** @internal */
+export const asIncreasingY = <T>(p: CubicPath2d<T>): CubicPath2d<T & IncreasingY> => {
+  invariant(isIncreasingY(p), 'cubic path is not increasing in y')
+  return p
+}
+
+/** @internal */
+export const asDecreasingY = <T>(p: CubicPath2d<T>): CubicPath2d<T & DecreasingY> => {
+  invariant(isDecreasingY(p), 'cubic path is not decreasing in y')
+  return p
+}
+
+/** @internal */
+export const asMonotonicY = <T>(p: CubicPath2d<T>): CubicPath2d<T & MonotonicY> => {
+  invariant(isMonotonicY(p), 'cubic path is not monotonic in y')
+  return p
+}
+
+/** @internal */
+export const solveAtX = dual(2, (p: CubicPath2d, x: number): Solution.AtMostOne<number> => {
+  for (const c of p) {
+    const sx = c.x.c0
+    const ex = c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3
+    const lo = Math.min(sx, ex)
+    const hi = Math.max(sx, ex)
+    if (x >= lo - EPSILON && x <= hi + EPSILON) {
+      return CubicCurve2d.solveAtX(c, x) as Solution.AtMostOne<number>
+    }
+  }
+  return Solution.none
+})
+
+/** @internal */
+export const solveAtY = dual(2, (p: CubicPath2d, y: number): Solution.AtMostOne<number> => {
+  for (const c of p) {
+    const sy = c.y.c0
+    const ey = c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3
+    const lo = Math.min(sy, ey)
+    const hi = Math.max(sy, ey)
+    if (y >= lo - EPSILON && y <= hi + EPSILON) {
+      return CubicCurve2d.solveAtY(c, y) as Solution.AtMostOne<number>
+    }
+  }
+  return Solution.none
+})
 
 /** @internal */
 export const solveByDistance = dual<

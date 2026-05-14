@@ -47,7 +47,7 @@ export const fromCoefficients: (c0: Vector2.Vector2, c1: Vector2.Vector2) => Lin
 // Linear Bernstein basis: B(t) = (1-t)·p0 + t·p1
 // Expanding to monomial form gives c0 = p0, c1 = p1 - p0.
 /** @internal */
-export const fromBezierPoints: (p0: Vector2.Vector2, p1: Vector2.Vector2) => LinearCurve2d = (
+export const fromEndpoints: (p0: Vector2.Vector2, p1: Vector2.Vector2) => LinearCurve2d = (
   p0,
   p1,
 ) =>

@@ -65,8 +65,7 @@ export const fromCoefficients: (c0: Vector2, c1: Vector2) => LinearCurve2d =
  * @returns A new `LinearCurve2d` instance whose curve matches the line from `p0` to `p1`.
  * @since 2.0.0
  */
-export const fromBezierPoints: (p0: Vector2, p1: Vector2) => LinearCurve2d =
-  internal.fromBezierPoints
+export const fromEndpoints: (p0: Vector2, p1: Vector2) => LinearCurve2d = internal.fromEndpoints
 
 /**
  * Checks if a value is a `LinearCurve2d`.

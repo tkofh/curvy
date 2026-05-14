@@ -26,7 +26,7 @@ CubicPath2d.fromArray([c0, c1])
 
 **Removed (Bézier conversion primitive):** `Bezier2d.fromSpline` is now package-private. Its only callers were the other splines' own `toBezier` methods, and SVG path serialization (which now lives in core, not a separate package). End users should reach for `Cardinal2d.toBezier`, `Hermite2d.toBezier`, or `Basis2d.toBezier` rather than constructing a basis-conversion call by hand.
 
-**New (curve modules):** `LinearCurve2d.fromBezierPoints`, `QuadraticCurve2d.fromBezierPoints`, `CubicCurve2d.fromBezierPoints` — closed-form Bernstein-basis to monomial conversion. Constructs a single curve from real Bézier control points without the round-trip through `Bezier2d` + `toPath`. For cubics, `p0` and `p3` are the curve's endpoints and `p1`, `p2` are off-curve control handles; for quadratics, `p1` is the single control handle; for the linear case, `p0` and `p1` are the endpoints.
+**New (curve modules):** `LinearCurve2d.fromEndpoints`, `QuadraticCurve2d.fromBezierPoints`, `CubicCurve2d.fromBezierPoints` — closed-form Bernstein-basis to monomial conversion. Constructs a single curve from real Bézier control points without the round-trip through `Bezier2d` + `toPath`. For cubics, `p0` and `p3` are the curve's endpoints and `p1`, `p2` are off-curve control handles; for quadratics, `p1` is the single control handle. The linear case has no off-curve control points (it's just the two endpoints), so it gets the more discoverable `fromEndpoints` name.
 
 ```ts
 const c = CubicCurve2d.fromBezierPoints(

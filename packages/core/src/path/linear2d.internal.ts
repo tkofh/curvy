@@ -1,12 +1,23 @@
 import * as Interval2d from '../interval/interval2d.ts'
 import * as LinearCurve2d from '../curve/linear2d.ts'
 import * as Interval from '../interval/interval.ts'
+import * as LinearPolynomial from '../polynomial/linear.ts'
+import * as Solution from '../solution/solution.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { EPSILON, epsEquals } from '../number.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearPath2d } from './linear2d.ts'
-import { PathTraits, type Continuous } from './traits.ts'
+import {
+  PathTraits,
+  type Continuous,
+  type DecreasingX,
+  type DecreasingY,
+  type IncreasingX,
+  type IncreasingY,
+  type MonotonicX,
+  type MonotonicY,
+} from './traits.ts'
 
 export const LinearPath2dTypeId: unique symbol = Symbol('curvy/path/linear2d')
 export type LinearPath2dTypeId = typeof LinearPath2dTypeId
@@ -122,6 +133,147 @@ export const asContinuous = <T>(p: LinearPath2d<T>): LinearPath2d<T & Continuous
   invariant(isContinuous(p), 'linear path is not continuous')
   return p
 }
+
+// Per-axis monotonicity refiners. A path is monotonic-on-an-axis when every
+// segment's per-axis polynomial is strictly monotonic in the same direction
+// AND adjacent segments' ranges on that axis don't overlap (modulo float
+// tolerance) — so the path's u → axis mapping is monotonic across joins.
+
+/** @internal */
+export const isIncreasingX = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & IncreasingX> => {
+  let prevEnd = Number.NEGATIVE_INFINITY
+  for (const c of p) {
+    if (!LinearPolynomial.isIncreasing(c.x)) {
+      return false
+    }
+    if (c.x.c0 < prevEnd - EPSILON) {
+      return false
+    }
+    prevEnd = c.x.c0 + c.x.c1
+  }
+  return true
+}
+
+/** @internal */
+export const isDecreasingX = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & DecreasingX> => {
+  let prevEnd = Number.POSITIVE_INFINITY
+  for (const c of p) {
+    if (!LinearPolynomial.isDecreasing(c.x)) {
+      return false
+    }
+    if (c.x.c0 > prevEnd + EPSILON) {
+      return false
+    }
+    prevEnd = c.x.c0 + c.x.c1
+  }
+  return true
+}
+
+/** @internal */
+export const isMonotonicX = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & MonotonicX> =>
+  isIncreasingX(p) || isDecreasingX(p)
+
+/** @internal */
+export const isIncreasingY = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & IncreasingY> => {
+  let prevEnd = Number.NEGATIVE_INFINITY
+  for (const c of p) {
+    if (!LinearPolynomial.isIncreasing(c.y)) {
+      return false
+    }
+    if (c.y.c0 < prevEnd - EPSILON) {
+      return false
+    }
+    prevEnd = c.y.c0 + c.y.c1
+  }
+  return true
+}
+
+/** @internal */
+export const isDecreasingY = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & DecreasingY> => {
+  let prevEnd = Number.POSITIVE_INFINITY
+  for (const c of p) {
+    if (!LinearPolynomial.isDecreasing(c.y)) {
+      return false
+    }
+    if (c.y.c0 > prevEnd + EPSILON) {
+      return false
+    }
+    prevEnd = c.y.c0 + c.y.c1
+  }
+  return true
+}
+
+/** @internal */
+export const isMonotonicY = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & MonotonicY> =>
+  isIncreasingY(p) || isDecreasingY(p)
+
+/** @internal */
+export const asIncreasingX = <T>(p: LinearPath2d<T>): LinearPath2d<T & IncreasingX> => {
+  invariant(isIncreasingX(p), 'linear path is not increasing in x')
+  return p
+}
+
+/** @internal */
+export const asDecreasingX = <T>(p: LinearPath2d<T>): LinearPath2d<T & DecreasingX> => {
+  invariant(isDecreasingX(p), 'linear path is not decreasing in x')
+  return p
+}
+
+/** @internal */
+export const asMonotonicX = <T>(p: LinearPath2d<T>): LinearPath2d<T & MonotonicX> => {
+  invariant(isMonotonicX(p), 'linear path is not monotonic in x')
+  return p
+}
+
+/** @internal */
+export const asIncreasingY = <T>(p: LinearPath2d<T>): LinearPath2d<T & IncreasingY> => {
+  invariant(isIncreasingY(p), 'linear path is not increasing in y')
+  return p
+}
+
+/** @internal */
+export const asDecreasingY = <T>(p: LinearPath2d<T>): LinearPath2d<T & DecreasingY> => {
+  invariant(isDecreasingY(p), 'linear path is not decreasing in y')
+  return p
+}
+
+/** @internal */
+export const asMonotonicY = <T>(p: LinearPath2d<T>): LinearPath2d<T & MonotonicY> => {
+  invariant(isMonotonicY(p), 'linear path is not monotonic in y')
+  return p
+}
+
+// solveAtX/solveAtY for `Monotonic{X,Y}` paths: locate the segment whose axis
+// range contains the queried value, then delegate to the curve-level solver.
+// Caller-side trait constraints guarantee a single solution; the runtime
+// function returns `None` when the value is outside the path's range.
+/** @internal */
+export const solveAtX = dual(2, (p: LinearPath2d, x: number): Solution.AtMostOne<number> => {
+  for (const c of p) {
+    const sx = c.x.c0
+    const ex = c.x.c0 + c.x.c1
+    const lo = Math.min(sx, ex)
+    const hi = Math.max(sx, ex)
+    if (x >= lo - EPSILON && x <= hi + EPSILON) {
+      return LinearCurve2d.solveAtX(c, x)
+    }
+  }
+  return Solution.none
+})
+
+/** @internal */
+export const solveAtY = dual(2, (p: LinearPath2d, y: number): Solution.AtMostOne<number> => {
+  for (const c of p) {
+    const sy = c.y.c0
+    const ey = c.y.c0 + c.y.c1
+    const lo = Math.min(sy, ey)
+    const hi = Math.max(sy, ey)
+    if (y >= lo - EPSILON && y <= hi + EPSILON) {
+      return LinearCurve2d.solveAtY(c, y)
+    }
+  }
+  return Solution.none
+})
 
 /** @internal */
 export const boundingBox = (

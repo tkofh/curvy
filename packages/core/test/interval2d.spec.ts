@@ -236,7 +236,7 @@ describe('interval2d', () => {
 
 describe('curve boundingBox', () => {
   test('LinearCurve2d encloses endpoints', () => {
-    const c = linear2d.fromBezierPoints(vector2.make(1, 2), vector2.make(5, -3))
+    const c = linear2d.fromEndpoints(vector2.make(1, 2), vector2.make(5, -3))
     const b = linear2d.boundingBox(c)
     expect(b.x.start).toBeCloseTo(1, 10)
     expect(b.x.end).toBeCloseTo(5, 10)
@@ -292,8 +292,8 @@ describe('curve boundingBox', () => {
 describe('path boundingBox', () => {
   test('LinearPath2d is union of segment bboxes', () => {
     const p = linearPath2d.make(
-      linear2d.fromBezierPoints(vector2.make(0, 0), vector2.make(2, 5)),
-      linear2d.fromBezierPoints(vector2.make(2, 5), vector2.make(-1, 3)),
+      linear2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 5)),
+      linear2d.fromEndpoints(vector2.make(2, 5), vector2.make(-1, 3)),
     )
     const b = linearPath2d.boundingBox(p)
     expect(b.x.start).toBeCloseTo(-1, 10)

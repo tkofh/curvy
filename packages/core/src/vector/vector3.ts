@@ -76,6 +76,16 @@ export const make: {
 } = internal.make
 
 /**
+ * Creates a new `Vector3` instance from a `[x, y, z]` tuple. Inverse of
+ * {@link components}.
+ *
+ * @param t - The `[x, y, z]` tuple.
+ * @returns A new `Vector3` instance.
+ * @since 2.0.0
+ */
+export const fromTuple: (t: readonly [number, number, number]) => Vector3 = internal.fromTuple
+
+/**
  * Transposes a 3-tuple of items into one or more `Vector3`s, one per channel
  * extracted by the projection function. See {@link Vector4.transpose} for the
  * full operation description; this is the 3-component analog.

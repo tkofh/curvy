@@ -30,6 +30,9 @@ describe('vector2', () => {
   test('components', () => {
     expect(vector2.components(vector2.make(1, 2))).toEqual([1, 2])
   })
+  test('fromTuple', () => {
+    expect(vector2.fromTuple([1, 2])).toBeCloseToValue(vector2.make(1, 2))
+  })
   test('softmax', () => {
     expect(vector2.softmax(vector2.make(1, 2))).toBeCloseToValue(
       vector2.make(0.2689414213699951, 0.7310585786300049),
@@ -77,6 +80,9 @@ describe('vector3', () => {
   })
   test('components', () => {
     expect(vector3.components(vector3.make(1, 2, 3))).toEqual([1, 2, 3])
+  })
+  test('fromTuple', () => {
+    expect(vector3.fromTuple([1, 2, 3])).toBeCloseToValue(vector3.make(1, 2, 3))
   })
   test('softmax', () => {
     expect(vector3.softmax(vector3.make(1, 2, 3))).toBeCloseToValue(
@@ -141,6 +147,9 @@ describe('vector4', () => {
   })
   test('components', () => {
     expect(vector4.components(vector4.make(1, 2, 3, 4))).toEqual([1, 2, 3, 4])
+  })
+  test('fromTuple', () => {
+    expect(vector4.fromTuple([1, 2, 3, 4])).toBeCloseToValue(vector4.make(1, 2, 3, 4))
   })
   test('softmax', () => {
     expect(vector4.softmax(vector4.make(1, 2, 3, 4))).toBeCloseToValue(

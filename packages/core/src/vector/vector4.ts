@@ -87,6 +87,17 @@ export const make: {
 } = internal.make
 
 /**
+ * Creates a new `Vector4` instance from a `[x, y, z, w]` tuple. Inverse of
+ * {@link components}.
+ *
+ * @param t - The `[x, y, z, w]` tuple.
+ * @returns A new `Vector4` instance.
+ * @since 2.0.0
+ */
+export const fromTuple: (t: readonly [number, number, number, number]) => Vector4 =
+  internal.fromTuple
+
+/**
  * Transposes a 4-tuple of items into one or more `Vector4`s, one per channel
  * extracted by the projection function.
  *

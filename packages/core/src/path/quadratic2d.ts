@@ -1,13 +1,31 @@
 import type { Interval2d } from '../interval/interval2d.ts'
 import type { QuadraticCurve2d } from '../curve/quadratic2d.ts'
 import type { Closed } from '../interval/interval.ts'
+import type * as Solution from '../solution/solution.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { QuadraticPath2dTypeId } from './quadratic2d.internal.ts'
 import * as internal from './quadratic2d.internal.ts'
-import type { Continuous, PathTraits } from './traits.ts'
+import type {
+  Continuous,
+  DecreasingX,
+  DecreasingY,
+  IncreasingX,
+  IncreasingY,
+  MonotonicX,
+  MonotonicY,
+  PathTraits,
+} from './traits.ts'
 
-export type { Continuous } from './traits.ts'
+export type {
+  Continuous,
+  DecreasingX,
+  DecreasingY,
+  IncreasingX,
+  IncreasingY,
+  MonotonicX,
+  MonotonicY,
+} from './traits.ts'
 
 /**
  * A quadratic path in 2D space.
@@ -127,6 +145,142 @@ export const isContinuous: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T 
  */
 export const asContinuous: <T>(p: QuadraticPath2d<T>) => QuadraticPath2d<T & Continuous> =
   internal.asContinuous
+
+/**
+ * Type-narrowing predicate: refines `QuadraticPath2d<T>` to
+ * `QuadraticPath2d<T & IncreasingX>` when every segment's x-polynomial is
+ * strictly increasing on `[0, 1]` and adjacent segments' x-ranges don't
+ * overlap.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasingX: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T & IncreasingX> =
+  internal.isIncreasingX
+
+/**
+ * Type-narrowing predicate: refines `QuadraticPath2d<T>` to
+ * `QuadraticPath2d<T & DecreasingX>`.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasingX: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T & DecreasingX> =
+  internal.isDecreasingX
+
+/**
+ * Type-narrowing predicate: refines `QuadraticPath2d<T>` to
+ * `QuadraticPath2d<T & MonotonicX>`.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonicX: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T & MonotonicX> =
+  internal.isMonotonicX
+
+/**
+ * Type-narrowing predicate: refines `QuadraticPath2d<T>` to
+ * `QuadraticPath2d<T & IncreasingY>`.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasingY: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T & IncreasingY> =
+  internal.isIncreasingY
+
+/**
+ * Type-narrowing predicate: refines `QuadraticPath2d<T>` to
+ * `QuadraticPath2d<T & DecreasingY>`.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasingY: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T & DecreasingY> =
+  internal.isDecreasingY
+
+/**
+ * Type-narrowing predicate: refines `QuadraticPath2d<T>` to
+ * `QuadraticPath2d<T & MonotonicY>`.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonicY: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T & MonotonicY> =
+  internal.isMonotonicY
+
+/**
+ * Asserts that the path is strictly increasing in x, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asIncreasingX: <T>(p: QuadraticPath2d<T>) => QuadraticPath2d<T & IncreasingX> =
+  internal.asIncreasingX
+
+/**
+ * Asserts that the path is strictly decreasing in x, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asDecreasingX: <T>(p: QuadraticPath2d<T>) => QuadraticPath2d<T & DecreasingX> =
+  internal.asDecreasingX
+
+/**
+ * Asserts that the path is monotonic in x, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asMonotonicX: <T>(p: QuadraticPath2d<T>) => QuadraticPath2d<T & MonotonicX> =
+  internal.asMonotonicX
+
+/**
+ * Asserts that the path is strictly increasing in y, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asIncreasingY: <T>(p: QuadraticPath2d<T>) => QuadraticPath2d<T & IncreasingY> =
+  internal.asIncreasingY
+
+/**
+ * Asserts that the path is strictly decreasing in y, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asDecreasingY: <T>(p: QuadraticPath2d<T>) => QuadraticPath2d<T & DecreasingY> =
+  internal.asDecreasingY
+
+/**
+ * Asserts that the path is monotonic in y, throwing on failure.
+ *
+ * @since 2.0.0
+ */
+export const asMonotonicY: <T>(p: QuadraticPath2d<T>) => QuadraticPath2d<T & MonotonicY> =
+  internal.asMonotonicY
+
+export const solveAtX: {
+  /**
+   * Evaluates the path's y value at a given x. Requires the path to carry
+   * the `MonotonicX` brand. Returns `Solution.none` when x is outside the
+   * path's x-range.
+   *
+   * @param p - A path branded `MonotonicX`.
+   * @param x - The x coordinate.
+   * @returns The y value at x, or `none` when x is outside the path's range.
+   * @since 2.0.0
+   */
+  <T extends MonotonicX>(p: QuadraticPath2d<T>, x: number): Solution.AtMostOne<number>
+  /** @since 2.0.0 */
+  (x: number): <T extends MonotonicX>(p: QuadraticPath2d<T>) => Solution.AtMostOne<number>
+} = internal.solveAtX as never
+
+export const solveAtY: {
+  /**
+   * Evaluates the path's x value at a given y. Requires the path to carry
+   * the `MonotonicY` brand. Returns `Solution.none` when y is outside the
+   * path's y-range.
+   *
+   * @param p - A path branded `MonotonicY`.
+   * @param y - The y coordinate.
+   * @returns The x value at y, or `none` when y is outside the path's range.
+   * @since 2.0.0
+   */
+  <T extends MonotonicY>(p: QuadraticPath2d<T>, y: number): Solution.AtMostOne<number>
+  /** @since 2.0.0 */
+  (y: number): <T extends MonotonicY>(p: QuadraticPath2d<T>) => Solution.AtMostOne<number>
+} = internal.solveAtY as never
 
 /**
  * Computes the axis-aligned bounding box of the path — the smallest closed

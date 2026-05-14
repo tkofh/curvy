@@ -161,6 +161,16 @@ export const make: {
 } = internal.make
 
 /**
+ * Creates a new `Vector2` instance from a `[x, y]` tuple. Inverse of
+ * {@link components}.
+ *
+ * @param t - The `[x, y]` tuple.
+ * @returns A new `Vector2` instance.
+ * @since 2.0.0
+ */
+export const fromTuple: (t: readonly [number, number]) => Vector2 = internal.fromTuple
+
+/**
  * Transposes a 2-tuple of items into one or more `Vector2`s, one per channel
  * extracted by the projection function. See {@link Vector4.transpose} for the
  * full operation description; this is the 2-component analog.

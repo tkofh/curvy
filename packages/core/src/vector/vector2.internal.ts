@@ -79,6 +79,9 @@ export const equals = dual<
 export const make = (v0: number, v1 = v0): Vector2 => new Vector2Impl(v0, v1)
 
 /** @internal */
+export const fromTuple = (t: readonly [number, number]): Vector2 => new Vector2Impl(t[0], t[1])
+
+/** @internal */
 export const transpose = <T, const Channels extends ReadonlyArray<number>>(
   inputs: readonly [T, T],
   project: (item: T) => Channels,

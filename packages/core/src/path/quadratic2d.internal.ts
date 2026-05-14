@@ -1,12 +1,23 @@
 import * as Interval2d from '../interval/interval2d.ts'
 import * as QuadraticCurve2d from '../curve/quadratic2d.ts'
 import * as Interval from '../interval/interval.ts'
+import * as QuadraticPolynomial from '../polynomial/quadratic.ts'
+import * as Solution from '../solution/solution.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { EPSILON, epsEquals } from '../number.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { QuadraticPath2d } from './quadratic2d.ts'
-import { PathTraits, type Continuous } from './traits.ts'
+import {
+  PathTraits,
+  type Continuous,
+  type DecreasingX,
+  type DecreasingY,
+  type IncreasingX,
+  type IncreasingY,
+  type MonotonicX,
+  type MonotonicY,
+} from './traits.ts'
 
 export const QuadraticPath2dTypeId: unique symbol = Symbol('curvy/path/quadratic2d')
 export type QuadraticPath2dTypeId = typeof QuadraticPath2dTypeId
@@ -136,6 +147,145 @@ export const asContinuous = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & Cont
   invariant(isContinuous(p), 'quadratic path is not continuous')
   return p
 }
+
+// Per-axis monotonicity for the path: every segment's axis polynomial must be
+// strictly monotonic over the unit interval AND adjacent segments' axis
+// ranges must not overlap (modulo EPSILON for float drift).
+/** @internal */
+export const isIncreasingX = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & IncreasingX> => {
+  let prevEnd = Number.NEGATIVE_INFINITY
+  for (const c of p) {
+    if (!QuadraticPolynomial.isIncreasing(c.x, Interval.unit)) {
+      return false
+    }
+    if (c.x.c0 < prevEnd - EPSILON) {
+      return false
+    }
+    prevEnd = c.x.c0 + c.x.c1 + c.x.c2
+  }
+  return true
+}
+
+/** @internal */
+export const isDecreasingX = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & DecreasingX> => {
+  let prevEnd = Number.POSITIVE_INFINITY
+  for (const c of p) {
+    if (!QuadraticPolynomial.isDecreasing(c.x, Interval.unit)) {
+      return false
+    }
+    if (c.x.c0 > prevEnd + EPSILON) {
+      return false
+    }
+    prevEnd = c.x.c0 + c.x.c1 + c.x.c2
+  }
+  return true
+}
+
+/** @internal */
+export const isMonotonicX = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & MonotonicX> =>
+  isIncreasingX(p) || isDecreasingX(p)
+
+/** @internal */
+export const isIncreasingY = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & IncreasingY> => {
+  let prevEnd = Number.NEGATIVE_INFINITY
+  for (const c of p) {
+    if (!QuadraticPolynomial.isIncreasing(c.y, Interval.unit)) {
+      return false
+    }
+    if (c.y.c0 < prevEnd - EPSILON) {
+      return false
+    }
+    prevEnd = c.y.c0 + c.y.c1 + c.y.c2
+  }
+  return true
+}
+
+/** @internal */
+export const isDecreasingY = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & DecreasingY> => {
+  let prevEnd = Number.POSITIVE_INFINITY
+  for (const c of p) {
+    if (!QuadraticPolynomial.isDecreasing(c.y, Interval.unit)) {
+      return false
+    }
+    if (c.y.c0 > prevEnd + EPSILON) {
+      return false
+    }
+    prevEnd = c.y.c0 + c.y.c1 + c.y.c2
+  }
+  return true
+}
+
+/** @internal */
+export const isMonotonicY = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & MonotonicY> =>
+  isIncreasingY(p) || isDecreasingY(p)
+
+/** @internal */
+export const asIncreasingX = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & IncreasingX> => {
+  invariant(isIncreasingX(p), 'quadratic path is not increasing in x')
+  return p
+}
+
+/** @internal */
+export const asDecreasingX = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & DecreasingX> => {
+  invariant(isDecreasingX(p), 'quadratic path is not decreasing in x')
+  return p
+}
+
+/** @internal */
+export const asMonotonicX = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & MonotonicX> => {
+  invariant(isMonotonicX(p), 'quadratic path is not monotonic in x')
+  return p
+}
+
+/** @internal */
+export const asIncreasingY = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & IncreasingY> => {
+  invariant(isIncreasingY(p), 'quadratic path is not increasing in y')
+  return p
+}
+
+/** @internal */
+export const asDecreasingY = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & DecreasingY> => {
+  invariant(isDecreasingY(p), 'quadratic path is not decreasing in y')
+  return p
+}
+
+/** @internal */
+export const asMonotonicY = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & MonotonicY> => {
+  invariant(isMonotonicY(p), 'quadratic path is not monotonic in y')
+  return p
+}
+
+// solveAtX/Y on a monotonic-axis path: locate the segment whose axis range
+// contains the queried value, then delegate to the curve solver. Since the
+// path is monotonic in that axis, at most one segment matches and the
+// curve-level call is single-valued.
+/** @internal */
+export const solveAtX = dual(2, (p: QuadraticPath2d, x: number): Solution.AtMostOne<number> => {
+  for (const c of p) {
+    const sx = c.x.c0
+    const ex = c.x.c0 + c.x.c1 + c.x.c2
+    const lo = Math.min(sx, ex)
+    const hi = Math.max(sx, ex)
+    if (x >= lo - EPSILON && x <= hi + EPSILON) {
+      return QuadraticCurve2d.solveAtX(c, x) as Solution.AtMostOne<number>
+    }
+  }
+  return Solution.none
+})
+
+/** @internal */
+export const solveAtY = dual(2, (p: QuadraticPath2d, y: number): Solution.AtMostOne<number> => {
+  for (const c of p) {
+    const sy = c.y.c0
+    const ey = c.y.c0 + c.y.c1 + c.y.c2
+    const lo = Math.min(sy, ey)
+    const hi = Math.max(sy, ey)
+    if (y >= lo - EPSILON && y <= hi + EPSILON) {
+      return QuadraticCurve2d.solveAtY(c, y) as Solution.AtMostOne<number>
+    }
+  }
+  return Solution.none
+})
 
 /** @internal */
 export const boundingBox = (
