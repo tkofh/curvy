@@ -527,7 +527,7 @@ describe('rationalCubic2d.boundingBox', () => {
       vector2.makeWeighted(3, 4, 2),
       vector2.makeWeighted(4, 0, 1),
     )
-    const box = rationalCubic2d.boundingBox(rational)
+    const box = rationalCubic2d.boundingBox(rational, 0.01)
     for (let i = 0; i <= 200; i++) {
       const t = i / 200
       const p = rationalCubic2d.solve(rational, t)
@@ -538,49 +538,118 @@ describe('rationalCubic2d.boundingBox', () => {
     }
   })
 
-  test('tightens monotonically under subdivision', () => {
+  test('tighter tolerance produces same-or-smaller box', () => {
     const rational = rationalCubic2d.fromBezierPoints(
       vector2.makeWeighted(0, 0, 1),
       vector2.makeWeighted(1, 4, 3),
       vector2.makeWeighted(3, 4, 2),
       vector2.makeWeighted(4, 0, 1),
     )
-    const whole = rationalCubic2d.boundingBox(rational)
-    const [left, right] = rationalCubic2d.subdivide(rational, 0.5)
-    const leftBox = rationalCubic2d.boundingBox(left)
-    const rightBox = rationalCubic2d.boundingBox(right)
+    const loose = rationalCubic2d.boundingBox(rational, 1)
+    const medium = rationalCubic2d.boundingBox(rational, 0.1)
+    const tight = rationalCubic2d.boundingBox(rational, 0.001)
 
-    // Each sub-box is contained in the parent box (subdivision can only tighten).
-    expect(leftBox.x.start).toBeGreaterThanOrEqual(whole.x.start - 1e-9)
-    expect(leftBox.x.end).toBeLessThanOrEqual(whole.x.end + 1e-9)
-    expect(leftBox.y.start).toBeGreaterThanOrEqual(whole.y.start - 1e-9)
-    expect(leftBox.y.end).toBeLessThanOrEqual(whole.y.end + 1e-9)
-    expect(rightBox.x.start).toBeGreaterThanOrEqual(whole.x.start - 1e-9)
-    expect(rightBox.x.end).toBeLessThanOrEqual(whole.x.end + 1e-9)
+    // Each tightening can only shrink the box (or leave it unchanged).
+    expect(medium.x.start).toBeGreaterThanOrEqual(loose.x.start - 1e-9)
+    expect(medium.x.end).toBeLessThanOrEqual(loose.x.end + 1e-9)
+    expect(medium.y.start).toBeGreaterThanOrEqual(loose.y.start - 1e-9)
+    expect(medium.y.end).toBeLessThanOrEqual(loose.y.end + 1e-9)
+    expect(tight.x.start).toBeGreaterThanOrEqual(medium.x.start - 1e-9)
+    expect(tight.x.end).toBeLessThanOrEqual(medium.x.end + 1e-9)
+    expect(tight.y.start).toBeGreaterThanOrEqual(medium.y.start - 1e-9)
+    expect(tight.y.end).toBeLessThanOrEqual(medium.y.end + 1e-9)
   })
 
-  test('matches polynomial bounding box for a unit-weight rational', () => {
-    // Uniform weights → the rational coincides with the polynomial cubic
-    // built from the same control points. The projected-CP AABB has the four
-    // control points as corners; the polynomial's tight box may be smaller
-    // (since it doesn't enclose the off-curve handles), so projected-CP only
-    // needs to be a superset.
-    const p0 = vector2.make(0, 0)
-    const p1 = vector2.make(1, 5)
-    const p2 = vector2.make(3, 5)
-    const p3 = vector2.make(4, 0)
+  test('uniform-weight rational matches polynomial bounding box exactly', () => {
+    // With uniform weights the curve coincides with the corresponding
+    // polynomial cubic. The polynomial fast path computes the box from
+    // per-axis cubic extrema, so the result is exact — not slack-bounded.
     const rational = rationalCubic2d.fromBezierPoints(
       vector2.makeWeighted(0, 0, 1),
       vector2.makeWeighted(1, 5, 1),
       vector2.makeWeighted(3, 5, 1),
       vector2.makeWeighted(4, 0, 1),
     )
-    const box = rationalCubic2d.boundingBox(rational)
-    // For unit weights, the projected CPs ARE the input control points, so
-    // the AABB is exactly min/max over those four points.
-    expect(box.x.start).toBeCloseTo(Math.min(p0.x, p1.x, p2.x, p3.x), 10)
-    expect(box.x.end).toBeCloseTo(Math.max(p0.x, p1.x, p2.x, p3.x), 10)
-    expect(box.y.start).toBeCloseTo(Math.min(p0.y, p1.y, p2.y, p3.y), 10)
-    expect(box.y.end).toBeCloseTo(Math.max(p0.y, p1.y, p2.y, p3.y), 10)
+    const polynomial = cubic2d.fromBezierPoints(
+      vector2.make(0, 0),
+      vector2.make(1, 5),
+      vector2.make(3, 5),
+      vector2.make(4, 0),
+    )
+    const rationalBox = rationalCubic2d.boundingBox(rational, 0.001)
+    const polynomialBox = cubic2d.boundingBox(polynomial)
+
+    expect(rationalBox.x.start).toBeCloseTo(polynomialBox.x.start, 12)
+    expect(rationalBox.x.end).toBeCloseTo(polynomialBox.x.end, 12)
+    expect(rationalBox.y.start).toBeCloseTo(polynomialBox.y.start, 12)
+    expect(rationalBox.y.end).toBeCloseTo(polynomialBox.y.end, 12)
+  })
+
+  test('rejects non-positive tolerance', () => {
+    const rational = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 1, 1),
+      vector2.makeWeighted(2, 1, 1),
+      vector2.makeWeighted(3, 0, 1),
+    )
+    expect(() => rationalCubic2d.boundingBox(rational, 0)).toThrow()
+    expect(() => rationalCubic2d.boundingBox(rational, -1)).toThrow()
+  })
+})
+
+describe('rationalCubic2d monotonicity refiners', () => {
+  // x(t) = t (linear, increasing), y(t) = t (linear, increasing) — both axes strict
+  const xIncYInc = rationalCubic2d.makeMonotonicEasing(1, 1)
+
+  // x(t) = t (increasing), y is the smoothstep cubic (increasing on [0,1])
+  const xIncYSmoothInc = rationalCubic2d.makeMonotonicEasing(0, 0)
+
+  // U-shape in x via control points 0, 1, -1, 0 with unit weights → x not monotonic
+  const xNotMono = rationalCubic2d.fromBezierPoints(
+    vector2.makeWeighted(0, 0, 1),
+    vector2.makeWeighted(1, 0, 1),
+    vector2.makeWeighted(-1, 0, 1),
+    vector2.makeWeighted(0, 0, 1),
+  )
+
+  // U-shape in y: x monotonic, y not
+  const yNotMono = rationalCubic2d.fromBezierPoints(
+    vector2.makeWeighted(0, 0, 1),
+    vector2.makeWeighted(1, 1, 1),
+    vector2.makeWeighted(2, -1, 1),
+    vector2.makeWeighted(3, 0, 1),
+  )
+
+  test('per-axis x refiners accept x-monotonic, reject non-x-monotonic', () => {
+    expect(rationalCubic2d.isMonotonicX(xIncYInc)).toBe(true)
+    expect(rationalCubic2d.isIncreasingX(xIncYInc)).toBe(true)
+    expect(rationalCubic2d.isDecreasingX(xIncYInc)).toBe(false)
+    expect(rationalCubic2d.isMonotonicX(xNotMono)).toBe(false)
+    expect(() => rationalCubic2d.asMonotonicX(xNotMono)).toThrow()
+    expect(() => rationalCubic2d.asIncreasingX(xIncYInc)).not.toThrow()
+  })
+
+  test('per-axis y refiners accept y-monotonic, reject non-y-monotonic', () => {
+    expect(rationalCubic2d.isMonotonicY(xIncYInc)).toBe(true)
+    expect(rationalCubic2d.isIncreasingY(xIncYInc)).toBe(true)
+    expect(rationalCubic2d.isMonotonicY(yNotMono)).toBe(false)
+    expect(() => rationalCubic2d.asMonotonicY(yNotMono)).toThrow()
+    expect(() => rationalCubic2d.asIncreasingY(xIncYSmoothInc)).not.toThrow()
+  })
+
+  test('per-axis refiners decide axes independently', () => {
+    // yNotMono has x monotonic but y not — x refiner passes, y refiner fails
+    expect(rationalCubic2d.isMonotonicX(yNotMono)).toBe(true)
+    expect(rationalCubic2d.isMonotonicY(yNotMono)).toBe(false)
+    expect(rationalCubic2d.isMonotonic(yNotMono)).toBe(false)
+  })
+
+  test('combined refiner agrees with per-axis conjunction', () => {
+    expect(rationalCubic2d.isMonotonic(xIncYInc)).toBe(
+      rationalCubic2d.isMonotonicX(xIncYInc) && rationalCubic2d.isMonotonicY(xIncYInc),
+    )
+    expect(rationalCubic2d.isMonotonic(xNotMono)).toBe(
+      rationalCubic2d.isMonotonicX(xNotMono) && rationalCubic2d.isMonotonicY(xNotMono),
+    )
   })
 })

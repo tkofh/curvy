@@ -1,5 +1,7 @@
 import type * as CubicCurve2d from '../curve/cubic2d.ts'
 import * as RationalCubicCurve2d from '../curve/rationalCubic2d.ts'
+import type * as Interval from '../interval/interval.ts'
+import * as Interval2d from '../interval/interval2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
 import type * as Vector2 from '../vector/vector2.ts'
@@ -62,6 +64,33 @@ export const solve = dual<
   const i = Math.floor(t)
   const curve = curves[i] as RationalCubicCurve2d.RationalCubicCurve2d
   return RationalCubicCurve2d.solve(curve, t - i)
+})
+
+// Path-level bounding box: per-segment box is delegated to the curve module
+// (subdivision + hull union, tight to within `tolerance` per side); the path
+// box is then their union. Since each segment box's slack is ≤ tolerance per
+// side, the unioned box's slack is also ≤ tolerance per side — the same
+// guarantee holds at the path level.
+/** @internal */
+export const boundingBox = dual<
+  (
+    tolerance: number,
+  ) => (p: RationalCubicPath2d) => Interval2d.Interval2d<Interval.Closed, Interval.Closed>,
+  (
+    p: RationalCubicPath2d,
+    tolerance: number,
+  ) => Interval2d.Interval2d<Interval.Closed, Interval.Closed>
+>(2, (p: RationalCubicPath2d, tolerance: number) => {
+  const iter = p[Symbol.iterator]()
+  const first = iter.next()
+  let acc = RationalCubicCurve2d.boundingBox(
+    first.value as RationalCubicCurve2d.RationalCubicCurve2d,
+    tolerance,
+  )
+  for (let next = iter.next(); !next.done; next = iter.next()) {
+    acc = Interval2d.union(acc, RationalCubicCurve2d.boundingBox(next.value, tolerance))
+  }
+  return acc
 })
 
 // Path-level approximation: per-segment approximation is delegated to the

@@ -475,3 +475,57 @@ describe('rationalCubicPath2d.approximateAsCubicPath', () => {
     expect(cubicPath2d.isContinuous(approx)).toBe(true)
   })
 })
+
+describe('rationalCubicPath2d.boundingBox', () => {
+  test('encloses every segment of the path', () => {
+    const path = rationalCubicPath2d.make(
+      rationalCubicCurve2d.fromBezierPoints(
+        vector2.makeWeighted(0, 0, 1),
+        vector2.makeWeighted(1, 3, 2),
+        vector2.makeWeighted(2, 3, 2),
+        vector2.makeWeighted(3, 0, 1),
+      ),
+      rationalCubicCurve2d.fromBezierPoints(
+        vector2.makeWeighted(3, 0, 1),
+        vector2.makeWeighted(4, -2, 1),
+        vector2.makeWeighted(5, -2, 1),
+        vector2.makeWeighted(6, 0, 1),
+      ),
+    )
+    const box = rationalCubicPath2d.boundingBox(path, 1e-3)
+    for (let i = 0; i <= 400; i++) {
+      const u = i / 400
+      const p = rationalCubicPath2d.solve(path, u)
+      expect(p.x).toBeGreaterThanOrEqual(box.x.start - 1e-9)
+      expect(p.x).toBeLessThanOrEqual(box.x.end + 1e-9)
+      expect(p.y).toBeGreaterThanOrEqual(box.y.start - 1e-9)
+      expect(p.y).toBeLessThanOrEqual(box.y.end + 1e-9)
+    }
+  })
+
+  test('equals union of per-segment bounding boxes', () => {
+    const seg0 = rationalCubicCurve2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 3, 2),
+      vector2.makeWeighted(2, 3, 2),
+      vector2.makeWeighted(3, 0, 1),
+    )
+    const seg1 = rationalCubicCurve2d.fromBezierPoints(
+      vector2.makeWeighted(3, 0, 1),
+      vector2.makeWeighted(4, -2, 1),
+      vector2.makeWeighted(5, -2, 1),
+      vector2.makeWeighted(6, 0, 1),
+    )
+    const tolerance = 1e-3
+    const pathBox = rationalCubicPath2d.boundingBox(rationalCubicPath2d.make(seg0, seg1), tolerance)
+    const box0 = rationalCubicCurve2d.boundingBox(seg0, tolerance)
+    const box1 = rationalCubicCurve2d.boundingBox(seg1, tolerance)
+
+    // Per-segment boxes feed straight into the union — the path-level
+    // result is exactly what a hand-rolled `union(boxᵢ)` would produce.
+    expect(pathBox.x.start).toBeCloseTo(Math.min(box0.x.start, box1.x.start), 12)
+    expect(pathBox.x.end).toBeCloseTo(Math.max(box0.x.end, box1.x.end), 12)
+    expect(pathBox.y.start).toBeCloseTo(Math.min(box0.y.start, box1.y.start), 12)
+    expect(pathBox.y.end).toBeCloseTo(Math.max(box0.y.end, box1.y.end), 12)
+  })
+})

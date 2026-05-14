@@ -349,26 +349,94 @@ export const yMonotonicity = (c: RationalCubicCurve2d): Monotonicity.Monotonicit
   axisMonotonicity(c.y, c.w)
 
 /** @internal */
+export const isMonotonicX = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): c is RationalCubicCurve2d<XT & Monotonic, YT> => Monotonicity.isStrict(xMonotonicity(c))
+
+/** @internal */
+export const isIncreasingX = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): c is RationalCubicCurve2d<XT & Increasing, YT> => xMonotonicity(c) === Monotonicity.Increasing
+
+/** @internal */
+export const isDecreasingX = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): c is RationalCubicCurve2d<XT & Decreasing, YT> => xMonotonicity(c) === Monotonicity.Decreasing
+
+/** @internal */
+export const isMonotonicY = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): c is RationalCubicCurve2d<XT, YT & Monotonic> => Monotonicity.isStrict(yMonotonicity(c))
+
+/** @internal */
+export const isIncreasingY = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): c is RationalCubicCurve2d<XT, YT & Increasing> => yMonotonicity(c) === Monotonicity.Increasing
+
+/** @internal */
+export const isDecreasingY = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): c is RationalCubicCurve2d<XT, YT & Decreasing> => yMonotonicity(c) === Monotonicity.Decreasing
+
+// Combined refiners compose from per-axis ones via TypeScript's narrowing of
+// the && chain: each per-axis predicate attaches its brand to its own axis,
+// and the intersection accumulates as expected.
+/** @internal */
 export const isMonotonic = <XT, YT>(
   c: RationalCubicCurve2d<XT, YT>,
-): c is RationalCubicCurve2d<XT & Monotonic, YT & Monotonic> =>
-  Monotonicity.isStrict(xMonotonicity(c)) && Monotonicity.isStrict(yMonotonicity(c))
+): c is RationalCubicCurve2d<XT & Monotonic, YT & Monotonic> => isMonotonicX(c) && isMonotonicY(c)
 
 /** @internal */
 export const isIncreasing = <XT, YT>(
   c: RationalCubicCurve2d<XT, YT>,
 ): c is RationalCubicCurve2d<XT & Increasing, YT & Increasing> =>
-  xMonotonicity(c) === Monotonicity.Increasing && yMonotonicity(c) === Monotonicity.Increasing
+  isIncreasingX(c) && isIncreasingY(c)
 
 /** @internal */
 export const isDecreasing = <XT, YT>(
   c: RationalCubicCurve2d<XT, YT>,
 ): c is RationalCubicCurve2d<XT & Decreasing, YT & Decreasing> =>
-  xMonotonicity(c) === Monotonicity.Decreasing && yMonotonicity(c) === Monotonicity.Decreasing
+  isDecreasingX(c) && isDecreasingY(c)
 
 const fail = (m: string): never => {
   throw new Error(m)
 }
+
+/** @internal */
+export const asMonotonicX = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): RationalCubicCurve2d<XT & Monotonic, YT> =>
+  isMonotonicX(c) ? c : fail('rational cubic curve is not monotonic in x')
+
+/** @internal */
+export const asIncreasingX = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): RationalCubicCurve2d<XT & Increasing, YT> =>
+  isIncreasingX(c) ? c : fail('rational cubic curve is not increasing in x')
+
+/** @internal */
+export const asDecreasingX = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): RationalCubicCurve2d<XT & Decreasing, YT> =>
+  isDecreasingX(c) ? c : fail('rational cubic curve is not decreasing in x')
+
+/** @internal */
+export const asMonotonicY = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): RationalCubicCurve2d<XT, YT & Monotonic> =>
+  isMonotonicY(c) ? c : fail('rational cubic curve is not monotonic in y')
+
+/** @internal */
+export const asIncreasingY = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): RationalCubicCurve2d<XT, YT & Increasing> =>
+  isIncreasingY(c) ? c : fail('rational cubic curve is not increasing in y')
+
+/** @internal */
+export const asDecreasingY = <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+): RationalCubicCurve2d<XT, YT & Decreasing> =>
+  isDecreasingY(c) ? c : fail('rational cubic curve is not decreasing in y')
 
 /** @internal */
 export const asMonotonic = <XT, YT>(
@@ -387,6 +455,89 @@ export const asDecreasing = <XT, YT>(
   c: RationalCubicCurve2d<XT, YT>,
 ): RationalCubicCurve2d<XT & Decreasing, YT & Decreasing> =>
   isDecreasing(c) ? c : fail('rational cubic curve is not decreasing in both axes')
+
+// Depth cap for tight bounding box recursion. 2²⁰ ≈ 1M leaves is well past
+// the point where any geometrically meaningful tolerance would still be
+// driving subdivision — the cap is here to guard against tolerances
+// approaching zero.
+const MAX_BBOX_DEPTH = 20
+
+/** @internal */
+export const boundingBox = dual<
+  (
+    tolerance: number,
+  ) => (c: RationalCubicCurve2d) => Interval2d.Interval2d<Interval.Closed, Interval.Closed>,
+  (
+    c: RationalCubicCurve2d,
+    tolerance: number,
+  ) => Interval2d.Interval2d<Interval.Closed, Interval.Closed>
+>(2, (c: RationalCubicCurve2d, tolerance: number) => {
+  invariant(
+    Number.isFinite(tolerance) && tolerance > 0,
+    'boundingBox: tolerance must be finite and > 0',
+  )
+
+  // Polynomial fast path: when W(t) is a constant (all weights equal at the
+  // source), the curve coincides with a polynomial cubic and its tight box
+  // is exact via the polynomial's per-axis range. No subdivision needed.
+  if (c.w.c1 === 0 && c.w.c2 === 0 && c.w.c3 === 0) {
+    const w = c.w.c0
+    return Interval2d.make(
+      CubicPolynomial.unitRange(
+        CubicPolynomial.make(c.x.c0 / w, c.x.c1 / w, c.x.c2 / w, c.x.c3 / w),
+      ),
+      CubicPolynomial.unitRange(
+        CubicPolynomial.make(c.y.c0 / w, c.y.c1 / w, c.y.c2 / w, c.y.c3 / w),
+      ),
+    )
+  }
+
+  // Per-segment recursion: union of leaf-segment hull AABBs, subdividing until
+  // each leaf's hull is within `tolerance` per side of an inner reference that
+  // is known to lie inside the curve's true range.
+  //
+  // The reference is the segment's endpoint AABB: `r(0)` and `r(1)` both lie
+  // on the curve and therefore inside its true bounding box. So
+  //   endpointBox ⊆ trueBox ⊆ hullBox
+  // and the gap `hullBox − endpointBox` (per side) upper-bounds the gap
+  // `hullBox − trueBox`. When that gap is ≤ tolerance on every side, the
+  // leaf's hull box is provably within tolerance of its true range; the
+  // union of all leaves is then within tolerance of the curve's tight box.
+  const recurse = (
+    curr: RationalCubicCurve2d,
+    depth: number,
+  ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {
+    const hull = hullBoundingBox(curr)
+
+    const w0 = curr.w.c0
+    const x0 = curr.x.c0 / w0
+    const y0 = curr.y.c0 / w0
+    const w1 = curr.w.c0 + curr.w.c1 + curr.w.c2 + curr.w.c3
+    const x1 = (curr.x.c0 + curr.x.c1 + curr.x.c2 + curr.x.c3) / w1
+    const y1 = (curr.y.c0 + curr.y.c1 + curr.y.c2 + curr.y.c3) / w1
+
+    const lowX = Math.min(x0, x1)
+    const highX = Math.max(x0, x1)
+    const lowY = Math.min(y0, y1)
+    const highY = Math.max(y0, y1)
+
+    const excess = Math.max(
+      lowX - hull.x.start,
+      hull.x.end - highX,
+      lowY - hull.y.start,
+      hull.y.end - highY,
+    )
+
+    if (excess <= tolerance || depth >= MAX_BBOX_DEPTH) {
+      return hull
+    }
+
+    const [left, right] = subdivide(curr, 0.5)
+    return Interval2d.union(recurse(left, depth + 1), recurse(right, depth + 1))
+  }
+
+  return recurse(c, 0)
+})
 
 // Approximation cap. At depth 20 we'd emit up to 2²⁰ ≈ 1M segments for one
 // input curve — well past any sane target — so the cap is really just a guard
@@ -444,18 +595,19 @@ export const subdivide = dual<
   ]
 })
 
-// Loose bounding box from the rational's projected Bézier control polygon.
+// Loose hull-based bounding box from the rational's projected Bézier control
+// polygon. Private leaf helper for the subdivision-based public `boundingBox`
+// and for the Hausdorff machinery in `approximateAsCubicCurves`.
 //
 // Rational Bézier curves with positive weights satisfy the projected
 // convex-hull property: the curve lies inside the convex hull of the four
 // projected 2D control points (Wᵢ⁻¹·Xᵢ, Wᵢ⁻¹·Yᵢ). Their AABB is a strict
 // superset of the hull, so it is a valid (and cheap) bound on the curve.
 //
-// Looser than a true tight box — for that we'd need the extrema of x(t)/w(t)
-// and y(t)/w(t), each a degree-5 root problem — but tight enough for
-// subdivision-based geometric queries, which compensate via depth.
-/** @internal */
-export const boundingBox = (
+// Looser than the public tight box — for that we'd need the extrema of
+// x(t)/w(t) and y(t)/w(t), each a degree-5 root problem — but tight enough
+// for subdivision-based geometric queries, which compensate via depth.
+const hullBoundingBox = (
   c: RationalCubicCurve2d,
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {
   // Bernstein control points recovered from monomial coefficients — same
@@ -623,7 +775,7 @@ const rationalPiece = (c: RationalCubicCurve2d, depth = 0): CertifiedPiece => {
   const witnessX = CubicPolynomial.solve(c.x, 0.5) / wMid
   const witnessY = CubicPolynomial.solve(c.y, 0.5) / wMid
   return {
-    box: boundingBox(c),
+    box: hullBoundingBox(c),
     witnessX,
     witnessY,
     depth,
@@ -709,7 +861,7 @@ const hausdorffWithinTolerance = (
   ) {
     return false
   }
-  const rationalBox = boundingBox(rational)
+  const rationalBox = hullBoundingBox(rational)
   return oneSidedWithinTolerance(
     polynomialPiece(candidate),
     rationalBox,

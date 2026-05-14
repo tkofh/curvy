@@ -1,4 +1,6 @@
 import type { RationalCubicCurve2d } from '../curve/rationalCubic2d.ts'
+import type { Closed } from '../interval/interval.ts'
+import type { Interval2d } from '../interval/interval2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { CubicPath2d } from './cubic2d.ts'
@@ -98,6 +100,32 @@ export const solve: {
    */
   (u: number): (p: RationalCubicPath2d) => Vector2
 } = internal.solve
+
+export const boundingBox: {
+  /**
+   * Computes a closed axis-aligned bounding box for a rational cubic path,
+   * tight to within `tolerance` per side.
+   *
+   * Per-segment delegates to `RationalCubicCurve2d.boundingBox(c, tolerance)`
+   * — recursive subdivision producing a hull-AABB union tight to within
+   * `tolerance` per side. The path box is the union of segment boxes; since
+   * each segment box has slack ≤ tolerance per side, so does the union.
+   *
+   * @param p - The rational cubic path.
+   * @param tolerance - Maximum allowed slack per side; must be positive.
+   * @returns A closed `Interval2d` enclosing the path, tight to within `tolerance`.
+   * @since 2.0.0
+   */
+  (p: RationalCubicPath2d, tolerance: number): Interval2d<Closed, Closed>
+  /**
+   * Computes a closed axis-aligned bounding box for a rational cubic path.
+   *
+   * @param tolerance - Maximum allowed slack per side; must be positive.
+   * @returns A function that takes a path and returns its bounding box.
+   * @since 2.0.0
+   */
+  (tolerance: number): (p: RationalCubicPath2d) => Interval2d<Closed, Closed>
+} = internal.boundingBox
 
 export const approximateAsCubicPath: {
   /**

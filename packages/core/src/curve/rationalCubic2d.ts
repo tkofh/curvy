@@ -220,23 +220,38 @@ export const subdivide: {
   (t: number): (c: RationalCubicCurve2d) => [RationalCubicCurve2d, RationalCubicCurve2d]
 } = internal.subdivide
 
-/**
- * Computes a closed axis-aligned bounding box for a rational cubic curve from
- * its projected control polygon. Looser than the tight extrema-based box used
- * by `CubicCurve2d.boundingBox` — finding tight extrema of `x(t)/w(t)` and
- * `y(t)/w(t)` requires solving degree-5 polynomials — but always valid: a
- * positive-weight rational Bézier curve lies inside the convex hull of its
- * projected control points, so the AABB of those points contains the curve.
- *
- * Suitable for subdivision-based geometric queries, where bound looseness is
- * compensated by recursion depth.
- *
- * @param c - The rational cubic curve.
- * @returns A closed `Interval2d` enclosing the curve.
- * @since 2.0.0
- */
-export const boundingBox: (c: RationalCubicCurve2d) => Interval2d<Closed, Closed> =
-  internal.boundingBox
+export const boundingBox: {
+  /**
+   * Computes a closed axis-aligned bounding box for a rational cubic curve,
+   * tight to within `tolerance` per side.
+   *
+   * Implemented as recursive subdivision: at each leaf the curve segment's
+   * loose hull AABB (cheap, always valid) is compared against the segment's
+   * endpoint AABB (which the curve provably visits). When the per-side gap
+   * between them is ≤ `tolerance`, the leaf returns its hull; otherwise the
+   * segment is split at `t = 0.5` and the procedure recurses, unioning the
+   * halves.
+   *
+   * The returned box is provably within `tolerance` of the true tight box on
+   * every side, and contains the curve since each leaf hull does. The
+   * polynomial cubic case (uniform weights) is handled by a fast path that
+   * computes the exact box from per-axis cubic extrema, with no subdivision.
+   *
+   * @param c - The rational cubic curve.
+   * @param tolerance - Maximum allowed slack per side; must be positive.
+   * @returns A closed `Interval2d` enclosing the curve, tight to within `tolerance`.
+   * @since 2.0.0
+   */
+  (c: RationalCubicCurve2d, tolerance: number): Interval2d<Closed, Closed>
+  /**
+   * Computes a closed axis-aligned bounding box for a rational cubic curve.
+   *
+   * @param tolerance - Maximum allowed slack per side; must be positive.
+   * @returns A function that takes a curve and returns its bounding box.
+   * @since 2.0.0
+   */
+  (tolerance: number): (c: RationalCubicCurve2d) => Interval2d<Closed, Closed>
+} = internal.boundingBox
 
 /**
  * Classifies the monotonicity of the curve's `x(t) = X(t)/W(t)` projection on
@@ -268,6 +283,72 @@ export const xMonotonicity: (c: RationalCubicCurve2d) => Monotonicity = internal
  * @since 2.0.0
  */
 export const yMonotonicity: (c: RationalCubicCurve2d) => Monotonicity = internal.yMonotonicity
+
+/**
+ * Type-narrowing predicate: refines the curve's x-axis trait to include
+ * `Monotonic` when `x(t)/w(t)` is strictly monotonic on `[0, 1]`. The y-axis
+ * trait is unchanged.
+ *
+ * Use this when only x-axis monotonicity is required (e.g. to make {@link solveAtX}
+ * narrow to `AtMostOne` without also asserting y-axis monotonicity).
+ *
+ * @param c - The rational cubic curve.
+ * @returns `true` when the x projection is strictly monotonic on `[0, 1]`.
+ * @since 2.0.0
+ */
+export const isMonotonicX: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => c is RationalCubicCurve2d<XT & Monotonic, YT> = internal.isMonotonicX
+
+/**
+ * Type-narrowing predicate: refines the curve's x-axis trait to include
+ * `Increasing`.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasingX: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => c is RationalCubicCurve2d<XT & Increasing, YT> = internal.isIncreasingX
+
+/**
+ * Type-narrowing predicate: refines the curve's x-axis trait to include
+ * `Decreasing`.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasingX: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => c is RationalCubicCurve2d<XT & Decreasing, YT> = internal.isDecreasingX
+
+/**
+ * Type-narrowing predicate: refines the curve's y-axis trait to include
+ * `Monotonic`. The x-axis trait is unchanged. y analog of {@link isMonotonicX}.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonicY: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => c is RationalCubicCurve2d<XT, YT & Monotonic> = internal.isMonotonicY
+
+/**
+ * Type-narrowing predicate: refines the curve's y-axis trait to include
+ * `Increasing`.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasingY: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => c is RationalCubicCurve2d<XT, YT & Increasing> = internal.isIncreasingY
+
+/**
+ * Type-narrowing predicate: refines the curve's y-axis trait to include
+ * `Decreasing`.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasingY: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => c is RationalCubicCurve2d<XT, YT & Decreasing> = internal.isDecreasingY
 
 /**
  * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
@@ -302,6 +383,65 @@ export const isIncreasing: <XT, YT>(
 export const isDecreasing: <XT, YT>(
   c: RationalCubicCurve2d<XT, YT>,
 ) => c is RationalCubicCurve2d<XT & Decreasing, YT & Decreasing> = internal.isDecreasing
+
+/**
+ * Asserts that the curve is strictly monotonic in x on `[0, 1]`, returning
+ * the same curve with the x-axis trait branded `Monotonic`.
+ *
+ * @param c - The rational cubic curve.
+ * @returns The same curve, refined with the `Monotonic` brand on x.
+ * @throws When the x projection is not strictly monotonic on `[0, 1]`.
+ * @since 2.0.0
+ */
+export const asMonotonicX: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => RationalCubicCurve2d<XT & Monotonic, YT> = internal.asMonotonicX
+
+/**
+ * Asserts that the curve is strictly increasing in x on `[0, 1]`.
+ *
+ * @since 2.0.0
+ */
+export const asIncreasingX: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => RationalCubicCurve2d<XT & Increasing, YT> = internal.asIncreasingX
+
+/**
+ * Asserts that the curve is strictly decreasing in x on `[0, 1]`.
+ *
+ * @since 2.0.0
+ */
+export const asDecreasingX: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => RationalCubicCurve2d<XT & Decreasing, YT> = internal.asDecreasingX
+
+/**
+ * Asserts that the curve is strictly monotonic in y on `[0, 1]`. y analog of
+ * {@link asMonotonicX}.
+ *
+ * @since 2.0.0
+ */
+export const asMonotonicY: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => RationalCubicCurve2d<XT, YT & Monotonic> = internal.asMonotonicY
+
+/**
+ * Asserts that the curve is strictly increasing in y on `[0, 1]`.
+ *
+ * @since 2.0.0
+ */
+export const asIncreasingY: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => RationalCubicCurve2d<XT, YT & Increasing> = internal.asIncreasingY
+
+/**
+ * Asserts that the curve is strictly decreasing in y on `[0, 1]`.
+ *
+ * @since 2.0.0
+ */
+export const asDecreasingY: <XT, YT>(
+  c: RationalCubicCurve2d<XT, YT>,
+) => RationalCubicCurve2d<XT, YT & Decreasing> = internal.asDecreasingY
 
 /**
  * Asserts that the curve is strictly monotonic in both axes on `[0, 1]`,

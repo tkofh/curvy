@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import * as interval from '../src/interval/interval.ts'
+import * as Monotonicity from '../src/monotonicity/monotonicity.ts'
 import * as cubic from '../src/polynomial/cubic.ts'
 import * as linear from '../src/polynomial/linear.ts'
 import * as quadratic from '../src/polynomial/quadratic.ts'
@@ -61,9 +62,9 @@ describe('linear', () => {
     expect([...linear.root(linear.make(2, -1))]).toEqual([2])
   })
   test('monotonicity', () => {
-    expect(linear.monotonicity(linear.make(0, 1))).toBe('increasing')
-    expect(linear.monotonicity(linear.make(0, -1))).toBe('decreasing')
-    expect(linear.monotonicity(linear.make(0, 0))).toBe('constant')
+    expect(linear.monotonicity(linear.make(0, 1))).toBe(Monotonicity.Increasing)
+    expect(linear.monotonicity(linear.make(0, -1))).toBe(Monotonicity.Decreasing)
+    expect(linear.monotonicity(linear.make(0, 0))).toBe(Monotonicity.Constant)
   })
   test('antiderivative', () => {
     expect(linear.antiderivative(linear.make(0, 1), 2)).toBeCloseToValue(quadratic.make(2, 0, 0.5))
@@ -155,24 +156,28 @@ describe('quadratic', () => {
     ])
   })
   test('monotonicity', () => {
-    expect(quadratic.monotonicity(quadratic.make(0, 0, 0))).toBe('constant')
-    expect(quadratic.monotonicity(quadratic.make(0, 1, 0))).toBe('increasing')
-    expect(quadratic.monotonicity(quadratic.make(0, -1, 0))).toBe('decreasing')
-    expect(quadratic.monotonicity(quadratic.make(0, 1, 2))).toBe('none')
-    expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(0, 1))).toBe('increasing')
+    expect(quadratic.monotonicity(quadratic.make(0, 0, 0))).toBe(Monotonicity.Constant)
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 0))).toBe(Monotonicity.Increasing)
+    expect(quadratic.monotonicity(quadratic.make(0, -1, 0))).toBe(Monotonicity.Decreasing)
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 2))).toBe(Monotonicity.None)
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(0, 1))).toBe(
+      Monotonicity.Increasing,
+    )
     expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-2, -1))).toBe(
-      'decreasing',
+      Monotonicity.Decreasing,
     )
     expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-2, -0.25))).toBe(
-      'decreasing',
+      Monotonicity.Decreasing,
     )
     expect(() => quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-0.25))).toThrow(
       /zero-width interval/,
     )
     expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(-0.25, 1))).toBe(
-      'increasing',
+      Monotonicity.Increasing,
     )
-    expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(1, 2))).toBe('increasing')
+    expect(quadratic.monotonicity(quadratic.make(0, 1, 2), interval.make(1, 2))).toBe(
+      Monotonicity.Increasing,
+    )
   })
   test('antiderivative', () => {
     expect(quadratic.antiderivative(quadratic.make(1, 2, 3), 0)).toBeCloseToValue(
@@ -303,26 +308,50 @@ describe('cubic', () => {
     expect([...cubic.extrema(cubic.make(0, 0, 3, 2))]).toEqual([close(-1), close(0)])
   })
   test('monotonicity', () => {
-    expect(cubic.monotonicity(cubic.make(0, 0, 0, 0))).toBe('constant')
-    expect(cubic.monotonicity(cubic.make(0, 1, 0, 0))).toBe('increasing')
-    expect(cubic.monotonicity(cubic.make(0, -1, 0, 0))).toBe('decreasing')
-    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0))).toBe('none')
-    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(0, 1))).toBe('increasing')
-    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-2, -1))).toBe('decreasing')
-    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-2, -0.25))).toBe('decreasing')
+    expect(cubic.monotonicity(cubic.make(0, 0, 0, 0))).toBe(Monotonicity.Constant)
+    expect(cubic.monotonicity(cubic.make(0, 1, 0, 0))).toBe(Monotonicity.Increasing)
+    expect(cubic.monotonicity(cubic.make(0, -1, 0, 0))).toBe(Monotonicity.Decreasing)
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0))).toBe(Monotonicity.None)
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(0, 1))).toBe(
+      Monotonicity.Increasing,
+    )
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-2, -1))).toBe(
+      Monotonicity.Decreasing,
+    )
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-2, -0.25))).toBe(
+      Monotonicity.Decreasing,
+    )
     expect(() => cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-0.25))).toThrow(
       /zero-width interval/,
     )
-    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-0.25, 1))).toBe('increasing')
-    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(1, 2))).toBe('increasing')
-    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2))).toBe('none')
-    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-3, -2))).toBe('increasing')
-    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-2, -1))).toBe('increasing')
-    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-1.5, -0.5))).toBe('none')
-    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-1, 0))).toBe('decreasing')
-    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-0.5, 0.5))).toBe('none')
-    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(0.5, 1))).toBe('increasing')
-    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(1, 2))).toBe('increasing')
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(-0.25, 1))).toBe(
+      Monotonicity.Increasing,
+    )
+    expect(cubic.monotonicity(cubic.make(0, 1, 2, 0), interval.make(1, 2))).toBe(
+      Monotonicity.Increasing,
+    )
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2))).toBe(Monotonicity.None)
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-3, -2))).toBe(
+      Monotonicity.Increasing,
+    )
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-2, -1))).toBe(
+      Monotonicity.Increasing,
+    )
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-1.5, -0.5))).toBe(
+      Monotonicity.None,
+    )
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-1, 0))).toBe(
+      Monotonicity.Decreasing,
+    )
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(-0.5, 0.5))).toBe(
+      Monotonicity.None,
+    )
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(0.5, 1))).toBe(
+      Monotonicity.Increasing,
+    )
+    expect(cubic.monotonicity(cubic.make(0, 0, 3, 2), interval.make(1, 2))).toBe(
+      Monotonicity.Increasing,
+    )
   })
   test('domain', () => {
     const p = cubic.make(0, -1.5, 0, 0.5)
