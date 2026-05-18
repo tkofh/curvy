@@ -257,6 +257,23 @@ export const clip: {
 } = internal.clip
 
 /**
+ * Approximate-containment variant of {@link clip} for post-processing the
+ * output of a numerical solver. Retains values within a small absolute
+ * tolerance of either boundary even if formally outside — a valid root can
+ * land a few ULPs past the boundary due to coefficient roundoff in the
+ * solver, and strict {@link clip} would drop it. Endpoint inclusivity is
+ * ignored at the EPSILON scale.
+ *
+ * @param s - The solution to clip.
+ * @param i - The interval to retain values approximately within.
+ * @since 2.0.0
+ */
+export const clipApprox: {
+  (i: Interval): (s: Solution<number>) => Solution<number>
+  (s: Solution<number>, i: Interval): Solution<number>
+} = internal.clipApprox
+
+/**
  * Maps every value in the solution to a new value. Result cardinality matches
  * the input.
  *

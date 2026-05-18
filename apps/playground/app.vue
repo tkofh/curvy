@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const pages = [
   { to: '/', label: 'Home' },
-  { to: '/rationalCubic', label: 'Rational Cubic' },
+  { to: '/easing', label: 'Easing' },
 ]
 </script>
 

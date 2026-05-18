@@ -99,10 +99,13 @@ export const fromBezierPoints: (
   p1: Vector2.Vector2,
   p2: Vector2.Vector2,
   p3: Vector2.Vector2,
-) => CubicCurve2d = (p0, p1, p2, p3) => {
-  const channels = Vector4.transpose([p0, p1, p2, p3], (p) => [p.x, p.y])
-  return new CubicCurve2dImpl(...Characteristic.apply(Characteristic.cubicBezier, ...channels))
-}
+) => CubicCurve2d = (p0, p1, p2, p3) =>
+  new CubicCurve2dImpl(
+    ...Characteristic.apply(
+      Characteristic.cubicBezier,
+      ...Vector4.transpose([p0, p1, p2, p3], (p) => [p.x, p.y]),
+    ),
+  )
 
 /** @internal */
 export const isCubicCurve2d = (c: unknown): c is CubicCurve2d =>
@@ -120,16 +123,20 @@ export const solve = dual<
 // evaluate y at each surviving t. Result order matches solveInverse order
 // (t-ascending).
 /** @internal */
-export const solveAtX = dual(2, (c: CubicCurve2d, x: number) => {
-  const ts = Solution.clip(CubicPolynomial.solveInverse(c.x, x), Interval.unit)
-  return Solution.map(ts, (t) => CubicPolynomial.solve(c.y, t))
-})
+export const solveAtX = dual(2, (c: CubicCurve2d, x: number) =>
+  CubicPolynomial.solveInverse(c.x, x).pipe(
+    Solution.clipApprox(Interval.unit),
+    Solution.map(CubicPolynomial.toSolver(c.y)),
+  ),
+)
 
 /** @internal */
-export const solveAtY = dual(2, (c: CubicCurve2d, y: number) => {
-  const ts = Solution.clip(CubicPolynomial.solveInverse(c.y, y), Interval.unit)
-  return Solution.map(ts, (t) => CubicPolynomial.solve(c.x, t))
-})
+export const solveAtY = dual(2, (c: CubicCurve2d, y: number) =>
+  CubicPolynomial.solveInverse(c.y, y).pipe(
+    Solution.clipApprox(Interval.unit),
+    Solution.map(CubicPolynomial.toSolver(c.x)),
+  ),
+)
 
 /** @internal */
 export const derivative = (c: CubicCurve2d) =>

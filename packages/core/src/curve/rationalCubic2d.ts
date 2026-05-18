@@ -27,10 +27,10 @@ export { RationalCurveTraits } from './rationalCubic2d.internal.ts'
  * to the rational functions `x(t)/w(t)` and `y(t)/w(t)`. Unlike
  * `CubicCurve2d`, traits do not flow through to the underlying polynomials —
  * monotonicity of a ratio of cubics is not the same property as monotonicity
- * of either cubic alone, so the brand lives on the curve itself. Constructors
- * with construction-time monotonicity guarantees (e.g. {@link makeMonotonicEasing})
- * return curves with `Increasing` brands attached, narrowing downstream
- * operations like {@link solveAtX} to single-solution returns.
+ * of either cubic alone, so the brand lives on the curve itself. Brands are
+ * attached after construction via the {@link asMonotonic}, {@link asIncreasing},
+ * and {@link asDecreasing} families, which verify the property rigorously
+ * (Bernstein sign convexity on the derivative-numerator quartic).
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
@@ -94,31 +94,36 @@ export const fromBezierPoints: (
 ) => RationalCubicCurve2d = internal.fromBezierPoints
 
 /**
- * Creates a guaranteed-monotonic rational cubic easing curve via Gregory-
- * Delbourgo style construction. The result interpolates `(0, 0)` and
- * `(1, 1)` with the given endpoint slopes, with `x(t) = t` pinned linearly
- * and a rational cubic numerator for `y(t)`. Monotonicity of `y(t)` is
- * verified rigorously at construction (degree-3 polynomial sign analysis);
- * the returned curve is branded `<Increasing, Increasing>` so that
- * {@link solveAtX} returns `Solution.AtMostOne<number>` without further
- * trait refinement.
+ * Creates a rational cubic easing curve from endpoint slopes and signed
+ * curvatures. The result interpolates `(0, 0)` and `(1, 1)` with `x(t) = t`
+ * pinned linearly; the y-axis projection `y(t) = Y(t)/W(t)` uses a cubic
+ * numerator over a quadratic denominator, giving six free parameters that
+ * exactly match the six endpoint constraints (two values, two slopes, two
+ * curvatures).
  *
- * For input slope combinations that the default Gregory-Delbourgo
- * construction cannot accommodate (typically when one slope is large while
- * the other is small), construction throws. Useful operating range is
- * roughly `m₀, m₁ ∈ [0, 2]` with `m₀ + m₁ ≲ 3`; smoothstep (`0, 0`) and
- * linear (`1, 1`) fall out as special cases.
+ * Curvatures are the signed differential-geometric curvatures `κ = y''(x) /
+ * (1 + y'(x)²)^(3/2)` — the parameterization-invariant "bend" of the easing
+ * graph. Positive κ is concave-up. Smoothstep is `(0, 0, 6, -6)`; linear is
+ * `(1, 1, 0, 0)` (taken as a redundant-system special case).
  *
- * @param startSlope - The easing function's slope at the start (`dy/dx` at `x = 0`); must be finite and non-negative.
- * @param endSlope - The easing function's slope at the end (`dy/dx` at `x = 1`); must be finite and non-negative.
- * @returns A monotone-by-construction rational cubic easing curve.
- * @throws When slopes are negative, non-finite, or produce a non-monotonic curve under the default construction.
+ * Monotonicity is not enforced. Callers needing the `Increasing` brand for
+ * narrowed inverse-solve returns should follow construction with
+ * {@link asIncreasing}, which verifies monotonicity rigorously.
+ *
+ * @param startSlope - The easing function's slope at the start (`dy/dx` at `x = 0`).
+ * @param endSlope - The easing function's slope at the end (`dy/dx` at `x = 1`).
+ * @param startCurvature - The signed differential curvature at the start.
+ * @param endCurvature - The signed differential curvature at the end.
+ * @returns A rational cubic easing curve.
+ * @throws When inputs are non-finite, the constraint system is singular, or the resulting denominator vanishes on `[0, 1]`.
  * @since 2.0.0
  */
-export const makeMonotonicEasing: (
+export const fromSlopesAndCurvatures: (
   startSlope: number,
   endSlope: number,
-) => RationalCubicCurve2d<Increasing, Increasing> = internal.makeMonotonicEasing as never
+  startCurvature: number,
+  endCurvature: number,
+) => RationalCubicCurve2d = internal.fromSlopesAndCurvatures
 
 export const solve: {
   /**

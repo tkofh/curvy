@@ -234,6 +234,19 @@ export const clip = dual(
     filter(s, (v) => Interval.contains(i, v)),
 )
 
+// Approximate-containment variant for post-processing numerical solver
+// output. A valid root from `Polynomial.roots` (etc.) can land a few ULPs
+// past a boundary due to coefficient roundoff in the solver; strict `clip`
+// drops it, this one keeps it. Endpoint inclusivity is ignored — at the
+// EPSILON scale the open/closed distinction loses meaning, mirroring
+// `Interval.containsApprox` semantics.
+/** @internal */
+export const clipApprox = dual(
+  2,
+  (s: Solution<number>, i: Interval.Interval): Solution<number> =>
+    filter(s, (v) => Interval.containsApprox(i, v)),
+)
+
 /** @internal */
 export const map = dual(2, <A, B>(s: Solution<A>, f: (v: A) => B): Solution<B> => {
   switch (s._tag) {

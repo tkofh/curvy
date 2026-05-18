@@ -102,6 +102,29 @@ export const solve = dual<
 /** @internal */
 export const toSolver = (p: CubicPolynomial) => (x: number) => solve(p, x)
 
+// Newton refinement of a closed-form cubic root estimate. The closed form
+// can drop ~3 digits when the trig branch's acos argument approaches ±1
+// (two roots clustering) — Newton converges quadratically away from
+// multiple roots, so a 0.01-off seed reaches machine epsilon in 2–3 steps.
+// Bails on a float fixed point or a vanishing slope (multiple root, where
+// Newton degrades to linear convergence and further iterations don't help).
+const refine = (p: CubicPolynomial, y: number, t0: number): number => {
+  let t = t0
+  for (let i = 0; i < 4; i++) {
+    const fr = p.c0 + t * (p.c1 + t * (p.c2 + t * p.c3)) - y
+    const fpr = p.c1 + t * (2 * p.c2 + 3 * t * p.c3)
+    if (fpr === 0) {
+      break
+    }
+    const next = t - fr / fpr
+    if (next === t) {
+      break
+    }
+    t = next
+  }
+  return t
+}
+
 /** @internal */
 export const solveInverse = dual<
   (y: number) => (p: CubicPolynomial) => Solution.AtMostThree<number>,
@@ -130,23 +153,27 @@ export const solveInverse = dual<
     const theta = Math.acos(((3 * q) / (2 * p)) * Math.sqrt(-3 / p)) / 3
     const offset = (2 * Math.PI) / 3
 
-    roots.add(r * Math.cos(theta + offset) - shift)
-    roots.add(r * Math.cos(theta) - shift)
-    roots.add(r * Math.cos(theta - offset) - shift)
+    roots.add(refine(self, y, r * Math.cos(theta + offset) - shift))
+    roots.add(refine(self, y, r * Math.cos(theta) - shift))
+    roots.add(refine(self, y, r * Math.cos(theta - offset) - shift))
   } else if (discriminant < 0) {
     const u = Math.sqrt(q ** 2 / 4 + p ** 3 / 27)
 
     const u1 = Math.cbrt(-q / 2 + u)
     const u2 = Math.cbrt(-q / 2 - u)
 
-    roots.add(u1 + u2 - shift)
+    roots.add(refine(self, y, u1 + u2 - shift))
   } else if (d0 === 0) {
-    roots.add(-shift)
+    roots.add(refine(self, y, -shift))
   } else {
-    roots.add((9 * self.c3 * (self.c0 - y) - self.c2 * self.c1) / (2 * d0))
+    roots.add(refine(self, y, (9 * self.c3 * (self.c0 - y) - self.c2 * self.c1) / (2 * d0)))
     roots.add(
-      (4 * self.c3 * self.c2 * self.c1 - 9 * self.c3 ** 2 * (self.c0 - y) - self.c2 ** 3) /
-        (self.c3 * d0),
+      refine(
+        self,
+        y,
+        (4 * self.c3 * self.c2 * self.c1 - 9 * self.c3 ** 2 * (self.c0 - y) - self.c2 ** 3) /
+          (self.c3 * d0),
+      ),
     )
   }
 

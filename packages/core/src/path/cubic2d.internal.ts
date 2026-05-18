@@ -133,7 +133,7 @@ const solveCurveByDistance = (
     const currentLength = CubicCurve2d.length(curve, Interval.make(0, t))
     const error = currentLength - target
 
-    if (Math.abs(error) < 1e-10) {
+    if (Math.abs(error) < EPSILON) {
       return t
     }
 

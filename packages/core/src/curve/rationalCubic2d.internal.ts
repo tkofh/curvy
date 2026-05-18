@@ -84,99 +84,164 @@ export const fromBezierPoints = (
     ),
   )
 
-// Gregory-Delbourgo style monotone rational cubic Hermite easing.
+// Rational cubic Hermite easing from endpoint slopes and signed curvatures.
 //
-// Construction: rational cubic with *linear* denominator embedded in the 2D
-// pipeline by pinning x(t) = t exactly. With endpoint weights α at t=0 and
-// β at t=1, the Hermite conditions y(0)=0, y(1)=1, y'(0)=m₀, y'(1)=m₁
-// produce a closed-form cubic numerator. Monotonicity of y(t) is then a
-// degree-3 polynomial sign question — verified rigorously with the existing
-// cubic root-finder.
-//
-// The 2D embedding stores three polynomials in cubic form:
-//   X(t) = t · Q(t)        (quadratic, c3 = 0)        so x(t)/w(t) = t
+// Construction: rational cubic with quadratic denominator, embedded in the 2D
+// pipeline by pinning x(t) = t exactly. The 2D embedding stores three cubic
+// polynomials:
+//   X(t) = t · W(t)        (cubic, with c0 = 0)        so x(t) = t
 //   Y(t) = cubic numerator
-//   W(t) = Q(t) = α + (β-α)·t  (linear, c2 = c3 = 0)
+//   W(t) = quadratic denominator (stored as cubic with c3 = 0)
 //
-// The α = m₀+1, β = m₁+1 choice is a serviceable heuristic — it makes
-// smoothstep (m₀=m₁=0) and linear (m₀=m₁=1) fall out for free, gives a
-// useful operating range for moderate slopes, and throws cleanly on inputs
-// it can't handle. Finding the optimal α, β formula for a wider input range
-// is a v2 problem.
+// Six endpoint constraints — y(0)=0, y(1)=1, y'(0)=m₀, y'(1)=m₁, y''(0), y''(1)
+// — determine the six free Bernstein control values (p₁, p₂, w₀, w₁, w₂) up to
+// overall scaling; p₀ = 0 and p₃ = w₂ are pinned by the endpoint values. We
+// normalize w₀ = 1 and solve a 2×2 linear system for (w₁, w₂); p₁, p₂ then
+// follow algebraically. With those Bernstein control values, conversion to
+// monomial form is closed-form (no root finding required).
+//
+// Curvature inputs are the signed differential-geometric curvatures
+// κ = y''(x) / (1 + y'(x)²)^(3/2). Because x(t) = t, parametric y'(t), y''(t)
+// equal the Cartesian dy/dx, d²y/dx², so the conversion at endpoints is
+// y''(0) = κ₀ · (1 + m₀²)^(3/2) and y''(1) = κ₁ · (1 + m₁²)^(3/2).
+//
+// Throws when:
+//   - inputs are non-finite,
+//   - the linear system is singular (no unique denominator),
+//   - the resulting denominator W has a zero in [0, 1] (curve is singular).
+//
+// Monotonicity is *not* enforced; callers wanting that guarantee should
+// follow construction with `asIncreasing` / `asDecreasing` / `asMonotonic`,
+// which run a rigorous sign check on the result.
 /** @internal */
-export const makeMonotonicEasing = (startSlope: number, endSlope: number): RationalCubicCurve2d => {
+export const fromSlopesAndCurvatures = (
+  startSlope: number,
+  endSlope: number,
+  startCurvature: number,
+  endCurvature: number,
+): RationalCubicCurve2d => {
+  invariant(Number.isFinite(startSlope), 'fromSlopesAndCurvatures: startSlope must be finite')
+  invariant(Number.isFinite(endSlope), 'fromSlopesAndCurvatures: endSlope must be finite')
   invariant(
-    Number.isFinite(startSlope) && startSlope >= 0,
-    'makeMonotonicEasing: startSlope must be finite and ≥ 0',
+    Number.isFinite(startCurvature),
+    'fromSlopesAndCurvatures: startCurvature must be finite',
   )
-  invariant(
-    Number.isFinite(endSlope) && endSlope >= 0,
-    'makeMonotonicEasing: endSlope must be finite and ≥ 0',
-  )
+  invariant(Number.isFinite(endCurvature), 'fromSlopesAndCurvatures: endCurvature must be finite')
 
   const m0 = startSlope
   const m1 = endSlope
-  const alpha = m0 + 1
-  const beta = m1 + 1
 
-  // Numerator P(t) cubic coefficients, derived from Hermite conditions
-  // y(0)=0, y(1)=1, y'(0)=m₀·α/α = m₀, y'(1)=(m₁·β + (β-α))/β = m₁:
-  //   c0 = 0
-  //   c1 = m₀·α
-  //   c2 = β·(2 - m₁) + α·(1 - 2m₀)
-  //   c3 = β·(m₁ - 1) + α·(m₀ - 1)
-  const pC0 = 0
-  const pC1 = m0 * alpha
-  const pC2 = beta * (2 - m1) + alpha * (1 - 2 * m0)
-  const pC3 = beta * (m1 - 1) + alpha * (m0 - 1)
+  // y''(0) = κ₀ · (1 + m₀²)^(3/2), y''(1) = κ₁ · (1 + m₁²)^(3/2).
+  // (Standard signed-curvature → second-derivative conversion for a graph y(x).)
+  const d0 = startCurvature * Math.pow(1 + m0 * m0, 1.5)
+  const d1 = endCurvature * Math.pow(1 + m1 * m1, 1.5)
 
-  // Denominator Q(t) = α + (β-α)·t — linear, stored as cubic with c2=c3=0.
-  const qC0 = alpha
-  const qC1 = beta - alpha
+  // Linear system from the two curvature constraints, normalized at w₀ = 1:
+  //   4·u·w₁ + 2·v·w₂ = d₀
+  //   4·v·w₁ +   d₁·w₂ = -2·u
+  // where u = 1 - m₀, v = 1 - m₁. By Cramer's rule:
+  //   det = 4·u·d₁ - 8·v²
+  //   w₁  = (d₀·d₁ + 4·u·v) / det
+  //   w₂  = (-8·u² - 4·d₀·v) / det
+  const u = 1 - m0
+  const v = 1 - m1
+  const det = 4 * u * d1 - 8 * v * v
 
-  // X(t) = t · Q(t) = α·t + (β-α)·t² — quadratic, stored as cubic with c3=0.
-  const xC1 = alpha
-  const xC2 = beta - alpha
+  // When the input curvatures sit exactly on the boundary `u·d₁ = 2·v²` the
+  // constraint system goes singular: either inconsistent (no curve satisfies
+  // the constraints) or redundant (a 1-parameter family of curves does). The
+  // tolerance below catches inputs that are mathematically redundant but
+  // float-perturbed off zero (e.g. y(t) = t², where the conversion from κ to
+  // d picks up ε-level error). Use a relative scale so the test scales with
+  // the magnitude of the coefficients.
+  const detScale = Math.max(Math.abs(4 * u * d1), Math.abs(8 * v * v), 1)
+  const SINGULAR_TOLERANCE = 1e-12
 
-  const xPoly = CubicPolynomial.make(0, xC1, xC2, 0)
-  const yPoly = CubicPolynomial.make(pC0, pC1, pC2, pC3)
-  const wPoly = CubicPolynomial.make(qC0, qC1, 0, 0)
+  let w0: number
+  let w1: number
+  let w2: number
 
-  // Verify monotonicity of y(t) = P(t)/Q(t) on (0, 1).
-  //
-  // sign(y'(t)) = sign(P'·Q - P·Q')  (since Q > 0 on [0,1])
-  //
-  // P' is degree 2, Q is degree 1, Q' is constant — so P'·Q - P·Q' is a
-  // degree-3 polynomial. We compute its coefficients and clip the roots to
-  // the strict interior (0, 1); any surviving root where the polynomial
-  // changes sign means y'(t) crosses zero inside the interval and the curve
-  // is not monotonic.
-  //
-  //   q(t) = m₀·α² + 2·α·a·t + (3·α·b + a·(β-α))·t² + 2·b·(β-α)·t³
-  // where a = β(2-m₁) + α(1-2m₀), b = β(m₁-1) + α(m₀-1) — i.e. c2 and c3.
-  const monoQ = CubicPolynomial.make(
-    m0 * alpha * alpha,
-    2 * alpha * pC2,
-    3 * alpha * pC3 + pC2 * (beta - alpha),
-    2 * pC3 * (beta - alpha),
-  )
-
-  const interiorRoots = monoQ.pipe(CubicPolynomial.roots, Solution.clip(Interval.unitOpen))
-  for (const t of interiorRoots) {
-    // Check sign on both sides of the root. If the polynomial changes sign
-    // across this point, monotonicity is violated.
-    const epsilon = 1e-6
-    const lo = Math.max(0, t - epsilon)
-    const hi = Math.min(1, t + epsilon)
-    const signLo = Math.sign(CubicPolynomial.solve(monoQ, lo))
-    const signHi = Math.sign(CubicPolynomial.solve(monoQ, hi))
+  if (Math.abs(det) > SINGULAR_TOLERANCE * detScale) {
+    w0 = 1
+    w1 = (d0 * d1 + 4 * u * v) / det
+    w2 = (-8 * u * u - 4 * d0 * v) / det
+  } else if (u === 0 && v === 0) {
+    // m₀ = m₁ = 1: both equations collapse to `0 = d₀` and `0 = d₁`, so the
+    // system is consistent iff both curvatures vanish. The only easing
+    // satisfying that is linear y(t) = t — return it directly.
     invariant(
-      signLo * signHi >= 0,
-      `makeMonotonicEasing: slopes (${m0}, ${m1}) produce a non-monotonic curve with the default Gregory-Delbourgo construction. Try smaller slopes or use a different easing form.`,
+      d0 === 0 && d1 === 0,
+      `fromSlopesAndCurvatures: inputs (m₀=${m0}, m₁=${m1}, κ₀=${startCurvature}, κ₁=${endCurvature}) yield an inconsistent constraint system`,
     )
+    return new RationalCubicCurve2dImpl(
+      CubicPolynomial.make(0, 1, 0, 0),
+      CubicPolynomial.make(0, 1, 0, 0),
+      CubicPolynomial.make(1, 0, 0, 0),
+    )
+  } else {
+    // Singular but not at the linear-easing point. The two rows are
+    // proportional; consistency requires the augmented column to match. The
+    // residual `−8·u² − 4·v·d₀` is the Cramer numerator of w₂, which must
+    // also vanish for the system to be consistent (otherwise w₂ would need
+    // to be both finite and 0/0).
+    const residual = -8 * u * u - 4 * v * d0
+    invariant(
+      Math.abs(residual) <= SINGULAR_TOLERANCE * detScale,
+      `fromSlopesAndCurvatures: inputs (m₀=${m0}, m₁=${m1}, κ₀=${startCurvature}, κ₁=${endCurvature}) yield an inconsistent constraint system`,
+    )
+    // Pick the canonical solution from the 1-parameter family: w₂ = 1, then
+    // w₁ follows from whichever of the two equations has a nonzero pivot.
+    // (At least one of u, v is nonzero here, since u = v = 0 branched above.)
+    w0 = 1
+    w2 = 1
+    w1 = u !== 0 ? (d0 - 2 * v) / (4 * u) : -(2 * u + d1) / (4 * v)
   }
 
-  return new RationalCubicCurve2dImpl(xPoly, yPoly, wPoly)
+  // W(t) must be > 0 throughout [0, 1] for the rational to be well-defined.
+  // W(0) = w₀ = 1 > 0 always; check W(1) = w₂ > 0, then guard the interior.
+  // W as a quadratic in t has monomial coefficients (c, b, a) below; on [0, 1]
+  // its minimum is at an endpoint unless `a > 0` and the vertex `t* = -b/(2a)`
+  // lies inside (0, 1), in which case the vertex value is the candidate min.
+  invariant(
+    w2 > 0,
+    `fromSlopesAndCurvatures: inputs (m₀=${m0}, m₁=${m1}, κ₀=${startCurvature}, κ₁=${endCurvature}) yield denominator ≤ 0 at t = 1`,
+  )
+  const a = w0 - 2 * w1 + w2
+  const b = 2 * (w1 - w0)
+  if (a > 0) {
+    const tStar = -b / (2 * a)
+    if (tStar > 0 && tStar < 1) {
+      const wStar = w0 + tStar * (b + a * tStar)
+      invariant(
+        wStar > 0,
+        `fromSlopesAndCurvatures: inputs (m₀=${m0}, m₁=${m1}, κ₀=${startCurvature}, κ₁=${endCurvature}) yield denominator ≤ 0 in (0, 1)`,
+      )
+    }
+  }
+
+  // Numerator Bernstein control values, from the endpoint value & slope
+  // constraints (p₀ = 0, p₃ = w₂, p₁ = m₀·w₀/3, p₂ = ((1-m₁)·w₂ + 2·w₁)/3).
+  const p1 = (m0 * w0) / 3
+  const p2 = (v * w2 + 2 * w1) / 3
+  const p3 = w2
+
+  // Bernstein → monomial conversion. For cubic Y with p₀ = 0:
+  //   Y(t) = 3·p₁·t + 3·(p₂ - 2·p₁)·t² + (p₃ - 3·p₂ + 3·p₁)·t³
+  // For quadratic W:
+  //   W(t) = w₀ + 2·(w₁ - w₀)·t + (w₀ - 2·w₁ + w₂)·t²
+  // X(t) = t · W(t) shifts W up one degree.
+  const yC1 = 3 * p1
+  const yC2 = 3 * (p2 - 2 * p1)
+  const yC3 = p3 - 3 * p2 + 3 * p1
+  const wC0 = w0
+  const wC1 = b
+  const wC2 = a
+
+  return new RationalCubicCurve2dImpl(
+    CubicPolynomial.make(0, wC0, wC1, wC2),
+    CubicPolynomial.make(0, yC1, yC2, yC3),
+    CubicPolynomial.make(wC0, wC1, wC2, 0),
+  )
 }
 
 /** @internal */
@@ -205,7 +270,7 @@ export const solveAtX = dual(
       c.x.c3 - x * c.w.c3,
     ).pipe(
       CubicPolynomial.roots,
-      Solution.clip(Interval.unit),
+      Solution.clipApprox(Interval.unit),
       Solution.map((t) => CubicPolynomial.solve(c.y, t) / CubicPolynomial.solve(c.w, t)),
     ),
 )
@@ -221,7 +286,7 @@ export const solveAtY = dual(
       c.y.c3 - y * c.w.c3,
     ).pipe(
       CubicPolynomial.roots,
-      Solution.clip(Interval.unit),
+      Solution.clipApprox(Interval.unit),
       Solution.map((t) => CubicPolynomial.solve(c.x, t) / CubicPolynomial.solve(c.w, t)),
     ),
 )

@@ -120,16 +120,20 @@ export const solve = dual<
 // evaluate y at each surviving t. Result order matches solveInverse order
 // (t-ascending).
 /** @internal */
-export const solveAtX = dual(2, (c: QuadraticCurve2d, x: number) => {
-  const ts = Solution.clip(QuadraticPolynomial.solveInverse(c.x, x), Interval.unit)
-  return Solution.map(ts, (t) => QuadraticPolynomial.solve(c.y, t))
-})
+export const solveAtX = dual(2, (c: QuadraticCurve2d, x: number) =>
+  QuadraticPolynomial.solveInverse(c.x, x).pipe(
+    Solution.clipApprox(Interval.unit),
+    Solution.map((t) => QuadraticPolynomial.solve(c.y, t)),
+  ),
+)
 
 /** @internal */
-export const solveAtY = dual(2, (c: QuadraticCurve2d, y: number) => {
-  const ts = Solution.clip(QuadraticPolynomial.solveInverse(c.y, y), Interval.unit)
-  return Solution.map(ts, (t) => QuadraticPolynomial.solve(c.x, t))
-})
+export const solveAtY = dual(2, (c: QuadraticCurve2d, y: number) =>
+  QuadraticPolynomial.solveInverse(c.y, y).pipe(
+    Solution.clipApprox(Interval.unit),
+    Solution.map((t) => QuadraticPolynomial.solve(c.x, t)),
+  ),
+)
 
 /** @internal */
 export const derivative = (c: QuadraticCurve2d) =>

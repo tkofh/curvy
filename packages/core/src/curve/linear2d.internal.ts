@@ -1,5 +1,5 @@
 import * as Interval2d from '../interval/interval2d.ts'
-import type * as Interval from '../interval/interval.ts'
+import * as Interval from '../interval/interval.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as LinearPolynomial from '../polynomial/linear.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
@@ -77,20 +77,18 @@ export const solve = dual<
 // always 0 or 1 element.
 /** @internal */
 export const solveAtX = dual(2, (c: LinearCurve2d, x: number) =>
-  Solution.match(LinearPolynomial.solveInverse(c.x, x), {
-    onNone: () => Solution.none,
-    onSome: ({ value: t }) =>
-      t < 0 || t > 1 ? Solution.none : Solution.one(LinearPolynomial.solve(c.y, t)),
-  }),
+  LinearPolynomial.solveInverse(c.x, x).pipe(
+    Solution.clip(Interval.unit),
+    Solution.map((t) => LinearPolynomial.solve(c.y, t)),
+  ),
 )
 
 /** @internal */
 export const solveAtY = dual(2, (c: LinearCurve2d, y: number) =>
-  Solution.match(LinearPolynomial.solveInverse(c.y, y), {
-    onNone: () => Solution.none,
-    onSome: ({ value: t }) =>
-      t < 0 || t > 1 ? Solution.none : Solution.one(LinearPolynomial.solve(c.x, t)),
-  }),
+  LinearPolynomial.solveInverse(c.y, y).pipe(
+    Solution.clip(Interval.unit),
+    Solution.map((t) => LinearPolynomial.solve(c.x, t)),
+  ),
 )
 
 /** @internal */

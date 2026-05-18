@@ -3,9 +3,9 @@
     <h2>Scenes</h2>
     <ul>
       <li>
-        <NuxtLink to="/rationalCubic">Rational cubic vs. polynomial approximation</NuxtLink>
-        — dense-sampled rational curve overlaid with the recursive-subdivision polynomial
-        approximation; tweak weights and tolerance.
+        <NuxtLink to="/easing">Rational-cubic easing</NuxtLink>
+        — adjust endpoint slopes and curvatures for
+        <code>fromSlopesAndCurvatures</code>, scrub along x to read off the eased y.
       </li>
     </ul>
   </section>
