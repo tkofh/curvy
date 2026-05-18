@@ -1,9 +1,13 @@
 import type { FourDimensionalComponent, FourDimensionalIndex } from '../dimensions.ts'
+import type * as Solution from '../solution/solution.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector4 } from '../vector/vector4.ts'
 import type { Matrix3x3 } from './matrix3x3.ts'
 import type { Matrix4x4TypeId } from './matrix4x4.internal.ts'
 import * as internal from './matrix4x4.internal.ts'
+import type { Invertible, MatrixTraits } from './traits.ts'
+
+export type { Invertible } from './traits.ts'
 
 /**
  * A coordinate in a 4x4 matrix.
@@ -17,10 +21,16 @@ export type Matrix4x4Coordinate = FourDimensionalIndex | FourDimensionalComponen
  *
  * All fields are readonly and immutable, and all operations create new instances.
  *
+ * The `Traits` type parameter is a phantom marker that accumulates trait
+ * brands as the matrix is refined via `isInvertible` / `asInvertible`. The
+ * runtime value carries no trait data — `Traits` only flows through the type
+ * system to enable tighter return types on operations like {@link inverse}.
+ *
  * @since 1.0.0
  */
-export interface Matrix4x4 extends Pipeable {
+export interface Matrix4x4<out Traits = unknown> extends Pipeable {
   readonly [Matrix4x4TypeId]: Matrix4x4TypeId
+  readonly [MatrixTraits]: Traits
 
   /**
    * The value of the first row and first column.
@@ -371,16 +381,66 @@ export const multiply: {
   (b: Matrix4x4): (a: Matrix4x4) => Matrix4x4
 } = internal.multiply
 
+// The implementation always runs the same det/epsEquals branch. For
+// `Invertible`-branded matrices the empty branch is provably unreachable,
+// but TS can't see that — the cast pairs the type-level promise with the
+// runtime brand check.
+export const inverse: {
+  /**
+   * Returns the inverse of an `Invertible`-branded `Matrix4x4`. Because the
+   * brand guarantees non-singularity, the result is always a single matrix —
+   * wrapped in `Solution.One`.
+   *
+   * @param m - The matrix to invert.
+   * @since 2.0.0
+   */
+  <T extends Invertible>(m: Matrix4x4<T>): Solution.One<Matrix4x4<T>>
+  /**
+   * Returns the inverse of a `Matrix4x4`. Returns `Solution.none` if the
+   * matrix is singular (determinant approximately zero). Use {@link asInvertible}
+   * or {@link isInvertible} to refine the type and tighten the return to
+   * `Solution.One`, or use {@link inverseUnsafe} if you want the throwing form.
+   *
+   * @param m - The matrix to invert.
+   * @since 2.0.0
+   */
+  <T>(m: Matrix4x4<T>): Solution.AtMostOne<Matrix4x4<T>>
+} = internal.inverse as never
+
 /**
- * Returns the inverse of a `Matrix4x4`.
- *
- * Throws when the matrix is singular (determinant is zero).
+ * Returns the inverse of a `Matrix4x4`. Throws when the matrix is singular
+ * (determinant approximately zero). Useful when you've already validated
+ * invertibility out-of-band and want the unwrapped matrix directly; otherwise
+ * prefer {@link inverse}.
  *
  * @param m - The matrix to invert.
  * @returns The inverse matrix.
- * @since 1.1.0
+ * @throws If `m` is singular.
+ * @since 2.0.0
  */
-export const inverse: (m: Matrix4x4) => Matrix4x4 = internal.inverse
+export const inverseUnsafe: (m: Matrix4x4) => Matrix4x4 = internal.inverseUnsafe
+
+/**
+ * Type-narrowing predicate: refines a `Matrix4x4<T>` to
+ * `Matrix4x4<T & Invertible>` when the matrix's determinant is non-zero
+ * (within the default absolute tolerance).
+ *
+ * @param m - The matrix to check.
+ * @returns `true` when `m` is invertible.
+ * @since 2.0.0
+ */
+export const isInvertible: <T>(m: Matrix4x4<T>) => m is Matrix4x4<T & Invertible> =
+  internal.isInvertible
+
+/**
+ * Asserts that the matrix is invertible, throwing on a singular matrix.
+ *
+ * @param m - The matrix to assert against.
+ * @returns The same matrix, typed with the `Invertible` brand.
+ * @throws When `m` is singular.
+ * @since 2.0.0
+ */
+export const asInvertible: <T>(m: Matrix4x4<T>) => Matrix4x4<T & Invertible> = internal.asInvertible
 
 export const solveSystem: {
   /**

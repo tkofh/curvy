@@ -12,7 +12,7 @@ import type { RationalBezier2d } from './rationalBezier2d.ts'
 import * as RationalBezier2dInternal from './rationalBezier2d.internal.ts'
 import { toCurves, toPointQuads } from './util.ts'
 
-const characteristicInverse = Matrix4x4.inverse(Characteristic.cubicBezier)
+const characteristicInverse = Matrix4x4.inverseUnsafe(Characteristic.cubicBezier)
 
 // Maps a source spline's characteristic matrix to its precomputed conversion
 // matrix `M_bezier_inverse · M_source`, so each `fromBasis` call is one

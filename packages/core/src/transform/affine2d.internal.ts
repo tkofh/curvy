@@ -3,16 +3,20 @@ import type { Matrix2x2 } from '../matrix/matrix2x2.ts'
 import * as matrix3x3 from '../matrix/matrix3x3.internal.ts'
 import type { Matrix3x3 } from '../matrix/matrix3x3.ts'
 import { epsEquals } from '../number.ts'
+import * as Solution from '../solution/solution.ts'
 import { dual, invariant, Pipeable } from '../utils.ts'
 import * as vector2 from '../vector/vector2.internal.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Affine2d } from './affine2d.ts'
+import type { Invertible } from './traits.ts'
+import { AffineTraits } from './traits.ts'
 
 export const Affine2dTypeId: unique symbol = Symbol.for('curvy/transform/affine2d')
 export type Affine2dTypeId = typeof Affine2dTypeId
 
-class Affine2dImpl extends Pipeable implements Affine2d {
+class Affine2dImpl extends Pipeable implements Affine2d<unknown> {
   readonly [Affine2dTypeId]: Affine2dTypeId = Affine2dTypeId
+  declare readonly [AffineTraits]: unknown
   readonly matrix: Matrix3x3
 
   constructor(matrix: Matrix3x3) {
@@ -150,7 +154,30 @@ export const andThen = dual<
 )
 
 /** @internal */
-export const inverse = (a: Affine2d): Affine2d => new Affine2dImpl(matrix3x3.inverse(a.matrix))
+export const isInvertible = <T>(a: Affine2d<T>): a is Affine2d<T & Invertible> =>
+  matrix3x3.isInvertible(a.matrix)
+
+/** @internal */
+export const asInvertible = <T>(a: Affine2d<T>): Affine2d<T & Invertible> => {
+  invariant(isInvertible(a), 'affine2d is not invertible')
+  return a
+}
+
+// On `Invertible`-branded transforms the empty branch is provably unreachable,
+// but TS can't see that — the cast at the public overload pairs the type-level
+// promise with the runtime brand check.
+/** @internal */
+export const inverse = <T>(a: Affine2d<T>): Solution.AtMostOne<Affine2d<T>> => {
+  const inv = matrix3x3.inverse(a.matrix)
+  if (Solution.isNone(inv)) {
+    return Solution.none
+  }
+  return Solution.one(new Affine2dImpl(inv.value) as Affine2d<T>)
+}
+
+/** @internal */
+export const inverseUnsafe = (a: Affine2d): Affine2d =>
+  new Affine2dImpl(matrix3x3.inverseUnsafe(a.matrix))
 
 /** @internal */
 export const apply = dual<

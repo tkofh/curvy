@@ -3,6 +3,9 @@ import * as cubicCurve2d from '../src/curve/cubic2d.ts'
 import * as linearCurve2d from '../src/curve/linear2d.ts'
 import * as quadraticCurve2d from '../src/curve/quadratic2d.ts'
 import * as interval from '../src/interval/interval.ts'
+import * as matrix3x3 from '../src/matrix/matrix3x3.ts'
+import * as matrix4x4 from '../src/matrix/matrix4x4.ts'
+import type { Invertible } from '../src/matrix/traits.ts'
 import * as cubicPath2d from '../src/path/cubic2d.ts'
 import * as linearPath2d from '../src/path/linear2d.ts'
 import * as quadraticPath2d from '../src/path/quadratic2d.ts'
@@ -11,7 +14,8 @@ import * as linear from '../src/polynomial/linear.ts'
 import * as quadratic from '../src/polynomial/quadratic.ts'
 import type { Decreasing, Increasing, Monotonic } from '../src/polynomial/traits.ts'
 import * as Bezier2d from '../src/splines/bezier2d.ts'
-import type * as Solution from '../src/solution/solution.ts'
+import * as Solution from '../src/solution/solution.ts'
+import * as Affine2d from '../src/transform/affine2d.ts'
 import * as vector2 from '../src/vector/vector2.ts'
 
 describe('LinearPolynomial traits', () => {
@@ -367,5 +371,113 @@ describe('Trait accumulation', () => {
       expectTypeOf(p).toMatchTypeOf<linear.LinearPolynomial<Monotonic>>()
       expectTypeOf(p).toMatchTypeOf<linear.LinearPolynomial<Decreasing>>()
     }
+  })
+})
+
+describe('Matrix3x3 Invertible trait', () => {
+  test('isInvertible narrows a non-singular matrix to Invertible', () => {
+    const m = matrix3x3.make(1, 2, 3, 0, 1, 4, 5, 6, 0)
+    expect(matrix3x3.isInvertible(m)).toBe(true)
+    if (matrix3x3.isInvertible(m)) {
+      expectTypeOf(m).toEqualTypeOf<matrix3x3.Matrix3x3<unknown & Invertible>>()
+    }
+  })
+  test('isInvertible returns false for a singular matrix', () => {
+    expect(matrix3x3.isInvertible(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9))).toBe(false)
+  })
+  test('isInvertible uses epsEquals — near-zero determinants are singular', () => {
+    // det = 1e-16, well inside EPSILON
+    const m = matrix3x3.make(1e-8, 0, 0, 0, 1e-8, 0, 0, 0, 1)
+    expect(matrix3x3.isInvertible(m)).toBe(false)
+  })
+  test('asInvertible returns the same matrix when invertible', () => {
+    const m = matrix3x3.make(1, 2, 3, 0, 1, 4, 5, 6, 0)
+    expect(matrix3x3.asInvertible(m)).toBe(m)
+  })
+  test('asInvertible throws on a singular matrix', () => {
+    expect(() => matrix3x3.asInvertible(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9))).toThrow(
+      /not invertible/,
+    )
+  })
+  test('inverse on Invertible returns Solution.One, not AtMostOne', () => {
+    const m = matrix3x3.asInvertible(matrix3x3.make(1, 2, 3, 0, 1, 4, 5, 6, 0))
+    const result = matrix3x3.inverse(m)
+    expectTypeOf(result).toEqualTypeOf<Solution.One<matrix3x3.Matrix3x3<unknown & Invertible>>>()
+    expect(matrix3x3.multiply(m, result.value)).toBeCloseToValue(matrix3x3.identity)
+  })
+  test('inverse on plain Matrix3x3 returns Solution.AtMostOne', () => {
+    const m = matrix3x3.make(1, 2, 3, 0, 1, 4, 5, 6, 0)
+    const result = matrix3x3.inverse(m)
+    expectTypeOf(result).toEqualTypeOf<Solution.AtMostOne<matrix3x3.Matrix3x3<unknown>>>()
+    expect(Solution.isSome(result)).toBe(true)
+  })
+  test('inverse returns Solution.none for a singular matrix', () => {
+    const result = matrix3x3.inverse(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9))
+    expect(Solution.isNone(result)).toBe(true)
+  })
+  test('inverseUnsafe throws on a singular matrix', () => {
+    expect(() => matrix3x3.inverseUnsafe(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9))).toThrow(
+      /singular/,
+    )
+  })
+})
+
+describe('Matrix4x4 Invertible trait', () => {
+  const m = matrix4x4.make(1, 0, 0, 0, -3, 3, 0, 0, 3, -6, 3, 0, -1, 3, -3, 1)
+  const singular = matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+
+  test('isInvertible narrows a non-singular matrix to Invertible', () => {
+    expect(matrix4x4.isInvertible(m)).toBe(true)
+    if (matrix4x4.isInvertible(m)) {
+      expectTypeOf(m).toEqualTypeOf<matrix4x4.Matrix4x4<unknown & Invertible>>()
+    }
+  })
+  test('isInvertible returns false for a singular matrix', () => {
+    expect(matrix4x4.isInvertible(singular)).toBe(false)
+  })
+  test('asInvertible throws on a singular matrix', () => {
+    expect(() => matrix4x4.asInvertible(singular)).toThrow(/not invertible/)
+  })
+  test('inverse on Invertible returns Solution.One', () => {
+    const invertible = matrix4x4.asInvertible(m)
+    const result = matrix4x4.inverse(invertible)
+    expectTypeOf(result).toEqualTypeOf<Solution.One<matrix4x4.Matrix4x4<unknown & Invertible>>>()
+    expect(matrix4x4.multiply(invertible, result.value)).toBeCloseToValue(matrix4x4.identity)
+  })
+  test('inverse returns Solution.none for a singular matrix', () => {
+    expect(Solution.isNone(matrix4x4.inverse(singular))).toBe(true)
+  })
+  test('inverseUnsafe throws on a singular matrix', () => {
+    expect(() => matrix4x4.inverseUnsafe(singular)).toThrow(/singular/)
+  })
+})
+
+describe('Affine2d Invertible trait', () => {
+  test('isInvertible narrows a non-singular transform to Invertible', () => {
+    const a = Affine2d.identity.pipe(Affine2d.andThen(Affine2d.scale(2, 3)))
+    expect(Affine2d.isInvertible(a)).toBe(true)
+    if (Affine2d.isInvertible(a)) {
+      expectTypeOf(a).toEqualTypeOf<Affine2d.Affine2d<unknown & Invertible>>()
+    }
+  })
+  test('isInvertible returns false for a zero-scale transform', () => {
+    expect(Affine2d.isInvertible(Affine2d.scale(0, 1))).toBe(false)
+    expect(Affine2d.isInvertible(Affine2d.scale(1, 0))).toBe(false)
+  })
+  test('asInvertible throws on a singular transform', () => {
+    expect(() => Affine2d.asInvertible(Affine2d.scale(0, 1))).toThrow(/not invertible/)
+  })
+  test('inverse on Invertible returns Solution.One', () => {
+    const a = Affine2d.asInvertible(Affine2d.scale(2, 3))
+    const result = Affine2d.inverse(a)
+    expectTypeOf(result).toEqualTypeOf<Solution.One<Affine2d.Affine2d<unknown & Invertible>>>()
+    const p = vector2.make(7, 11)
+    expect(Affine2d.apply(result.value, Affine2d.apply(a, p))).toBeCloseToValue(p)
+  })
+  test('inverse returns Solution.none for a singular transform', () => {
+    expect(Solution.isNone(Affine2d.inverse(Affine2d.scale(0, 1)))).toBe(true)
+  })
+  test('inverseUnsafe throws on a singular transform', () => {
+    expect(() => Affine2d.inverseUnsafe(Affine2d.scale(0, 1))).toThrow(/singular/)
   })
 })

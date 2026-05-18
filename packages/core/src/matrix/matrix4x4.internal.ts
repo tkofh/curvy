@@ -2,17 +2,21 @@ import { toFourDimensionalIndex } from '../dimensions.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
 import { epsEquals } from '../number.ts'
+import * as Solution from '../solution/solution.ts'
 import type { Vector4 } from '../vector/vector4.ts'
 import * as vector4 from '../vector/vector4.internal.ts'
 import type { Matrix3x3 } from './matrix3x3.ts'
 import * as matrix3x3 from './matrix3x3.internal.ts'
 import type { Matrix4x4, Matrix4x4Coordinate } from './matrix4x4.ts'
+import type { Invertible } from './traits.ts'
+import { MatrixTraits } from './traits.ts'
 
 export const Matrix4x4TypeId: unique symbol = Symbol.for('curvy/matrix4x4')
 export type Matrix4x4TypeId = typeof Matrix4x4TypeId
 
-class Matrix4x4Impl extends Pipeable implements Matrix4x4 {
+class Matrix4x4Impl extends Pipeable implements Matrix4x4<unknown> {
   readonly [Matrix4x4TypeId]: Matrix4x4TypeId = Matrix4x4TypeId
+  declare readonly [MatrixTraits]: unknown
 
   readonly m00: number
   readonly m01: number
@@ -303,10 +307,16 @@ export const multiply = dual<
 )
 
 /** @internal */
-export const inverse = (m: Matrix4x4): Matrix4x4 => {
-  const det = determinant(m)
-  invariant(det !== 0, 'cannot invert singular matrix')
+export const isInvertible = <T>(m: Matrix4x4<T>): m is Matrix4x4<T & Invertible> =>
+  !epsEquals(determinant(m), 0)
 
+/** @internal */
+export const asInvertible = <T>(m: Matrix4x4<T>): Matrix4x4<T & Invertible> => {
+  invariant(isInvertible(m), 'matrix4x4 is not invertible')
+  return m
+}
+
+const buildInverse = (m: Matrix4x4, det: number): Matrix4x4 => {
   const inv = 1 / det
   // adjugate is the transpose of the cofactor matrix
   const cof = (row: Matrix4x4Coordinate, col: Matrix4x4Coordinate) => {
@@ -332,6 +342,25 @@ export const inverse = (m: Matrix4x4): Matrix4x4 => {
     cof(2, 3),
     cof(3, 3),
   )
+}
+
+// On `Invertible`-branded matrices the empty branch is provably unreachable,
+// but TS can't see that — the cast at the public overload pairs the type-level
+// promise with the runtime brand check.
+/** @internal */
+export const inverse = <T>(m: Matrix4x4<T>): Solution.AtMostOne<Matrix4x4<T>> => {
+  const det = determinant(m)
+  if (epsEquals(det, 0)) {
+    return Solution.none
+  }
+  return Solution.one(buildInverse(m, det) as Matrix4x4<T>)
+}
+
+/** @internal */
+export const inverseUnsafe = (m: Matrix4x4): Matrix4x4 => {
+  const det = determinant(m)
+  invariant(!epsEquals(det, 0), 'cannot invert singular matrix')
+  return buildInverse(m, det)
 }
 
 /** @internal */

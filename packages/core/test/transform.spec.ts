@@ -134,13 +134,13 @@ describe('Affine2d', () => {
     expect(Affine2d.apply(t, Vector2.make(1, 0))).toBeCloseToValue(Vector2.make(0, 2))
   })
 
-  test('inverse round-trip', () => {
+  test('inverseUnsafe round-trip', () => {
     const a = Affine2d.identity.pipe(
       Affine2d.andThen(Affine2d.translate(3, 5)),
       Affine2d.andThen(Affine2d.rotate(1.2)),
       Affine2d.andThen(Affine2d.scale(2, 3)),
     )
-    const inv = Affine2d.inverse(a)
+    const inv = Affine2d.inverseUnsafe(a)
     const p = Vector2.make(7, 11)
     expect(Affine2d.apply(inv, Affine2d.apply(a, p))).toBeCloseToValue(p)
   })
@@ -389,7 +389,7 @@ describe('curve transforms', () => {
       Vector2.make(3, 1),
       Vector2.make(4, 4),
     )
-    const round = CubicCurve2d.transform(CubicCurve2d.transform(c, t), Affine2d.inverse(t))
+    const round = CubicCurve2d.transform(CubicCurve2d.transform(c, t), Affine2d.inverseUnsafe(t))
     for (const u of samples) {
       expect(CubicCurve2d.solve(round, u)).toBeCloseToValue(CubicCurve2d.solve(c, u))
     }

@@ -1,9 +1,13 @@
 import type { Matrix2x2 } from '../matrix/matrix2x2.ts'
 import type { Matrix3x3 } from '../matrix/matrix3x3.ts'
+import type * as Solution from '../solution/solution.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Affine2dTypeId } from './affine2d.internal.ts'
 import * as internal from './affine2d.internal.ts'
+import type { AffineTraits, Invertible } from './traits.ts'
+
+export type { Invertible } from './traits.ts'
 
 /**
  * A 2D affine transformation — the most general map of the form
@@ -23,10 +27,16 @@ import * as internal from './affine2d.internal.ts'
  * and then transforming. Concrete spline modules expose `transform(s, a)`
  * helpers that take advantage of this.
  *
+ * The `Traits` type parameter is a phantom marker that accumulates trait
+ * brands as the transform is refined via `isInvertible` / `asInvertible`. The
+ * runtime value carries no trait data — `Traits` only flows through the type
+ * system to enable tighter return types on operations like {@link inverse}.
+ *
  * @since 2.0.0
  */
-export interface Affine2d extends Pipeable {
+export interface Affine2d<out Traits = unknown> extends Pipeable {
   readonly [Affine2dTypeId]: Affine2dTypeId
+  readonly [AffineTraits]: Traits
   /**
    * The underlying 3×3 homogeneous matrix. Last row is always `[0, 0, 1]`.
    */
@@ -211,16 +221,65 @@ export const andThen: {
   (b: Affine2d): (a: Affine2d) => Affine2d
 } = internal.andThen
 
+// The implementation always runs the same singular check. For
+// `Invertible`-branded transforms the empty branch is provably unreachable,
+// but TS can't see that — the cast pairs the type-level promise with the
+// runtime brand check.
+export const inverse: {
+  /**
+   * Inverts an `Invertible`-branded `Affine2d`. Because the brand guarantees
+   * non-singularity, the result is always a single transform — wrapped in
+   * `Solution.One`.
+   *
+   * @param a - The transform to invert.
+   * @since 2.0.0
+   */
+  <T extends Invertible>(a: Affine2d<T>): Solution.One<Affine2d<T>>
+  /**
+   * Inverts an `Affine2d`. Returns `Solution.none` if the transform is
+   * singular (e.g. a scale with a zero factor). Use {@link asInvertible} or
+   * {@link isInvertible} to refine the type and tighten the return to
+   * `Solution.One`, or use {@link inverseUnsafe} if you want the throwing form.
+   *
+   * @param a - The transform to invert.
+   * @since 2.0.0
+   */
+  <T>(a: Affine2d<T>): Solution.AtMostOne<Affine2d<T>>
+} = internal.inverse as never
+
 /**
- * Inverts an `Affine2d`. Throws if the transform is singular (e.g. a scale
- * with a zero factor).
+ * Inverts an `Affine2d`. Throws when the transform is singular (e.g. a scale
+ * with a zero factor). Useful when invertibility has already been validated
+ * out-of-band; otherwise prefer {@link inverse}.
  *
  * @param a - The transform to invert.
  * @returns The inverse transform.
  * @throws If `a` is singular.
  * @since 2.0.0
  */
-export const inverse: (a: Affine2d) => Affine2d = internal.inverse
+export const inverseUnsafe: (a: Affine2d) => Affine2d = internal.inverseUnsafe
+
+/**
+ * Type-narrowing predicate: refines an `Affine2d<T>` to
+ * `Affine2d<T & Invertible>` when the underlying matrix is invertible
+ * (determinant non-zero within the default absolute tolerance).
+ *
+ * @param a - The transform to check.
+ * @returns `true` when `a` is invertible.
+ * @since 2.0.0
+ */
+export const isInvertible: <T>(a: Affine2d<T>) => a is Affine2d<T & Invertible> =
+  internal.isInvertible
+
+/**
+ * Asserts that the transform is invertible, throwing on a singular transform.
+ *
+ * @param a - The transform to assert against.
+ * @returns The same transform, typed with the `Invertible` brand.
+ * @throws When `a` is singular.
+ * @since 2.0.0
+ */
+export const asInvertible: <T>(a: Affine2d<T>) => Affine2d<T & Invertible> = internal.asInvertible
 
 export const apply: {
   /**

@@ -212,18 +212,18 @@ describe('matrix3x3', () => {
     const b = matrix3x3.make(2, 0, 0, 0, 3, 0, 0, 0, 4)
     expect(matrix3x3.multiply(a, b)).toBeCloseToValue(matrix3x3.make(2, 0, 0, 0, 6, 0, 0, 0, 12))
   })
-  test('inverse identity', () => {
-    expect(matrix3x3.inverse(matrix3x3.identity)).toBeCloseToValue(matrix3x3.identity)
+  test('inverseUnsafe identity', () => {
+    expect(matrix3x3.inverseUnsafe(matrix3x3.identity)).toBeCloseToValue(matrix3x3.identity)
   })
-  test('inverse round-trip', () => {
+  test('inverseUnsafe round-trip', () => {
     const m = matrix3x3.make(1, 2, 3, 0, 1, 4, 5, 6, 0)
-    const inv = matrix3x3.inverse(m)
+    const inv = matrix3x3.inverseUnsafe(m)
     expect(matrix3x3.multiply(m, inv)).toBeCloseToValue(matrix3x3.identity)
     expect(matrix3x3.multiply(inv, m)).toBeCloseToValue(matrix3x3.identity)
   })
-  test('inverse singular throws', () => {
+  test('inverseUnsafe singular throws', () => {
     const singular = matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    expect(() => matrix3x3.inverse(singular)).toThrowError()
+    expect(() => matrix3x3.inverseUnsafe(singular)).toThrowError()
   })
 })
 
@@ -432,17 +432,17 @@ describe('matrix4x4', () => {
       matrix4x4.make(2, 0, 0, 0, 0, 6, 0, 0, 0, 0, 12, 0, 0, 0, 0, 20),
     )
   })
-  test('inverse identity', () => {
-    expect(matrix4x4.inverse(matrix4x4.identity)).toBeCloseToValue(matrix4x4.identity)
+  test('inverseUnsafe identity', () => {
+    expect(matrix4x4.inverseUnsafe(matrix4x4.identity)).toBeCloseToValue(matrix4x4.identity)
   })
-  test('inverse round-trip', () => {
+  test('inverseUnsafe round-trip', () => {
     const m = matrix4x4.make(1, 0, 0, 0, -3, 3, 0, 0, 3, -6, 3, 0, -1, 3, -3, 1)
-    const inv = matrix4x4.inverse(m)
+    const inv = matrix4x4.inverseUnsafe(m)
     expect(matrix4x4.multiply(m, inv)).toBeCloseToValue(matrix4x4.identity)
     expect(matrix4x4.multiply(inv, m)).toBeCloseToValue(matrix4x4.identity)
   })
-  test('inverse singular throws', () => {
+  test('inverseUnsafe singular throws', () => {
     const singular = matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
-    expect(() => matrix4x4.inverse(singular)).toThrowError()
+    expect(() => matrix4x4.inverseUnsafe(singular)).toThrowError()
   })
 })
