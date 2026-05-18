@@ -92,18 +92,16 @@ export const toPathData = (p: LinearPath2d): string => {
   let prevEndY = Number.NaN
 
   for (const curve of p) {
-    const startX = curve.x.c0
-    const startY = curve.y.c0
-    const endX = curve.x.c0 + curve.x.c1
-    const endY = curve.y.c0 + curve.y.c1
+    const start = LinearCurve2d.startPoint(curve)
+    const end = LinearCurve2d.endPoint(curve)
 
-    if (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY)) {
-      result += ` M ${startX},${startY}`
+    if (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY)) {
+      result += ` M ${start.x},${start.y}`
     }
-    result += ` L ${endX},${endY}`
+    result += ` ${LinearCurve2d.toPathDataSegment(curve)}`
 
-    prevEndX = endX
-    prevEndY = endY
+    prevEndX = end.x
+    prevEndY = end.y
   }
 
   return result.slice(1)
@@ -116,13 +114,13 @@ export const isContinuous = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & Conti
   let first = true
 
   for (const curve of p) {
-    const startX = curve.x.c0
-    const startY = curve.y.c0
-    if (!first && (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY))) {
+    const start = LinearCurve2d.startPoint(curve)
+    if (!first && (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY))) {
       return false
     }
-    prevEndX = curve.x.c0 + curve.x.c1
-    prevEndY = curve.y.c0 + curve.y.c1
+    const end = LinearCurve2d.endPoint(curve)
+    prevEndX = end.x
+    prevEndY = end.y
     first = false
   }
   return true
@@ -146,10 +144,10 @@ export const isIncreasingX = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & Incr
     if (!LinearPolynomial.isIncreasing(c.x)) {
       return false
     }
-    if (c.x.c0 < prevEnd - EPSILON) {
+    if (LinearCurve2d.startPoint(c).x < prevEnd - EPSILON) {
       return false
     }
-    prevEnd = c.x.c0 + c.x.c1
+    prevEnd = LinearCurve2d.endPoint(c).x
   }
   return true
 }
@@ -161,10 +159,10 @@ export const isDecreasingX = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & Decr
     if (!LinearPolynomial.isDecreasing(c.x)) {
       return false
     }
-    if (c.x.c0 > prevEnd + EPSILON) {
+    if (LinearCurve2d.startPoint(c).x > prevEnd + EPSILON) {
       return false
     }
-    prevEnd = c.x.c0 + c.x.c1
+    prevEnd = LinearCurve2d.endPoint(c).x
   }
   return true
 }
@@ -180,10 +178,10 @@ export const isIncreasingY = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & Incr
     if (!LinearPolynomial.isIncreasing(c.y)) {
       return false
     }
-    if (c.y.c0 < prevEnd - EPSILON) {
+    if (LinearCurve2d.startPoint(c).y < prevEnd - EPSILON) {
       return false
     }
-    prevEnd = c.y.c0 + c.y.c1
+    prevEnd = LinearCurve2d.endPoint(c).y
   }
   return true
 }
@@ -195,10 +193,10 @@ export const isDecreasingY = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & Decr
     if (!LinearPolynomial.isDecreasing(c.y)) {
       return false
     }
-    if (c.y.c0 > prevEnd + EPSILON) {
+    if (LinearCurve2d.startPoint(c).y > prevEnd + EPSILON) {
       return false
     }
-    prevEnd = c.y.c0 + c.y.c1
+    prevEnd = LinearCurve2d.endPoint(c).y
   }
   return true
 }
@@ -253,16 +251,16 @@ export const asMonotonicY = <T>(p: LinearPath2d<T>): LinearPath2d<T & MonotonicY
 /** @internal */
 export const solveAtX = dual(2, (p: LinearPath2d, x: number): Solution.AtMostOne<number> => {
   for (const c of p) {
-    const sx = c.x.c0
-    const ex = c.x.c0 + c.x.c1
-    const lo = Math.min(sx, ex)
-    const hi = Math.max(sx, ex)
+    const start = LinearCurve2d.startPoint(c)
+    const end = LinearCurve2d.endPoint(c)
+    const lo = Math.min(start.x, end.x)
+    const hi = Math.max(start.x, end.x)
     if (x >= lo - EPSILON && x <= hi + EPSILON) {
-      if (epsEquals(x, sx)) {
-        return Solution.one(c.y.c0)
+      if (epsEquals(x, start.x)) {
+        return Solution.one(start.y)
       }
-      if (epsEquals(x, ex)) {
-        return Solution.one(c.y.c0 + c.y.c1)
+      if (epsEquals(x, end.x)) {
+        return Solution.one(end.y)
       }
       const sol = LinearCurve2d.solveAtX(c, x)
       if (!Solution.isNone(sol)) {
@@ -276,16 +274,16 @@ export const solveAtX = dual(2, (p: LinearPath2d, x: number): Solution.AtMostOne
 /** @internal */
 export const solveAtY = dual(2, (p: LinearPath2d, y: number): Solution.AtMostOne<number> => {
   for (const c of p) {
-    const sy = c.y.c0
-    const ey = c.y.c0 + c.y.c1
-    const lo = Math.min(sy, ey)
-    const hi = Math.max(sy, ey)
+    const start = LinearCurve2d.startPoint(c)
+    const end = LinearCurve2d.endPoint(c)
+    const lo = Math.min(start.y, end.y)
+    const hi = Math.max(start.y, end.y)
     if (y >= lo - EPSILON && y <= hi + EPSILON) {
-      if (epsEquals(y, sy)) {
-        return Solution.one(c.x.c0)
+      if (epsEquals(y, start.y)) {
+        return Solution.one(start.x)
       }
-      if (epsEquals(y, ey)) {
-        return Solution.one(c.x.c0 + c.x.c1)
+      if (epsEquals(y, end.y)) {
+        return Solution.one(end.x)
       }
       const sol = LinearCurve2d.solveAtY(c, y)
       if (!Solution.isNone(sol)) {

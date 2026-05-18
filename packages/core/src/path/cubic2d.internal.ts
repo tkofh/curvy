@@ -158,9 +158,6 @@ const solveCurveByDistance = (
   return t
 }
 
-// Cubic Bernstein basis: P(t) = (1-t)³·p0 + 3(1-t)²t·p1 + 3(1-t)t²·p2 + t³·p3
-// expanded gives c0 = p0, c1 = -3p0 + 3p1, c2 = 3p0 - 6p1 + 3p2, c3 = -p0 + 3p1 - 3p2 + p3,
-// so: p0 = c0, p1 = c0 + c1/3, p2 = c0 + 2c1/3 + c2/3, p3 = c0 + c1 + c2 + c3.
 /** @internal */
 export const toPathData = (p: CubicPath2d): string => {
   let result = ''
@@ -168,31 +165,16 @@ export const toPathData = (p: CubicPath2d): string => {
   let prevEndY = Number.NaN
 
   for (const curve of p) {
-    const c0x = curve.x.c0
-    const c0y = curve.y.c0
-    const c1x = curve.x.c1
-    const c1y = curve.y.c1
-    const c2x = curve.x.c2
-    const c2y = curve.y.c2
-    const c3x = curve.x.c3
-    const c3y = curve.y.c3
+    const start = CubicCurve2d.startPoint(curve)
+    const end = CubicCurve2d.endPoint(curve)
 
-    const startX = c0x
-    const startY = c0y
-    const ctrl1X = c0x + c1x / 3
-    const ctrl1Y = c0y + c1y / 3
-    const ctrl2X = c0x + (2 * c1x) / 3 + c2x / 3
-    const ctrl2Y = c0y + (2 * c1y) / 3 + c2y / 3
-    const endX = c0x + c1x + c2x + c3x
-    const endY = c0y + c1y + c2y + c3y
-
-    if (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY)) {
-      result += ` M ${startX},${startY}`
+    if (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY)) {
+      result += ` M ${start.x},${start.y}`
     }
-    result += ` C ${ctrl1X},${ctrl1Y} ${ctrl2X},${ctrl2Y} ${endX},${endY}`
+    result += ` ${CubicCurve2d.toPathDataSegment(curve)}`
 
-    prevEndX = endX
-    prevEndY = endY
+    prevEndX = end.x
+    prevEndY = end.y
   }
 
   return result.slice(1)
@@ -205,13 +187,13 @@ export const isContinuous = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & Continu
   let first = true
 
   for (const curve of p) {
-    const startX = curve.x.c0
-    const startY = curve.y.c0
-    if (!first && (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY))) {
+    const start = CubicCurve2d.startPoint(curve)
+    if (!first && (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY))) {
       return false
     }
-    prevEndX = curve.x.c0 + curve.x.c1 + curve.x.c2 + curve.x.c3
-    prevEndY = curve.y.c0 + curve.y.c1 + curve.y.c2 + curve.y.c3
+    const end = CubicCurve2d.endPoint(curve)
+    prevEndX = end.x
+    prevEndY = end.y
     first = false
   }
   return true
@@ -233,10 +215,10 @@ export const isIncreasingX = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & Increa
     if (!CubicPolynomial.isIncreasing(c.x, Interval.unit)) {
       return false
     }
-    if (c.x.c0 < prevEnd - EPSILON) {
+    if (CubicCurve2d.startPoint(c).x < prevEnd - EPSILON) {
       return false
     }
-    prevEnd = c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3
+    prevEnd = CubicCurve2d.endPoint(c).x
   }
   return true
 }
@@ -248,10 +230,10 @@ export const isDecreasingX = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & Decrea
     if (!CubicPolynomial.isDecreasing(c.x, Interval.unit)) {
       return false
     }
-    if (c.x.c0 > prevEnd + EPSILON) {
+    if (CubicCurve2d.startPoint(c).x > prevEnd + EPSILON) {
       return false
     }
-    prevEnd = c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3
+    prevEnd = CubicCurve2d.endPoint(c).x
   }
   return true
 }
@@ -267,10 +249,10 @@ export const isIncreasingY = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & Increa
     if (!CubicPolynomial.isIncreasing(c.y, Interval.unit)) {
       return false
     }
-    if (c.y.c0 < prevEnd - EPSILON) {
+    if (CubicCurve2d.startPoint(c).y < prevEnd - EPSILON) {
       return false
     }
-    prevEnd = c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3
+    prevEnd = CubicCurve2d.endPoint(c).y
   }
   return true
 }
@@ -282,10 +264,10 @@ export const isDecreasingY = <T>(p: CubicPath2d<T>): p is CubicPath2d<T & Decrea
     if (!CubicPolynomial.isDecreasing(c.y, Interval.unit)) {
       return false
     }
-    if (c.y.c0 > prevEnd + EPSILON) {
+    if (CubicCurve2d.startPoint(c).y > prevEnd + EPSILON) {
       return false
     }
-    prevEnd = c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3
+    prevEnd = CubicCurve2d.endPoint(c).y
   }
   return true
 }
@@ -343,16 +325,16 @@ export const asMonotonicY = <T>(p: CubicPath2d<T>): CubicPath2d<T & MonotonicY> 
 /** @internal */
 export const solveAtX = dual(2, (p: CubicPath2d, x: number): Solution.AtMostOne<number> => {
   for (const c of p) {
-    const sx = c.x.c0
-    const ex = c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3
-    const lo = Math.min(sx, ex)
-    const hi = Math.max(sx, ex)
+    const start = CubicCurve2d.startPoint(c)
+    const end = CubicCurve2d.endPoint(c)
+    const lo = Math.min(start.x, end.x)
+    const hi = Math.max(start.x, end.x)
     if (x >= lo - EPSILON && x <= hi + EPSILON) {
-      if (epsEquals(x, sx)) {
-        return Solution.one(c.y.c0)
+      if (epsEquals(x, start.x)) {
+        return Solution.one(start.y)
       }
-      if (epsEquals(x, ex)) {
-        return Solution.one(c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3)
+      if (epsEquals(x, end.x)) {
+        return Solution.one(end.y)
       }
       const sol = CubicCurve2d.solveAtX(c, x) as Solution.AtMostOne<number>
       if (!Solution.isNone(sol)) {
@@ -366,16 +348,16 @@ export const solveAtX = dual(2, (p: CubicPath2d, x: number): Solution.AtMostOne<
 /** @internal */
 export const solveAtY = dual(2, (p: CubicPath2d, y: number): Solution.AtMostOne<number> => {
   for (const c of p) {
-    const sy = c.y.c0
-    const ey = c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3
-    const lo = Math.min(sy, ey)
-    const hi = Math.max(sy, ey)
+    const start = CubicCurve2d.startPoint(c)
+    const end = CubicCurve2d.endPoint(c)
+    const lo = Math.min(start.y, end.y)
+    const hi = Math.max(start.y, end.y)
     if (y >= lo - EPSILON && y <= hi + EPSILON) {
-      if (epsEquals(y, sy)) {
-        return Solution.one(c.x.c0)
+      if (epsEquals(y, start.y)) {
+        return Solution.one(start.x)
       }
-      if (epsEquals(y, ey)) {
-        return Solution.one(c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3)
+      if (epsEquals(y, end.y)) {
+        return Solution.one(end.x)
       }
       const sol = CubicCurve2d.solveAtY(c, y) as Solution.AtMostOne<number>
       if (!Solution.isNone(sol)) {

@@ -97,27 +97,16 @@ export const toPathData = (p: QuadraticPath2d): string => {
   let prevEndY = Number.NaN
 
   for (const curve of p) {
-    const c0x = curve.x.c0
-    const c0y = curve.y.c0
-    const c1x = curve.x.c1
-    const c1y = curve.y.c1
-    const c2x = curve.x.c2
-    const c2y = curve.y.c2
+    const start = QuadraticCurve2d.startPoint(curve)
+    const end = QuadraticCurve2d.endPoint(curve)
 
-    const startX = c0x
-    const startY = c0y
-    const ctrlX = c0x + c1x / 2
-    const ctrlY = c0y + c1y / 2
-    const endX = c0x + c1x + c2x
-    const endY = c0y + c1y + c2y
-
-    if (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY)) {
-      result += ` M ${startX},${startY}`
+    if (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY)) {
+      result += ` M ${start.x},${start.y}`
     }
-    result += ` Q ${ctrlX},${ctrlY} ${endX},${endY}`
+    result += ` ${QuadraticCurve2d.toPathDataSegment(curve)}`
 
-    prevEndX = endX
-    prevEndY = endY
+    prevEndX = end.x
+    prevEndY = end.y
   }
 
   return result.slice(1)
@@ -130,13 +119,13 @@ export const isContinuous = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T &
   let first = true
 
   for (const curve of p) {
-    const startX = curve.x.c0
-    const startY = curve.y.c0
-    if (!first && (!epsEquals(startX, prevEndX) || !epsEquals(startY, prevEndY))) {
+    const start = QuadraticCurve2d.startPoint(curve)
+    if (!first && (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY))) {
       return false
     }
-    prevEndX = curve.x.c0 + curve.x.c1 + curve.x.c2
-    prevEndY = curve.y.c0 + curve.y.c1 + curve.y.c2
+    const end = QuadraticCurve2d.endPoint(curve)
+    prevEndX = end.x
+    prevEndY = end.y
     first = false
   }
   return true
@@ -158,10 +147,10 @@ export const isIncreasingX = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T 
     if (!QuadraticPolynomial.isIncreasing(c.x, Interval.unit)) {
       return false
     }
-    if (c.x.c0 < prevEnd - EPSILON) {
+    if (QuadraticCurve2d.startPoint(c).x < prevEnd - EPSILON) {
       return false
     }
-    prevEnd = c.x.c0 + c.x.c1 + c.x.c2
+    prevEnd = QuadraticCurve2d.endPoint(c).x
   }
   return true
 }
@@ -173,10 +162,10 @@ export const isDecreasingX = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T 
     if (!QuadraticPolynomial.isDecreasing(c.x, Interval.unit)) {
       return false
     }
-    if (c.x.c0 > prevEnd + EPSILON) {
+    if (QuadraticCurve2d.startPoint(c).x > prevEnd + EPSILON) {
       return false
     }
-    prevEnd = c.x.c0 + c.x.c1 + c.x.c2
+    prevEnd = QuadraticCurve2d.endPoint(c).x
   }
   return true
 }
@@ -192,10 +181,10 @@ export const isIncreasingY = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T 
     if (!QuadraticPolynomial.isIncreasing(c.y, Interval.unit)) {
       return false
     }
-    if (c.y.c0 < prevEnd - EPSILON) {
+    if (QuadraticCurve2d.startPoint(c).y < prevEnd - EPSILON) {
       return false
     }
-    prevEnd = c.y.c0 + c.y.c1 + c.y.c2
+    prevEnd = QuadraticCurve2d.endPoint(c).y
   }
   return true
 }
@@ -207,10 +196,10 @@ export const isDecreasingY = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T 
     if (!QuadraticPolynomial.isDecreasing(c.y, Interval.unit)) {
       return false
     }
-    if (c.y.c0 > prevEnd + EPSILON) {
+    if (QuadraticCurve2d.startPoint(c).y > prevEnd + EPSILON) {
       return false
     }
-    prevEnd = c.y.c0 + c.y.c1 + c.y.c2
+    prevEnd = QuadraticCurve2d.endPoint(c).y
   }
   return true
 }
@@ -265,16 +254,16 @@ export const asMonotonicY = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & Mono
 /** @internal */
 export const solveAtX = dual(2, (p: QuadraticPath2d, x: number): Solution.AtMostOne<number> => {
   for (const c of p) {
-    const sx = c.x.c0
-    const ex = c.x.c0 + c.x.c1 + c.x.c2
-    const lo = Math.min(sx, ex)
-    const hi = Math.max(sx, ex)
+    const start = QuadraticCurve2d.startPoint(c)
+    const end = QuadraticCurve2d.endPoint(c)
+    const lo = Math.min(start.x, end.x)
+    const hi = Math.max(start.x, end.x)
     if (x >= lo - EPSILON && x <= hi + EPSILON) {
-      if (epsEquals(x, sx)) {
-        return Solution.one(c.y.c0)
+      if (epsEquals(x, start.x)) {
+        return Solution.one(start.y)
       }
-      if (epsEquals(x, ex)) {
-        return Solution.one(c.y.c0 + c.y.c1 + c.y.c2)
+      if (epsEquals(x, end.x)) {
+        return Solution.one(end.y)
       }
       const sol = QuadraticCurve2d.solveAtX(c, x) as Solution.AtMostOne<number>
       if (!Solution.isNone(sol)) {
@@ -288,16 +277,16 @@ export const solveAtX = dual(2, (p: QuadraticPath2d, x: number): Solution.AtMost
 /** @internal */
 export const solveAtY = dual(2, (p: QuadraticPath2d, y: number): Solution.AtMostOne<number> => {
   for (const c of p) {
-    const sy = c.y.c0
-    const ey = c.y.c0 + c.y.c1 + c.y.c2
-    const lo = Math.min(sy, ey)
-    const hi = Math.max(sy, ey)
+    const start = QuadraticCurve2d.startPoint(c)
+    const end = QuadraticCurve2d.endPoint(c)
+    const lo = Math.min(start.y, end.y)
+    const hi = Math.max(start.y, end.y)
     if (y >= lo - EPSILON && y <= hi + EPSILON) {
-      if (epsEquals(y, sy)) {
-        return Solution.one(c.x.c0)
+      if (epsEquals(y, start.y)) {
+        return Solution.one(start.x)
       }
-      if (epsEquals(y, ey)) {
-        return Solution.one(c.x.c0 + c.x.c1 + c.x.c2)
+      if (epsEquals(y, end.y)) {
+        return Solution.one(end.x)
       }
       const sol = QuadraticCurve2d.solveAtY(c, y) as Solution.AtMostOne<number>
       if (!Solution.isNone(sol)) {
