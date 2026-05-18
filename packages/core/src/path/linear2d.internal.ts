@@ -1,15 +1,10 @@
-import * as Interval2d from '../interval/interval2d.ts'
 import * as LinearCurve2d from '../curve/linear2d.ts'
-import * as Interval from '../interval/interval.ts'
-import * as LinearPolynomial from '../polynomial/linear.ts'
-import * as Solution from '../solution/solution.ts'
-import { dual, Pipeable } from '../utils.ts'
+import type { Closed } from '../interval/interval.ts'
+import type { Interval2d } from '../interval/interval2d.ts'
 import { invariant } from '../utils.ts'
-import { EPSILON, epsEquals } from '../number.ts'
-import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearPath2d } from './linear2d.ts'
+import * as Path2d from './path2d.ts'
 import {
-  PathTraits,
   type Continuous,
   type DecreasingX,
   type DecreasingY,
@@ -22,109 +17,39 @@ import {
 export const LinearPath2dTypeId: unique symbol = Symbol('curvy/path/linear2d')
 export type LinearPath2dTypeId = typeof LinearPath2dTypeId
 
-/** @internal */
-export class LinearPath2dImpl extends Pipeable implements LinearPath2d<unknown> {
-  readonly [LinearPath2dTypeId]: LinearPath2dTypeId = LinearPath2dTypeId
-  declare readonly [PathTraits]: unknown
-
-  readonly curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>
-
-  constructor(curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>) {
-    super()
-    this.curves = curves
-  }
-
-  [Symbol.iterator](): Iterator<LinearCurve2d.LinearCurve2d> {
-    return this.curves[Symbol.iterator]()
-  }
-}
+// Generic operation surface, built once for LinearCurve2d's Ops.
+const methods = Path2d.makeMethods(LinearPath2dTypeId, LinearCurve2d.Ops)
 
 /** @internal */
 export const isLinearPath2d = (p: unknown): p is LinearPath2d =>
   typeof p === 'object' && p !== null && LinearPath2dTypeId in p
 
 /** @internal */
-export const make = (...curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>): LinearPath2d =>
-  new LinearPath2dImpl(curves)
+export const make = methods.make as (
+  ...curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>
+) => LinearPath2d
 
 /** @internal */
-export const fromArray = (curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>) =>
-  new LinearPath2dImpl(curves)
+export const fromArray = methods.fromArray as (
+  curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>,
+) => LinearPath2d
 
 /** @internal */
-export const append = dual<
-  (c: LinearCurve2d.LinearCurve2d) => (p: LinearPath2d) => LinearPath2d,
-  (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) => LinearPath2d
->(2, (p: LinearPath2d, c: LinearCurve2d.LinearCurve2d) => fromArray([...p, c]))
+export const append = methods.append as never
 
 /** @internal */
-export const length = (p: LinearPath2d) => {
-  let total = 0
-  for (const curve of p) {
-    total += LinearCurve2d.length(curve, Interval.unit)
-  }
-
-  return total
-}
+export const length = methods.length as (p: LinearPath2d) => number
 
 /** @internal */
-export const solve = dual<
-  (u: number) => (p: LinearPath2d) => Vector2,
-  (p: LinearPath2d, u: number) => Vector2
->(2, (p: LinearPath2d, u: number) => {
-  const curves = p instanceof LinearPath2dImpl ? p.curves : [...p]
-
-  if (u === 1) {
-    const last = curves.at(-1) as LinearCurve2d.LinearCurve2d
-    return LinearCurve2d.solve(last, 1)
-  }
-
-  const t = u * curves.length
-  const i = Math.floor(t)
-  const curve = curves[i] as LinearCurve2d.LinearCurve2d
-  return LinearCurve2d.solve(curve, t - i)
-})
+export const solve = methods.solve as never
 
 /** @internal */
-export const toPathData = (p: LinearPath2d): string => {
-  let result = ''
-  let prevEndX = Number.NaN
-  let prevEndY = Number.NaN
-
-  for (const curve of p) {
-    const start = LinearCurve2d.startPoint(curve)
-    const end = LinearCurve2d.endPoint(curve)
-
-    if (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY)) {
-      result += ` M ${start.x},${start.y}`
-    }
-    result += ` ${LinearCurve2d.toPathDataSegment(curve)}`
-
-    prevEndX = end.x
-    prevEndY = end.y
-  }
-
-  return result.slice(1)
-}
+export const toPathData = methods.toPathData as (p: LinearPath2d) => string
 
 /** @internal */
-export const isContinuous = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & Continuous> => {
-  let prevEndX = Number.NaN
-  let prevEndY = Number.NaN
-  let first = true
-
-  for (const curve of p) {
-    const start = LinearCurve2d.startPoint(curve)
-    if (!first && (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY))) {
-      return false
-    }
-    const end = LinearCurve2d.endPoint(curve)
-    prevEndX = end.x
-    prevEndY = end.y
-    first = false
-  }
-  return true
-}
+export const isContinuous = methods.isContinuous as unknown as <T>(
+  p: LinearPath2d<T>,
+) => p is LinearPath2d<T & Continuous>
 
 /** @internal */
 export const asContinuous = <T>(p: LinearPath2d<T>): LinearPath2d<T & Continuous> => {
@@ -132,78 +57,35 @@ export const asContinuous = <T>(p: LinearPath2d<T>): LinearPath2d<T & Continuous
   return p
 }
 
-// Per-axis monotonicity refiners. A path is monotonic-on-an-axis when every
-// segment's per-axis polynomial is strictly monotonic in the same direction
-// AND adjacent segments' ranges on that axis don't overlap (modulo float
-// tolerance) — so the path's u → axis mapping is monotonic across joins.
+/** @internal */
+export const isIncreasingX = methods.isIncreasingX as unknown as <T>(
+  p: LinearPath2d<T>,
+) => p is LinearPath2d<T & IncreasingX>
 
 /** @internal */
-export const isIncreasingX = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & IncreasingX> => {
-  let prevEnd = Number.NEGATIVE_INFINITY
-  for (const c of p) {
-    if (!LinearPolynomial.isIncreasing(c.x)) {
-      return false
-    }
-    if (LinearCurve2d.startPoint(c).x < prevEnd - EPSILON) {
-      return false
-    }
-    prevEnd = LinearCurve2d.endPoint(c).x
-  }
-  return true
-}
+export const isDecreasingX = methods.isDecreasingX as unknown as <T>(
+  p: LinearPath2d<T>,
+) => p is LinearPath2d<T & DecreasingX>
 
 /** @internal */
-export const isDecreasingX = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & DecreasingX> => {
-  let prevEnd = Number.POSITIVE_INFINITY
-  for (const c of p) {
-    if (!LinearPolynomial.isDecreasing(c.x)) {
-      return false
-    }
-    if (LinearCurve2d.startPoint(c).x > prevEnd + EPSILON) {
-      return false
-    }
-    prevEnd = LinearCurve2d.endPoint(c).x
-  }
-  return true
-}
+export const isMonotonicX = methods.isMonotonicX as unknown as <T>(
+  p: LinearPath2d<T>,
+) => p is LinearPath2d<T & MonotonicX>
 
 /** @internal */
-export const isMonotonicX = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & MonotonicX> =>
-  isIncreasingX(p) || isDecreasingX(p)
+export const isIncreasingY = methods.isIncreasingY as unknown as <T>(
+  p: LinearPath2d<T>,
+) => p is LinearPath2d<T & IncreasingY>
 
 /** @internal */
-export const isIncreasingY = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & IncreasingY> => {
-  let prevEnd = Number.NEGATIVE_INFINITY
-  for (const c of p) {
-    if (!LinearPolynomial.isIncreasing(c.y)) {
-      return false
-    }
-    if (LinearCurve2d.startPoint(c).y < prevEnd - EPSILON) {
-      return false
-    }
-    prevEnd = LinearCurve2d.endPoint(c).y
-  }
-  return true
-}
+export const isDecreasingY = methods.isDecreasingY as unknown as <T>(
+  p: LinearPath2d<T>,
+) => p is LinearPath2d<T & DecreasingY>
 
 /** @internal */
-export const isDecreasingY = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & DecreasingY> => {
-  let prevEnd = Number.POSITIVE_INFINITY
-  for (const c of p) {
-    if (!LinearPolynomial.isDecreasing(c.y)) {
-      return false
-    }
-    if (LinearCurve2d.startPoint(c).y > prevEnd + EPSILON) {
-      return false
-    }
-    prevEnd = LinearCurve2d.endPoint(c).y
-  }
-  return true
-}
-
-/** @internal */
-export const isMonotonicY = <T>(p: LinearPath2d<T>): p is LinearPath2d<T & MonotonicY> =>
-  isIncreasingY(p) || isDecreasingY(p)
+export const isMonotonicY = methods.isMonotonicY as unknown as <T>(
+  p: LinearPath2d<T>,
+) => p is LinearPath2d<T & MonotonicY>
 
 /** @internal */
 export const asIncreasingX = <T>(p: LinearPath2d<T>): LinearPath2d<T & IncreasingX> => {
@@ -241,69 +123,11 @@ export const asMonotonicY = <T>(p: LinearPath2d<T>): LinearPath2d<T & MonotonicY
   return p
 }
 
-// solveAtX/solveAtY for `Monotonic{X,Y}` paths. Two defenses against float
-// drift at interior knots (where adjacent segments both bracket the query):
-//   1. Snap to t=0/t=1 endpoint y when the query is within EPSILON of a
-//      segment's start or end.
-//   2. Fall through to the next bracketing segment on `none`. Linear paths
-//      don't currently surface drift (degree-1 `c0 + c1 = x` is stable), but
-//      the same shape applies for symmetry with quadratic / cubic.
 /** @internal */
-export const solveAtX = dual(2, (p: LinearPath2d, x: number): Solution.AtMostOne<number> => {
-  for (const c of p) {
-    const start = LinearCurve2d.startPoint(c)
-    const end = LinearCurve2d.endPoint(c)
-    const lo = Math.min(start.x, end.x)
-    const hi = Math.max(start.x, end.x)
-    if (x >= lo - EPSILON && x <= hi + EPSILON) {
-      if (epsEquals(x, start.x)) {
-        return Solution.one(start.y)
-      }
-      if (epsEquals(x, end.x)) {
-        return Solution.one(end.y)
-      }
-      const sol = LinearCurve2d.solveAtX(c, x)
-      if (!Solution.isNone(sol)) {
-        return sol
-      }
-    }
-  }
-  return Solution.none
-})
+export const solveAtX = methods.solveAtX as never
 
 /** @internal */
-export const solveAtY = dual(2, (p: LinearPath2d, y: number): Solution.AtMostOne<number> => {
-  for (const c of p) {
-    const start = LinearCurve2d.startPoint(c)
-    const end = LinearCurve2d.endPoint(c)
-    const lo = Math.min(start.y, end.y)
-    const hi = Math.max(start.y, end.y)
-    if (y >= lo - EPSILON && y <= hi + EPSILON) {
-      if (epsEquals(y, start.y)) {
-        return Solution.one(start.x)
-      }
-      if (epsEquals(y, end.y)) {
-        return Solution.one(end.x)
-      }
-      const sol = LinearCurve2d.solveAtY(c, y)
-      if (!Solution.isNone(sol)) {
-        return sol
-      }
-    }
-  }
-  return Solution.none
-})
+export const solveAtY = methods.solveAtY as never
 
 /** @internal */
-export const boundingBox = (
-  p: LinearPath2d,
-): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {
-  const iter = p[Symbol.iterator]()
-  const first = iter.next()
-  // path invariant: at least one curve, so first.value is defined
-  let acc = LinearCurve2d.boundingBox(first.value as LinearCurve2d.LinearCurve2d)
-  for (let next = iter.next(); !next.done; next = iter.next()) {
-    acc = Interval2d.union(acc, LinearCurve2d.boundingBox(next.value))
-  }
-  return acc
-}
+export const boundingBox = methods.boundingBox as (p: LinearPath2d) => Interval2d<Closed, Closed>

@@ -1,15 +1,10 @@
-import * as Interval2d from '../interval/interval2d.ts'
 import * as QuadraticCurve2d from '../curve/quadratic2d.ts'
-import * as Interval from '../interval/interval.ts'
-import * as QuadraticPolynomial from '../polynomial/quadratic.ts'
-import * as Solution from '../solution/solution.ts'
-import { dual, Pipeable } from '../utils.ts'
+import type { Closed } from '../interval/interval.ts'
+import type { Interval2d } from '../interval/interval2d.ts'
 import { invariant } from '../utils.ts'
-import { EPSILON, epsEquals } from '../number.ts'
-import type { Vector2 } from '../vector/vector2.ts'
+import * as Path2d from './path2d.ts'
 import type { QuadraticPath2d } from './quadratic2d.ts'
 import {
-  PathTraits,
   type Continuous,
   type DecreasingX,
   type DecreasingY,
@@ -22,114 +17,39 @@ import {
 export const QuadraticPath2dTypeId: unique symbol = Symbol('curvy/path/quadratic2d')
 export type QuadraticPath2dTypeId = typeof QuadraticPath2dTypeId
 
-/** @internal */
-export class QuadraticPath2dImpl extends Pipeable implements QuadraticPath2d<unknown> {
-  readonly [QuadraticPath2dTypeId]: QuadraticPath2dTypeId = QuadraticPath2dTypeId
-  declare readonly [PathTraits]: unknown
-
-  readonly curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>
-
-  constructor(curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>) {
-    super()
-    this.curves = curves
-  }
-
-  [Symbol.iterator](): Iterator<QuadraticCurve2d.QuadraticCurve2d> {
-    return this.curves[Symbol.iterator]()
-  }
-}
+// Generic operation surface, built once for QuadraticCurve2d's Ops.
+const methods = Path2d.makeMethods(QuadraticPath2dTypeId, QuadraticCurve2d.Ops)
 
 /** @internal */
 export const isQuadraticPath2d = (p: unknown): p is QuadraticPath2d =>
   typeof p === 'object' && p !== null && QuadraticPath2dTypeId in p
 
 /** @internal */
-export const make = (
+export const make = methods.make as (
   ...curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>
-): QuadraticPath2d => new QuadraticPath2dImpl(curves)
+) => QuadraticPath2d
 
 /** @internal */
-export const fromArray = (
+export const fromArray = methods.fromArray as (
   curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>,
-): QuadraticPath2d => new QuadraticPath2dImpl(curves)
+) => QuadraticPath2d
 
 /** @internal */
-export const append = dual<
-  (c: QuadraticCurve2d.QuadraticCurve2d) => (p: QuadraticPath2d) => QuadraticPath2d,
-  (p: QuadraticPath2d, c: QuadraticCurve2d.QuadraticCurve2d) => QuadraticPath2d
->(2, (p: QuadraticPath2d, c: QuadraticCurve2d.QuadraticCurve2d) => fromArray([...p, c]))
+export const append = methods.append as never
 
 /** @internal */
-export const length = (p: QuadraticPath2d) => {
-  let total = 0
-  for (const curve of p) {
-    total += QuadraticCurve2d.length(curve, Interval.unit)
-  }
-
-  return total
-}
+export const length = methods.length as (p: QuadraticPath2d) => number
 
 /** @internal */
-export const solve = dual<
-  (u: number) => (p: QuadraticPath2d) => Vector2,
-  (p: QuadraticPath2d, u: number) => Vector2
->(2, (p: QuadraticPath2d, u: number) => {
-  const curves = p instanceof QuadraticPath2dImpl ? p.curves : [...p]
-
-  if (u === 1) {
-    const last = curves.at(-1) as QuadraticCurve2d.QuadraticCurve2d
-    return QuadraticCurve2d.solve(last, 1)
-  }
-
-  const t = u * curves.length
-  const i = Math.floor(t)
-  const curve = curves[i] as QuadraticCurve2d.QuadraticCurve2d
-  return QuadraticCurve2d.solve(curve, t - i)
-})
-
-// Quadratic Bernstein basis: P(t) = (1-t)²·p0 + 2(1-t)t·p1 + t²·p2
-// expanded gives c0 = p0, c1 = -2p0 + 2p1, c2 = p0 - 2p1 + p2, so:
-//   p0 = c0, p1 = c0 + c1/2, p2 = c0 + c1 + c2.
-/** @internal */
-export const toPathData = (p: QuadraticPath2d): string => {
-  let result = ''
-  let prevEndX = Number.NaN
-  let prevEndY = Number.NaN
-
-  for (const curve of p) {
-    const start = QuadraticCurve2d.startPoint(curve)
-    const end = QuadraticCurve2d.endPoint(curve)
-
-    if (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY)) {
-      result += ` M ${start.x},${start.y}`
-    }
-    result += ` ${QuadraticCurve2d.toPathDataSegment(curve)}`
-
-    prevEndX = end.x
-    prevEndY = end.y
-  }
-
-  return result.slice(1)
-}
+export const solve = methods.solve as never
 
 /** @internal */
-export const isContinuous = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & Continuous> => {
-  let prevEndX = Number.NaN
-  let prevEndY = Number.NaN
-  let first = true
+export const toPathData = methods.toPathData as (p: QuadraticPath2d) => string
 
-  for (const curve of p) {
-    const start = QuadraticCurve2d.startPoint(curve)
-    if (!first && (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY))) {
-      return false
-    }
-    const end = QuadraticCurve2d.endPoint(curve)
-    prevEndX = end.x
-    prevEndY = end.y
-    first = false
-  }
-  return true
-}
+/** @internal */
+export const isContinuous = methods.isContinuous as unknown as <T>(
+  p: QuadraticPath2d<T>,
+) => p is QuadraticPath2d<T & Continuous>
 
 /** @internal */
 export const asContinuous = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & Continuous> => {
@@ -137,76 +57,35 @@ export const asContinuous = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & Cont
   return p
 }
 
-// Per-axis monotonicity for the path: every segment's axis polynomial must be
-// strictly monotonic over the unit interval AND adjacent segments' axis
-// ranges must not overlap (modulo EPSILON for float drift).
 /** @internal */
-export const isIncreasingX = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & IncreasingX> => {
-  let prevEnd = Number.NEGATIVE_INFINITY
-  for (const c of p) {
-    if (!QuadraticPolynomial.isIncreasing(c.x, Interval.unit)) {
-      return false
-    }
-    if (QuadraticCurve2d.startPoint(c).x < prevEnd - EPSILON) {
-      return false
-    }
-    prevEnd = QuadraticCurve2d.endPoint(c).x
-  }
-  return true
-}
+export const isIncreasingX = methods.isIncreasingX as unknown as <T>(
+  p: QuadraticPath2d<T>,
+) => p is QuadraticPath2d<T & IncreasingX>
 
 /** @internal */
-export const isDecreasingX = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & DecreasingX> => {
-  let prevEnd = Number.POSITIVE_INFINITY
-  for (const c of p) {
-    if (!QuadraticPolynomial.isDecreasing(c.x, Interval.unit)) {
-      return false
-    }
-    if (QuadraticCurve2d.startPoint(c).x > prevEnd + EPSILON) {
-      return false
-    }
-    prevEnd = QuadraticCurve2d.endPoint(c).x
-  }
-  return true
-}
+export const isDecreasingX = methods.isDecreasingX as unknown as <T>(
+  p: QuadraticPath2d<T>,
+) => p is QuadraticPath2d<T & DecreasingX>
 
 /** @internal */
-export const isMonotonicX = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & MonotonicX> =>
-  isIncreasingX(p) || isDecreasingX(p)
+export const isMonotonicX = methods.isMonotonicX as unknown as <T>(
+  p: QuadraticPath2d<T>,
+) => p is QuadraticPath2d<T & MonotonicX>
 
 /** @internal */
-export const isIncreasingY = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & IncreasingY> => {
-  let prevEnd = Number.NEGATIVE_INFINITY
-  for (const c of p) {
-    if (!QuadraticPolynomial.isIncreasing(c.y, Interval.unit)) {
-      return false
-    }
-    if (QuadraticCurve2d.startPoint(c).y < prevEnd - EPSILON) {
-      return false
-    }
-    prevEnd = QuadraticCurve2d.endPoint(c).y
-  }
-  return true
-}
+export const isIncreasingY = methods.isIncreasingY as unknown as <T>(
+  p: QuadraticPath2d<T>,
+) => p is QuadraticPath2d<T & IncreasingY>
 
 /** @internal */
-export const isDecreasingY = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & DecreasingY> => {
-  let prevEnd = Number.POSITIVE_INFINITY
-  for (const c of p) {
-    if (!QuadraticPolynomial.isDecreasing(c.y, Interval.unit)) {
-      return false
-    }
-    if (QuadraticCurve2d.startPoint(c).y > prevEnd + EPSILON) {
-      return false
-    }
-    prevEnd = QuadraticCurve2d.endPoint(c).y
-  }
-  return true
-}
+export const isDecreasingY = methods.isDecreasingY as unknown as <T>(
+  p: QuadraticPath2d<T>,
+) => p is QuadraticPath2d<T & DecreasingY>
 
 /** @internal */
-export const isMonotonicY = <T>(p: QuadraticPath2d<T>): p is QuadraticPath2d<T & MonotonicY> =>
-  isIncreasingY(p) || isDecreasingY(p)
+export const isMonotonicY = methods.isMonotonicY as unknown as <T>(
+  p: QuadraticPath2d<T>,
+) => p is QuadraticPath2d<T & MonotonicY>
 
 /** @internal */
 export const asIncreasingX = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & IncreasingX> => {
@@ -244,68 +123,11 @@ export const asMonotonicY = <T>(p: QuadraticPath2d<T>): QuadraticPath2d<T & Mono
   return p
 }
 
-// solveAtX/Y on a monotonic-axis path. Two defenses against float drift at
-// interior knots, where two adjacent segments both bracket the query and the
-// polynomial-inverse solver may return `none` for both:
-//   1. Snap to t=0/t=1 endpoint y when the query is within EPSILON of a
-//      segment's start or end — bypasses polynomial inversion at knots.
-//   2. Fall through to the next bracketing segment on `none`. `MonotonicX/Y`
-//      admits at most one real solution across the path, so retrying is safe.
 /** @internal */
-export const solveAtX = dual(2, (p: QuadraticPath2d, x: number): Solution.AtMostOne<number> => {
-  for (const c of p) {
-    const start = QuadraticCurve2d.startPoint(c)
-    const end = QuadraticCurve2d.endPoint(c)
-    const lo = Math.min(start.x, end.x)
-    const hi = Math.max(start.x, end.x)
-    if (x >= lo - EPSILON && x <= hi + EPSILON) {
-      if (epsEquals(x, start.x)) {
-        return Solution.one(start.y)
-      }
-      if (epsEquals(x, end.x)) {
-        return Solution.one(end.y)
-      }
-      const sol = QuadraticCurve2d.solveAtX(c, x) as Solution.AtMostOne<number>
-      if (!Solution.isNone(sol)) {
-        return sol
-      }
-    }
-  }
-  return Solution.none
-})
+export const solveAtX = methods.solveAtX as never
 
 /** @internal */
-export const solveAtY = dual(2, (p: QuadraticPath2d, y: number): Solution.AtMostOne<number> => {
-  for (const c of p) {
-    const start = QuadraticCurve2d.startPoint(c)
-    const end = QuadraticCurve2d.endPoint(c)
-    const lo = Math.min(start.y, end.y)
-    const hi = Math.max(start.y, end.y)
-    if (y >= lo - EPSILON && y <= hi + EPSILON) {
-      if (epsEquals(y, start.y)) {
-        return Solution.one(start.x)
-      }
-      if (epsEquals(y, end.y)) {
-        return Solution.one(end.x)
-      }
-      const sol = QuadraticCurve2d.solveAtY(c, y) as Solution.AtMostOne<number>
-      if (!Solution.isNone(sol)) {
-        return sol
-      }
-    }
-  }
-  return Solution.none
-})
+export const solveAtY = methods.solveAtY as never
 
 /** @internal */
-export const boundingBox = (
-  p: QuadraticPath2d,
-): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {
-  const iter = p[Symbol.iterator]()
-  const first = iter.next()
-  let acc = QuadraticCurve2d.boundingBox(first.value as QuadraticCurve2d.QuadraticCurve2d)
-  for (let next = iter.next(); !next.done; next = iter.next()) {
-    acc = Interval2d.union(acc, QuadraticCurve2d.boundingBox(next.value))
-  }
-  return acc
-}
+export const boundingBox = methods.boundingBox as (p: QuadraticPath2d) => Interval2d<Closed, Closed>

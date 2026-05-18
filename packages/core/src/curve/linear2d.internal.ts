@@ -124,26 +124,53 @@ export const toPathDataSegment = (c: LinearCurve2d): string => {
   return `L ${endX},${endY}`
 }
 
-// Combined trait refiners — fan out the polynomial-level check across both
-// axes. For per-axis checks, users can call `LinearPolynomial.isMonotonic(c.x)`
-// directly.
+// Per-axis trait refiners delegate to the polynomial-level check on a single
+// axis and brand only that axis. The combined refiners (below) fan out to
+// both axes.
+/** @internal */
+export const isMonotonicX = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): c is LinearCurve2d<XT & Monotonic, YT> => LinearPolynomial.isMonotonic(c.x)
+
+/** @internal */
+export const isIncreasingX = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): c is LinearCurve2d<XT & Increasing, YT> => LinearPolynomial.isIncreasing(c.x)
+
+/** @internal */
+export const isDecreasingX = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): c is LinearCurve2d<XT & Decreasing, YT> => LinearPolynomial.isDecreasing(c.x)
+
+/** @internal */
+export const isMonotonicY = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): c is LinearCurve2d<XT, YT & Monotonic> => LinearPolynomial.isMonotonic(c.y)
+
+/** @internal */
+export const isIncreasingY = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): c is LinearCurve2d<XT, YT & Increasing> => LinearPolynomial.isIncreasing(c.y)
+
+/** @internal */
+export const isDecreasingY = <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+): c is LinearCurve2d<XT, YT & Decreasing> => LinearPolynomial.isDecreasing(c.y)
+
 /** @internal */
 export const isMonotonic = <XT, YT>(
   c: LinearCurve2d<XT, YT>,
-): c is LinearCurve2d<XT & Monotonic, YT & Monotonic> =>
-  LinearPolynomial.isMonotonic(c.x) && LinearPolynomial.isMonotonic(c.y)
+): c is LinearCurve2d<XT & Monotonic, YT & Monotonic> => isMonotonicX(c) && isMonotonicY(c)
 
 /** @internal */
 export const isIncreasing = <XT, YT>(
   c: LinearCurve2d<XT, YT>,
-): c is LinearCurve2d<XT & Increasing, YT & Increasing> =>
-  LinearPolynomial.isIncreasing(c.x) && LinearPolynomial.isIncreasing(c.y)
+): c is LinearCurve2d<XT & Increasing, YT & Increasing> => isIncreasingX(c) && isIncreasingY(c)
 
 /** @internal */
 export const isDecreasing = <XT, YT>(
   c: LinearCurve2d<XT, YT>,
-): c is LinearCurve2d<XT & Decreasing, YT & Decreasing> =>
-  LinearPolynomial.isDecreasing(c.x) && LinearPolynomial.isDecreasing(c.y)
+): c is LinearCurve2d<XT & Decreasing, YT & Decreasing> => isDecreasingX(c) && isDecreasingY(c)
 
 const fail = (m: string): never => {
   throw new Error(m)

@@ -228,12 +228,10 @@ export const endPoint = (c: QuadraticCurve2d): Vector2.Vector2 =>
   Vector2.make(c.x.c0 + c.x.c1 + c.x.c2, c.y.c0 + c.y.c1 + c.y.c2)
 
 /** @internal */
-export const xRange = (c: QuadraticCurve2d): Interval.Closed =>
-  QuadraticPolynomial.unitRange(c.x)
+export const xRange = (c: QuadraticCurve2d): Interval.Closed => QuadraticPolynomial.unitRange(c.x)
 
 /** @internal */
-export const yRange = (c: QuadraticCurve2d): Interval.Closed =>
-  QuadraticPolynomial.unitRange(c.y)
+export const yRange = (c: QuadraticCurve2d): Interval.Closed => QuadraticPolynomial.unitRange(c.y)
 
 // Quadratic Bernstein basis: P(t) = (1-t)²·p0 + 2(1-t)t·p1 + t²·p2
 // expanded to monomial form gives c0 = p0, c1 = -2p0 + 2p1, c2 = p0 - 2p1 + p2,
@@ -247,29 +245,57 @@ export const toPathDataSegment = (c: QuadraticCurve2d): string => {
   return `Q ${ctrlX},${ctrlY} ${endX},${endY}`
 }
 
-// Combined trait refiners — fan out the polynomial-level check across both
-// axes, over the unit interval. For per-axis checks, users can call
-// `QuadraticPolynomial.isMonotonic(c.x, Interval.unit)` directly.
+// Per-axis trait refiners delegate to the polynomial-level check on a single
+// axis (over the unit interval) and brand only that axis. The combined
+// refiners (below) fan out to both axes.
+/** @internal */
+export const isMonotonicX = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): c is QuadraticCurve2d<XT & Monotonic, YT> => QuadraticPolynomial.isMonotonic(c.x, Interval.unit)
+
+/** @internal */
+export const isIncreasingX = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): c is QuadraticCurve2d<XT & Increasing, YT> =>
+  QuadraticPolynomial.isIncreasing(c.x, Interval.unit)
+
+/** @internal */
+export const isDecreasingX = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): c is QuadraticCurve2d<XT & Decreasing, YT> =>
+  QuadraticPolynomial.isDecreasing(c.x, Interval.unit)
+
+/** @internal */
+export const isMonotonicY = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): c is QuadraticCurve2d<XT, YT & Monotonic> => QuadraticPolynomial.isMonotonic(c.y, Interval.unit)
+
+/** @internal */
+export const isIncreasingY = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): c is QuadraticCurve2d<XT, YT & Increasing> =>
+  QuadraticPolynomial.isIncreasing(c.y, Interval.unit)
+
+/** @internal */
+export const isDecreasingY = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): c is QuadraticCurve2d<XT, YT & Decreasing> =>
+  QuadraticPolynomial.isDecreasing(c.y, Interval.unit)
+
 /** @internal */
 export const isMonotonic = <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
-): c is QuadraticCurve2d<XT & Monotonic, YT & Monotonic> =>
-  QuadraticPolynomial.isMonotonic(c.x, Interval.unit) &&
-  QuadraticPolynomial.isMonotonic(c.y, Interval.unit)
+): c is QuadraticCurve2d<XT & Monotonic, YT & Monotonic> => isMonotonicX(c) && isMonotonicY(c)
 
 /** @internal */
 export const isIncreasing = <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
-): c is QuadraticCurve2d<XT & Increasing, YT & Increasing> =>
-  QuadraticPolynomial.isIncreasing(c.x, Interval.unit) &&
-  QuadraticPolynomial.isIncreasing(c.y, Interval.unit)
+): c is QuadraticCurve2d<XT & Increasing, YT & Increasing> => isIncreasingX(c) && isIncreasingY(c)
 
 /** @internal */
 export const isDecreasing = <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
-): c is QuadraticCurve2d<XT & Decreasing, YT & Decreasing> =>
-  QuadraticPolynomial.isDecreasing(c.x, Interval.unit) &&
-  QuadraticPolynomial.isDecreasing(c.y, Interval.unit)
+): c is QuadraticCurve2d<XT & Decreasing, YT & Decreasing> => isDecreasingX(c) && isDecreasingY(c)
 
 const fail = (m: string): never => {
   throw new Error(m)

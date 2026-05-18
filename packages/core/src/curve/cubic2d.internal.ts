@@ -257,28 +257,53 @@ export const toPathDataSegment = (c: CubicCurve2d): string => {
   return `C ${ctrl1X},${ctrl1Y} ${ctrl2X},${ctrl2Y} ${endX},${endY}`
 }
 
-// Combined trait refiners — fan out the polynomial-level check across both
-// axes, over the unit interval. For per-axis checks, users can call
-// `CubicPolynomial.isMonotonic(c.x, Interval.unit)` directly.
+// Per-axis trait refiners delegate to the polynomial-level check on a single
+// axis (over the unit interval) and brand only that axis. The combined
+// refiners (below) fan out to both axes.
+/** @internal */
+export const isMonotonicX = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): c is CubicCurve2d<XT & Monotonic, YT> => CubicPolynomial.isMonotonic(c.x, Interval.unit)
+
+/** @internal */
+export const isIncreasingX = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): c is CubicCurve2d<XT & Increasing, YT> => CubicPolynomial.isIncreasing(c.x, Interval.unit)
+
+/** @internal */
+export const isDecreasingX = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): c is CubicCurve2d<XT & Decreasing, YT> => CubicPolynomial.isDecreasing(c.x, Interval.unit)
+
+/** @internal */
+export const isMonotonicY = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): c is CubicCurve2d<XT, YT & Monotonic> => CubicPolynomial.isMonotonic(c.y, Interval.unit)
+
+/** @internal */
+export const isIncreasingY = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): c is CubicCurve2d<XT, YT & Increasing> => CubicPolynomial.isIncreasing(c.y, Interval.unit)
+
+/** @internal */
+export const isDecreasingY = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): c is CubicCurve2d<XT, YT & Decreasing> => CubicPolynomial.isDecreasing(c.y, Interval.unit)
+
 /** @internal */
 export const isMonotonic = <XT, YT>(
   c: CubicCurve2d<XT, YT>,
-): c is CubicCurve2d<XT & Monotonic, YT & Monotonic> =>
-  CubicPolynomial.isMonotonic(c.x, Interval.unit) && CubicPolynomial.isMonotonic(c.y, Interval.unit)
+): c is CubicCurve2d<XT & Monotonic, YT & Monotonic> => isMonotonicX(c) && isMonotonicY(c)
 
 /** @internal */
 export const isIncreasing = <XT, YT>(
   c: CubicCurve2d<XT, YT>,
-): c is CubicCurve2d<XT & Increasing, YT & Increasing> =>
-  CubicPolynomial.isIncreasing(c.x, Interval.unit) &&
-  CubicPolynomial.isIncreasing(c.y, Interval.unit)
+): c is CubicCurve2d<XT & Increasing, YT & Increasing> => isIncreasingX(c) && isIncreasingY(c)
 
 /** @internal */
 export const isDecreasing = <XT, YT>(
   c: CubicCurve2d<XT, YT>,
-): c is CubicCurve2d<XT & Decreasing, YT & Decreasing> =>
-  CubicPolynomial.isDecreasing(c.x, Interval.unit) &&
-  CubicPolynomial.isDecreasing(c.y, Interval.unit)
+): c is CubicCurve2d<XT & Decreasing, YT & Decreasing> => isDecreasingX(c) && isDecreasingY(c)
 
 const fail = (m: string): never => {
   throw new Error(m)

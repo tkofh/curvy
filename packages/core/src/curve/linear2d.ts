@@ -6,6 +6,7 @@ import type { LinearPolynomial } from '../polynomial/linear.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Vector2 } from '../vector/vector2.ts'
+import type { Curve2dOps } from './curve2d.ts'
 import type { LinearCurve2dTypeId } from './linear2d.internal.ts'
 import * as internal from './linear2d.internal.ts'
 
@@ -222,12 +223,70 @@ export const solveAtY: {
 } = internal.solveAtY as never
 
 /**
+ * Type-narrowing predicate: refines the curve's x-axis trait to include
+ * `Monotonic` when the x polynomial is strictly monotonic. The y-axis trait
+ * is unchanged.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonicX: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => c is LinearCurve2d<XT & Monotonic, YT> = internal.isMonotonicX
+
+/**
+ * Type-narrowing predicate: refines the curve's x-axis trait to include
+ * `Increasing`.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasingX: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => c is LinearCurve2d<XT & Increasing, YT> = internal.isIncreasingX
+
+/**
+ * Type-narrowing predicate: refines the curve's x-axis trait to include
+ * `Decreasing`.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasingX: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => c is LinearCurve2d<XT & Decreasing, YT> = internal.isDecreasingX
+
+/**
+ * Type-narrowing predicate: refines the curve's y-axis trait to include
+ * `Monotonic`. The x-axis trait is unchanged.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonicY: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => c is LinearCurve2d<XT, YT & Monotonic> = internal.isMonotonicY
+
+/**
+ * Type-narrowing predicate: refines the curve's y-axis trait to include
+ * `Increasing`.
+ *
+ * @since 2.0.0
+ */
+export const isIncreasingY: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => c is LinearCurve2d<XT, YT & Increasing> = internal.isIncreasingY
+
+/**
+ * Type-narrowing predicate: refines the curve's y-axis trait to include
+ * `Decreasing`.
+ *
+ * @since 2.0.0
+ */
+export const isDecreasingY: <XT, YT>(
+  c: LinearCurve2d<XT, YT>,
+) => c is LinearCurve2d<XT, YT & Decreasing> = internal.isDecreasingY
+
+/**
  * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
  * when both the x and y polynomials are strictly monotonic. When both axes
  * are monotonic, the curve is invertible in either direction.
- *
- * For checking only one axis, call the polynomial-level refiner directly:
- * `LinearPolynomial.isMonotonic(curve.x)`.
  *
  * @since 2.0.0
  */
@@ -279,3 +338,25 @@ export const asIncreasing: <XT, YT>(
 export const asDecreasing: <XT, YT>(
   c: LinearCurve2d<XT, YT>,
 ) => LinearCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing
+
+/**
+ * The {@link Curve2dOps} bundle for `LinearCurve2d`. Used by
+ * `LinearPath2d` (and any user code building a generic `Path2d` over linear
+ * curves) to wire up the path-level operation surface.
+ *
+ * @since 2.0.0
+ */
+export const Ops: Curve2dOps<LinearCurve2d> = {
+  solve,
+  startPoint,
+  endPoint,
+  length,
+  boundingBox,
+  solveAtX,
+  solveAtY,
+  toPathDataSegment,
+  isIncreasingX,
+  isDecreasingX,
+  isIncreasingY,
+  isDecreasingY,
+}

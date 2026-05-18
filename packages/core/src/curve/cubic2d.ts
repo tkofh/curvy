@@ -8,6 +8,7 @@ import type * as Solution from '../solution/solution.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { CubicCurve2dTypeId } from './cubic2d.internal.ts'
 import * as internal from './cubic2d.internal.ts'
+import type { Curve2dOps } from './curve2d.ts'
 
 export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
 
@@ -271,11 +272,49 @@ export const yRange: (c: CubicCurve2d) => Closed = internal.yRange
 export const toPathDataSegment: (c: CubicCurve2d) => string = internal.toPathDataSegment
 
 /**
+ * Type-narrowing predicate: refines the curve's x-axis trait to include
+ * `Monotonic` when the x polynomial is strictly monotonic on the unit
+ * interval `[0, 1]`. The y-axis trait is unchanged.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonicX: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => c is CubicCurve2d<XT & Monotonic, YT> = internal.isMonotonicX
+
+/** @since 2.0.0 */
+export const isIncreasingX: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => c is CubicCurve2d<XT & Increasing, YT> = internal.isIncreasingX
+
+/** @since 2.0.0 */
+export const isDecreasingX: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => c is CubicCurve2d<XT & Decreasing, YT> = internal.isDecreasingX
+
+/**
+ * Type-narrowing predicate: refines the curve's y-axis trait to include
+ * `Monotonic`. The x-axis trait is unchanged.
+ *
+ * @since 2.0.0
+ */
+export const isMonotonicY: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => c is CubicCurve2d<XT, YT & Monotonic> = internal.isMonotonicY
+
+/** @since 2.0.0 */
+export const isIncreasingY: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => c is CubicCurve2d<XT, YT & Increasing> = internal.isIncreasingY
+
+/** @since 2.0.0 */
+export const isDecreasingY: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => c is CubicCurve2d<XT, YT & Decreasing> = internal.isDecreasingY
+
+/**
  * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
  * when both x and y polynomials are monotonic over the unit interval `[0, 1]`.
- *
- * For checking only one axis, call the polynomial-level refiner directly:
- * `CubicPolynomial.isMonotonic(curve.x, Interval.unit)`.
  *
  * @since 2.0.0
  */
@@ -307,3 +346,26 @@ export const asIncreasing: <XT, YT>(
 export const asDecreasing: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => CubicCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing
+
+/**
+ * The {@link Curve2dOps} bundle for `CubicCurve2d`. Used by `CubicPath2d`
+ * to wire up the path-level operation surface. The `solveAtX` / `solveAtY`
+ * entries narrow the curve's potentially-3-element result to `AtMostOne` —
+ * path callers enforce that via the path's `MonotonicX`/`MonotonicY` brand.
+ *
+ * @since 2.0.0
+ */
+export const Ops: Curve2dOps<CubicCurve2d> = {
+  solve,
+  startPoint,
+  endPoint,
+  length,
+  boundingBox,
+  solveAtX: (c, x) => internal.solveAtX(c, x) as Solution.AtMostOne<number>,
+  solveAtY: (c, y) => internal.solveAtY(c, y) as Solution.AtMostOne<number>,
+  toPathDataSegment,
+  isIncreasingX,
+  isDecreasingX,
+  isIncreasingY,
+  isDecreasingY,
+}
