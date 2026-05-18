@@ -166,6 +166,57 @@ export const appendAccelerationAligned: {
   (p: Bezier2d, p3: Vector2): Bezier2d
 } = internal.appendAccelerationAligned
 
+export const mapPoints: {
+  /**
+   * Applies a per-point transform to every control point in a `Bezier2d`,
+   * preserving point count and spline identity.
+   *
+   * Note that the transform is applied uniformly to all control points,
+   * including off-curve handles. Affine maps (translate, rotate, scale, shear)
+   * commute with cubic Bézier evaluation and preserve curve identity up to
+   * the affine map; nonlinear maps produce a geometrically reasonable result
+   * but no longer parameterize the affine image of the original curve.
+   *
+   * @param f - The point transform.
+   * @returns A function that takes a `Bezier2d` and returns the mapped spline.
+   * @since 2.0.0
+   */
+  (f: (p: Vector2) => Vector2): (s: Bezier2d) => Bezier2d
+  /**
+   * Applies a per-point transform to every control point in a `Bezier2d`.
+   *
+   * @param s - The bezier.
+   * @param f - The point transform.
+   * @returns A new `Bezier2d` with the transform applied to each control point.
+   * @since 2.0.0
+   */
+  (s: Bezier2d, f: (p: Vector2) => Vector2): Bezier2d
+} = internal.mapPoints
+
+export const flatMap: {
+  /**
+   * Hands the bezier's full control-point array to `f` and uses its returned
+   * `Bezier2d` as the result. The returned bezier goes through this module's
+   * builders, so the `3n + 1` point-count invariant is enforced at
+   * construction.
+   *
+   * @param f - The bulk transform.
+   * @returns A function that takes a `Bezier2d` and returns the rebuilt spline.
+   * @since 2.0.0
+   */
+  (f: (points: ReadonlyArray<Vector2>) => Bezier2d): (s: Bezier2d) => Bezier2d
+  /**
+   * Hands the bezier's full control-point array to `f` and uses its returned
+   * `Bezier2d` as the result.
+   *
+   * @param s - The bezier.
+   * @param f - The bulk transform.
+   * @returns The `Bezier2d` returned by `f`.
+   * @since 2.0.0
+   */
+  (s: Bezier2d, f: (points: ReadonlyArray<Vector2>) => Bezier2d): Bezier2d
+} = internal.flatMap
+
 /**
  * Converts a `Bezier2d` to a `CubicPath2d`.
  *

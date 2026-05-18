@@ -77,6 +77,23 @@ export const withTriplicatedEndpoints = (p: Basis2d) => {
 }
 
 /** @internal */
+export const mapPoints = dual<
+  (f: (p: Vector2.Vector2) => Vector2.Vector2) => (s: Basis2d) => Basis2d,
+  (s: Basis2d, f: (p: Vector2.Vector2) => Vector2.Vector2) => Basis2d
+>(2, (s: Basis2d, f: (p: Vector2.Vector2) => Vector2.Vector2) => {
+  const points = s instanceof Basis2dImpl ? s.points : [...s]
+  return new Basis2dImpl(points.map(f))
+})
+
+/** @internal */
+export const flatMap = dual<
+  (f: (points: ReadonlyArray<Vector2.Vector2>) => Basis2d) => (s: Basis2d) => Basis2d,
+  (s: Basis2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Basis2d) => Basis2d
+>(2, (s: Basis2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Basis2d) =>
+  f(s instanceof Basis2dImpl ? s.points : [...s]),
+)
+
+/** @internal */
 export const toPath = (p: Basis2d) =>
   CubicPath2d.make(...toCurves(p, Characteristic.cubicBasisSpline, 1))
 

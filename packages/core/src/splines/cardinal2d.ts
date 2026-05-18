@@ -266,6 +266,53 @@ export const withOptions: {
   (c: Cardinal2d, options: Options): Cardinal2d
 } = internal.withOptions
 
+export const mapPoints: {
+  /**
+   * Applies a per-point transform to every control point in a `Cardinal2d`,
+   * preserving point count, tension, and alpha.
+   *
+   * @param f - The point transform.
+   * @returns A function that takes a `Cardinal2d` and returns the mapped spline.
+   * @since 2.0.0
+   */
+  (f: (p: Vector2) => Vector2): (s: Cardinal2d) => Cardinal2d
+  /**
+   * Applies a per-point transform to every control point in a `Cardinal2d`.
+   *
+   * @param s - The cardinal spline.
+   * @param f - The point transform.
+   * @returns A new `Cardinal2d` with the transform applied to each control point.
+   * @since 2.0.0
+   */
+  (s: Cardinal2d, f: (p: Vector2) => Vector2): Cardinal2d
+} = internal.mapPoints
+
+export const flatMap: {
+  /**
+   * Hands the spline's full control-point array to `f` and uses its returned
+   * `Cardinal2d` as the result. The returned spline's tension and alpha come
+   * from the mapper's output, not the input — to preserve the input's
+   * parameterization, the mapper should re-supply it (e.g. by reading the
+   * original spline in the data-first form, or chaining `withOptions`
+   * afterward).
+   *
+   * @param f - The bulk transform.
+   * @returns A function that takes a `Cardinal2d` and returns the rebuilt spline.
+   * @since 2.0.0
+   */
+  (f: (points: ReadonlyArray<Vector2>) => Cardinal2d): (s: Cardinal2d) => Cardinal2d
+  /**
+   * Hands the spline's full control-point array to `f` and uses its returned
+   * `Cardinal2d` as the result.
+   *
+   * @param s - The cardinal spline.
+   * @param f - The bulk transform.
+   * @returns The `Cardinal2d` returned by `f`.
+   * @since 2.0.0
+   */
+  (s: Cardinal2d, f: (points: ReadonlyArray<Vector2>) => Cardinal2d): Cardinal2d
+} = internal.flatMap
+
 /**
  * Converts a `Cardinal2d` to a `CubicPath2d` using the spline's `tension` and
  * `alpha`. With the default options (`{ tension: 0.5, alpha: 0.5 }`) the

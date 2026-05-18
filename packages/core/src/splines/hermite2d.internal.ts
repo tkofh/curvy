@@ -67,6 +67,23 @@ export const prepend = dual<
 })
 
 /** @internal */
+export const mapPoints = dual<
+  (f: (p: Vector2.Vector2) => Vector2.Vector2) => (s: Hermite2d) => Hermite2d,
+  (s: Hermite2d, f: (p: Vector2.Vector2) => Vector2.Vector2) => Hermite2d
+>(2, (s: Hermite2d, f: (p: Vector2.Vector2) => Vector2.Vector2) => {
+  const points = s instanceof Hermite2dImpl ? s.points : [...s]
+  return new Hermite2dImpl(points.map(f))
+})
+
+/** @internal */
+export const flatMap = dual<
+  (f: (points: ReadonlyArray<Vector2.Vector2>) => Hermite2d) => (s: Hermite2d) => Hermite2d,
+  (s: Hermite2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Hermite2d) => Hermite2d
+>(2, (s: Hermite2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Hermite2d) =>
+  f(s instanceof Hermite2dImpl ? s.points : [...s]),
+)
+
+/** @internal */
 export const toPath = (p: Hermite2d) =>
   CubicPath2d.make(...toCurves(p, Characteristic.cubicHermite, 2))
 

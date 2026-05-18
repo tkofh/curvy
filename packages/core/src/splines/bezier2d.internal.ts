@@ -158,6 +158,23 @@ export const appendAccelerationAligned = dual<
 })
 
 /** @internal */
+export const mapPoints = dual<
+  (f: (p: Vector2.Vector2) => Vector2.Vector2) => (s: Bezier2d) => Bezier2d,
+  (s: Bezier2d, f: (p: Vector2.Vector2) => Vector2.Vector2) => Bezier2d
+>(2, (s: Bezier2d, f: (p: Vector2.Vector2) => Vector2.Vector2) => {
+  const points = s instanceof Bezier2dImpl ? s.points : [...s]
+  return new Bezier2dImpl(points.map(f))
+})
+
+/** @internal */
+export const flatMap = dual<
+  (f: (points: ReadonlyArray<Vector2.Vector2>) => Bezier2d) => (s: Bezier2d) => Bezier2d,
+  (s: Bezier2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Bezier2d) => Bezier2d
+>(2, (s: Bezier2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Bezier2d) =>
+  f(s instanceof Bezier2dImpl ? s.points : [...s]),
+)
+
+/** @internal */
 export const toPath = (p: Bezier2d) =>
   CubicPath2d.make(...toCurves(p, Characteristic.cubicBezier, 3))
 

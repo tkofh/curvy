@@ -100,6 +100,51 @@ export const prepend: {
   (p: Linear2d, ...points: ReadonlyArray<Vector2>): Linear2d
 } = internal.prepend
 
+export const mapPoints: {
+  /**
+   * Applies a per-point transform to every point in a `Linear2d`, preserving
+   * point count and spline identity.
+   *
+   * @param f - The point transform.
+   * @returns A function that takes a `Linear2d` and returns the mapped polyline.
+   * @since 2.0.0
+   */
+  (f: (p: Vector2) => Vector2): (s: Linear2d) => Linear2d
+  /**
+   * Applies a per-point transform to every point in a `Linear2d`.
+   *
+   * @param s - The polyline.
+   * @param f - The point transform.
+   * @returns A new `Linear2d` with the transform applied to each point.
+   * @since 2.0.0
+   */
+  (s: Linear2d, f: (p: Vector2) => Vector2): Linear2d
+} = internal.mapPoints
+
+export const flatMap: {
+  /**
+   * Hands the polyline's full point array to `f` and uses its returned
+   * `Linear2d` as the result. Useful for transforms that need to see all
+   * points at once — resampling, smoothing, decimation — while still going
+   * through this module's builders to maintain the 2-or-more-points invariant.
+   *
+   * @param f - The bulk transform.
+   * @returns A function that takes a `Linear2d` and returns the rebuilt polyline.
+   * @since 2.0.0
+   */
+  (f: (points: ReadonlyArray<Vector2>) => Linear2d): (s: Linear2d) => Linear2d
+  /**
+   * Hands the polyline's full point array to `f` and uses its returned
+   * `Linear2d` as the result.
+   *
+   * @param s - The polyline.
+   * @param f - The bulk transform.
+   * @returns The `Linear2d` returned by `f`.
+   * @since 2.0.0
+   */
+  (s: Linear2d, f: (points: ReadonlyArray<Vector2>) => Linear2d): Linear2d
+} = internal.flatMap
+
 /**
  * Converts a `Linear2d` to a `LinearPath2d` by joining consecutive points
  * with straight segments. The result is unbranded; assert

@@ -106,6 +106,58 @@ export const prepend: {
   (p: Hermite2d, p0: Vector2, v0: Vector2): Hermite2d
 } = internal.prepend
 
+export const mapPoints: {
+  /**
+   * Applies a per-point transform to every entry in a `Hermite2d`, preserving
+   * the alternating position/velocity layout and total point count.
+   *
+   * The transform receives both positions and velocity vectors as plain
+   * `Vector2`s — Hermite splines store them in interleaved slots without a
+   * structural distinction. Linear transforms (rotation, scaling) act
+   * correctly on both slot kinds, but a uniform translation will offset the
+   * velocity slots as well as the positions; to translate positions only,
+   * reach for {@link flatMap} and split the array yourself.
+   *
+   * @param f - The point transform.
+   * @returns A function that takes a `Hermite2d` and returns the mapped spline.
+   * @since 2.0.0
+   */
+  (f: (p: Vector2) => Vector2): (s: Hermite2d) => Hermite2d
+  /**
+   * Applies a per-point transform to every entry in a `Hermite2d`.
+   *
+   * @param s - The hermite spline.
+   * @param f - The point transform.
+   * @returns A new `Hermite2d` with the transform applied to each entry.
+   * @since 2.0.0
+   */
+  (s: Hermite2d, f: (p: Vector2) => Vector2): Hermite2d
+} = internal.mapPoints
+
+export const flatMap: {
+  /**
+   * Hands the spline's full entry array to `f` (alternating positions and
+   * velocities) and uses its returned `Hermite2d` as the result. The returned
+   * spline goes through this module's builders, so the even-arity and
+   * minimum-4-entry invariants are enforced at construction.
+   *
+   * @param f - The bulk transform.
+   * @returns A function that takes a `Hermite2d` and returns the rebuilt spline.
+   * @since 2.0.0
+   */
+  (f: (points: ReadonlyArray<Vector2>) => Hermite2d): (s: Hermite2d) => Hermite2d
+  /**
+   * Hands the spline's full entry array to `f` and uses its returned
+   * `Hermite2d` as the result.
+   *
+   * @param s - The hermite spline.
+   * @param f - The bulk transform.
+   * @returns The `Hermite2d` returned by `f`.
+   * @since 2.0.0
+   */
+  (s: Hermite2d, f: (points: ReadonlyArray<Vector2>) => Hermite2d): Hermite2d
+} = internal.flatMap
+
 /**
  * Creates a new `CubicPath2d` instance from a `Hermite2d`.
  *

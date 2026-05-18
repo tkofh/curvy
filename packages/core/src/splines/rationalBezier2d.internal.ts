@@ -125,6 +125,32 @@ export const toPath = (r: RationalBezier2d): RationalCubicPath2d.RationalCubicPa
 }
 
 /** @internal */
+export const mapPoints = dual<
+  (f: (p: Vector2.Weighted) => Vector2.Weighted) => (s: RationalBezier2d) => RationalBezier2d,
+  (s: RationalBezier2d, f: (p: Vector2.Weighted) => Vector2.Weighted) => RationalBezier2d
+>(2, (s: RationalBezier2d, f: (p: Vector2.Weighted) => Vector2.Weighted) => {
+  const homogeneous = homogeneousOf(s)
+  const mapped: Array<Vector3.Vector3> = []
+  for (const h of homogeneous) {
+    mapped.push(lift(f(Vector2.makeWeighted(h.x / h.z, h.y / h.z, h.z))))
+  }
+  return new RationalBezier2dImpl(mapped)
+})
+
+/** @internal */
+export const flatMap = dual<
+  (
+    f: (points: ReadonlyArray<Vector2.Weighted>) => RationalBezier2d,
+  ) => (s: RationalBezier2d) => RationalBezier2d,
+  (
+    s: RationalBezier2d,
+    f: (points: ReadonlyArray<Vector2.Weighted>) => RationalBezier2d,
+  ) => RationalBezier2d
+>(2, (s: RationalBezier2d, f: (points: ReadonlyArray<Vector2.Weighted>) => RationalBezier2d) =>
+  f([...s]),
+)
+
+/** @internal */
 export const subdivide = dual<
   (u: number) => (r: RationalBezier2d) => [RationalBezier2d, RationalBezier2d],
   (r: RationalBezier2d, u: number) => [RationalBezier2d, RationalBezier2d]

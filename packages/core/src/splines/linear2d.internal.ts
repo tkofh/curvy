@@ -60,6 +60,23 @@ export const prepend = dual<
   (p: Linear2d, ...points: ReadonlyArray<Vector2.Vector2>) => new Linear2dImpl([...points, ...p]),
 )
 
+/** @internal */
+export const mapPoints = dual<
+  (f: (p: Vector2.Vector2) => Vector2.Vector2) => (s: Linear2d) => Linear2d,
+  (s: Linear2d, f: (p: Vector2.Vector2) => Vector2.Vector2) => Linear2d
+>(2, (s: Linear2d, f: (p: Vector2.Vector2) => Vector2.Vector2) => {
+  const points = s instanceof Linear2dImpl ? s.points : [...s]
+  return new Linear2dImpl(points.map(f))
+})
+
+/** @internal */
+export const flatMap = dual<
+  (f: (points: ReadonlyArray<Vector2.Vector2>) => Linear2d) => (s: Linear2d) => Linear2d,
+  (s: Linear2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Linear2d) => Linear2d
+>(2, (s: Linear2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Linear2d) =>
+  f(s instanceof Linear2dImpl ? s.points : [...s]),
+)
+
 // Build N-1 linear segments from N points by chaining consecutive pairs.
 /** @internal */
 export const toPath = (p: Linear2d): LinearPath2d.LinearPath2d => {

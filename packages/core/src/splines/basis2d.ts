@@ -100,6 +100,50 @@ export const prepend: {
   (p: Basis2d, ...points: ReadonlyArray<Vector2>): Basis2d
 } = internal.prepend
 
+export const mapPoints: {
+  /**
+   * Applies a per-point transform to every control point in a `Basis2d`,
+   * preserving point count and spline identity.
+   *
+   * @param f - The point transform.
+   * @returns A function that takes a `Basis2d` and returns the mapped spline.
+   * @since 2.0.0
+   */
+  (f: (p: Vector2) => Vector2): (s: Basis2d) => Basis2d
+  /**
+   * Applies a per-point transform to every control point in a `Basis2d`.
+   *
+   * @param s - The basis spline.
+   * @param f - The point transform.
+   * @returns A new `Basis2d` with the transform applied to each control point.
+   * @since 2.0.0
+   */
+  (s: Basis2d, f: (p: Vector2) => Vector2): Basis2d
+} = internal.mapPoints
+
+export const flatMap: {
+  /**
+   * Hands the spline's full control-point array to `f` and uses its returned
+   * `Basis2d` as the result. The returned spline goes through this module's
+   * builders, so the 4-or-more-points invariant is enforced at construction.
+   *
+   * @param f - The bulk transform.
+   * @returns A function that takes a `Basis2d` and returns the rebuilt spline.
+   * @since 2.0.0
+   */
+  (f: (points: ReadonlyArray<Vector2>) => Basis2d): (s: Basis2d) => Basis2d
+  /**
+   * Hands the spline's full control-point array to `f` and uses its returned
+   * `Basis2d` as the result.
+   *
+   * @param s - The basis spline.
+   * @param f - The bulk transform.
+   * @returns The `Basis2d` returned by `f`.
+   * @since 2.0.0
+   */
+  (s: Basis2d, f: (points: ReadonlyArray<Vector2>) => Basis2d): Basis2d
+} = internal.flatMap
+
 /**
  * Triplicates the endpoints of a `Basis2d`.
  *

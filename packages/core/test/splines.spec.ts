@@ -673,3 +673,190 @@ describe('Linear2d', () => {
     expect(() => Linear2d.fromArray([Vector2.make(0, 0)])).toThrow(/2 or more/)
   })
 })
+
+describe('mapPoints and flatMap', () => {
+  const translateBy = (dx: number, dy: number) => (p: Vector2.Vector2) =>
+    Vector2.make(p.x + dx, p.y + dy)
+
+  test('Linear2d.mapPoints translates every point', () => {
+    const l = Linear2d.fromTuples([
+      [0, 0],
+      [1, 1],
+      [2, 0],
+    ])
+    const moved = l.pipe(Linear2d.mapPoints(translateBy(10, -5)))
+    expect([...moved]).toEqual([Vector2.make(10, -5), Vector2.make(11, -4), Vector2.make(12, -5)])
+  })
+
+  test('Linear2d.flatMap reverses through the builder', () => {
+    const l = Linear2d.fromTuples([
+      [0, 0],
+      [1, 1],
+      [2, 0],
+    ])
+    const reversed = l.pipe(
+      Linear2d.flatMap((points) => Linear2d.fromArray([...points].toReversed())),
+    )
+    expect([...reversed]).toEqual([Vector2.make(2, 0), Vector2.make(1, 1), Vector2.make(0, 0)])
+  })
+
+  test('Bezier2d.mapPoints preserves segment count', () => {
+    const b = Bezier2d.make(
+      Vector2.make(0, 0),
+      Vector2.make(0, 1),
+      Vector2.make(1, 0),
+      Vector2.make(1, 1),
+    ).pipe(Bezier2d.append(Vector2.make(1, 2), Vector2.make(2, 1), Vector2.make(2, 2)))
+    const moved = b.pipe(Bezier2d.mapPoints(translateBy(1, 1)))
+    expect([...moved]).toHaveLength(7)
+    expect([...moved][0]).toEqual(Vector2.make(1, 1))
+    expect([...moved][6]).toEqual(Vector2.make(3, 3))
+  })
+
+  test('Bezier2d.flatMap enforces the 3n+1 invariant via the builder', () => {
+    const b = Bezier2d.make(
+      Vector2.make(0, 0),
+      Vector2.make(0, 1),
+      Vector2.make(1, 0),
+      Vector2.make(1, 1),
+    )
+    expect(() =>
+      b.pipe(Bezier2d.flatMap((points) => Bezier2d.fromArray([...points, Vector2.make(2, 2)]))),
+    ).toThrow(/3\) \+ 1/)
+  })
+
+  test('Basis2d.mapPoints scales every control point', () => {
+    const s = Basis2d.fromArray([
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(2, 0),
+      Vector2.make(3, 1),
+    ])
+    const scaled = s.pipe(Basis2d.mapPoints((p) => Vector2.make(p.x * 2, p.y * 2)))
+    expect([...scaled]).toEqual([
+      Vector2.make(0, 0),
+      Vector2.make(2, 2),
+      Vector2.make(4, 0),
+      Vector2.make(6, 2),
+    ])
+  })
+
+  test('Basis2d.flatMap rebuilds via fromArray', () => {
+    const s = Basis2d.fromArray([
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(2, 0),
+      Vector2.make(3, 1),
+    ])
+    const rebuilt = s.pipe(
+      Basis2d.flatMap((points) => Basis2d.fromArray([...points, Vector2.make(4, 0)])),
+    )
+    expect([...rebuilt]).toHaveLength(5)
+  })
+
+  test('Cardinal2d.mapPoints preserves tension and alpha', () => {
+    const c = Cardinal2d.make(
+      { tension: 0.7, alpha: 0.25 },
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(2, 0),
+    )
+    const moved = c.pipe(Cardinal2d.mapPoints(translateBy(1, 1)))
+    expect(moved.tension).toBe(0.7)
+    expect(moved.alpha).toBe(0.25)
+    expect([...moved]).toEqual([Vector2.make(1, 1), Vector2.make(2, 2), Vector2.make(3, 1)])
+  })
+
+  test('Cardinal2d.flatMap returns the mapper-supplied tension/alpha', () => {
+    const c = Cardinal2d.make(
+      { tension: 0.7, alpha: 0.25 },
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(2, 0),
+    )
+    const rebuilt = c.pipe(
+      Cardinal2d.flatMap((points) => Cardinal2d.fromArray([...points], { tension: 0.1 })),
+    )
+    expect(rebuilt.tension).toBe(0.1)
+    expect(rebuilt.alpha).toBe(0.5) // default — mapper picked its own
+  })
+
+  test('Hermite2d.mapPoints preserves the alternating layout', () => {
+    const h = Hermite2d.make(
+      Vector2.zero,
+      Vector2.make(1, 1),
+      Vector2.make(1, 0),
+      Vector2.make(1, -1),
+    )
+    const rotated = h.pipe(Hermite2d.mapPoints((p) => Vector2.make(-p.y, p.x)))
+    const points = [...rotated]
+    expect(points).toHaveLength(4)
+    expect(points[0]).toBeCloseToValue(Vector2.make(0, 0))
+    expect(points[1]).toBeCloseToValue(Vector2.make(-1, 1))
+    expect(points[2]).toBeCloseToValue(Vector2.make(0, 1))
+    expect(points[3]).toBeCloseToValue(Vector2.make(1, 1))
+  })
+
+  test('Hermite2d.flatMap enforces the even-arity invariant', () => {
+    const h = Hermite2d.make(
+      Vector2.zero,
+      Vector2.make(1, 1),
+      Vector2.make(1, 0),
+      Vector2.make(1, -1),
+    )
+    expect(() =>
+      h.pipe(Hermite2d.flatMap((points) => Hermite2d.fromArray([...points, Vector2.make(2, 0)]))),
+    ).toThrow(/n \* 2/)
+  })
+
+  test('RationalBezier2d.mapPoints sees Weighted and can change both axes and weight', () => {
+    const r = RationalBezier2d.make(
+      Vector2.makeWeighted(0, 0, 1),
+      Vector2.makeWeighted(1, 1, 2),
+      Vector2.makeWeighted(2, 0, 0.5),
+      Vector2.makeWeighted(3, 1, 1),
+    )
+    const transformed = r.pipe(
+      RationalBezier2d.mapPoints((p) => Vector2.makeWeighted(p.x + 10, p.y, p.weight * 4)),
+    )
+    const points = [...transformed]
+    expect(points[0]).toEqual(Vector2.makeWeighted(10, 0, 4))
+    expect(points[1]).toEqual(Vector2.makeWeighted(11, 1, 8))
+    expect(points[2]).toEqual(Vector2.makeWeighted(12, 0, 2))
+    expect(points[3]).toEqual(Vector2.makeWeighted(13, 1, 4))
+  })
+
+  test('RationalBezier2d.mapPoints with Vector2.liftWithWeight preserves weights', () => {
+    const sqrt2 = Math.SQRT2
+    const w = (1 + sqrt2) / 3
+    const k = 2 - sqrt2
+    const arc = RationalBezier2d.make(
+      Vector2.makeWeighted(1, 0, 1),
+      Vector2.withWeight(Vector2.make(1, k), w),
+      Vector2.withWeight(Vector2.make(k, 1), w),
+      Vector2.makeWeighted(0, 1, 1),
+    )
+    const moved = arc.pipe(RationalBezier2d.mapPoints(Vector2.liftWithWeight(translateBy(5, 0))))
+    const points = [...moved]
+    expect(points[0]?.weight).toBe(1)
+    expect(points[1]?.weight).toBeCloseTo(w, 12)
+    expect(points[2]?.weight).toBeCloseTo(w, 12)
+    expect(points[3]?.weight).toBe(1)
+    expect(points[0]?.x).toBe(6)
+    expect(points[3]?.x).toBe(5)
+  })
+
+  test('RationalBezier2d.flatMap rebuilds via the weighted constructor', () => {
+    const r = RationalBezier2d.make(
+      Vector2.makeWeighted(0, 0, 1),
+      Vector2.makeWeighted(1, 1, 2),
+      Vector2.makeWeighted(2, 0, 0.5),
+      Vector2.makeWeighted(3, 1, 1),
+    )
+    const reversed = r.pipe(
+      RationalBezier2d.flatMap((points) => RationalBezier2d.fromArray([...points].toReversed())),
+    )
+    expect([...reversed][0]?.x).toBe(3)
+    expect([...reversed][3]?.x).toBe(0)
+  })
+})

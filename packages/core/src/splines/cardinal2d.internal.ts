@@ -170,6 +170,23 @@ export const withOptions = dual<
     new Cardinal2dImpl(p.points, options.tension ?? p.tension, options.alpha ?? p.alpha),
 )
 
+/** @internal */
+export const mapPoints = dual<
+  (f: (p: Vector2.Vector2) => Vector2.Vector2) => (s: Cardinal2d) => Cardinal2d,
+  (s: Cardinal2d, f: (p: Vector2.Vector2) => Vector2.Vector2) => Cardinal2d
+>(2, (s: Cardinal2d, f: (p: Vector2.Vector2) => Vector2.Vector2) => {
+  const points = s instanceof Cardinal2dImpl ? s.points : [...s]
+  return new Cardinal2dImpl(points.map(f), s.tension, s.alpha)
+})
+
+/** @internal */
+export const flatMap = dual<
+  (f: (points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d) => (s: Cardinal2d) => Cardinal2d,
+  (s: Cardinal2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d) => Cardinal2d
+>(2, (s: Cardinal2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d) =>
+  f(s instanceof Cardinal2dImpl ? s.points : [...s]),
+)
+
 // Builds one segment from P1 to P2, using P0 and P3 as the surrounding
 // neighbors for tangent computation. Math: standard non-uniform Catmull-Rom
 // tangents, generalized to a tension τ such that τ=0.5 recovers classical

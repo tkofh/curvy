@@ -130,6 +130,59 @@ export const fromBezier: (b: Bezier2d) => RationalBezier2d = internal.fromBezier
  */
 export const toPath: (r: RationalBezier2d) => RationalCubicPath2d = internal.toPath
 
+export const mapPoints: {
+  /**
+   * Applies a per-point transform to every weighted control point in a
+   * `RationalBezier2d`, preserving point count.
+   *
+   * The transform sees each control point as a `Vector2.Weighted` —
+   * matching the type's storage form. To lift a position-only function into
+   * a weighted mapper while preserving weights, use
+   * {@link Vector2.liftWithWeight}.
+   *
+   * @param f - The weighted-point transform.
+   * @returns A function that takes a `RationalBezier2d` and returns the mapped spline.
+   * @since 2.0.0
+   */
+  (f: (p: Weighted) => Weighted): (s: RationalBezier2d) => RationalBezier2d
+  /**
+   * Applies a per-point transform to every weighted control point in a
+   * `RationalBezier2d`.
+   *
+   * @param s - The rational bezier.
+   * @param f - The weighted-point transform.
+   * @returns A new `RationalBezier2d` with the transform applied to each point.
+   * @since 2.0.0
+   */
+  (s: RationalBezier2d, f: (p: Weighted) => Weighted): RationalBezier2d
+} = internal.mapPoints
+
+export const flatMap: {
+  /**
+   * Hands the bezier's full weighted control-point array to `f` and uses its
+   * returned `RationalBezier2d` as the result. The returned bezier goes
+   * through this module's builders, so the `3n + 1` point-count invariant is
+   * enforced at construction.
+   *
+   * @param f - The bulk transform.
+   * @returns A function that takes a `RationalBezier2d` and returns the rebuilt spline.
+   * @since 2.0.0
+   */
+  (
+    f: (points: ReadonlyArray<Weighted>) => RationalBezier2d,
+  ): (s: RationalBezier2d) => RationalBezier2d
+  /**
+   * Hands the bezier's full weighted control-point array to `f` and uses its
+   * returned `RationalBezier2d` as the result.
+   *
+   * @param s - The rational bezier.
+   * @param f - The bulk transform.
+   * @returns The `RationalBezier2d` returned by `f`.
+   * @since 2.0.0
+   */
+  (s: RationalBezier2d, f: (points: ReadonlyArray<Weighted>) => RationalBezier2d): RationalBezier2d
+} = internal.flatMap
+
 export const subdivide: {
   /**
    * Splits a `RationalBezier2d` at the given global parameter `u ∈ (0, 1)`

@@ -97,6 +97,56 @@ export const withWeight: {
  */
 export const unweighted: (w: Weighted) => Vector2 = internal.unweighted
 
+export const liftWithWeight: {
+  /**
+   * Lifts a `Vector2 → Vector2` function to operate on `Vector2.Weighted` by
+   * applying the function to the position and preserving the input's weight.
+   *
+   * Designed as the bridge between point-only utilities (e.g. {@link setR},
+   * `Vector2.add(offset)`) and weighted-spline mappers like
+   * `RationalBezier2d.mapPoints`. The default of "preserve weight" is the safe
+   * choice for the common case — translating, rotating, or scaling positions
+   * on a curve like a conic arc shouldn't silently collapse the curve's
+   * geometry-defining weights to a uniform value.
+   *
+   * @param fn - The position-only function to lift.
+   * @returns A function from `Weighted` to `Weighted` that preserves weight.
+   * @since 2.0.0
+   */
+  (fn: (v: Vector2) => Vector2): (w: Weighted) => Weighted
+  /**
+   * Lifts a `Vector2 → Vector2` function to operate on `Vector2.Weighted`,
+   * replacing the input's weight with the given value.
+   *
+   * @param fn - The position-only function to lift.
+   * @param weight - The positive scalar weight to attach to each output.
+   * @returns A function from `Weighted` to `Weighted` that overrides weight.
+   * @since 2.0.0
+   */
+  (fn: (v: Vector2) => Vector2, weight: number): (w: Weighted) => Weighted
+  /**
+   * Applies a `Vector2 → Vector2` function to the position of a
+   * `Vector2.Weighted`, preserving the input's weight.
+   *
+   * @param w - The weighted point to transform.
+   * @param fn - The position-only function to apply.
+   * @returns A new `Vector2.Weighted` with the function applied to position and the original weight.
+   * @since 2.0.0
+   */
+  (w: Weighted, fn: (v: Vector2) => Vector2): Weighted
+  /**
+   * Applies a `Vector2 → Vector2` function to the position of a
+   * `Vector2.Weighted`, replacing the weight with the given value.
+   *
+   * @param w - The weighted point to transform.
+   * @param fn - The position-only function to apply.
+   * @param weight - The positive scalar weight to attach to the output.
+   * @returns A new `Vector2.Weighted` with the function applied to position and the overridden weight.
+   * @since 2.0.0
+   */
+  (w: Weighted, fn: (v: Vector2) => Vector2, weight: number): Weighted
+} = internal.liftWithWeight
+
 export const weightedEquals: {
   /**
    * Checks if two `Vector2.Weighted` instances are approximately equal —

@@ -60,6 +60,12 @@ export const fromPolynomials = (
   w: CubicPolynomial.CubicPolynomial,
 ): RationalCubicCurve2d => new RationalCubicCurve2dImpl(x, y, w)
 
+// Endpoint pins for the two-arg `fromBezierPoints` overload — the rational
+// analog of CSS `cubic-bezier(x1, y1, x2, y2)`. Module-level so the two-arg
+// path is allocation-free for the endpoints.
+const EASING_P0 = Vector2.makeWeighted(0, 0, 1)
+const EASING_P3 = Vector2.makeWeighted(1, 1, 1)
+
 // Applies the cubic Bézier characteristic matrix in homogeneous space —
 // each control point is lifted to `(w·x, w·y, w)` and the same matrix that
 // drives `CubicCurve2d.fromBezierPoints` runs on each of the three channels
@@ -70,12 +76,12 @@ export const fromPolynomials = (
 // same matrix, three channels instead of two, one projection at the end.
 /** @internal */
 export const fromBezierPoints = (
-  p0: Vector2.Weighted,
-  p1: Vector2.Weighted,
-  p2: Vector2.Weighted,
-  p3: Vector2.Weighted,
-): RationalCubicCurve2d =>
-  new RationalCubicCurve2dImpl(
+  ...args:
+    | [p1: Vector2.Weighted, p2: Vector2.Weighted]
+    | [p0: Vector2.Weighted, p1: Vector2.Weighted, p2: Vector2.Weighted, p3: Vector2.Weighted]
+): RationalCubicCurve2d => {
+  const [p0, p1, p2, p3] = args.length === 2 ? [EASING_P0, args[0], args[1], EASING_P3] : args
+  return new RationalCubicCurve2dImpl(
     ...Characteristic.apply(
       Characteristic.cubicBezier,
       // Lift each control point to homogeneous (w·x, w·y, w), then transpose
@@ -83,6 +89,7 @@ export const fromBezierPoints = (
       ...Vector4.transpose([p0, p1, p2, p3], (p) => [p.x * p.weight, p.y * p.weight, p.weight]),
     ),
   )
+}
 
 // Rational cubic Hermite easing from endpoint slopes and signed curvatures.
 //

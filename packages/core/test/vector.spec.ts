@@ -67,6 +67,45 @@ describe('vector2', () => {
       vector2.make(3, 8),
     )
   })
+  test('liftWithWeight preserves the input weight by default', () => {
+    const lifted = vector2.liftWithWeight((v) => vector2.make(v.x + 10, v.y * 2))
+    const result = lifted(vector2.makeWeighted(1, 2, 0.5))
+    expect(result.x).toBe(11)
+    expect(result.y).toBe(4)
+    expect(result.weight).toBe(0.5)
+  })
+  test('liftWithWeight overrides weight when provided', () => {
+    const lifted = vector2.liftWithWeight((v) => vector2.make(v.x + 10, v.y * 2), 3)
+    const result = lifted(vector2.makeWeighted(1, 2, 0.5))
+    expect(result.x).toBe(11)
+    expect(result.y).toBe(4)
+    expect(result.weight).toBe(3)
+  })
+  test('liftWithWeight composes with existing Vector2 utilities', () => {
+    // Vector2.setR(0) replaces magnitude with 0 — would produce (0, 0) for
+    // any input. The lifted version preserves the original weight.
+    const lifted = vector2.liftWithWeight(vector2.setR(0))
+    const result = lifted(vector2.makeWeighted(3, 4, 1.5))
+    expect(result.x).toBeCloseTo(0, 12)
+    expect(result.y).toBeCloseTo(0, 12)
+    expect(result.weight).toBe(1.5)
+  })
+  test('liftWithWeight data-first applies immediately and preserves weight', () => {
+    const result = vector2.liftWithWeight(vector2.makeWeighted(1, 2, 0.5), (v) =>
+      vector2.make(v.x + 10, v.y * 2),
+    )
+    expect(result.x).toBe(11)
+    expect(result.y).toBe(4)
+    expect(result.weight).toBe(0.5)
+  })
+  test('liftWithWeight data-first with weight override', () => {
+    const result = vector2.liftWithWeight(
+      vector2.makeWeighted(1, 2, 0.5),
+      (v) => vector2.make(v.x + 10, v.y * 2),
+      3,
+    )
+    expect(result.weight).toBe(3)
+  })
 })
 
 describe('vector3', () => {

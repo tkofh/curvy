@@ -114,6 +114,15 @@ export const withWeight = dual<
 export const unweighted = (w: Weighted): Vector2 => make(w.x, w.y)
 
 /** @internal */
+export const liftWithWeight = dual(
+  (args) => isWeighted(args[0]),
+  (w: Weighted, fn: (v: Vector2) => Vector2, weight?: number): Weighted => {
+    const r = fn(make(w.x, w.y))
+    return makeWeighted(r.x, r.y, weight ?? w.weight)
+  },
+)
+
+/** @internal */
 export const weightedEquals = dual<
   (b: Weighted) => (a: Weighted) => boolean,
   (a: Weighted, b: Weighted) => boolean

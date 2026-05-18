@@ -208,6 +208,51 @@ describe('cubic2d', () => {
   })
 })
 
+describe('rationalCubic2d.fromBezierPoints', () => {
+  test('two-arg form pins endpoints at (0, 0) and (1, 1)', () => {
+    const c = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0.25, 0.1, 1),
+      vector2.makeWeighted(0.75, 0.9, 1),
+    )
+    expect(rationalCubic2d.solve(c, 0)).toBeCloseToValue(vector2.make(0, 0))
+    expect(rationalCubic2d.solve(c, 1)).toBeCloseToValue(vector2.make(1, 1))
+  })
+
+  test('two-arg unit-weight form matches the four-arg call with pinned endpoints', () => {
+    const p1 = vector2.makeWeighted(0.25, 0.1, 1)
+    const p2 = vector2.makeWeighted(0.75, 0.9, 1)
+    const shorthand = rationalCubic2d.fromBezierPoints(p1, p2)
+    const explicit = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      p1,
+      p2,
+      vector2.makeWeighted(1, 1, 1),
+    )
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10
+      expect(rationalCubic2d.solve(shorthand, t)).toBeCloseToValue(
+        rationalCubic2d.solve(explicit, t),
+      )
+    }
+  })
+
+  test('two-arg form honors per-handle weights', () => {
+    // Heavy start handle pulls the curve toward (1, 0) early; the projected
+    // x-position at t = 0.5 ends up greater than the unit-weight case.
+    const heavy = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(1, 0, 8),
+      vector2.makeWeighted(0, 1, 1),
+    )
+    const uniform = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(1, 0, 1),
+      vector2.makeWeighted(0, 1, 1),
+    )
+    expect(rationalCubic2d.solve(heavy, 0.5).x).toBeGreaterThan(
+      rationalCubic2d.solve(uniform, 0.5).x,
+    )
+  })
+})
+
 describe('rationalCubic2d.fromSlopesAndCurvatures', () => {
   // Closed-form signed curvatures for the smoothstep y = 3t² - 2t³ at the
   // endpoints: y'(0) = y'(1) = 0, y''(0) = 6, y''(1) = -6, and at slope 0 the

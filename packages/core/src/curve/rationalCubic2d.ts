@@ -73,25 +73,37 @@ export const fromPolynomials: (
   w: CubicPolynomial,
 ) => RationalCubicCurve2d = internal.fromPolynomials
 
-/**
- * Creates a new `RationalCubicCurve2d` from four weighted cubic Bézier
- * control points. The four control points are lifted to homogeneous form
- * `(w·x, w·y, w)` and the cubic Bernstein basis is expanded into per-channel
- * monomial coefficients, yielding the curve's `x`, `y`, and `w` polynomials.
- *
- * @param p0 - The first weighted control point (curve start).
- * @param p1 - The second weighted control point (start handle).
- * @param p2 - The third weighted control point (end handle).
- * @param p3 - The fourth weighted control point (curve end).
- * @returns A new `RationalCubicCurve2d` instance.
- * @since 2.0.0
- */
-export const fromBezierPoints: (
-  p0: Weighted,
-  p1: Weighted,
-  p2: Weighted,
-  p3: Weighted,
-) => RationalCubicCurve2d = internal.fromBezierPoints
+export const fromBezierPoints: {
+  /**
+   * Creates a new `RationalCubicCurve2d` from four weighted cubic Bézier
+   * control points. The four control points are lifted to homogeneous form
+   * `(w·x, w·y, w)` and the cubic Bernstein basis is expanded into per-channel
+   * monomial coefficients, yielding the curve's `x`, `y`, and `w` polynomials.
+   *
+   * @param p0 - The first weighted control point (curve start).
+   * @param p1 - The second weighted control point (start handle).
+   * @param p2 - The third weighted control point (end handle).
+   * @param p3 - The fourth weighted control point (curve end).
+   * @returns A new `RationalCubicCurve2d` instance.
+   * @since 2.0.0
+   */
+  (p0: Weighted, p1: Weighted, p2: Weighted, p3: Weighted): RationalCubicCurve2d
+  /**
+   * Creates a new `RationalCubicCurve2d` from two interior weighted Bézier
+   * handles, with endpoints pinned at `(0, 0, w=1)` and `(1, 1, w=1)`.
+   *
+   * Rational analog of CSS's `cubic-bezier(x1, y1, x2, y2)`: same fixed
+   * endpoints, same two interior handles, plus per-handle weights for true
+   * rational shapes (the polynomial case is recovered with unit weights).
+   * The curve interpolates `(0, 0)` at `t = 0` and `(1, 1)` at `t = 1`.
+   *
+   * @param p1 - The second weighted control point (start handle).
+   * @param p2 - The third weighted control point (end handle).
+   * @returns A new `RationalCubicCurve2d` instance with pinned endpoints.
+   * @since 2.0.0
+   */
+  (p1: Weighted, p2: Weighted): RationalCubicCurve2d
+} = internal.fromBezierPoints
 
 /**
  * Creates a rational cubic easing curve from endpoint slopes and signed
