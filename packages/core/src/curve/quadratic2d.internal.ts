@@ -220,6 +220,33 @@ export const boundingBox = (
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> =>
   Interval2d.make(QuadraticPolynomial.unitRange(c.x), QuadraticPolynomial.unitRange(c.y))
 
+/** @internal */
+export const startPoint = (c: QuadraticCurve2d): Vector2.Vector2 => Vector2.make(c.x.c0, c.y.c0)
+
+/** @internal */
+export const endPoint = (c: QuadraticCurve2d): Vector2.Vector2 =>
+  Vector2.make(c.x.c0 + c.x.c1 + c.x.c2, c.y.c0 + c.y.c1 + c.y.c2)
+
+/** @internal */
+export const xRange = (c: QuadraticCurve2d): Interval.Closed =>
+  QuadraticPolynomial.unitRange(c.x)
+
+/** @internal */
+export const yRange = (c: QuadraticCurve2d): Interval.Closed =>
+  QuadraticPolynomial.unitRange(c.y)
+
+// Quadratic Bernstein basis: P(t) = (1-t)²·p0 + 2(1-t)t·p1 + t²·p2
+// expanded to monomial form gives c0 = p0, c1 = -2p0 + 2p1, c2 = p0 - 2p1 + p2,
+// so the inverse is p0 = c0, p1 = c0 + c1/2, p2 = c0 + c1 + c2.
+/** @internal */
+export const toPathDataSegment = (c: QuadraticCurve2d): string => {
+  const ctrlX = c.x.c0 + c.x.c1 / 2
+  const ctrlY = c.y.c0 + c.y.c1 / 2
+  const endX = c.x.c0 + c.x.c1 + c.x.c2
+  const endY = c.y.c0 + c.y.c1 + c.y.c2
+  return `Q ${ctrlX},${ctrlY} ${endX},${endY}`
+}
+
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes, over the unit interval. For per-axis checks, users can call
 // `QuadraticPolynomial.isMonotonic(c.x, Interval.unit)` directly.

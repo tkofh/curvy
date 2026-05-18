@@ -56,6 +56,23 @@ describe('linear2d', () => {
       ),
     ).toBeCloseTo(Math.sqrt(2))
   })
+  test('startPoint and endPoint match solve at t=0 and t=1', () => {
+    const c = linear2d.fromEndpoints(vector2.make(2, 3), vector2.make(7, 11))
+    expect(linear2d.startPoint(c)).toBeCloseToValue(linear2d.solve(c, 0))
+    expect(linear2d.endPoint(c)).toBeCloseToValue(linear2d.solve(c, 1))
+    expect(linear2d.startPoint(c)).toBeCloseToValue(vector2.make(2, 3))
+    expect(linear2d.endPoint(c)).toBeCloseToValue(vector2.make(7, 11))
+  })
+  test('xRange and yRange enclose the curve over [0, 1]', () => {
+    // x decreasing 5 → -1, y increasing -2 → 4
+    const c = linear2d.fromEndpoints(vector2.make(5, -2), vector2.make(-1, 4))
+    expect(linear2d.xRange(c)).toBeCloseToValue(interval.make(-1, 5))
+    expect(linear2d.yRange(c)).toBeCloseToValue(interval.make(-2, 4))
+  })
+  test('toPathDataSegment emits an L command with the endpoint', () => {
+    const c = linear2d.fromEndpoints(vector2.make(0, 0), vector2.make(3, 4))
+    expect(linear2d.toPathDataSegment(c)).toBe('L 3,4')
+  })
 })
 
 describe('quadratic2d', () => {
@@ -129,6 +146,35 @@ describe('quadratic2d', () => {
         interval.make(0, 0.5),
       ),
     ).toBeCloseTo(vector2.magnitude(vector2.make(0.25, 0.25)), 10)
+  })
+  test('startPoint and endPoint match solve at t=0 and t=1', () => {
+    const c = quadratic2d.fromBezierPoints(
+      vector2.make(1, 2),
+      vector2.make(3, 5),
+      vector2.make(7, -1),
+    )
+    expect(quadratic2d.startPoint(c)).toBeCloseToValue(quadratic2d.solve(c, 0))
+    expect(quadratic2d.endPoint(c)).toBeCloseToValue(quadratic2d.solve(c, 1))
+    expect(quadratic2d.startPoint(c)).toBeCloseToValue(vector2.make(1, 2))
+    expect(quadratic2d.endPoint(c)).toBeCloseToValue(vector2.make(7, -1))
+  })
+  test('xRange and yRange include interior extremum', () => {
+    // y(t) = (1-t)²·0 + 2(1-t)t·4 + t²·0 = 8t - 8t² → peaks at t=0.5 with y=2
+    const c = quadratic2d.fromBezierPoints(
+      vector2.make(0, 0),
+      vector2.make(1, 4),
+      vector2.make(2, 0),
+    )
+    expect(quadratic2d.xRange(c)).toBeCloseToValue(interval.make(0, 2))
+    expect(quadratic2d.yRange(c)).toBeCloseToValue(interval.make(0, 2))
+  })
+  test('toPathDataSegment emits a Q command with Bernstein control and endpoint', () => {
+    const c = quadratic2d.fromBezierPoints(
+      vector2.make(0, 0),
+      vector2.make(2, 4),
+      vector2.make(4, 0),
+    )
+    expect(quadratic2d.toPathDataSegment(c)).toBe('Q 2,4 4,0')
   })
 })
 
@@ -205,6 +251,40 @@ describe('cubic2d', () => {
         interval.make(0, 0.5),
       ),
     ).toBeCloseTo(vector2.magnitude(vector2.make(0.125, 0.125)), 10)
+  })
+  test('startPoint and endPoint match solve at t=0 and t=1', () => {
+    const c = cubic2d.fromBezierPoints(
+      vector2.make(0, 0),
+      vector2.make(1, 4),
+      vector2.make(3, -2),
+      vector2.make(5, 1),
+    )
+    expect(cubic2d.startPoint(c)).toBeCloseToValue(cubic2d.solve(c, 0))
+    expect(cubic2d.endPoint(c)).toBeCloseToValue(cubic2d.solve(c, 1))
+    expect(cubic2d.startPoint(c)).toBeCloseToValue(vector2.make(0, 0))
+    expect(cubic2d.endPoint(c)).toBeCloseToValue(vector2.make(5, 1))
+  })
+  test('xRange and yRange agree with boundingBox projections', () => {
+    const c = cubic2d.fromBezierPoints(
+      vector2.make(0, 0),
+      vector2.make(1, 4),
+      vector2.make(3, -2),
+      vector2.make(5, 1),
+    )
+    const bb = cubic2d.boundingBox(c)
+    expect(cubic2d.xRange(c)).toBeCloseToValue(bb.x)
+    expect(cubic2d.yRange(c)).toBeCloseToValue(bb.y)
+  })
+  test('toPathDataSegment emits a C command with two controls and the endpoint', () => {
+    // Pick Bernstein points that round to clean decimals after the c1/3, 2c1/3
+    // recovery so the string compare is exact.
+    const c = cubic2d.fromBezierPoints(
+      vector2.make(0, 0),
+      vector2.make(3, 6),
+      vector2.make(6, -3),
+      vector2.make(9, 0),
+    )
+    expect(cubic2d.toPathDataSegment(c)).toBe('C 3,6 6,-3 9,0')
   })
 })
 
@@ -656,6 +736,36 @@ describe('rationalCubic2d.boundingBox', () => {
     )
     expect(() => rationalCubic2d.boundingBox(rational, 0)).toThrow()
     expect(() => rationalCubic2d.boundingBox(rational, -1)).toThrow()
+  })
+})
+
+describe('rationalCubic2d endpoint primitives', () => {
+  test('startPoint and endPoint match solve at t=0 and t=1 (uniform weights)', () => {
+    const c = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 4, 1),
+      vector2.makeWeighted(3, -2, 1),
+      vector2.makeWeighted(5, 1, 1),
+    )
+    expect(rationalCubic2d.startPoint(c)).toBeCloseToValue(rationalCubic2d.solve(c, 0))
+    expect(rationalCubic2d.endPoint(c)).toBeCloseToValue(rationalCubic2d.solve(c, 1))
+    expect(rationalCubic2d.startPoint(c)).toBeCloseToValue(vector2.make(0, 0))
+    expect(rationalCubic2d.endPoint(c)).toBeCloseToValue(vector2.make(5, 1))
+  })
+  test('startPoint and endPoint divide by endpoint weights (non-uniform)', () => {
+    // Endpoint weights 2 and 5; control coords (0, 0) and (4, 6) before lift.
+    // After homogeneous lift the polynomial endpoint sums are (8, 12, 5) for t=1
+    // and (0, 0, 2) for t=0; projection gives (0, 0) and (8/5, 12/5).
+    const c = rationalCubic2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 2),
+      vector2.makeWeighted(2, 3, 3),
+      vector2.makeWeighted(3, 5, 4),
+      vector2.makeWeighted(4, 6, 5),
+    )
+    expect(rationalCubic2d.startPoint(c)).toBeCloseToValue(rationalCubic2d.solve(c, 0))
+    expect(rationalCubic2d.endPoint(c)).toBeCloseToValue(rationalCubic2d.solve(c, 1))
+    expect(rationalCubic2d.startPoint(c)).toBeCloseToValue(vector2.make(0, 0))
+    expect(rationalCubic2d.endPoint(c)).toBeCloseToValue(vector2.make(4, 6))
   })
 })
 

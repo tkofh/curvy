@@ -221,6 +221,42 @@ export const boundingBox = (
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> =>
   Interval2d.make(CubicPolynomial.unitRange(c.x), CubicPolynomial.unitRange(c.y))
 
+/** @internal */
+export const startPoint = (c: CubicCurve2d): Vector2.Vector2 => Vector2.make(c.x.c0, c.y.c0)
+
+/** @internal */
+export const endPoint = (c: CubicCurve2d): Vector2.Vector2 =>
+  Vector2.make(c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3, c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3)
+
+/** @internal */
+export const xRange = (c: CubicCurve2d): Interval.Closed => CubicPolynomial.unitRange(c.x)
+
+/** @internal */
+export const yRange = (c: CubicCurve2d): Interval.Closed => CubicPolynomial.unitRange(c.y)
+
+// Cubic Bernstein basis: P(t) = (1-t)³·p0 + 3(1-t)²t·p1 + 3(1-t)t²·p2 + t³·p3
+// expanded gives c0 = p0, c1 = -3p0 + 3p1, c2 = 3p0 - 6p1 + 3p2,
+// c3 = -p0 + 3p1 - 3p2 + p3, so the inverse is
+//   p0 = c0, p1 = c0 + c1/3, p2 = c0 + 2c1/3 + c2/3, p3 = c0 + c1 + c2 + c3.
+/** @internal */
+export const toPathDataSegment = (c: CubicCurve2d): string => {
+  const c0x = c.x.c0
+  const c0y = c.y.c0
+  const c1x = c.x.c1
+  const c1y = c.y.c1
+  const c2x = c.x.c2
+  const c2y = c.y.c2
+  const c3x = c.x.c3
+  const c3y = c.y.c3
+  const ctrl1X = c0x + c1x / 3
+  const ctrl1Y = c0y + c1y / 3
+  const ctrl2X = c0x + (2 * c1x) / 3 + c2x / 3
+  const ctrl2Y = c0y + (2 * c1y) / 3 + c2y / 3
+  const endX = c0x + c1x + c2x + c3x
+  const endY = c0y + c1y + c2y + c3y
+  return `C ${ctrl1X},${ctrl1Y} ${ctrl2X},${ctrl2Y} ${endX},${endY}`
+}
+
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes, over the unit interval. For per-axis checks, users can call
 // `CubicPolynomial.isMonotonic(c.x, Interval.unit)` directly.

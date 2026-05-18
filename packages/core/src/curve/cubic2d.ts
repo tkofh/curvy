@@ -220,6 +220,57 @@ export const curvature: {
 export const boundingBox: (c: CubicCurve2d) => Interval2d<Closed, Closed> = internal.boundingBox
 
 /**
+ * Evaluates the curve at `t = 0` in closed form — `(c.x.c0, c.y.c0)`.
+ *
+ * @param c - The cubic curve.
+ * @returns The point at the start of the curve's parameter domain.
+ * @since 2.0.0
+ */
+export const startPoint: (c: CubicCurve2d) => Vector2 = internal.startPoint
+
+/**
+ * Evaluates the curve at `t = 1` in closed form — the sum of the per-axis
+ * monomial coefficients.
+ *
+ * @param c - The cubic curve.
+ * @returns The point at the end of the curve's parameter domain.
+ * @since 2.0.0
+ */
+export const endPoint: (c: CubicCurve2d) => Vector2 = internal.endPoint
+
+/**
+ * The tight `[min, max]` range of x over the curve's parameter domain `[0, 1]`,
+ * accounting for up to two interior extrema.
+ *
+ * @param c - The cubic curve.
+ * @returns The closed range of x over `[0, 1]`.
+ * @since 2.0.0
+ */
+export const xRange: (c: CubicCurve2d) => Closed = internal.xRange
+
+/**
+ * The tight `[min, max]` range of y over the curve's parameter domain `[0, 1]`,
+ * accounting for up to two interior extrema.
+ *
+ * @param c - The cubic curve.
+ * @returns The closed range of y over `[0, 1]`.
+ * @since 2.0.0
+ */
+export const yRange: (c: CubicCurve2d) => Closed = internal.yRange
+
+/**
+ * Renders the curve as a single SVG path-data drawing command — for a cubic
+ * curve, `C ctrl1X,ctrl1Y ctrl2X,ctrl2Y endX,endY`. Bernstein control points
+ * are recovered from the monomial coefficients in closed form. Does not
+ * include a leading `M`.
+ *
+ * @param c - The cubic curve.
+ * @returns The SVG drawing command for this segment, without a leading `M`.
+ * @since 2.0.0
+ */
+export const toPathDataSegment: (c: CubicCurve2d) => string = internal.toPathDataSegment
+
+/**
  * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
  * when both x and y polynomials are monotonic over the unit interval `[0, 1]`.
  *

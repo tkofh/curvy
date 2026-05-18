@@ -260,6 +260,24 @@ export const solve = dual<
   return Vector2.make(CubicPolynomial.solve(c.x, t) / w, CubicPolynomial.solve(c.y, t) / w)
 })
 
+// At t = 0, every cubic polynomial's Horner evaluation is just its c₀ term, so
+// the projection (x(0)/w(0), y(0)/w(0)) collapses to closed-form scalar divides.
+/** @internal */
+export const startPoint = (c: RationalCubicCurve2d): Vector2.Vector2 =>
+  Vector2.make(c.x.c0 / c.w.c0, c.y.c0 / c.w.c0)
+
+// At t = 1, every cubic polynomial's Horner evaluation collapses to the sum
+// of its monomial coefficients, so the projection at the endpoint is the sum
+// per axis divided by the denominator's sum.
+/** @internal */
+export const endPoint = (c: RationalCubicCurve2d): Vector2.Vector2 => {
+  const w = c.w.c0 + c.w.c1 + c.w.c2 + c.w.c3
+  return Vector2.make(
+    (c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3) / w,
+    (c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3) / w,
+  )
+}
+
 // Inverse-solve x(t)/w(t) = X by finding roots of X(t) - X·w(t) = 0.
 // Both X(t) and w(t) are cubic in t, so their linear combination is also
 // cubic — solvable with the existing cubic root-finder. Solutions outside

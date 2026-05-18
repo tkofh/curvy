@@ -136,6 +136,58 @@ export const length: {
  */
 export const boundingBox: (c: LinearCurve2d) => Interval2d<Closed, Closed> = internal.boundingBox
 
+/**
+ * Evaluates the curve at `t = 0` in closed form — `(c.x.c0, c.y.c0)`.
+ *
+ * @param c - The linear curve.
+ * @returns The point at the start of the curve's parameter domain.
+ * @since 2.0.0
+ */
+export const startPoint: (c: LinearCurve2d) => Vector2 = internal.startPoint
+
+/**
+ * Evaluates the curve at `t = 1` in closed form — `(c.x.c0 + c.x.c1, c.y.c0 + c.y.c1)`.
+ *
+ * @param c - The linear curve.
+ * @returns The point at the end of the curve's parameter domain.
+ * @since 2.0.0
+ */
+export const endPoint: (c: LinearCurve2d) => Vector2 = internal.endPoint
+
+/**
+ * The tight `[min, max]` range of x over the curve's parameter domain `[0, 1]`.
+ * For a linear curve this is the closed interval bounded by the two endpoints'
+ * x coordinates.
+ *
+ * @param c - The linear curve.
+ * @returns The closed range of x over `[0, 1]`.
+ * @since 2.0.0
+ */
+export const xRange: (c: LinearCurve2d) => Closed = internal.xRange
+
+/**
+ * The tight `[min, max]` range of y over the curve's parameter domain `[0, 1]`.
+ * For a linear curve this is the closed interval bounded by the two endpoints'
+ * y coordinates.
+ *
+ * @param c - The linear curve.
+ * @returns The closed range of y over `[0, 1]`.
+ * @since 2.0.0
+ */
+export const yRange: (c: LinearCurve2d) => Closed = internal.yRange
+
+/**
+ * Renders the curve as a single SVG path-data drawing command — for a linear
+ * curve, `L endX,endY`. Does not include a leading `M`; callers (typically a
+ * path-level `toPathData`) decide whether to emit a move based on continuity
+ * with the previous segment.
+ *
+ * @param c - The linear curve.
+ * @returns The SVG drawing command for this segment, without a leading `M`.
+ * @since 2.0.0
+ */
+export const toPathDataSegment: (c: LinearCurve2d) => string = internal.toPathDataSegment
+
 export const solveAtX: {
   /**
    * Evaluates the curve's y value at a given x. A linear curve crosses any

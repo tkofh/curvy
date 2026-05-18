@@ -104,6 +104,26 @@ export const boundingBox = (
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> =>
   Interval2d.make(LinearPolynomial.unitRange(c.x), LinearPolynomial.unitRange(c.y))
 
+/** @internal */
+export const startPoint = (c: LinearCurve2d): Vector2.Vector2 => Vector2.make(c.x.c0, c.y.c0)
+
+/** @internal */
+export const endPoint = (c: LinearCurve2d): Vector2.Vector2 =>
+  Vector2.make(c.x.c0 + c.x.c1, c.y.c0 + c.y.c1)
+
+/** @internal */
+export const xRange = (c: LinearCurve2d): Interval.Closed => LinearPolynomial.unitRange(c.x)
+
+/** @internal */
+export const yRange = (c: LinearCurve2d): Interval.Closed => LinearPolynomial.unitRange(c.y)
+
+/** @internal */
+export const toPathDataSegment = (c: LinearCurve2d): string => {
+  const endX = c.x.c0 + c.x.c1
+  const endY = c.y.c0 + c.y.c1
+  return `L ${endX},${endY}`
+}
+
 // Combined trait refiners — fan out the polynomial-level check across both
 // axes. For per-axis checks, users can call `LinearPolynomial.isMonotonic(c.x)`
 // directly.

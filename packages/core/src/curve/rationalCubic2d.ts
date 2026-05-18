@@ -158,6 +158,26 @@ export const solve: {
   (t: number): (c: RationalCubicCurve2d) => Vector2
 } = internal.solve
 
+/**
+ * Evaluates the curve at `t = 0` in closed form — `(c.x.c0 / c.w.c0, c.y.c0 / c.w.c0)`.
+ *
+ * @param c - The rational cubic curve.
+ * @returns The point at the start of the curve's parameter domain.
+ * @since 2.0.0
+ */
+export const startPoint: (c: RationalCubicCurve2d) => Vector2 = internal.startPoint
+
+/**
+ * Evaluates the curve at `t = 1` in closed form. Both numerator and denominator
+ * Horner evaluations at `t = 1` collapse to the sum of their monomial
+ * coefficients, so the projection is `(Σxᵢ / Σwᵢ, Σyᵢ / Σwᵢ)`.
+ *
+ * @param c - The rational cubic curve.
+ * @returns The point at the end of the curve's parameter domain.
+ * @since 2.0.0
+ */
+export const endPoint: (c: RationalCubicCurve2d) => Vector2 = internal.endPoint
+
 export const solveAtX: {
   /**
    * Evaluates the curve's y values at a given x. Because the curve's x axis
