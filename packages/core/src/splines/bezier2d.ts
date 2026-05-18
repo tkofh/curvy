@@ -1,4 +1,5 @@
 import type { CubicPath2d } from '../path/cubic2d.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Vector2 } from '../vector/vector2.ts'
@@ -216,6 +217,29 @@ export const flatMap: {
    */
   (s: Bezier2d, f: (points: ReadonlyArray<Vector2>) => Bezier2d): Bezier2d
 } = internal.flatMap
+
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to every control point of a `Bezier2d`.
+   * Affine maps commute with Bézier evaluation, so the result exactly
+   * parameterizes the affine image of the original curve.
+   *
+   * @param s - The bezier.
+   * @param a - The affine transform.
+   * @returns A new `Bezier2d` whose control points are the affine images of
+   *   the input's.
+   * @since 2.0.0
+   */
+  (s: Bezier2d, a: Affine2d): Bezier2d
+  /**
+   * Applies an `Affine2d` transform to every control point of a `Bezier2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `Bezier2d` and returns the transformed bezier.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (s: Bezier2d) => Bezier2d
+} = internal.transform
 
 /**
  * Converts a `Bezier2d` to a `CubicPath2d`.

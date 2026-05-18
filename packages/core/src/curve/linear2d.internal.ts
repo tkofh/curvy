@@ -1,5 +1,6 @@
 import * as Interval2d from '../interval/interval2d.ts'
 import * as Interval from '../interval/interval.ts'
+import type * as Affine2d from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as LinearPolynomial from '../polynomial/linear.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
@@ -193,3 +194,18 @@ export const asDecreasing = <XT, YT>(
   c: LinearCurve2d<XT, YT>,
 ): LinearCurve2d<XT & Decreasing, YT & Decreasing> =>
   isDecreasing(c) ? c : fail('linear curve is not decreasing in both axes')
+
+// Affine transform on a coefficient-form curve: f(p(t)) = A·p(t) + b expands
+// to (A·c0 + b) + (A·c1)·t. The constant coefficient receives the full affine
+// (translation included), higher coefficients see only the linear part.
+/** @internal */
+export const transform = dual<
+  (a: Affine2d.Affine2d) => (c: LinearCurve2d) => LinearCurve2d,
+  (c: LinearCurve2d, a: Affine2d.Affine2d) => LinearCurve2d
+>(2, (c: LinearCurve2d, a: Affine2d.Affine2d) => {
+  const m = a.matrix
+  return new LinearCurve2dImpl(
+    LinearPolynomial.make(m.m00 * c.x.c0 + m.m01 * c.y.c0 + m.m02, m.m00 * c.x.c1 + m.m01 * c.y.c1),
+    LinearPolynomial.make(m.m10 * c.x.c0 + m.m11 * c.y.c0 + m.m12, m.m10 * c.x.c1 + m.m11 * c.y.c1),
+  )
+})

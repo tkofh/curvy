@@ -1,4 +1,5 @@
 import type { CubicPath2d } from '../path/cubic2d.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Bezier2d } from './bezier2d.ts'
@@ -312,6 +313,39 @@ export const flatMap: {
    */
   (s: Cardinal2d, f: (points: ReadonlyArray<Vector2>) => Cardinal2d): Cardinal2d
 } = internal.flatMap
+
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to every control point of a `Cardinal2d`,
+   * preserving the spline's `tension` and `alpha`.
+   *
+   * **Exactness depends on parameterization.** With `alpha = 0` (uniform
+   * Catmull-Rom) the affine basis commutes exactly with evaluation, so the
+   * result parameterizes the affine image of the original curve. With
+   * `alpha != 0` (centripetal / chordal), chord lengths between control points
+   * drive the parameterization and a non-uniform-scaling transform changes
+   * those chord lengths in axis-dependent ways. In that case the returned
+   * curve is still a sensible Cardinal spline on the transformed control
+   * points, but it no longer matches the affine image of the original
+   * pointwise. For pixel-exact transforms of centripetal splines, convert to
+   * `Bezier2d` via {@link toBezier} first, then transform.
+   *
+   * @param s - The cardinal spline.
+   * @param a - The affine transform.
+   * @returns A new `Cardinal2d` whose control points are the affine images of
+   *   the input's, with the same parameterization.
+   * @since 2.0.0
+   */
+  (s: Cardinal2d, a: Affine2d): Cardinal2d
+  /**
+   * Applies an `Affine2d` transform to every control point of a `Cardinal2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `Cardinal2d` and returns the transformed spline.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (s: Cardinal2d) => Cardinal2d
+} = internal.transform
 
 /**
  * Converts a `Cardinal2d` to a `CubicPath2d` using the spline's `tension` and

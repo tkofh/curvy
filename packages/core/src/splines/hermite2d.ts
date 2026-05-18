@@ -1,4 +1,5 @@
 import type { CubicPath2d } from '../path/cubic2d.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Bezier2d } from './bezier2d.ts'
@@ -157,6 +158,32 @@ export const flatMap: {
    */
   (s: Hermite2d, f: (points: ReadonlyArray<Vector2>) => Hermite2d): Hermite2d
 } = internal.flatMap
+
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to a `Hermite2d`, treating the entries
+   * correctly by kind: positions (even indices) receive the full affine, and
+   * tangent vectors (odd indices) receive only the linear part — translation
+   * doesn't move tangents, only the linear map does.
+   *
+   * The result exactly parameterizes the affine image of the original curve.
+   *
+   * @param s - The hermite spline.
+   * @param a - The affine transform.
+   * @returns A new `Hermite2d` with positions and tangents transformed
+   *   appropriately.
+   * @since 2.0.0
+   */
+  (s: Hermite2d, a: Affine2d): Hermite2d
+  /**
+   * Applies an `Affine2d` transform to a `Hermite2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `Hermite2d` and returns the transformed spline.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (s: Hermite2d) => Hermite2d
+} = internal.transform
 
 /**
  * Creates a new `CubicPath2d` instance from a `Hermite2d`.

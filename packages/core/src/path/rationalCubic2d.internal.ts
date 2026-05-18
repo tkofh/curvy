@@ -2,6 +2,7 @@ import type * as CubicCurve2d from '../curve/cubic2d.ts'
 import * as RationalCubicCurve2d from '../curve/rationalCubic2d.ts'
 import type * as Interval from '../interval/interval.ts'
 import * as Interval2d from '../interval/interval2d.ts'
+import type * as Affine2d from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
 import type * as Vector2 from '../vector/vector2.ts'
@@ -109,4 +110,16 @@ export const approximateAsCubicPath = dual<
     }
   }
   return CubicPath2d.fromArray(curves)
+})
+
+/** @internal */
+export const transform = dual<
+  (a: Affine2d.Affine2d) => (p: RationalCubicPath2d) => RationalCubicPath2d,
+  (p: RationalCubicPath2d, a: Affine2d.Affine2d) => RationalCubicPath2d
+>(2, (p: RationalCubicPath2d, a: Affine2d.Affine2d) => {
+  const curves: Array<RationalCubicCurve2d.RationalCubicCurve2d> = []
+  for (const segment of p) {
+    curves.push(RationalCubicCurve2d.transform(segment, a))
+  }
+  return fromArray(curves)
 })

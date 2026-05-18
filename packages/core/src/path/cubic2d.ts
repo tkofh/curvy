@@ -2,6 +2,7 @@ import type { Interval2d } from '../interval/interval2d.ts'
 import type { CubicCurve2d } from '../curve/cubic2d.ts'
 import type { Closed } from '../interval/interval.ts'
 import type * as Solution from '../solution/solution.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { CubicPath2dTypeId } from './cubic2d.internal.ts'
@@ -319,3 +320,25 @@ export const solveByDistance: {
  * @since 2.0.0
  */
 export const boundingBox: (p: CubicPath2d) => Interval2d<Closed, Closed> = internal.boundingBox
+
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to every curve in a `CubicPath2d`,
+   * returning a new path whose image is the affine image of the original.
+   * Trait brands are dropped.
+   *
+   * @param p - The cubic path.
+   * @param a - The affine transform.
+   * @returns A new unbranded `CubicPath2d` whose curves are the affine images of the input's.
+   * @since 2.0.0
+   */
+  (p: CubicPath2d, a: Affine2d): CubicPath2d
+  /**
+   * Applies an `Affine2d` transform to every curve in a `CubicPath2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `CubicPath2d` and returns the transformed path.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (p: CubicPath2d) => CubicPath2d
+} = internal.transform

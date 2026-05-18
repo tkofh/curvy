@@ -131,3 +131,6 @@ export const solveAtY = methods.solveAtY as never
 
 /** @internal */
 export const boundingBox = methods.boundingBox as (p: QuadraticPath2d) => Interval2d<Closed, Closed>
+
+/** @internal */
+export const transform = methods.transform as never

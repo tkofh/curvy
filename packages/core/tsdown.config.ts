@@ -14,6 +14,7 @@ export default defineConfig({
     'src/monotonicity/index.ts',
     'src/solution/index.ts',
     'src/characteristic/index.ts',
+    'src/transform/index.ts',
   ],
   format: 'esm',
   dts: false,

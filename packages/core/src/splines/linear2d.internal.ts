@@ -1,5 +1,6 @@
 import * as LinearCurve2d from '../curve/linear2d.ts'
 import * as LinearPath2d from '../path/linear2d.ts'
+import * as Affine2d from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
@@ -76,6 +77,12 @@ export const flatMap = dual<
 >(2, (s: Linear2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Linear2d) =>
   f(s instanceof Linear2dImpl ? s.points : [...s]),
 )
+
+/** @internal */
+export const transform = dual<
+  (a: Affine2d.Affine2d) => (s: Linear2d) => Linear2d,
+  (s: Linear2d, a: Affine2d.Affine2d) => Linear2d
+>(2, (s: Linear2d, a: Affine2d.Affine2d) => mapPoints(s, Affine2d.applyTo(a)))
 
 // Build N-1 linear segments from N points by chaining consecutive pairs.
 /** @internal */

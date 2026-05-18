@@ -5,6 +5,7 @@ import type { Pipeable } from '../utils.ts'
 import type { CubicPolynomial } from '../polynomial/cubic.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { CubicCurve2dTypeId } from './cubic2d.internal.ts'
 import * as internal from './cubic2d.internal.ts'
@@ -347,6 +348,29 @@ export const asDecreasing: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => CubicCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing
 
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to a `CubicCurve2d`, returning a new
+   * curve whose image is the affine image of the original. Internally the
+   * transformation works directly on monomial coefficients — `c0` receives
+   * the full affine, `c1`/`c2`/`c3` receive only the linear part.
+   *
+   * @param c - The cubic curve.
+   * @param a - The affine transform.
+   * @returns The transformed cubic curve.
+   * @since 2.0.0
+   */
+  (c: CubicCurve2d, a: Affine2d): CubicCurve2d
+  /**
+   * Applies an `Affine2d` transform to a `CubicCurve2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `CubicCurve2d` and returns the transformed curve.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (c: CubicCurve2d) => CubicCurve2d
+} = internal.transform
+
 /**
  * The {@link Curve2dOps} bundle for `CubicCurve2d`. Used by `CubicPath2d`
  * to wire up the path-level operation surface. The `solveAtX` / `solveAtY`
@@ -368,4 +392,5 @@ export const Ops: Curve2dOps<CubicCurve2d> = {
   isDecreasingX,
   isIncreasingY,
   isDecreasingY,
+  transform,
 }

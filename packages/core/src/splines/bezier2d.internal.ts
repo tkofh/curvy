@@ -1,6 +1,7 @@
 import * as Characteristic from '../characteristic/characteristic.ts'
 import * as Matrix4x4 from '../matrix/matrix4x4.ts'
 import * as CubicPath2d from '../path/cubic2d.ts'
+import * as Affine2d from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as Solution from '../solution/solution.ts'
 import { invariant } from '../utils.ts'
@@ -173,6 +174,12 @@ export const flatMap = dual<
 >(2, (s: Bezier2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Bezier2d) =>
   f(s instanceof Bezier2dImpl ? s.points : [...s]),
 )
+
+/** @internal */
+export const transform = dual<
+  (a: Affine2d.Affine2d) => (s: Bezier2d) => Bezier2d,
+  (s: Bezier2d, a: Affine2d.Affine2d) => Bezier2d
+>(2, (s: Bezier2d, a: Affine2d.Affine2d) => mapPoints(s, Affine2d.applyTo(a)))
 
 /** @internal */
 export const toPath = (p: Bezier2d) =>

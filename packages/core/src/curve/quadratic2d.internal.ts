@@ -1,5 +1,6 @@
 import * as Interval2d from '../interval/interval2d.ts'
 import * as Interval from '../interval/interval.ts'
+import type * as Affine2d from '../transform/affine2d.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import {
   GL32_W0,
@@ -318,3 +319,25 @@ export const asDecreasing = <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ): QuadraticCurve2d<XT & Decreasing, YT & Decreasing> =>
   isDecreasing(c) ? c : fail('quadratic curve is not decreasing in both axes')
+
+// Affine transform on coefficient form: only c0 (the constant term) receives
+// the translation; c1, c2 receive only the linear part of the affine map.
+/** @internal */
+export const transform = dual<
+  (a: Affine2d.Affine2d) => (c: QuadraticCurve2d) => QuadraticCurve2d,
+  (c: QuadraticCurve2d, a: Affine2d.Affine2d) => QuadraticCurve2d
+>(2, (c: QuadraticCurve2d, a: Affine2d.Affine2d) => {
+  const m = a.matrix
+  return new QuadraticCurve2dImpl(
+    QuadraticPolynomial.make(
+      m.m00 * c.x.c0 + m.m01 * c.y.c0 + m.m02,
+      m.m00 * c.x.c1 + m.m01 * c.y.c1,
+      m.m00 * c.x.c2 + m.m01 * c.y.c2,
+    ),
+    QuadraticPolynomial.make(
+      m.m10 * c.x.c0 + m.m11 * c.y.c0 + m.m12,
+      m.m10 * c.x.c1 + m.m11 * c.y.c1,
+      m.m10 * c.x.c2 + m.m11 * c.y.c2,
+    ),
+  )
+})

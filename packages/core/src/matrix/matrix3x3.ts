@@ -435,3 +435,41 @@ export const reverseRows: (m: Matrix3x3) => Matrix3x3 = internal.reverseRows
  * @since 1.0.0
  */
 export const reverseColumns: (m: Matrix3x3) => Matrix3x3 = internal.reverseColumns
+
+/**
+ * The 3x3 identity matrix.
+ *
+ * @since 2.0.0
+ */
+export const identity: Matrix3x3 = internal.identity
+
+export const multiply: {
+  /**
+   * Multiplies two `Matrix3x3` instances. Result is `a · b`.
+   *
+   * @param a - The left-hand matrix.
+   * @param b - The right-hand matrix.
+   * @returns The product matrix.
+   * @since 2.0.0
+   */
+  (a: Matrix3x3, b: Matrix3x3): Matrix3x3
+  /**
+   * Multiplies two `Matrix3x3` instances. Result is `a · b`.
+   *
+   * @param b - The right-hand matrix.
+   * @returns A function that takes the left-hand matrix and returns the product.
+   * @since 2.0.0
+   */
+  (b: Matrix3x3): (a: Matrix3x3) => Matrix3x3
+} = internal.multiply
+
+/**
+ * Returns the inverse of a `Matrix3x3`.
+ *
+ * Throws when the matrix is singular (determinant is zero).
+ *
+ * @param m - The matrix to invert.
+ * @returns The inverse matrix.
+ * @since 2.0.0
+ */
+export const inverse: (m: Matrix3x3) => Matrix3x3 = internal.inverse

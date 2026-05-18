@@ -5,6 +5,7 @@ import type { Pipeable } from '../utils.ts'
 import type { QuadraticPolynomial } from '../polynomial/quadratic.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Curve2dOps } from './curve2d.ts'
 import type { LinearCurve2d } from './linear2d.ts'
@@ -350,6 +351,29 @@ export const asDecreasing: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => QuadraticCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing
 
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to a `QuadraticCurve2d`, returning a new
+   * curve whose image is the affine image of the original. Internally the
+   * transformation works directly on the curve's monomial coefficients —
+   * `c0` receives the full affine, `c1` and `c2` receive only the linear part.
+   *
+   * @param c - The quadratic curve.
+   * @param a - The affine transform.
+   * @returns The transformed quadratic curve.
+   * @since 2.0.0
+   */
+  (c: QuadraticCurve2d, a: Affine2d): QuadraticCurve2d
+  /**
+   * Applies an `Affine2d` transform to a `QuadraticCurve2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `QuadraticCurve2d` and returns the transformed curve.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (c: QuadraticCurve2d) => QuadraticCurve2d
+} = internal.transform
+
 /**
  * The {@link Curve2dOps} bundle for `QuadraticCurve2d`. Used by
  * `QuadraticPath2d` to wire up the path-level operation surface. The
@@ -372,4 +396,5 @@ export const Ops: Curve2dOps<QuadraticCurve2d> = {
   isDecreasingX,
   isIncreasingY,
   isDecreasingY,
+  transform,
 }

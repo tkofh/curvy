@@ -3,6 +3,7 @@ import * as Interval from '../interval/interval.ts'
 import * as Interval2d from '../interval/interval2d.ts'
 import { EPSILON, epsEquals } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import {
@@ -263,6 +264,23 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
     return acc
   }
 
+  // Per-curve transform: the curve-level op already encodes the right
+  // coefficient-vs-position split for its degree, so the path-level call is
+  // just a map. Trait brands are dropped — affine maps preserve continuity
+  // (since image of a connected set is connected) but can flip monotonicity
+  // sense (a reflection inverts increasing → decreasing) so the brands must
+  // be reasserted on the result if the caller still wants them.
+  const transform = dual<
+    (a: Affine2d) => (p: Path2d<C>) => Path2d<C>,
+    (p: Path2d<C>, a: Affine2d) => Path2d<C>
+  >(2, (p: Path2d<C>, a: Affine2d) => {
+    const curves: Array<C> = []
+    for (const c of p) {
+      curves.push(ops.transform(c, a))
+    }
+    return fromArray(curves)
+  })
+
   return {
     fromArray,
     make,
@@ -280,5 +298,6 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
     solveAtX,
     solveAtY,
     boundingBox,
+    transform,
   }
 }

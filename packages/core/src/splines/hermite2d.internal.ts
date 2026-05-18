@@ -1,5 +1,6 @@
 import * as Characteristic from '../characteristic/characteristic.ts'
 import * as CubicPath2d from '../path/cubic2d.ts'
+import * as Affine2d from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
@@ -82,6 +83,26 @@ export const flatMap = dual<
 >(2, (s: Hermite2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Hermite2d) =>
   f(s instanceof Hermite2dImpl ? s.points : [...s]),
 )
+
+// Hermite control data alternates positions (even indices) with tangent
+// vectors (odd indices). Under an affine map `f(p) = A·p + t`, positions get
+// the full affine while tangents get only the linear part `A` — they're
+// derivatives, and the translation washes out of any derivative. Calling
+// mapPoints with the full affine would silently bend the curve under any
+// non-zero translation.
+/** @internal */
+export const transform = dual<
+  (a: Affine2d.Affine2d) => (s: Hermite2d) => Hermite2d,
+  (s: Hermite2d, a: Affine2d.Affine2d) => Hermite2d
+>(2, (s: Hermite2d, a: Affine2d.Affine2d) => {
+  const points = s instanceof Hermite2dImpl ? s.points : [...s]
+  const linear = Affine2d.linearPart(a)
+  const next: Array<Vector2.Vector2> = Array.from({ length: points.length })
+  for (let i = 0; i < points.length; i++) {
+    next[i] = Affine2d.apply(i % 2 === 0 ? a : linear, points[i] as Vector2.Vector2)
+  }
+  return new Hermite2dImpl(next)
+})
 
 /** @internal */
 export const toPath = (p: Hermite2d) =>

@@ -5,6 +5,7 @@ import type { Pipeable } from '../utils.ts'
 import type { CubicPolynomial } from '../polynomial/cubic.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2, Weighted } from '../vector/vector2.ts'
 import type { CubicCurve2d } from './cubic2d.ts'
 import type { RationalCubicCurve2dTypeId, RationalCurveTraits } from './rationalCubic2d.internal.ts'
@@ -512,6 +513,30 @@ export const asIncreasing: <XT, YT>(
 export const asDecreasing: <XT, YT>(
   c: RationalCubicCurve2d<XT, YT>,
 ) => RationalCubicCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing
+
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to a `RationalCubicCurve2d`, returning a
+   * new curve whose image is the affine image of the original. The denominator
+   * polynomial is preserved; each numerator pulls in a translation term
+   * weighted by the denominator so the projected curve matches `A · R(s) + t`
+   * pointwise.
+   *
+   * @param c - The rational cubic curve.
+   * @param a - The affine transform.
+   * @returns The transformed rational cubic curve.
+   * @since 2.0.0
+   */
+  (c: RationalCubicCurve2d, a: Affine2d): RationalCubicCurve2d
+  /**
+   * Applies an `Affine2d` transform to a `RationalCubicCurve2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `RationalCubicCurve2d` and returns the transformed curve.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (c: RationalCubicCurve2d) => RationalCubicCurve2d
+} = internal.transform
 
 export const approximateAsCubicCurves: {
   /**

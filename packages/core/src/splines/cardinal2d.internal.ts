@@ -1,5 +1,6 @@
 import * as CubicCurve2d from '../curve/cubic2d.ts'
 import * as CubicPath2d from '../path/cubic2d.ts'
+import * as Affine2d from '../transform/affine2d.ts'
 import { dual, invariant, Pipeable } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { Bezier2d } from './bezier2d.ts'
@@ -186,6 +187,12 @@ export const flatMap = dual<
 >(2, (s: Cardinal2d, f: (points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d) =>
   f(s instanceof Cardinal2dImpl ? s.points : [...s]),
 )
+
+/** @internal */
+export const transform = dual<
+  (a: Affine2d.Affine2d) => (s: Cardinal2d) => Cardinal2d,
+  (s: Cardinal2d, a: Affine2d.Affine2d) => Cardinal2d
+>(2, (s: Cardinal2d, a: Affine2d.Affine2d) => mapPoints(s, Affine2d.applyTo(a)))
 
 // Builds one segment from P1 to P2, using P0 and P3 as the surrounding
 // neighbors for tangent computation. Math: standard non-uniform Catmull-Rom

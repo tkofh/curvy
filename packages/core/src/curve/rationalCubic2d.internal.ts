@@ -2,6 +2,7 @@ import * as Characteristic from '../characteristic/characteristic.ts'
 import * as Interval from '../interval/interval.ts'
 import * as Interval2d from '../interval/interval2d.ts'
 import * as Monotonicity from '../monotonicity/monotonicity.ts'
+import type * as Affine2d from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
 import * as Solution from '../solution/solution.ts'
@@ -545,6 +546,35 @@ export const asDecreasing = <XT, YT>(
   c: RationalCubicCurve2d<XT, YT>,
 ): RationalCubicCurve2d<XT & Decreasing, YT & Decreasing> =>
   isDecreasing(c) ? c : fail('rational cubic curve is not decreasing in both axes')
+
+// Affine transform on a rational curve. R(s) = (X(s)/W(s), Y(s)/W(s)), so
+//   f(R(s)) = A · (X/W, Y/W) + t
+//          = ((A · (X, Y) + t · W) / W)
+// The denominator W is unchanged; each numerator pulls in a translation term
+// weighted by W per-coefficient. Unlike the polynomial case, t·W contributes
+// to every coefficient, not just c0.
+/** @internal */
+export const transform = dual<
+  (a: Affine2d.Affine2d) => (c: RationalCubicCurve2d) => RationalCubicCurve2d,
+  (c: RationalCubicCurve2d, a: Affine2d.Affine2d) => RationalCubicCurve2d
+>(2, (c: RationalCubicCurve2d, a: Affine2d.Affine2d) => {
+  const m = a.matrix
+  return new RationalCubicCurve2dImpl(
+    CubicPolynomial.make(
+      m.m00 * c.x.c0 + m.m01 * c.y.c0 + m.m02 * c.w.c0,
+      m.m00 * c.x.c1 + m.m01 * c.y.c1 + m.m02 * c.w.c1,
+      m.m00 * c.x.c2 + m.m01 * c.y.c2 + m.m02 * c.w.c2,
+      m.m00 * c.x.c3 + m.m01 * c.y.c3 + m.m02 * c.w.c3,
+    ),
+    CubicPolynomial.make(
+      m.m10 * c.x.c0 + m.m11 * c.y.c0 + m.m12 * c.w.c0,
+      m.m10 * c.x.c1 + m.m11 * c.y.c1 + m.m12 * c.w.c1,
+      m.m10 * c.x.c2 + m.m11 * c.y.c2 + m.m12 * c.w.c2,
+      m.m10 * c.x.c3 + m.m11 * c.y.c3 + m.m12 * c.w.c3,
+    ),
+    c.w,
+  )
+})
 
 // Depth cap for tight bounding box recursion. 2²⁰ ≈ 1M leaves is well past
 // the point where any geometrically meaningful tolerance would still be

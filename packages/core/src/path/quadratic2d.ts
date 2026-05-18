@@ -2,6 +2,7 @@ import type { Interval2d } from '../interval/interval2d.ts'
 import type { QuadraticCurve2d } from '../curve/quadratic2d.ts'
 import type { Closed } from '../interval/interval.ts'
 import type * as Solution from '../solution/solution.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { QuadraticPath2dTypeId } from './quadratic2d.internal.ts'
@@ -291,3 +292,25 @@ export const solveAtY: {
  * @since 2.0.0
  */
 export const boundingBox: (p: QuadraticPath2d) => Interval2d<Closed, Closed> = internal.boundingBox
+
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to every curve in a `QuadraticPath2d`,
+   * returning a new path whose image is the affine image of the original.
+   * Trait brands are dropped.
+   *
+   * @param p - The quadratic path.
+   * @param a - The affine transform.
+   * @returns A new unbranded `QuadraticPath2d` whose curves are the affine images of the input's.
+   * @since 2.0.0
+   */
+  (p: QuadraticPath2d, a: Affine2d): QuadraticPath2d
+  /**
+   * Applies an `Affine2d` transform to every curve in a `QuadraticPath2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `QuadraticPath2d` and returns the transformed path.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (p: QuadraticPath2d) => QuadraticPath2d
+} = internal.transform

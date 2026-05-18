@@ -1,6 +1,7 @@
 import * as Interval2d from '../interval/interval2d.ts'
 import * as Characteristic from '../characteristic/characteristic.ts'
 import * as Interval from '../interval/interval.ts'
+import type * as Affine2d from '../transform/affine2d.ts'
 import {
   GL32_W0,
   GL32_W1,
@@ -326,3 +327,29 @@ export const asDecreasing = <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ): CubicCurve2d<XT & Decreasing, YT & Decreasing> =>
   isDecreasing(c) ? c : fail('cubic curve is not decreasing in both axes')
+
+// Affine transform on coefficient form. p(t) = c0 + c1·t + c2·t² + c3·t³, so
+// f(p(t)) = (A·c0 + b) + (A·c1)·t + (A·c2)·t² + (A·c3)·t³. Only the constant
+// coefficient sees the translation; higher coefficients see only the linear
+// part. This is exact in monomial form — no Bernstein round-trip.
+/** @internal */
+export const transform = dual<
+  (a: Affine2d.Affine2d) => (c: CubicCurve2d) => CubicCurve2d,
+  (c: CubicCurve2d, a: Affine2d.Affine2d) => CubicCurve2d
+>(2, (c: CubicCurve2d, a: Affine2d.Affine2d) => {
+  const m = a.matrix
+  return new CubicCurve2dImpl(
+    CubicPolynomial.make(
+      m.m00 * c.x.c0 + m.m01 * c.y.c0 + m.m02,
+      m.m00 * c.x.c1 + m.m01 * c.y.c1,
+      m.m00 * c.x.c2 + m.m01 * c.y.c2,
+      m.m00 * c.x.c3 + m.m01 * c.y.c3,
+    ),
+    CubicPolynomial.make(
+      m.m10 * c.x.c0 + m.m11 * c.y.c0 + m.m12,
+      m.m10 * c.x.c1 + m.m11 * c.y.c1,
+      m.m10 * c.x.c2 + m.m11 * c.y.c2,
+      m.m10 * c.x.c3 + m.m11 * c.y.c3,
+    ),
+  )
+})

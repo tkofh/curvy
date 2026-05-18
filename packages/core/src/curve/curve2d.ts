@@ -1,6 +1,7 @@
 import type { Closed, Interval } from '../interval/interval.ts'
 import type { Interval2d } from '../interval/interval2d.ts'
 import type * as Solution from '../solution/solution.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 
 /**
@@ -78,4 +79,16 @@ export interface Curve2dOps<C> {
    * Whether the curve's y is strictly decreasing on `[0, 1]`.
    */
   isDecreasingY(c: C): boolean
+
+  /**
+   * Apply an affine transform to the curve, returning a new curve whose
+   * geometric image is the affine image of the original.
+   *
+   * For non-rational coefficient-form curves this is per-coefficient: the
+   * constant coefficient receives the full affine, and all higher-degree
+   * coefficients receive only the linear part. For rational curves the
+   * translation is folded into the numerator polynomials weighted by the
+   * denominator. Path-level callers route through this op per curve.
+   */
+  transform(c: C, a: Affine2d): C
 }

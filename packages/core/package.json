@@ -58,6 +58,10 @@
       "types": "./dist/characteristic/index.d.ts",
       "import": "./dist/characteristic/index.mjs"
     },
+    "./transform": {
+      "types": "./dist/transform/index.d.ts",
+      "import": "./dist/transform/index.mjs"
+    },
     "./number": {
       "types": "./dist/number.d.ts",
       "import": "./dist/number.mjs"

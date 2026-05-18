@@ -213,3 +213,51 @@ export const reverseColumns = (m: Matrix3x3) => {
   const [v0, v1, v2] = toColumns(m)
   return fromColumns(v2, v1, v0)
 }
+
+/** @internal */
+export const identity: Matrix3x3 = new Matrix3x3Impl(1, 0, 0, 0, 1, 0, 0, 0, 1)
+
+/** @internal */
+export const multiply = dual<
+  (b: Matrix3x3) => (a: Matrix3x3) => Matrix3x3,
+  (a: Matrix3x3, b: Matrix3x3) => Matrix3x3
+>(
+  2,
+  (a: Matrix3x3, b: Matrix3x3) =>
+    new Matrix3x3Impl(
+      a.m00 * b.m00 + a.m01 * b.m10 + a.m02 * b.m20,
+      a.m00 * b.m01 + a.m01 * b.m11 + a.m02 * b.m21,
+      a.m00 * b.m02 + a.m01 * b.m12 + a.m02 * b.m22,
+      a.m10 * b.m00 + a.m11 * b.m10 + a.m12 * b.m20,
+      a.m10 * b.m01 + a.m11 * b.m11 + a.m12 * b.m21,
+      a.m10 * b.m02 + a.m11 * b.m12 + a.m12 * b.m22,
+      a.m20 * b.m00 + a.m21 * b.m10 + a.m22 * b.m20,
+      a.m20 * b.m01 + a.m21 * b.m11 + a.m22 * b.m21,
+      a.m20 * b.m02 + a.m21 * b.m12 + a.m22 * b.m22,
+    ),
+)
+
+/** @internal */
+export const inverse = (m: Matrix3x3): Matrix3x3 => {
+  const det = determinant(m)
+  invariant(det !== 0, 'cannot invert singular matrix')
+
+  const inv = 1 / det
+  // adjugate is the transpose of the cofactor matrix
+  const cof = (row: Matrix3x3Coordinate, col: Matrix3x3Coordinate) => {
+    const sign = ((row as number) + (col as number)) % 2 === 0 ? 1 : -1
+    return sign * matrix2x2.determinant(minor(m, row, col)) * inv
+  }
+
+  return new Matrix3x3Impl(
+    cof(0, 0),
+    cof(1, 0),
+    cof(2, 0),
+    cof(0, 1),
+    cof(1, 1),
+    cof(2, 1),
+    cof(0, 2),
+    cof(1, 2),
+    cof(2, 2),
+  )
+}

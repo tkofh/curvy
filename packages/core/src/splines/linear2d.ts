@@ -1,4 +1,5 @@
 import type { LinearPath2d } from '../path/linear2d.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import * as internal from './linear2d.internal.ts'
@@ -144,6 +145,28 @@ export const flatMap: {
    */
   (s: Linear2d, f: (points: ReadonlyArray<Vector2>) => Linear2d): Linear2d
 } = internal.flatMap
+
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to every point of a `Linear2d`. Polylines
+   * are degree-1 in every basis, so the transformed polyline is exactly the
+   * affine image of the original.
+   *
+   * @param s - The polyline.
+   * @param a - The affine transform.
+   * @returns A new `Linear2d` whose points are the affine images of the input's.
+   * @since 2.0.0
+   */
+  (s: Linear2d, a: Affine2d): Linear2d
+  /**
+   * Applies an `Affine2d` transform to every point of a `Linear2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `Linear2d` and returns the transformed polyline.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (s: Linear2d) => Linear2d
+} = internal.transform
 
 /**
  * Converts a `Linear2d` to a `LinearPath2d` by joining consecutive points

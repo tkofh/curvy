@@ -1,4 +1,5 @@
 import type { CubicPath2d } from '../path/cubic2d.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Basis2dTypeId } from './basis2d.internal.ts'
@@ -143,6 +144,28 @@ export const flatMap: {
    */
   (s: Basis2d, f: (points: ReadonlyArray<Vector2>) => Basis2d): Basis2d
 } = internal.flatMap
+
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to every control point of a `Basis2d`.
+   * Affine maps commute with the B-spline basis, so the result exactly
+   * parameterizes the affine image of the original curve.
+   *
+   * @param s - The basis spline.
+   * @param a - The affine transform.
+   * @returns A new `Basis2d` whose control points are the affine images of the input's.
+   * @since 2.0.0
+   */
+  (s: Basis2d, a: Affine2d): Basis2d
+  /**
+   * Applies an `Affine2d` transform to every control point of a `Basis2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `Basis2d` and returns the transformed spline.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (s: Basis2d) => Basis2d
+} = internal.transform
 
 /**
  * Triplicates the endpoints of a `Basis2d`.

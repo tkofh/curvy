@@ -2,6 +2,7 @@ import type { Interval2d } from '../interval/interval2d.ts'
 import type { LinearCurve2d } from '../curve/linear2d.ts'
 import type { Closed } from '../interval/interval.ts'
 import type * as Solution from '../solution/solution.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearPath2dTypeId } from './linear2d.internal.ts'
@@ -301,3 +302,27 @@ export const solveAtY: {
  * @since 2.0.0
  */
 export const boundingBox: (p: LinearPath2d) => Interval2d<Closed, Closed> = internal.boundingBox
+
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to every curve in a `LinearPath2d`,
+   * returning a new path whose image is the affine image of the original.
+   * Trait brands are dropped — affine maps can flip the sense of monotonicity
+   * (a reflection turns `IncreasingX` into `DecreasingX`), so any brands the
+   * caller still wants must be reasserted on the result.
+   *
+   * @param p - The linear path.
+   * @param a - The affine transform.
+   * @returns A new unbranded `LinearPath2d` whose curves are the affine images of the input's.
+   * @since 2.0.0
+   */
+  (p: LinearPath2d, a: Affine2d): LinearPath2d
+  /**
+   * Applies an `Affine2d` transform to every curve in a `LinearPath2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `LinearPath2d` and returns the transformed path.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (p: LinearPath2d) => LinearPath2d
+} = internal.transform

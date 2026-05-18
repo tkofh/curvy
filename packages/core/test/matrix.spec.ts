@@ -199,6 +199,32 @@ describe('matrix3x3', () => {
       vector3.make(1, 4, 7),
     )
   })
+  test('identity', () => {
+    expect(matrix3x3.identity).toBeCloseToValue(matrix3x3.make(1, 0, 0, 0, 1, 0, 0, 0, 1))
+  })
+  test('multiply identity', () => {
+    const m = matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 10)
+    expect(matrix3x3.multiply(m, matrix3x3.identity)).toBeCloseToValue(m)
+    expect(matrix3x3.multiply(matrix3x3.identity, m)).toBeCloseToValue(m)
+  })
+  test('multiply', () => {
+    const a = matrix3x3.make(1, 0, 0, 0, 2, 0, 0, 0, 3)
+    const b = matrix3x3.make(2, 0, 0, 0, 3, 0, 0, 0, 4)
+    expect(matrix3x3.multiply(a, b)).toBeCloseToValue(matrix3x3.make(2, 0, 0, 0, 6, 0, 0, 0, 12))
+  })
+  test('inverse identity', () => {
+    expect(matrix3x3.inverse(matrix3x3.identity)).toBeCloseToValue(matrix3x3.identity)
+  })
+  test('inverse round-trip', () => {
+    const m = matrix3x3.make(1, 2, 3, 0, 1, 4, 5, 6, 0)
+    const inv = matrix3x3.inverse(m)
+    expect(matrix3x3.multiply(m, inv)).toBeCloseToValue(matrix3x3.identity)
+    expect(matrix3x3.multiply(inv, m)).toBeCloseToValue(matrix3x3.identity)
+  })
+  test('inverse singular throws', () => {
+    const singular = matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)
+    expect(() => matrix3x3.inverse(singular)).toThrowError()
+  })
 })
 
 describe('matrix4x4', () => {

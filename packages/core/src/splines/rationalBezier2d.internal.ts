@@ -1,5 +1,6 @@
 import * as RationalCubicCurve2d from '../curve/rationalCubic2d.ts'
 import * as RationalCubicPath2d from '../path/rationalCubic2d.ts'
+import * as Affine2d from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as Solution from '../solution/solution.ts'
 import { invariant } from '../utils.ts'
@@ -148,6 +149,14 @@ export const flatMap = dual<
   ) => RationalBezier2d
 >(2, (s: RationalBezier2d, f: (points: ReadonlyArray<Vector2.Weighted>) => RationalBezier2d) =>
   f([...s]),
+)
+
+/** @internal */
+export const transform = dual<
+  (a: Affine2d.Affine2d) => (s: RationalBezier2d) => RationalBezier2d,
+  (s: RationalBezier2d, a: Affine2d.Affine2d) => RationalBezier2d
+>(2, (s: RationalBezier2d, a: Affine2d.Affine2d) =>
+  mapPoints(s, Vector2.liftWithWeight(Affine2d.applyTo(a))),
 )
 
 /** @internal */

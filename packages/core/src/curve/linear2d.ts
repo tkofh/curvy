@@ -5,6 +5,7 @@ import type { Pipeable } from '../utils.ts'
 import type { LinearPolynomial } from '../polynomial/linear.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Curve2dOps } from './curve2d.ts'
 import type { LinearCurve2dTypeId } from './linear2d.internal.ts'
@@ -339,6 +340,29 @@ export const asDecreasing: <XT, YT>(
   c: LinearCurve2d<XT, YT>,
 ) => LinearCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing
 
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to a `LinearCurve2d`, returning a new
+   * curve whose image is the affine image of the original. The transformation
+   * is exact: linear curves are degree-1 in every basis, and affine maps
+   * commute with the basis.
+   *
+   * @param c - The linear curve.
+   * @param a - The affine transform.
+   * @returns The transformed linear curve.
+   * @since 2.0.0
+   */
+  (c: LinearCurve2d, a: Affine2d): LinearCurve2d
+  /**
+   * Applies an `Affine2d` transform to a `LinearCurve2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `LinearCurve2d` and returns the transformed curve.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (c: LinearCurve2d) => LinearCurve2d
+} = internal.transform
+
 /**
  * The {@link Curve2dOps} bundle for `LinearCurve2d`. Used by
  * `LinearPath2d` (and any user code building a generic `Path2d` over linear
@@ -359,4 +383,5 @@ export const Ops: Curve2dOps<LinearCurve2d> = {
   isDecreasingX,
   isIncreasingY,
   isDecreasingY,
+  transform,
 }

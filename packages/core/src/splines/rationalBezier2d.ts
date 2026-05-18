@@ -1,4 +1,5 @@
 import type { RationalCubicPath2d } from '../path/rationalCubic2d.ts'
+import type { Affine2d } from '../transform/affine2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2, Weighted } from '../vector/vector2.ts'
 import type { Bezier2d } from './bezier2d.ts'
@@ -182,6 +183,33 @@ export const flatMap: {
    */
   (s: RationalBezier2d, f: (points: ReadonlyArray<Weighted>) => RationalBezier2d): RationalBezier2d
 } = internal.flatMap
+
+export const transform: {
+  /**
+   * Applies an `Affine2d` transform to every control-point position of a
+   * `RationalBezier2d`, preserving each point's weight. Rational Bézier
+   * evaluation is `Σ w_i N_i(t) P_i / Σ w_i N_i(t)`; affine maps commute with
+   * the numerator's barycentric combination, so transforming positions while
+   * holding weights fixed exactly parameterizes the affine image of the
+   * original curve.
+   *
+   * @param s - The rational bezier.
+   * @param a - The affine transform.
+   * @returns A new `RationalBezier2d` whose positions are the affine images
+   *   of the input's, with weights unchanged.
+   * @since 2.0.0
+   */
+  (s: RationalBezier2d, a: Affine2d): RationalBezier2d
+  /**
+   * Applies an `Affine2d` transform to every control-point position of a
+   * `RationalBezier2d`.
+   *
+   * @param a - The affine transform.
+   * @returns A function that takes a `RationalBezier2d` and returns the transformed bezier.
+   * @since 2.0.0
+   */
+  (a: Affine2d): (s: RationalBezier2d) => RationalBezier2d
+} = internal.transform
 
 export const subdivide: {
   /**
