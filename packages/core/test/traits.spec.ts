@@ -385,10 +385,18 @@ describe('Matrix3x3 Invertible trait', () => {
   test('isInvertible returns false for a singular matrix', () => {
     expect(matrix3x3.isInvertible(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9))).toBe(false)
   })
-  test('isInvertible uses epsEquals — near-zero determinants are singular', () => {
-    // det = 1e-16, well inside EPSILON
-    const m = matrix3x3.make(1e-8, 0, 0, 0, 1e-8, 0, 0, 0, 1)
-    expect(matrix3x3.isInvertible(m)).toBe(false)
+  test('singularity threshold is relative to the matrix scale', () => {
+    // det = 1e-16, but the matrix is a perfectly conditioned uniform scale —
+    // its inverse is exactly diag(1e8, 1e8, 1). A small determinant alone
+    // does not make a matrix singular.
+    const scaled = matrix3x3.make(1e-8, 0, 0, 0, 1e-8, 0, 0, 0, 1)
+    expect(matrix3x3.isInvertible(scaled)).toBe(true)
+
+    // det ≈ -3e-13 from an ulp-scale perturbation of a genuinely singular
+    // matrix with rows of magnitude ~10 — noise relative to the matrix
+    // scale, so it must still classify as singular.
+    const nearSingular = matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9 + 1e-13)
+    expect(matrix3x3.isInvertible(nearSingular)).toBe(false)
   })
   test('asInvertible returns the same matrix when invertible', () => {
     const m = matrix3x3.make(1, 2, 3, 0, 1, 4, 5, 6, 0)
@@ -434,6 +442,12 @@ describe('Matrix4x4 Invertible trait', () => {
   })
   test('isInvertible returns false for a singular matrix', () => {
     expect(matrix4x4.isInvertible(singular)).toBe(false)
+  })
+  test('singularity threshold is relative to the matrix scale', () => {
+    // A uniform small scale is perfectly conditioned despite its tiny
+    // determinant — see the Matrix3x3 counterpart.
+    const scaled = matrix4x4.make(1e-8, 0, 0, 0, 0, 1e-8, 0, 0, 0, 0, 1e-8, 0, 0, 0, 0, 1)
+    expect(matrix4x4.isInvertible(scaled)).toBe(true)
   })
   test('asInvertible throws on a singular matrix', () => {
     expect(() => matrix4x4.asInvertible(singular)).toThrow(/not invertible/)

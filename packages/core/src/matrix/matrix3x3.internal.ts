@@ -1,7 +1,7 @@
 import { toThreeDimensionalIndex } from '../dimensions.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { epsEquals, RELATIVE_TOLERANCE } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Vector3 } from '../vector/vector3.ts'
 import * as vector3 from '../vector/vector3.internal.ts'
@@ -241,9 +241,22 @@ export const multiply = dual<
     ),
 )
 
+// Singularity threshold relative to the matrix's own scale. Hadamard's
+// inequality bounds |det| by the product of the row norms, so det/product is
+// a scale-free measure of how close the rows are to linear dependence: 1 for
+// orthogonal rows, 0 for parallel ones. An absolute threshold would misjudge
+// uniformly scaled matrices in both directions — diag(1e-8, 1e-8, 1) is
+// perfectly invertible despite det = 1e-16, while a large matrix with nearly
+// parallel rows can carry a sizeable determinant that is still pure noise.
+const singularityThreshold = (m: Matrix3x3): number =>
+  RELATIVE_TOLERANCE *
+  Math.hypot(m.m00, m.m01, m.m02) *
+  Math.hypot(m.m10, m.m11, m.m12) *
+  Math.hypot(m.m20, m.m21, m.m22)
+
 /** @internal */
 export const isInvertible = <T>(m: Matrix3x3<T>): m is Matrix3x3<T & Invertible> =>
-  !epsEquals(determinant(m), 0)
+  Math.abs(determinant(m)) > singularityThreshold(m)
 
 /** @internal */
 export const asInvertible = <T>(m: Matrix3x3<T>): Matrix3x3<T & Invertible> => {
@@ -278,7 +291,7 @@ const buildInverse = (m: Matrix3x3, det: number): Matrix3x3 => {
 /** @internal */
 export const inverse = <T>(m: Matrix3x3<T>): Solution.AtMostOne<Matrix3x3<T>> => {
   const det = determinant(m)
-  if (epsEquals(det, 0)) {
+  if (Math.abs(det) <= singularityThreshold(m)) {
     return Solution.none
   }
   return Solution.one(buildInverse(m, det) as Matrix3x3<T>)
@@ -287,6 +300,6 @@ export const inverse = <T>(m: Matrix3x3<T>): Solution.AtMostOne<Matrix3x3<T>> =>
 /** @internal */
 export const inverseUnsafe = (m: Matrix3x3): Matrix3x3 => {
   const det = determinant(m)
-  invariant(!epsEquals(det, 0), 'cannot invert singular matrix')
+  invariant(Math.abs(det) > singularityThreshold(m), 'cannot invert singular matrix')
   return buildInverse(m, det)
 }

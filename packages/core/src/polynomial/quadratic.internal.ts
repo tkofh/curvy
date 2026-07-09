@@ -2,7 +2,7 @@ import * as Interval from '../interval/interval.ts'
 import { dual } from '../utils.ts'
 import * as Solution from '../solution/solution.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { clampToZero, epsEquals, RELATIVE_TOLERANCE } from '../number.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { Vector3 } from '../vector/vector3.ts'
 import type { CubicPolynomial } from './cubic.ts'
@@ -78,7 +78,15 @@ export const solveInverse: {
     return Linear.solveInverse(Linear.make(p.c0, p.c1), y)
   }
 
-  const discriminant = p.c1 ** 2 - 4 * p.c2 * (p.c0 - y)
+  const c = p.c0 - y
+
+  // The discriminant is a cancellation between two computed terms, so its
+  // sign near zero is noise. Clamp within a band relative to the terms'
+  // magnitudes: a tangency query that under- or overshoots by an ulp then
+  // reports its double root instead of none / two spurious near-twins.
+  const b2 = p.c1 ** 2
+  const ac4 = 4 * p.c2 * c
+  const discriminant = clampToZero(b2 - ac4, RELATIVE_TOLERANCE * Math.max(b2, Math.abs(ac4)))
 
   if (discriminant < 0) {
     return Solution.none
@@ -88,9 +96,14 @@ export const solveInverse: {
     return Solution.one(-p.c1 / (2 * p.c2))
   }
 
-  const sqrtDiscriminant = Math.sqrt(discriminant)
-  const a = (-p.c1 + sqrtDiscriminant) / (2 * p.c2)
-  const b = (-p.c1 - sqrtDiscriminant) / (2 * p.c2)
+  // Stable form: `-c1` and `±√discriminant` have opposite signs for one of
+  // the two roots, and that subtraction cancels catastrophically when
+  // c1² ≫ |c2·c|. Compute the larger-magnitude root with matching signs
+  // (no cancellation), then recover the other from the root product
+  // a·b = c/c2 (Vieta), which only multiplies and divides.
+  const q = -0.5 * (p.c1 + (p.c1 < 0 ? -1 : 1) * Math.sqrt(discriminant))
+  const a = q / p.c2
+  const b = c / q
   return a < b ? Solution.two(a, b) : Solution.two(b, a)
 })
 

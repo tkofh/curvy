@@ -37,7 +37,7 @@ import * as Monotonicity from '../monotonicity/monotonicity.ts'
 import { dual } from '../utils.ts'
 import * as Solution from '../solution/solution.ts'
 import { invariant } from '../utils.ts'
-import { clampToZero, epsEquals } from '../number.ts'
+import { clampToZero, epsEquals, RELATIVE_TOLERANCE } from '../number.ts'
 import type * as Vector2 from '../vector/vector2.ts'
 import type { Vector4 } from '../vector/vector4.ts'
 import type { CubicPolynomial } from './cubic.ts'
@@ -144,7 +144,13 @@ export const solveInverse = dual<
   const p = -d0 / (3 * self.c3 ** 2)
   const q = d1 / (27 * self.c3 ** 3)
 
-  const discriminant = clampToZero(-(4 * p ** 3 + 27 * q ** 2), 1e-12)
+  // Like the quadratic discriminant, this is a cancellation between two
+  // computed terms — clamp its sign within a band relative to their
+  // magnitudes rather than an absolute one, so the triple/double-root branch
+  // dispatch is invariant under scaling of the coefficients.
+  const p3 = 4 * p ** 3
+  const q2 = 27 * q ** 2
+  const discriminant = clampToZero(-(p3 + q2), RELATIVE_TOLERANCE * Math.max(Math.abs(p3), q2))
 
   const roots = new Set<number>()
 

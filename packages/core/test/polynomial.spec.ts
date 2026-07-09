@@ -140,6 +140,22 @@ describe('quadratic', () => {
     ])
     expect([...quadratic.solveInverse(quadratic.make(0, 1, 2), -0.5)]).toEqual([])
   })
+  test('solveInverse finds a tangency the query undershoots by an ulp', () => {
+    // (t - 1)² touches zero at t = 1; querying y = -Number.EPSILON makes the
+    // raw discriminant -8.9e-16 — noise relative to its ~4-magnitude terms.
+    // The relative clamp reports the double root instead of no solution.
+    expect([...quadratic.solveInverse(quadratic.make(1, -2, 1), -Number.EPSILON)]).toEqual([
+      expect.closeTo(1, 10),
+    ])
+  })
+  test('solveInverse resists cancellation when roots differ wildly in magnitude', () => {
+    // t² + 1e8·t + 1: the naive quadratic formula computes the small root as
+    // (-1e8 + √(1e16 - 4))/2, cancelling to ~-7.45e-9 — off by 25%. The
+    // stable form recovers it through the root product instead.
+    const roots = [...quadratic.solveInverse(quadratic.make(1, 1e8, 1), 0)]
+    expect(roots[0]).toBeCloseTo(-1e8, 5)
+    expect(roots[1]).toBeCloseTo(-1e-8, 15)
+  })
   test('toInverseSolver', () => {
     const inverseSolver = quadratic.toInverseSolver(quadratic.make(0, 1, 2))
     expect([...inverseSolver(0)]).toEqual([expect.closeTo(-0.5, 10), expect.closeTo(0, 10)])

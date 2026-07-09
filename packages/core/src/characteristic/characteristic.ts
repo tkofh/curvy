@@ -1,6 +1,5 @@
 import * as Matrix4x4 from '../matrix/matrix4x4.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
-import { roundDown } from '../number.ts'
 import type * as Vector4 from '../vector/vector4.ts'
 
 /**
@@ -72,7 +71,7 @@ export const cubicHermite: Matrix4x4.Matrix4x4 = Matrix4x4.make(
 export const cubicBasisSpline: Matrix4x4.Matrix4x4 = Matrix4x4.make(
   1 / 6,
   4 / 6,
-  roundDown(1 / 6),
+  1 / 6,
   0,
   -0.5,
   0,

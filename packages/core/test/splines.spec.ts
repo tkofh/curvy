@@ -286,6 +286,19 @@ describe('basis', () => {
     // }
   })
 
+  test('constant control points produce a constant curve', () => {
+    // Partition of unity: each characteristic-matrix row must sum to its
+    // exact Bernstein value so that coincident control points reproduce the
+    // point to within an ulp. Guards the c0 row's 1/6 + 4/6 + 1/6 in
+    // particular, which was once a truncated literal that shifted every
+    // basis segment's start by ~6.7e-9.
+    const p = Vector2.make(5, -3)
+    const path = Basis2d.fromArray([p, p, p, p, p]).pipe(Basis2d.toPath)
+    for (const u of [0, 0.25, 0.5, 0.75, 1]) {
+      expect(CubicPath2d.solve(path, u)).toBeCloseToValue(p, 1e-14)
+    }
+  })
+
   test('to bezier', () => {
     const points = Basis2d.fromArray([
       Vector2.zero,

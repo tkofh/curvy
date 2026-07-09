@@ -1,7 +1,7 @@
 import { toFourDimensionalIndex } from '../dimensions.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { epsEquals, RELATIVE_TOLERANCE } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Vector4 } from '../vector/vector4.ts'
 import * as vector4 from '../vector/vector4.internal.ts'
@@ -306,9 +306,18 @@ export const multiply = dual<
     ),
 )
 
+// Singularity threshold relative to the matrix's own scale, via Hadamard's
+// bound |det| ≤ Π row norms. See the Matrix3x3 counterpart for the rationale.
+const singularityThreshold = (m: Matrix4x4): number =>
+  RELATIVE_TOLERANCE *
+  Math.hypot(m.m00, m.m01, m.m02, m.m03) *
+  Math.hypot(m.m10, m.m11, m.m12, m.m13) *
+  Math.hypot(m.m20, m.m21, m.m22, m.m23) *
+  Math.hypot(m.m30, m.m31, m.m32, m.m33)
+
 /** @internal */
 export const isInvertible = <T>(m: Matrix4x4<T>): m is Matrix4x4<T & Invertible> =>
-  !epsEquals(determinant(m), 0)
+  Math.abs(determinant(m)) > singularityThreshold(m)
 
 /** @internal */
 export const asInvertible = <T>(m: Matrix4x4<T>): Matrix4x4<T & Invertible> => {
@@ -350,7 +359,7 @@ const buildInverse = (m: Matrix4x4, det: number): Matrix4x4 => {
 /** @internal */
 export const inverse = <T>(m: Matrix4x4<T>): Solution.AtMostOne<Matrix4x4<T>> => {
   const det = determinant(m)
-  if (epsEquals(det, 0)) {
+  if (Math.abs(det) <= singularityThreshold(m)) {
     return Solution.none
   }
   return Solution.one(buildInverse(m, det) as Matrix4x4<T>)
@@ -359,7 +368,7 @@ export const inverse = <T>(m: Matrix4x4<T>): Solution.AtMostOne<Matrix4x4<T>> =>
 /** @internal */
 export const inverseUnsafe = (m: Matrix4x4): Matrix4x4 => {
   const det = determinant(m)
-  invariant(!epsEquals(det, 0), 'cannot invert singular matrix')
+  invariant(Math.abs(det) > singularityThreshold(m), 'cannot invert singular matrix')
   return buildInverse(m, det)
 }
 
