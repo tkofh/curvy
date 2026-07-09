@@ -2,7 +2,7 @@ import * as matrix2x2 from '../matrix/matrix2x2.internal.ts'
 import type { Matrix2x2 } from '../matrix/matrix2x2.ts'
 import * as matrix3x3 from '../matrix/matrix3x3.internal.ts'
 import type { Matrix3x3 } from '../matrix/matrix3x3.ts'
-import { epsEquals } from '../number.ts'
+import { coincident, EPSILON, RELATIVE_TOLERANCE } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import { dual, invariant, Pipeable } from '../utils.ts'
 import * as vector2 from '../vector/vector2.internal.ts'
@@ -42,9 +42,23 @@ export const isAffine2d = (a: unknown): a is Affine2d =>
 export const fromMatrix = (matrix: Matrix3x3): Affine2d => {
   // The last row of an affine matrix is structural — anything else is a
   // projective transform, which doesn't preserve the polynomial form of a
-  // curve's control points.
+  // curve's control points. The zero checks widen with the magnitude of the
+  // matrix's other entries: a transform with large terms carries
+  // proportionally large rounding noise in every computed slot, so "zero"
+  // there means "zero at this matrix's scale".
+  const scale = Math.max(
+    Math.abs(matrix.m00),
+    Math.abs(matrix.m01),
+    Math.abs(matrix.m02),
+    Math.abs(matrix.m10),
+    Math.abs(matrix.m11),
+    Math.abs(matrix.m12),
+  )
+  const zeroBand = { absolute: EPSILON + RELATIVE_TOLERANCE * scale }
   invariant(
-    epsEquals(matrix.m20, 0) && epsEquals(matrix.m21, 0) && epsEquals(matrix.m22, 1),
+    coincident(matrix.m20, 0, zeroBand) &&
+      coincident(matrix.m21, 0, zeroBand) &&
+      coincident(matrix.m22, 1),
     'Affine2d requires the third row of its matrix to be [0, 0, 1]',
   )
   return new Affine2dImpl(matrix)

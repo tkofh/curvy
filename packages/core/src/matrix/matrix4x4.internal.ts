@@ -1,7 +1,7 @@
 import { toFourDimensionalIndex } from '../dimensions.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals, RELATIVE_TOLERANCE } from '../number.ts'
+import { coincident, RELATIVE_TOLERANCE } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Vector4 } from '../vector/vector4.ts'
 import * as vector4 from '../vector/vector4.internal.ts'
@@ -100,22 +100,22 @@ export const equals = dual<
 >(
   2,
   (a: Matrix4x4, b: Matrix4x4) =>
-    epsEquals(a.m00, b.m00) &&
-    epsEquals(a.m01, b.m01) &&
-    epsEquals(a.m02, b.m02) &&
-    epsEquals(a.m03, b.m03) &&
-    epsEquals(a.m10, b.m10) &&
-    epsEquals(a.m11, b.m11) &&
-    epsEquals(a.m12, b.m12) &&
-    epsEquals(a.m13, b.m13) &&
-    epsEquals(a.m20, b.m20) &&
-    epsEquals(a.m21, b.m21) &&
-    epsEquals(a.m22, b.m22) &&
-    epsEquals(a.m23, b.m23) &&
-    epsEquals(a.m30, b.m30) &&
-    epsEquals(a.m31, b.m31) &&
-    epsEquals(a.m32, b.m32) &&
-    epsEquals(a.m33, b.m33),
+    coincident(a.m00, b.m00) &&
+    coincident(a.m01, b.m01) &&
+    coincident(a.m02, b.m02) &&
+    coincident(a.m03, b.m03) &&
+    coincident(a.m10, b.m10) &&
+    coincident(a.m11, b.m11) &&
+    coincident(a.m12, b.m12) &&
+    coincident(a.m13, b.m13) &&
+    coincident(a.m20, b.m20) &&
+    coincident(a.m21, b.m21) &&
+    coincident(a.m22, b.m22) &&
+    coincident(a.m23, b.m23) &&
+    coincident(a.m30, b.m30) &&
+    coincident(a.m31, b.m31) &&
+    coincident(a.m32, b.m32) &&
+    coincident(a.m33, b.m33),
 )
 
 /**

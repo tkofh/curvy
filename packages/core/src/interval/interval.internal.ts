@@ -1,6 +1,6 @@
 import type { Bounds, Closed, Interval, Open, OpenEnd, OpenStart } from './interval.ts'
 import { dual, Pipeable } from '../utils.ts'
-import { EPSILON, epsEquals } from '../number.ts'
+import { EPSILON, coincident } from '../number.ts'
 
 const TypeId: unique symbol = Symbol.for('curvy/interval')
 type TypeId = typeof TypeId
@@ -62,14 +62,14 @@ export const equals = dual<
 >(
   2,
   (a: Interval, b: Interval) =>
-    a.kind === b.kind && epsEquals(a.start, b.start) && epsEquals(a.end, b.end),
+    a.kind === b.kind && coincident(a.start, b.start) && coincident(a.end, b.end),
 )
 
 /** @internal */
 export const aligned = dual<
   (b: Bounds) => (a: Bounds) => boolean,
   (a: Bounds, b: Bounds) => boolean
->(2, (a: Bounds, b: Bounds) => epsEquals(a.start, b.start) && epsEquals(a.end, b.end))
+>(2, (a: Bounds, b: Bounds) => coincident(a.start, b.start) && coincident(a.end, b.end))
 
 /** @internal */
 export const make = (start: number, end?: number): Closed => new ClosedImpl(start, end ?? start)

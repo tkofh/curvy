@@ -2,7 +2,7 @@ import * as Interval from '../interval/interval.ts'
 import { dual } from '../utils.ts'
 import * as Solution from '../solution/solution.ts'
 import { invariant } from '../utils.ts'
-import { clampToZero, epsEquals, RELATIVE_TOLERANCE } from '../number.ts'
+import { clampToZero, coincident, RELATIVE_TOLERANCE } from '../number.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { Vector3 } from '../vector/vector3.ts'
 import type { CubicPolynomial } from './cubic.ts'
@@ -49,7 +49,7 @@ export const equals = dual<
 >(
   2,
   (a: QuadraticPolynomial, b: QuadraticPolynomial) =>
-    epsEquals(a.c0, b.c0) && epsEquals(a.c1, b.c1) && epsEquals(a.c2, b.c2),
+    coincident(a.c0, b.c0) && coincident(a.c1, b.c1) && coincident(a.c2, b.c2),
 )
 
 /** @internal */

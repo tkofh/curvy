@@ -3,7 +3,7 @@ import * as Monotonicity from '../monotonicity/monotonicity.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as Solution from '../solution/solution.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { coincident } from '../number.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearPolynomial } from './linear.ts'
 import type { Decreasing, Increasing, Monotonic } from './traits.ts'
@@ -37,7 +37,7 @@ export const isLinearPolynomial = (v: unknown): v is LinearPolynomial =>
 export const equals = dual<
   (b: LinearPolynomial) => (a: LinearPolynomial) => boolean,
   (a: LinearPolynomial, b: LinearPolynomial) => boolean
->(2, (a: LinearPolynomial, b: LinearPolynomial) => epsEquals(a.c0, b.c0) && epsEquals(a.c1, b.c1))
+>(2, (a: LinearPolynomial, b: LinearPolynomial) => coincident(a.c0, b.c0) && coincident(a.c1, b.c1))
 
 /** @internal */
 export const make = (c0 = 0, c1 = 0): LinearPolynomial => new LinearPolynomialImpl(c0, c1)

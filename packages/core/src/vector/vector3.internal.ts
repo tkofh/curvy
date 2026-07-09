@@ -1,5 +1,5 @@
 import { dual, Pipeable } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { coincident } from '../number.ts'
 import type { Vector3 } from './vector3.ts'
 
 export const Vector3TypeId: unique symbol = Symbol.for('curvy/vector3')
@@ -48,7 +48,10 @@ export const isVector3 = (v: unknown): v is Vector3 =>
 export const equals = dual<
   (b: Vector3) => (a: Vector3) => boolean,
   (a: Vector3, b: Vector3) => boolean
->(2, (a: Vector3, b: Vector3) => epsEquals(a.x, b.x) && epsEquals(a.y, b.y) && epsEquals(a.z, b.z))
+>(
+  2,
+  (a: Vector3, b: Vector3) => coincident(a.x, b.x) && coincident(a.y, b.y) && coincident(a.z, b.z),
+)
 
 /** @internal */
 export const make = (v0: number, v1 = v0, v2 = v1): Vector3 => new Vector3Impl(v0, v1, v2)

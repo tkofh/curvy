@@ -1,7 +1,7 @@
 import { toThreeDimensionalIndex } from '../dimensions.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals, RELATIVE_TOLERANCE } from '../number.ts'
+import { coincident, RELATIVE_TOLERANCE } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Vector3 } from '../vector/vector3.ts'
 import * as vector3 from '../vector/vector3.internal.ts'
@@ -69,15 +69,15 @@ export const equals = dual<
 >(
   2,
   (a: Matrix3x3, b: Matrix3x3) =>
-    epsEquals(a.m00, b.m00) &&
-    epsEquals(a.m01, b.m01) &&
-    epsEquals(a.m02, b.m02) &&
-    epsEquals(a.m10, b.m10) &&
-    epsEquals(a.m11, b.m11) &&
-    epsEquals(a.m12, b.m12) &&
-    epsEquals(a.m20, b.m20) &&
-    epsEquals(a.m21, b.m21) &&
-    epsEquals(a.m22, b.m22),
+    coincident(a.m00, b.m00) &&
+    coincident(a.m01, b.m01) &&
+    coincident(a.m02, b.m02) &&
+    coincident(a.m10, b.m10) &&
+    coincident(a.m11, b.m11) &&
+    coincident(a.m12, b.m12) &&
+    coincident(a.m20, b.m20) &&
+    coincident(a.m21, b.m21) &&
+    coincident(a.m22, b.m22),
 )
 
 /** @internal */

@@ -1,7 +1,7 @@
 import type { Curve2dOps } from '../curve/curve2d.ts'
 import * as Interval from '../interval/interval.ts'
 import * as Interval2d from '../interval/interval2d.ts'
-import { EPSILON, epsEquals } from '../number.ts'
+import { coincident } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
@@ -108,7 +108,7 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
       const start = ops.startPoint(curve)
       const end = ops.endPoint(curve)
 
-      if (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY)) {
+      if (!coincident(start.x, prevEndX) || !coincident(start.y, prevEndY)) {
         result += ` M ${start.x},${start.y}`
       }
       result += ` ${ops.toPathDataSegment(curve)}`
@@ -127,7 +127,7 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
 
     for (const curve of p) {
       const start = ops.startPoint(curve)
-      if (!first && (!epsEquals(start.x, prevEndX) || !epsEquals(start.y, prevEndY))) {
+      if (!first && (!coincident(start.x, prevEndX) || !coincident(start.y, prevEndY))) {
         return false
       }
       const end = ops.endPoint(curve)
@@ -140,14 +140,16 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
 
   // Per-axis monotonicity for the path: every segment's axis polynomial must
   // be strictly monotonic over the unit interval AND adjacent segments' axis
-  // ranges must not overlap (modulo EPSILON for float drift).
+  // ranges must not overlap — a knot that backtracks within the coincidence
+  // band counts as continuous rather than as a reversal.
   const isIncreasingX = <T>(p: Path2d<C, T>): p is Path2d<C, T & IncreasingX> => {
     let prevEnd = Number.NEGATIVE_INFINITY
     for (const c of p) {
       if (!ops.isIncreasingX(c)) {
         return false
       }
-      if (ops.startPoint(c).x < prevEnd - EPSILON) {
+      const start = ops.startPoint(c).x
+      if (start < prevEnd && !coincident(start, prevEnd)) {
         return false
       }
       prevEnd = ops.endPoint(c).x
@@ -161,7 +163,8 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
       if (!ops.isDecreasingX(c)) {
         return false
       }
-      if (ops.startPoint(c).x > prevEnd + EPSILON) {
+      const start = ops.startPoint(c).x
+      if (start > prevEnd && !coincident(start, prevEnd)) {
         return false
       }
       prevEnd = ops.endPoint(c).x
@@ -178,7 +181,8 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
       if (!ops.isIncreasingY(c)) {
         return false
       }
-      if (ops.startPoint(c).y < prevEnd - EPSILON) {
+      const start = ops.startPoint(c).y
+      if (start < prevEnd && !coincident(start, prevEnd)) {
         return false
       }
       prevEnd = ops.endPoint(c).y
@@ -192,7 +196,8 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
       if (!ops.isDecreasingY(c)) {
         return false
       }
-      if (ops.startPoint(c).y > prevEnd + EPSILON) {
+      const start = ops.startPoint(c).y
+      if (start > prevEnd && !coincident(start, prevEnd)) {
         return false
       }
       prevEnd = ops.endPoint(c).y
@@ -206,7 +211,7 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
   // solveAtX / solveAtY on a monotonic-axis path. Two defenses against float
   // drift at interior knots, where two adjacent segments both bracket the
   // query and the per-curve inverse may return `none` for both:
-  //   1. Snap to t=0/t=1 endpoint y when the query is within EPSILON of a
+  //   1. Snap to t=0/t=1 endpoint y when the query is coincident with a
   //      segment's start or end — bypasses polynomial inversion at knots.
   //   2. Fall through to the next bracketing segment on `none`. `MonotonicX`/Y
   //      admits at most one real solution across the path, so retrying is safe.
@@ -216,11 +221,11 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
       const end = ops.endPoint(c)
       const lo = Math.min(start.x, end.x)
       const hi = Math.max(start.x, end.x)
-      if (x >= lo - EPSILON && x <= hi + EPSILON) {
-        if (epsEquals(x, start.x)) {
+      if ((x >= lo && x <= hi) || coincident(x, lo) || coincident(x, hi)) {
+        if (coincident(x, start.x)) {
           return Solution.one(start.y)
         }
-        if (epsEquals(x, end.x)) {
+        if (coincident(x, end.x)) {
           return Solution.one(end.y)
         }
         const sol = ops.solveAtX(c, x)
@@ -238,11 +243,11 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
       const end = ops.endPoint(c)
       const lo = Math.min(start.y, end.y)
       const hi = Math.max(start.y, end.y)
-      if (y >= lo - EPSILON && y <= hi + EPSILON) {
-        if (epsEquals(y, start.y)) {
+      if ((y >= lo && y <= hi) || coincident(y, lo) || coincident(y, hi)) {
+        if (coincident(y, start.y)) {
           return Solution.one(start.x)
         }
-        if (epsEquals(y, end.y)) {
+        if (coincident(y, end.y)) {
           return Solution.one(end.x)
         }
         const sol = ops.solveAtY(c, y)

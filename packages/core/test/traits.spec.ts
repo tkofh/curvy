@@ -7,6 +7,7 @@ import * as matrix3x3 from '../src/matrix/matrix3x3.ts'
 import * as matrix4x4 from '../src/matrix/matrix4x4.ts'
 import type { Invertible } from '../src/matrix/traits.ts'
 import * as cubicPath2d from '../src/path/cubic2d.ts'
+import * as cardinal2d from '../src/splines/cardinal2d.ts'
 import * as linearPath2d from '../src/path/linear2d.ts'
 import * as quadraticPath2d from '../src/path/quadratic2d.ts'
 import * as cubic from '../src/polynomial/cubic.ts'
@@ -225,6 +226,37 @@ describe('Path Continuous trait', () => {
     const p = cubicPath2d.make(c0, c1)
     expect(cubicPath2d.isContinuous(p)).toBe(false)
     expect(() => cubicPath2d.asContinuous(p)).toThrow(/not continuous/)
+  })
+  test('continuity tolerates knot drift proportional to coordinate magnitude', () => {
+    // Non-dyadic coordinates offset to 1e9: segment endpoint sums round at
+    // ulp(1e9) ≈ 2.4e-7, so adjacent knots can drift far beyond the absolute
+    // coincidence floor while remaining pure storage noise at this scale.
+    const k = 1e9
+    const drifted = cardinal2d
+      .fromTuples([
+        [k + 0.1, k + 0.3],
+        [k + 1.1, k + 2.3],
+        [k + 2.7, k + 1.9],
+        [k + 3.3, k + 3.7],
+      ])
+      .pipe(cardinal2d.withInterpolatedEndpoints, cardinal2d.toPath)
+    expect(cubicPath2d.isContinuous(drifted)).toBe(true)
+
+    // A genuine gap at the same magnitude is still far outside the band.
+    const a = cardinal2d
+      .fromTuples([
+        [k, k],
+        [k + 1, k + 2],
+      ])
+      .pipe(cardinal2d.withInterpolatedEndpoints, cardinal2d.toPath)
+    const b = cardinal2d
+      .fromTuples([
+        [k + 5, k + 5],
+        [k + 6, k + 7],
+      ])
+      .pipe(cardinal2d.withInterpolatedEndpoints, cardinal2d.toPath)
+    const gapped = cubicPath2d.append(a, [...b][0] as never)
+    expect(cubicPath2d.isContinuous(gapped)).toBe(false)
   })
   test('linear path Continuous refiner', () => {
     const c0 = linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(1, 1))

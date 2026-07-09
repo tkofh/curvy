@@ -473,7 +473,7 @@ export const multiply: {
   (b: Matrix3x3): (a: Matrix3x3) => Matrix3x3
 } = internal.multiply
 
-// The implementation always runs the same det/epsEquals branch. For
+// The implementation always runs the same det/threshold branch. For
 // `Invertible`-branded matrices the empty branch is provably unreachable,
 // but TS can't see that — the cast pairs the type-level promise with the
 // runtime brand check.

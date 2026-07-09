@@ -21,11 +21,23 @@
     }
   },
   "languages": {
+    "JSON": {
+      "language_servers": ["!biome", "..."]
+    },
+    "JSONC": {
+      "language_servers": ["!biome", "..."]
+    },
     "TypeScript": {
       "language_servers": ["oxfmt", "oxlint", "vtsls"]
     },
     "Vue.js": {
       "language_servers": ["oxfmt", "oxlint", "vtsls", "vue-language-server"]
+    },
+    "JavaScript": {
+      "language_servers": ["!biome", "..."]
+    },
+    "Markdown": {
+      "language_servers": ["!biome", "..."]
     }
   }
 }

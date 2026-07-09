@@ -4,7 +4,7 @@ import * as QuadraticCurve2d from '../curve/quadratic2d.ts'
 import * as Interval from '../interval/interval.ts'
 import type { Closed } from '../interval/interval.ts'
 import type { Interval2d } from '../interval/interval2d.ts'
-import { EPSILON } from '../number.ts'
+import { RELATIVE_TOLERANCE } from '../number.ts'
 import { dual, invariant } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { CubicPath2d } from './cubic2d.ts'
@@ -193,7 +193,11 @@ const solveCurveByDistance = (
     const currentLength = CubicCurve2d.length(curve, Interval.make(0, t))
     const error = currentLength - target
 
-    if (Math.abs(error) < EPSILON) {
+    // Converged when the remaining arc-length error reaches the noise floor
+    // relative to the segment. An absolute criterion demands unreachable
+    // precision on long segments (burning every iteration) and stops a step
+    // early on short ones.
+    if (Math.abs(error) <= RELATIVE_TOLERANCE * segmentLength) {
       return t
     }
 

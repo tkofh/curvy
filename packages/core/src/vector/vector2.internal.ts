@@ -1,6 +1,6 @@
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { coincident } from '../number.ts'
 import type { Vector2, Weighted } from './vector2.ts'
 
 export const Vector2TypeId = Symbol.for('curvy/vector2')
@@ -73,7 +73,7 @@ export const isWeighted = (v: unknown): v is Weighted =>
 export const equals = dual<
   (b: Vector2) => (a: Vector2) => boolean,
   (a: Vector2, b: Vector2) => boolean
->(2, (a: Vector2, b: Vector2) => epsEquals(a.x, b.x) && epsEquals(a.y, b.y))
+>(2, (a: Vector2, b: Vector2) => coincident(a.x, b.x) && coincident(a.y, b.y))
 
 /** @internal */
 export const make = (v0: number, v1 = v0): Vector2 => new Vector2Impl(v0, v1)
@@ -129,7 +129,7 @@ export const weightedEquals = dual<
 >(
   2,
   (a: Weighted, b: Weighted) =>
-    epsEquals(a.x, b.x) && epsEquals(a.y, b.y) && epsEquals(a.weight, b.weight),
+    coincident(a.x, b.x) && coincident(a.y, b.y) && coincident(a.weight, b.weight),
 )
 
 /** @internal */

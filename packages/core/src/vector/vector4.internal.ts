@@ -1,5 +1,5 @@
 import { dual, Pipeable } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { coincident } from '../number.ts'
 import type { Vector4 } from './vector4.ts'
 
 export const Vector4TypeId: unique symbol = Symbol.for('curvy/vector4')
@@ -58,7 +58,7 @@ export const equals = dual<
 >(
   2,
   (a: Vector4, b: Vector4) =>
-    epsEquals(a.x, b.x) && epsEquals(a.y, b.y) && epsEquals(a.z, b.z) && epsEquals(a.w, b.w),
+    coincident(a.x, b.x) && coincident(a.y, b.y) && coincident(a.z, b.z) && coincident(a.w, b.w),
 )
 
 /** @internal */

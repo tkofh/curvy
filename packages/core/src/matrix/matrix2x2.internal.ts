@@ -1,7 +1,7 @@
 import { toTwoDimensionalIndex } from '../dimensions.ts'
 import { dual, Pipeable } from '../utils.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { coincident } from '../number.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import * as vector2 from '../vector/vector2.internal.ts'
 import type { Matrix2x2, Matrix2x2Coordinate } from './matrix2x2.ts'
@@ -50,10 +50,10 @@ export const equals = dual<
 >(
   2,
   (a: Matrix2x2, b: Matrix2x2) =>
-    epsEquals(a.m00, b.m00) &&
-    epsEquals(a.m01, b.m01) &&
-    epsEquals(a.m10, b.m10) &&
-    epsEquals(a.m11, b.m11),
+    coincident(a.m00, b.m00) &&
+    coincident(a.m01, b.m01) &&
+    coincident(a.m10, b.m10) &&
+    coincident(a.m11, b.m11),
 )
 
 /** @internal */

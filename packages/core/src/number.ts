@@ -29,6 +29,13 @@ export const RELATIVE_TOLERANCE = 1e-12
 /**
  * Approximate equality between two numbers, within an absolute tolerance.
  *
+ * This is the raw absolute comparison — the right tool when the domain is
+ * normalized by construction (curve parameter space, where `[0, 1]` makes an
+ * absolute band meaningful) or when a caller-chosen absolute band is the
+ * actual question. For identity questions about computed values of arbitrary
+ * magnitude ("is this the same point / value?"), use {@link coincident},
+ * which adds a magnitude-relative term.
+ *
  * @param a - The first value.
  * @param b - The second value.
  * @param eps - The maximum allowed absolute difference. Defaults to {@link EPSILON}.
@@ -37,6 +44,41 @@ export const RELATIVE_TOLERANCE = 1e-12
  */
 export function epsEquals(a: number, b: number, eps: number = EPSILON): boolean {
   return Math.abs(a - b) <= eps
+}
+
+/**
+ * Library-policy approximate equality: `true` when
+ * `|a - b| <= absolute + relative * max(|a|, |b|)`.
+ *
+ * The relative term covers rounding noise accumulated by arithmetic, which
+ * grows with the magnitude of the values; the absolute term covers the
+ * neighborhood of zero, where relative comparison degenerates (no nonzero
+ * value is relatively close to `0`). The band is strictly wider than the
+ * plain absolute comparison, never narrower.
+ *
+ * Defaults: `absolute = ` {@link EPSILON} — a modeling floor that assumes
+ * coordinates of order ~1; pass an explicit value when your data has a
+ * different natural resolution — and `relative = ` {@link RELATIVE_TOLERANCE}.
+ *
+ * Not transitive: `coincident(a, b)` and `coincident(b, c)` do not imply
+ * `coincident(a, c)` — chains of pairwise-coincident values can drift beyond
+ * the band. Pairwise semantics are intentional (e.g. path continuity checks
+ * each junction locally).
+ *
+ * @param a - The first value.
+ * @param b - The second value.
+ * @param options - Optional `absolute` and `relative` tolerance overrides.
+ * @returns `true` when the values are equal to within the combined band.
+ * @since 2.0.0
+ */
+export function coincident(
+  a: number,
+  b: number,
+  options?: { readonly absolute?: number; readonly relative?: number },
+): boolean {
+  const absolute = options?.absolute ?? EPSILON
+  const relative = options?.relative ?? RELATIVE_TOLERANCE
+  return Math.abs(a - b) <= absolute + relative * Math.max(Math.abs(a), Math.abs(b))
 }
 
 /**

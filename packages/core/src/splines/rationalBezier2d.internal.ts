@@ -4,7 +4,7 @@ import * as Affine2d from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as Solution from '../solution/solution.ts'
 import { invariant } from '../utils.ts'
-import { epsEquals } from '../number.ts'
+import { coincident } from '../number.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Vector3 from '../vector/vector3.ts'
 import type { Bezier2d } from './bezier2d.ts'
@@ -234,7 +234,7 @@ export const toBezierPoints = (
   const w0 = (homogeneous[0] as Vector3.Vector3).z
   const points: Array<Vector2.Vector2> = []
   for (const h of homogeneous) {
-    if (!epsEquals(h.z, w0)) {
+    if (!coincident(h.z, w0)) {
       return Solution.none
     }
     points.push(Vector2.make(h.x / h.z, h.y / h.z))

@@ -179,6 +179,21 @@ describe('Affine2d', () => {
     const ok = Matrix3x3.make(1, 0, 3, 0, 1, 5, 0, 0, 1)
     expect(() => Affine2d.fromMatrix(ok)).not.toThrow()
   })
+
+  test('fromMatrix scales its bottom-row zero check with the matrix', () => {
+    // 1e-9 of bottom-row residue is rounding noise next to 1e8-scale linear
+    // terms — accepted.
+    const noisy = Matrix3x3.make(1e8, 0, 0, 0, 1e8, 0, 1e-9, 0, 1)
+    expect(() => Affine2d.fromMatrix(noisy)).not.toThrow()
+
+    // The same residue against unit-scale terms is a real deviation.
+    const unitResidue = Matrix3x3.make(1, 0, 0, 0, 1, 0, 1e-9, 0, 1)
+    expect(() => Affine2d.fromMatrix(unitResidue)).toThrowError()
+
+    // A genuinely projective row is rejected at any scale.
+    const projective = Matrix3x3.make(1e8, 0, 0, 0, 1e8, 0, 0.5, 0, 1)
+    expect(() => Affine2d.fromMatrix(projective)).toThrowError()
+  })
 })
 
 // ── splines ─────────────────────────────────────────────────────────────────

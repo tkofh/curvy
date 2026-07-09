@@ -318,6 +318,28 @@ describe('cubic2d', () => {
     )
     expect(cubicPath2d.solveByDistance(p, 0.5)).toBeCloseToValue(vector2.make(1, 0), 1e-6)
   })
+  test('solveByDistance is invariant under uniform scaling of the path', () => {
+    // The Newton convergence criterion is relative to the segment length, so
+    // a path a billion times smaller resolves distances to the same relative
+    // precision — an absolute criterion would exit on the first iterate for
+    // tiny paths and burn every iteration on huge ones.
+    const shape = (k: number) =>
+      Bezier2d.make(
+        vector2.make(0, 0),
+        vector2.make(0, k),
+        vector2.make(k, k),
+        vector2.make(2 * k, 0),
+      ).pipe(Bezier2d.toPath)
+
+    const unit = shape(1)
+    const tiny = shape(1e-9)
+    for (const s of [0.25, 0.5, 0.75]) {
+      const u = cubicPath2d.solveByDistance(unit, s)
+      const t = cubicPath2d.solveByDistance(tiny, s)
+      expect(t.x * 1e9).toBeCloseTo(u.x, 9)
+      expect(t.y * 1e9).toBeCloseTo(u.y, 9)
+    }
+  })
   test('toPathData renders a single bezier segment', () => {
     const d = Bezier2d.make(
       vector2.zero,
