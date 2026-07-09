@@ -10,6 +10,23 @@ const PRECISION = 8
 export const EPSILON = 1e-10
 
 /**
+ * Default relative tolerance for sign and degeneracy decisions about
+ * *computed* quantities — derivative values, determinants, discriminants.
+ *
+ * Scale-free: multiply by the natural magnitude of the quantity under test
+ * (e.g. the largest derivative value over the interval) to get an absolute
+ * threshold. Values inside the resulting band are indistinguishable from
+ * accumulated rounding noise and must not decide a sign question.
+ *
+ * The value sits ~4,500× above IEEE double rounding noise (2⁻⁵² ≈ 2.2e-16
+ * relative per operation) — generous headroom for noise accumulated across a
+ * construction pipeline — and far below any geometrically meaningful feature.
+ *
+ * @since 2.0.0
+ */
+export const RELATIVE_TOLERANCE = 1e-12
+
+/**
  * Approximate equality between two numbers, within an absolute tolerance.
  *
  * @param a - The first value.

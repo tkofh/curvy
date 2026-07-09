@@ -257,13 +257,30 @@ export const monotonicity = dual<
       return Quadratic.monotonicity(Quadratic.make(p.c0, p.c1, p.c2), i)
     }
 
-    const e = Interval.filter(Interval.toOpen(i), [...extrema(p)])
+    // Judge sign coverage of the derivative by its values over the interval,
+    // not by its root locations. Roots computed from rounded coefficients can
+    // land an ulp to either side of an interval boundary (constructed zero
+    // end-tangents do this systematically), turning a legitimate boundary
+    // touch into a phantom interior crossing. The values are well-conditioned
+    // where the roots are not, and a quadratic's exact range over an interval
+    // is just its endpoint values plus its vertex value when the vertex lies
+    // inside.
+    const d = derivative(p)
+    const dStart = Quadratic.solve(d, i.start)
+    const dEnd = Quadratic.solve(d, i.end)
 
-    if (e.length > 0) {
-      return Monotonicity.None
+    let min = Math.min(dStart, dEnd)
+    let max = Math.max(dStart, dEnd)
+
+    // c3 ≠ 0 on this path, so the derivative's vertex always exists.
+    const tVertex = -d.c1 / (2 * d.c2)
+    if (tVertex > i.start && tVertex < i.end) {
+      const dVertex = Quadratic.solve(d, tVertex)
+      min = Math.min(min, dVertex)
+      max = Math.max(max, dVertex)
     }
 
-    return Monotonicity.fromComparison(solve(p, i.start), solve(p, i.end))
+    return Monotonicity.fromDerivativeRange(min, max)
   },
 )
 

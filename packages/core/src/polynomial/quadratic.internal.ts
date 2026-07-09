@@ -143,16 +143,20 @@ export const monotonicity = dual<
       return Linear.monotonicity(Linear.make(p.c0, p.c1))
     }
 
-    // c2 is non-zero, so the extreme is guaranteed to be non-null
-    const e = extreme(p) as Vector2.Vector2
-
-    // if there is no interval, or the extreme is within the interval,
-    // the monotonicity is none
-    if (i === undefined || Interval.contains(Interval.toOpen(i), e.x)) {
+    // c2 is non-zero, so over the whole real line the parabola always turns
+    if (i === undefined) {
       return Monotonicity.None
     }
 
-    return Monotonicity.fromComparison(solve(p, i.start), solve(p, i.end))
+    // The derivative of a quadratic is linear, so its exact range over the
+    // interval is its two endpoint values. Judge sign coverage by value
+    // rather than by the location of the derivative's root — see the cubic
+    // classifier for the rationale.
+    const d = derivative(p)
+    const dStart = Linear.solve(d, i.start)
+    const dEnd = Linear.solve(d, i.end)
+
+    return Monotonicity.fromDerivativeRange(Math.min(dStart, dEnd), Math.max(dStart, dEnd))
   },
 )
 
