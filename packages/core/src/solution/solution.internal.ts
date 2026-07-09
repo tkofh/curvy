@@ -30,9 +30,11 @@ class NoneImpl extends Pipeable implements None {
 class OneImpl<T> extends Pipeable implements One<T> {
   readonly _tag = 'one' as const
   readonly length = 1 as const
+  readonly value: T
 
-  constructor(readonly value: T) {
+  constructor(value: T) {
     super()
+    this.value = value
   }
 
   [Symbol.iterator](): Iterator<T> {
@@ -43,9 +45,11 @@ class OneImpl<T> extends Pipeable implements One<T> {
 class TwoImpl<T> extends Pipeable implements Two<T> {
   readonly _tag = 'two' as const
   readonly length = 2 as const
+  readonly values: readonly [T, T]
 
-  constructor(readonly values: readonly [T, T]) {
+  constructor(values: readonly [T, T]) {
     super()
+    this.values = values
   }
 
   get value(): T {
@@ -60,9 +64,11 @@ class TwoImpl<T> extends Pipeable implements Two<T> {
 class ThreeImpl<T> extends Pipeable implements Three<T> {
   readonly _tag = 'three' as const
   readonly length = 3 as const
+  readonly values: readonly [T, T, T]
 
-  constructor(readonly values: readonly [T, T, T]) {
+  constructor(values: readonly [T, T, T]) {
     super()
+    this.values = values
   }
 
   get value(): T {
