@@ -43,6 +43,7 @@ npm (after the first successful trusted publish):
 
 ## Caveats
 
-- **The Version Packages PR shows no CI checks.** PRs opened with `GITHUB_TOKEN` don't trigger `pull_request` workflows (GitHub's recursion guard). The publish job compensates by running the full verification suite before publishing. If `main` ever gets required status checks, the PR won't be mergeable — the fix is to open the version PR with a GitHub App or fine-scoped PAT instead.
+- **CI on the Version Packages PR needs a manual nudge.** Because the PR is authored by `github-actions[bot]`, GitHub holds its CI run as "awaiting approval" — click _Approve workflow and run_ on the PR to run it. Each update to the PR branch (new changesets landing on `main` force-push it) re-queues the approval. The publish job re-runs the full verification suite regardless, so an unapproved CI run never means unverified code ships. If `main` ever gets required status checks, this click becomes mandatory before merging.
+- **Version commits and release tags are signed.** `commitMode: github-api` makes changesets create commits and tags through the GitHub API, GPG-signed by GitHub and attributed to `github-actions[bot]` — this satisfies `main`'s verified-signatures rule.
 - **Partial failure recovery.** If a publish succeeds on npm but tag push or the GitHub Release fails, a plain re-run is skipped by the publish gate (the version is now on npm). Push the tag manually: `git tag curvy@<version> && git push origin curvy@<version>`.
 - **Superseded versions.** If another changeset lands on `main` between merging a Version Packages PR and its publish run, the gate holds that version back; it ships with the next Version Packages PR instead.
