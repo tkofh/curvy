@@ -6,14 +6,14 @@
     "deps:reinstall": "pnpm dlx rimraf node_modules pnpm-lock.yaml ./**/node_modules && pnpm install",
     "deps:update": "pnpm -r update --latest && pnpm dedupe",
     "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
     "bench": "turbo run bench",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt --check .",
     "format:fix": "oxfmt .",
     "check": "oxlint . && oxfmt --check .",
-    "check:fix": "oxlint --fix . && oxfmt .",
-    "publish-packages": "turbo run check build test && changeset version && changeset publish && turbo run check:fix"
+    "check:fix": "oxlint --fix . && oxfmt ."
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
