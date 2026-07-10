@@ -68,9 +68,10 @@ jobs:
         id: changesets
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
-          # changeset version writes CHANGELOG.md in its own style; format the
-          # result so the version PR passes `oxfmt --check`.
-          version: pnpm exec changeset version && pnpm run format:fix
+          # The action execs this as a single command (no shell operators), so
+          # the version+format compound lives in a package.json script.
+          # Formatting after versioning keeps CHANGELOG.md passing oxfmt.
+          version: pnpm run version-packages
           # Create commits via the GitHub API so they are GPG-signed by GitHub
           # (main requires verified signatures).
           commitMode: github-api
