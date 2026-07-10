@@ -38,6 +38,14 @@ const [x, y, w] = Characteristic.apply(
 )
 ```
 
-The polynomial pipeline (`CubicCurve2d.fromBezierPoints`, `splines/util.ts → toCurves`) and the rational pipeline (`RationalCubicCurve2d.fromBezierPoints`) both flow through `apply` now — the unified entry point makes the spline-family-as-matrix story visible at the type level.
+**`Vector2.transpose` / `Vector3.transpose` / `Vector4.transpose`** build those per-channel vectors from point-shaped data. Each takes an N-tuple of items plus a projection returning a fixed-arity tuple of numbers, and packs the k-th projected component of every item into the k-th output vector — the data-layout flip NumPy calls a transpose and FP calls `unzip`. The projection's return arity is preserved in the return type, so the destructuring below is fully typed.
+
+```ts
+// Equivalent to the two Vector4.make calls above.
+const [xs, ys] = Vector4.transpose([p0, p1, p2, p3], (p) => [p.x, p.y])
+const [x, y] = Characteristic.apply(Characteristic.cubicBezier, xs, ys)
+```
+
+The polynomial pipeline (`CubicCurve2d.fromBezierPoints`, `splines/util.ts → toCurves`) and the rational pipeline (`RationalCubicCurve2d.fromBezierPoints`) both flow through `apply` now, and both feed it via `transpose` — the rational one projecting three channels (`[p.x * p.weight, p.y * p.weight, p.weight]`). The unified entry point makes the spline-family-as-matrix story visible at the type level.
 
 **Cardinal cache moved.** The per-tension memoization that used to live in `Cardinal2d` now lives inside `Characteristic.cubicCardinal`. Behavior unchanged.

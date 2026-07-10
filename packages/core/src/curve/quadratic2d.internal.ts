@@ -42,6 +42,7 @@ import * as QuadraticPolynomial from '../polynomial/quadratic.ts'
 import * as Solution from '../solution/solution.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as LinearCurve2d from './linear2d.ts'
+import type { Curve2dOps } from './curve2d.ts'
 import type { QuadraticCurve2d } from './quadratic2d.ts'
 
 export const QuadraticCurve2dTypeId: unique symbol = Symbol('curvy/curve/quadratic2d')
@@ -341,3 +342,27 @@ export const transform = dual<
     ),
   )
 })
+
+/**
+ * The `Curve2dOps` bundle consumed by the generic `Path2d` implementation.
+ * `solveAtX` / `solveAtY` narrow the curve's potentially-2-element result to
+ * `AtMostOne` — path callers guarantee that via the path's
+ * `MonotonicX`/`MonotonicY` brand.
+ *
+ * @internal
+ */
+export const Ops: Curve2dOps<QuadraticCurve2d> = {
+  solve,
+  startPoint,
+  endPoint,
+  length,
+  boundingBox,
+  solveAtX: (c, x) => solveAtX(c, x) as Solution.AtMostOne<number>,
+  solveAtY: (c, y) => solveAtY(c, y) as Solution.AtMostOne<number>,
+  toPathDataSegment,
+  isIncreasingX,
+  isDecreasingX,
+  isIncreasingY,
+  isDecreasingY,
+  transform,
+}

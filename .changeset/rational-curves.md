@@ -24,12 +24,6 @@ A matching path type (`RationalCubicPath2d` in `curvy/path`) and spline type (`R
 
 **Per-axis monotonicity traits live on the curve, not the polynomials.** Unlike `CubicCurve2d` where the trait brand flows through to the underlying polynomial, rational traits are properties of the projected rational functions `x(t)/w(t)` and `y(t)/w(t)` — not of any individual polynomial. The brand therefore lives on the curve itself via a phantom property, and `RationalCubicCurve2d<XTraits, YTraits>` carries `Increasing` / `Decreasing` / `Monotonic` exactly like the polynomial curve does.
 
-**`makeMonotonicEasing(startSlope, endSlope)`.** A Gregory-Delbourgo style constructor for a guaranteed-monotone rational cubic easing curve. Interpolates `(0, 0)` and `(1, 1)` with the given endpoint slopes, pins `x(t) = t`, and returns a curve branded `<Increasing, Increasing>` so `solveAtX` narrows to `Solution.AtMostOne<number>` without runtime checking. Smoothstep falls out from `(0, 0)` and linear easing from `(1, 1)`.
+**Weighted control points.** `Vector2.Weighted` is a structurally distinct branded type — a 2D point carrying a positive scalar weight — constructed via `Vector2.makeWeighted(x, y, w)` or `Vector2.withWeight(v, w)`, with `isWeighted`, `unweighted`, and `weightedEquals` alongside. The brand keeps weighted points out of plain vector arithmetic (`add`, `scale`, …), where weighted operations are not well-defined.
 
-```ts
-const ease = RationalCubicCurve2d.makeMonotonicEasing(0.5, 1.5)
-const result = RationalCubicCurve2d.solveAtX(ease, 0.5)
-// result: Solution.AtMostOne<number> — narrowed by the Increasing brand
-```
-
-Monotonicity is verified rigorously at construction by computing the derivative numerator as a cubic in `t` and checking it doesn't change sign on `(0, 1)`. Construction throws when the slope pair can't be made monotonic under the default `α = m₀ + 1`, `β = m₁ + 1` heuristic — useful operating range is roughly `m₀, m₁ ∈ [0, 2]` with `m₀ + m₁ ≲ 3`.
+**Conversions.** `RationalCubicCurve2d.fromPolynomials(x, y, w)` constructs a curve directly from the three monomial polynomials, and `subdivide(c, t)` splits a curve at `t ∈ (0, 1)` into two rational cubics that together trace the original exactly. In the other direction, `Bezier2d.fromRational(r)` returns `Solution.AtMostOne<Bezier2d>` — `Solution.one` when the rational spline's weights are uniform (the curve is mathematically a polynomial Bézier), `Solution.none` otherwise, since a genuinely rational curve cannot be represented exactly by a polynomial one.

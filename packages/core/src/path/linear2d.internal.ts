@@ -1,4 +1,5 @@
-import * as LinearCurve2d from '../curve/linear2d.ts'
+import type * as LinearCurve2d from '../curve/linear2d.ts'
+import * as linearCurveInternal from '../curve/linear2d.internal.ts'
 import type { Closed } from '../interval/interval.ts'
 import type { Interval2d } from '../interval/interval2d.ts'
 import { invariant } from '../utils.ts'
@@ -18,7 +19,7 @@ export const LinearPath2dTypeId: unique symbol = Symbol('curvy/path/linear2d')
 export type LinearPath2dTypeId = typeof LinearPath2dTypeId
 
 // Generic operation surface, built once for LinearCurve2d's Ops.
-const methods = Path2d.makeMethods(LinearPath2dTypeId, LinearCurve2d.Ops)
+const methods = Path2d.makeMethods(LinearPath2dTypeId, linearCurveInternal.Ops)
 
 /** @internal */
 export const isLinearPath2d = (p: unknown): p is LinearPath2d =>

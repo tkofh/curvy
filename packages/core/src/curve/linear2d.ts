@@ -7,7 +7,6 @@ import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { Curve2dOps } from './curve2d.ts'
 import type { LinearCurve2dTypeId } from './linear2d.internal.ts'
 import * as internal from './linear2d.internal.ts'
 
@@ -362,26 +361,3 @@ export const transform: {
    */
   (a: Affine2d): (c: LinearCurve2d) => LinearCurve2d
 } = internal.transform
-
-/**
- * The {@link Curve2dOps} bundle for `LinearCurve2d`. Used by
- * `LinearPath2d` (and any user code building a generic `Path2d` over linear
- * curves) to wire up the path-level operation surface.
- *
- * @since 2.0.0
- */
-export const Ops: Curve2dOps<LinearCurve2d> = {
-  solve,
-  startPoint,
-  endPoint,
-  length,
-  boundingBox,
-  solveAtX,
-  solveAtY,
-  toPathDataSegment,
-  isIncreasingX,
-  isDecreasingX,
-  isIncreasingY,
-  isDecreasingY,
-  transform,
-}

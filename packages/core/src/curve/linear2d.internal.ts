@@ -6,6 +6,7 @@ import * as LinearPolynomial from '../polynomial/linear.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import * as Solution from '../solution/solution.ts'
 import * as Vector2 from '../vector/vector2.ts'
+import type { Curve2dOps } from './curve2d.ts'
 import type { LinearCurve2d } from './linear2d.ts'
 
 export const LinearCurve2dTypeId: unique symbol = Symbol('curvy/curve/linear2d')
@@ -209,3 +210,24 @@ export const transform = dual<
     LinearPolynomial.make(m.m10 * c.x.c0 + m.m11 * c.y.c0 + m.m12, m.m10 * c.x.c1 + m.m11 * c.y.c1),
   )
 })
+
+/**
+ * The `Curve2dOps` bundle consumed by the generic `Path2d` implementation.
+ *
+ * @internal
+ */
+export const Ops: Curve2dOps<LinearCurve2d> = {
+  solve,
+  startPoint,
+  endPoint,
+  length,
+  boundingBox,
+  solveAtX,
+  solveAtY,
+  toPathDataSegment,
+  isIncreasingX,
+  isDecreasingX,
+  isIncreasingY,
+  isDecreasingY,
+  transform,
+}

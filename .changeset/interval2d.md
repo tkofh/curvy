@@ -51,8 +51,6 @@ CubicPath2d.boundingBox(path) // Interval2d<Closed, Closed>
 
 Curve-level implementations account for interior extrema (so the box is tight against the curve, not just its control polygon). Path-level implementations union per-segment boxes via `Interval2d.union`.
 
-Rational cubic curves don't get a `boundingBox` yet — computing the bbox of `(x(t)/w(t), y(t)/w(t))` requires finding roots of a degree-5 polynomial, which is a real implementation rather than a one-liner over existing primitives. Deferred. Workaround: `RationalCubicPath2d.approximateAsCubicPath(path, tolerance).pipe(CubicPath2d.boundingBox)` produces a slightly-padded but valid outer bound.
-
 **New `Interval.containsInterval(outer, inner)` helper.** Kind-aware interval-subset test, the primitive underneath `Interval2d.containsInterval2d`. Exposed on the interval module because it's a self-contained operation that's useful on its own.
 
 **Polynomial `range` return types tightened to `Closed`.** `LinearPolynomial.range`, `QuadraticPolynomial.range`, and `CubicPolynomial.range` previously declared `Interval` returns but always built `Closed` at runtime. The tightening lets `boundingBox` thread `Interval2d<Closed, Closed>` through without casts. Also fixes a latent bug in `LinearPolynomial.range` where decreasing polynomials would throw on `Interval.make`'s ordering check — now uses `fromMinMax`.

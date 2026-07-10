@@ -33,7 +33,7 @@ RationalCubicCurve2d.asMonotonicX(c)
 
 Per-axis matters because `solveAtX`'s `XT extends Monotonic` overload (returning `Solution.AtMostOne<number>`) only needs x monotonicity — not y. The combined refiners compose internally from `isXxx(c) && isYyy(c)`, with TypeScript's `&&` narrowing accumulating both brands.
 
-**Tight bounding box via subdivision.** `RationalCubicCurve2d.boundingBox` now takes a `tolerance` and returns a box tight to within `tolerance` per side, not the cheap loose hull AABB it used to return.
+**Tight bounding box via subdivision.** `RationalCubicCurve2d.boundingBox` takes a `tolerance` and returns a box tight to within `tolerance` per side.
 
 ```ts
 RationalCubicCurve2d.boundingBox(c, 0.01) // Interval2d<Closed, Closed>
@@ -47,5 +47,3 @@ Computing the exact box would require the extrema of `x(t)/w(t)` and `y(t)/w(t)`
 import { RationalCubicPath2d } from 'curvy/path'
 RationalCubicPath2d.boundingBox(path, 0.01)
 ```
-
-**Breaking.** `RationalCubicCurve2d.boundingBox` previously took just the curve and returned a loose hull AABB; it now requires a `tolerance` argument. Callers wanting the old behavior have nothing to migrate _to_ — the loose box is no longer part of the public API. Internally the hull bound still exists as a leaf helper for subdivision-based geometric queries.

@@ -2,7 +2,7 @@
 'curvy': major
 ---
 
-**Consolidated public module surface.** The `package.json` `exports` map is reduced from ~30 subpaths to 11. Every group exposes a single namespace-indexed subpath, and per-module subpaths are removed. The internal directory layout is unchanged; only the public import shape moves.
+**Consolidated public module surface.** The `package.json` `exports` map is reduced from ~30 subpaths to 13. Every group exposes a single namespace-indexed subpath, and per-module subpaths are removed. The internal directory layout is unchanged; only the public import shape moves.
 
 **New v2 surface:**
 
@@ -17,6 +17,8 @@
 | `curvy/interval`       | namespace     | `Interval`                                                                                                                             |
 | `curvy/solution`       | namespace     | `Solution`                                                                                                                             |
 | `curvy/characteristic` | namespace     | `Characteristic`                                                                                                                       |
+| `curvy/monotonicity`   | namespace     | `Monotonicity`                                                                                                                         |
+| `curvy/transform`      | namespace     | `Affine2d`                                                                                                                             |
 | `curvy/number`         | named exports | `lerp`, `clamp`, `clip`, `normalize`, `remap`, `minMax`, `mod`, `round`, `roundUp`, `roundDown`, `epsEquals`, `clampToZero`, `EPSILON` |
 | `curvy/utils`          | named exports | `pipe`, `dual`, `Pipeable`, `invariant`                                                                                                |
 
@@ -38,7 +40,7 @@ import { RationalCubicPath2d } from 'curvy/path'
 import { Bezier2d } from 'curvy/splines'
 ```
 
-The internal namespace identity (`Vector2.make`, `CubicCurve2d.solve`, etc.) is unchanged — only the path you import from moves. Tree-shaking remains intact: importing one namespace from a group index does not pull in its siblings, given `"sideEffects": false`.
+The internal namespace identity (`Vector2.make`, `CubicCurve2d.solve`, etc.) is unchanged — only the path you import from moves. Tree-shaking remains intact: importing one namespace from a group index does not pull in its siblings, given `"sideEffects": false`. These group indexes also re-export each member namespace's primary type flat, so `import { Vector2 } from 'curvy/vector'` works in both value and type position.
 
 **Solo namespaces (`Interval`, `Solution`, `Characteristic`) now exported through wrappers.** These were previously bare-module subpaths. Each now lives in a directory whose `index.ts` re-exports the implementation as a namespace, so the import shape matches the multi-namespace groups:
 

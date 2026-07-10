@@ -23,7 +23,7 @@ export const CubicPath2dTypeId: unique symbol = Symbol('curvy/path/cubic2d')
 export type CubicPath2dTypeId = typeof CubicPath2dTypeId
 
 // Generic operation surface, built once for CubicCurve2d's Ops.
-const methods = Path2d.makeMethods(CubicPath2dTypeId, CubicCurve2d.Ops)
+const methods = Path2d.makeMethods(CubicPath2dTypeId, cubicCurveInternal.Ops)
 
 /** @internal */
 export const isCubicPath2d = (p: unknown): p is CubicPath2d =>

@@ -7,7 +7,6 @@ import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { Curve2dOps } from './curve2d.ts'
 import type { LinearCurve2d } from './linear2d.ts'
 import type { QuadraticCurve2dTypeId } from './quadratic2d.internal.ts'
 import * as internal from './quadratic2d.internal.ts'
@@ -373,28 +372,3 @@ export const transform: {
    */
   (a: Affine2d): (c: QuadraticCurve2d) => QuadraticCurve2d
 } = internal.transform
-
-/**
- * The {@link Curve2dOps} bundle for `QuadraticCurve2d`. Used by
- * `QuadraticPath2d` to wire up the path-level operation surface. The
- * `solveAtX` / `solveAtY` entries narrow the curve's potentially-2-element
- * result to `AtMostOne` — path callers enforce that via the path's
- * `MonotonicX`/`MonotonicY` brand.
- *
- * @since 2.0.0
- */
-export const Ops: Curve2dOps<QuadraticCurve2d> = {
-  solve,
-  startPoint,
-  endPoint,
-  length,
-  boundingBox,
-  solveAtX: (c, x) => internal.solveAtX(c, x) as Solution.AtMostOne<number>,
-  solveAtY: (c, y) => internal.solveAtY(c, y) as Solution.AtMostOne<number>,
-  toPathDataSegment,
-  isIncreasingX,
-  isDecreasingX,
-  isIncreasingY,
-  isDecreasingY,
-  transform,
-}

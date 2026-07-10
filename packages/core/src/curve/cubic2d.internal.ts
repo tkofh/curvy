@@ -43,6 +43,7 @@ import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import * as Solution from '../solution/solution.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Vector4 from '../vector/vector4.ts'
+import type { Curve2dOps } from './curve2d.ts'
 import type { CubicCurve2d } from './cubic2d.ts'
 import * as LinearCurve2d from './linear2d.ts'
 import * as QuadraticCurve2d from './quadratic2d.ts'
@@ -353,3 +354,27 @@ export const transform = dual<
     ),
   )
 })
+
+/**
+ * The `Curve2dOps` bundle consumed by the generic `Path2d` implementation.
+ * `solveAtX` / `solveAtY` narrow the curve's potentially-3-element result to
+ * `AtMostOne` — path callers guarantee that via the path's
+ * `MonotonicX`/`MonotonicY` brand.
+ *
+ * @internal
+ */
+export const Ops: Curve2dOps<CubicCurve2d> = {
+  solve,
+  startPoint,
+  endPoint,
+  length,
+  boundingBox,
+  solveAtX: (c, x) => solveAtX(c, x) as Solution.AtMostOne<number>,
+  solveAtY: (c, y) => solveAtY(c, y) as Solution.AtMostOne<number>,
+  toPathDataSegment,
+  isIncreasingX,
+  isDecreasingX,
+  isIncreasingY,
+  isDecreasingY,
+  transform,
+}

@@ -1,4 +1,5 @@
-import * as QuadraticCurve2d from '../curve/quadratic2d.ts'
+import type * as QuadraticCurve2d from '../curve/quadratic2d.ts'
+import * as quadraticCurveInternal from '../curve/quadratic2d.internal.ts'
 import type { Closed } from '../interval/interval.ts'
 import type { Interval2d } from '../interval/interval2d.ts'
 import { invariant } from '../utils.ts'
@@ -18,7 +19,7 @@ export const QuadraticPath2dTypeId: unique symbol = Symbol('curvy/path/quadratic
 export type QuadraticPath2dTypeId = typeof QuadraticPath2dTypeId
 
 // Generic operation surface, built once for QuadraticCurve2d's Ops.
-const methods = Path2d.makeMethods(QuadraticPath2dTypeId, QuadraticCurve2d.Ops)
+const methods = Path2d.makeMethods(QuadraticPath2dTypeId, quadraticCurveInternal.Ops)
 
 /** @internal */
 export const isQuadraticPath2d = (p: unknown): p is QuadraticPath2d =>
