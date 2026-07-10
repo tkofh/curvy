@@ -2,11 +2,11 @@ import * as internal from './interval.internal.ts'
 import type { Pipeable } from '../utils.ts'
 
 /**
- * The structural minimum: any value with numeric `start` and `end` fields.
- *
- * Operations that don't read endpoint inclusivity (e.g. `lerp`, `normalize`,
- * `remap`, `size`) accept `Bounds` so the signature itself documents what
- * the operation depends on.
+ * A `start`/`end` pair carrying no endpoint-inclusivity information — the
+ * structural counterpart of `Interval`, which any value with numeric
+ * `start` and `end` fields satisfies. Operations that never read
+ * inclusivity (e.g. `lerp`, `normalize`, `remap`, `size`) accept `Bounds`,
+ * so the signature announces what the operation depends on.
  *
  * @since 2.0.0
  */
@@ -74,12 +74,15 @@ export const isInterval: (v: unknown) => v is Interval = internal.isInterval
 
 export const equals: {
   /**
-   * Checks if two `Interval` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Interval` instances are approximately equal.
    *
    * Both endpoints AND the kind must match — a `Closed` and an `OpenStart` with
    * the same numeric endpoints are not equal. Use `aligned` for the looser
    * "same numeric range" check.
+   *
+   * Endpoints are compared with `coincident` from `curvy/number`, an
+   * absolute-plus-relative tolerance band. See `PRECISION.md` for the
+   * mechanics.
    *
    * @param a - The first interval.
    * @param b - The second interval.
@@ -88,8 +91,7 @@ export const equals: {
    */
   (a: Interval, b: Interval): boolean
   /**
-   * Checks if two `Interval` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Interval` instances are approximately equal.
    *
    * @param b - The second interval.
    * @returns A function that takes the first interval and returns the comparison result.
@@ -103,9 +105,13 @@ export const aligned: {
    * Checks if two values share the same numeric range, ignoring endpoint
    * inclusivity. Accepts any `Bounds`-shaped value.
    *
+   * Endpoints are compared with `coincident` from `curvy/number`, an
+   * absolute-plus-relative tolerance band. See `PRECISION.md` for the
+   * mechanics.
+   *
    * @param a - The first bounds.
    * @param b - The second bounds.
-   * @returns `true` when both endpoints are within the default tolerance ({@link EPSILON}).
+   * @returns `true` when both endpoints are within tolerance.
    * @since 2.0.0
    */
   (a: Bounds, b: Bounds): boolean

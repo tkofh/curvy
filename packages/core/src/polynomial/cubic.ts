@@ -57,8 +57,9 @@ export const isCubicPolynomial: (value: unknown) => value is CubicPolynomial =
 
 export const equals: {
   /**
-   * Checks if two `CubicPolynomial` instances are approximately equal within
-   * the default absolute tolerance ({@link EPSILON}).
+   * Checks if two `CubicPolynomial` instances are approximately equal: each
+   * coefficient pair is compared with `coincident` from `curvy/number`, an
+   * absolute-plus-relative band (see `PRECISION.md`).
    *
    * @param a - The first polynomial.
    * @param b - The second polynomial.
@@ -67,8 +68,9 @@ export const equals: {
    */
   (a: CubicPolynomial, b: CubicPolynomial): boolean
   /**
-   * Checks if two `CubicPolynomial` instances are approximately equal within
-   * the default absolute tolerance ({@link EPSILON}).
+   * Checks if two `CubicPolynomial` instances are approximately equal: each
+   * coefficient pair is compared with `coincident` from `curvy/number`, an
+   * absolute-plus-relative band (see `PRECISION.md`).
    *
    * @param b - The second polynomial.
    * @returns A function that takes the first polynomial and returns the comparison result.
@@ -341,22 +343,24 @@ export const asDecreasing: <T>(
 
 export const domain: {
   /**
-   * Calculates the domain of a cubic polynomial.
+   * The interval of inputs at which the polynomial attains the endpoint
+   * values of `range`, or `Solution.none` when it attains neither.
    *
    * @param p - The cubic polynomial to analyze.
-   * @param range - The range to restrict the analysis to.
-   * @returns The domain of the cubic polynomial in the specified range.
+   * @param range - The range whose endpoint values are inverted.
+   * @returns At most one interval enclosing the solutions.
    * @since 1.0.0
    */
-  (p: CubicPolynomial, range: Interval): Interval
+  (p: CubicPolynomial, range: Interval): Solution.AtMostOne<Interval>
   /**
-   * Calculates the domain of a cubic polynomial.
+   * The interval of inputs at which the polynomial attains the endpoint
+   * values of `range`, or `Solution.none` when it attains neither.
    *
-   * @param range - The range to restrict the analysis to.
-   * @returns A function that takes a cubic polynomial and returns the domain of the cubic polynomial in the specified range.
+   * @param range - The range whose endpoint values are inverted.
+   * @returns A function that takes a cubic polynomial and returns at most one interval enclosing the solutions.
    * @since 1.0.0
    */
-  (range: Interval): (p: CubicPolynomial) => Interval
+  (range: Interval): (p: CubicPolynomial) => Solution.AtMostOne<Interval>
 } = internal.domain
 
 export const range: {

@@ -150,7 +150,11 @@ export const liftWithWeight: {
 export const weightedEquals: {
   /**
    * Checks if two `Vector2.Weighted` instances are approximately equal —
-   * point components and weight all within the default absolute tolerance.
+   * point components and weight alike.
+   *
+   * The `x`, `y`, and `weight` fields are each compared with `coincident`
+   * from `curvy/number`, an absolute-plus-relative tolerance band. See
+   * `PRECISION.md` for the mechanics.
    *
    * @param a - The first weighted point.
    * @param b - The second weighted point.
@@ -170,8 +174,11 @@ export const weightedEquals: {
 
 export const equals: {
   /**
-   * Checks if two `Vector2` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Vector2` instances are approximately equal.
+   *
+   * Each pair of components is compared with `coincident` from
+   * `curvy/number`, an absolute-plus-relative tolerance band. See
+   * `PRECISION.md` for the mechanics.
    *
    * @param a - The first vector.
    * @param b - The second vector.
@@ -180,8 +187,7 @@ export const equals: {
    */
   (a: Vector2, b: Vector2): boolean
   /**
-   * Checks if two `Vector2` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Vector2` instances are approximately equal.
    *
    * @param b - The second vector.
    * @returns A function that takes the first vector and returns the comparison result.
@@ -222,7 +228,7 @@ export const fromTuple: (t: readonly [number, number]) => Vector2 = internal.fro
 
 /**
  * Transposes a 2-tuple of items into one or more `Vector2`s, one per channel
- * extracted by the projection function. See {@link Vector4.transpose} for the
+ * extracted by the projection function. See `Vector4.transpose` for the
  * full operation description; this is the 2-component analog.
  *
  * @param inputs - Exactly two items of any type.
@@ -331,12 +337,11 @@ export const softmax: (v: Vector2) => Vector2 = internal.softmax
 export const zero = make(0)
 
 /**
- * Creates a unit vector.
+ * The constant vector `(1, 1)`.
  *
- * @returns A new `Vector2` instance with both components set to 1.
  * @since 1.0.0
  */
-export const unit = make(1)
+export const one = make(1)
 
 export const add: {
   /**

@@ -346,11 +346,18 @@ export const asDecreasing = <T>(
 
 /** @internal */
 export const domain = dual<
-  (range: Interval.Interval) => (p: CubicPolynomial) => Interval.Interval,
-  (p: CubicPolynomial, range: Interval.Interval) => Interval.Interval
->(2, (p: CubicPolynomial, r: Interval.Interval) =>
-  Interval.fromMinMax(...solveInverse(p, r.start), ...solveInverse(p, r.end)),
-)
+  (range: Interval.Interval) => (p: CubicPolynomial) => Solution.AtMostOne<Interval.Interval>,
+  (p: CubicPolynomial, range: Interval.Interval) => Solution.AtMostOne<Interval.Interval>
+>(2, (p: CubicPolynomial, r: Interval.Interval) => {
+  const start = solveInverse(p, r.start)
+  const end = solveInverse(p, r.end)
+
+  if (start.length === 0 && end.length === 0) {
+    return Solution.none
+  }
+
+  return Solution.one(Interval.fromMinMax(...start, ...end))
+})
 
 /** @internal */
 export const range = dual<

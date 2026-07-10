@@ -49,8 +49,11 @@ export const isLinearPolynomial: (v: unknown) => v is LinearPolynomial = interna
 
 export const equals: {
   /**
-   * Checks if two `LinearPolynomial` instances are approximately equal within
-   * the default absolute tolerance ({@link EPSILON}).
+   * Checks if two `LinearPolynomial` instances are approximately equal.
+   *
+   * Each pair of coefficients is compared with `coincident` from
+   * `curvy/number`, an absolute-plus-relative tolerance band. See
+   * `PRECISION.md` for the mechanics.
    *
    * @param a - The first polynomial.
    * @param b - The second polynomial.
@@ -59,8 +62,7 @@ export const equals: {
    */
   (a: LinearPolynomial, b: LinearPolynomial): boolean
   /**
-   * Checks if two `LinearPolynomial` instances are approximately equal within
-   * the default absolute tolerance ({@link EPSILON}).
+   * Checks if two `LinearPolynomial` instances are approximately equal.
    *
    * @param b - The second polynomial.
    * @returns A function that takes the first polynomial and returns the comparison result.

@@ -295,10 +295,10 @@ export const solveAtY: {
 
 /**
  * Computes the axis-aligned bounding box of the path — the smallest closed
- * `Box2d` enclosing every segment.
+ * `Interval2d` enclosing every segment.
  *
  * @param p - The linear path.
- * @returns A closed `Box2d` enclosing the path.
+ * @returns A closed `Interval2d` enclosing the path.
  * @since 2.0.0
  */
 export const boundingBox: (p: LinearPath2d) => Interval2d<Closed, Closed> = internal.boundingBox

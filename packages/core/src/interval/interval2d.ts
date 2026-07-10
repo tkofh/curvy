@@ -175,9 +175,12 @@ export const union: {
 
 export const equals: {
   /**
-   * Checks if two `Interval2d` values are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}). Both the numeric endpoints
-   * AND the per-axis kinds must match.
+   * Checks if two `Interval2d` values are approximately equal. Both the
+   * numeric endpoints AND the per-axis kinds must match.
+   *
+   * Endpoints are compared per axis with `coincident` from `curvy/number`,
+   * an absolute-plus-relative tolerance band. See `PRECISION.md` for the
+   * mechanics.
    *
    * @param a - The first 2D interval.
    * @param b - The second 2D interval.

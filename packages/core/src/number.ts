@@ -104,7 +104,7 @@ export function clampToZero(value: number, eps: number): number {
  * @returns The rounded number.
  * @example
  * ```ts
- * import { round } from 'curvy/utils'
+ * import { round } from 'curvy/number'
  *
  * const roundedValue = round(1.23456789, 4) // 1.2346
  * const roundedValue2 = round(1.23456789) // 1.23456789
@@ -128,7 +128,7 @@ export function round(value: number, precision = PRECISION): number {
  * @returns The rounded down number.
  * @example
  * ```ts
- * import { roundDown } from 'curvy/utils'
+ * import { roundDown } from 'curvy/number'
  *
  * const roundedDownValue = roundDown(1.23456789, 4) // 1.2345
  * const roundedDownValue2 = roundDown(1.23456789) // 1.23456789
@@ -152,7 +152,7 @@ export function roundDown(value: number, precision = PRECISION): number {
  * @returns The rounded up number.
  * @example
  * ```ts
- * import { roundUp } from 'curvy/utils'
+ * import { roundUp } from 'curvy/number'
  *
  * const roundedUpValue = roundUp(1.23456789, 4) // 1.2346
  * const roundedUpValue2 = roundUp(1.23456789) // 1.23456789
@@ -178,7 +178,7 @@ export const lerp: {
    * @returns The interpolated value.
    * @example
    * ```ts
-   * import { lerp } from 'curvy/utils'
+   * import { lerp } from 'curvy/number'
    *
    * lerp(0.5, 10, 20) // 15
    * ```
@@ -193,7 +193,7 @@ export const lerp: {
    * @returns A function that takes the interpolation factor and returns the interpolated value.
    * @example
    * ```ts
-   * import { lerp } from 'curvy/utils'
+   * import { lerp } from 'curvy/number'
    *
    * lerp(10, 20)(0.5) // 15
    * ```
@@ -212,7 +212,7 @@ export const normalize: {
    * @returns The normalized value.
    * @example
    * ```ts
-   * import { normalize } from 'curvy/utils'
+   * import { normalize } from 'curvy/number'
    *
    * normalize(15, 10, 20) // 0.5
    * ```
@@ -227,7 +227,7 @@ export const normalize: {
    * @returns A function that takes a value and returns the normalized value.
    * @example
    * ```ts
-   * import { normalize } from 'curvy/utils'
+   * import { normalize } from 'curvy/number'
    *
    * normalize(10, 20)(15) // 0.5
    * ```
@@ -248,7 +248,7 @@ export const remap: {
    * @returns The remapped value.
    * @example
    * ```ts
-   * import { remap } from 'curvy/utils'
+   * import { remap } from 'curvy/number'
    *
    * remap(15, 10, 20, 0, 100) // 50
    * ```
@@ -265,7 +265,7 @@ export const remap: {
    * @returns A function that takes a value and returns the remapped value.
    * @example
    * ```ts
-   * import { remap } from 'curvy/utils'
+   * import { remap } from 'curvy/number'
    *
    * remap(10, 20, 0, 100)(15) // 50
    * ```
@@ -288,7 +288,7 @@ export const clamp: {
    * @returns The clamped value.
    * @example
    * ```ts
-   * import { clamp } from 'curvy/utils'
+   * import { clamp } from 'curvy/number'
    *
    * clamp(25, 10, 20) // 20
    * ```
@@ -303,7 +303,7 @@ export const clamp: {
    * @returns A function that takes a value and returns the clamped value.
    * @example
    * ```ts
-   * import { clamp } from 'curvy/utils'
+   * import { clamp } from 'curvy/number'
    *
    * clamp(10, 20)(25) // 20
    * ```
@@ -325,7 +325,7 @@ export const clip: {
    * @returns The original value if within range, otherwise the fallback.
    * @example
    * ```ts
-   * import { clip } from 'curvy/utils'
+   * import { clip } from 'curvy/number'
    *
    * clip(25, 10, 20, 15) // 15
    * ```
@@ -341,7 +341,7 @@ export const clip: {
    * @returns A function that takes a value and returns it if within range, otherwise the fallback.
    * @example
    * ```ts
-   * import { clip } from 'curvy/utils'
+   * import { clip } from 'curvy/number'
    *
    * clip(10, 20, 15)(25) // 15
    * ```
@@ -360,7 +360,7 @@ export const clip: {
  * @returns A tuple containing the minimum and maximum values.
  * @example
  * ```ts
- * import { minMax } from 'curvy/utils'
+ * import { minMax } from 'curvy/number'
  *
  * const [minValue, maxValue] = minMax(10, 20) // [10, 20]
  * const [minValue2, maxValue2] = minMax(20, 10) // [10, 20]
@@ -379,7 +379,7 @@ export function minMax(a: number, b: number): [number, number] {
  * @returns The modulus of the number.
  * @example
  * ```ts
- * import { mod } from 'curvy/utils'
+ * import { mod } from 'curvy/number'
  *
  * const modulus = mod(10, 3) // 1
  * const modulus2 = mod(-10, 3) // 2

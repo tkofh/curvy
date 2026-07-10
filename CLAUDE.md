@@ -31,15 +31,42 @@ never inlined into them.
 
 ### Conventions
 
-- Dual signatures: the data-first overload comes first and carries the
-  full contract. The data-last overload keeps a one-line summary, its
-  tags, and its own `@since`; its `@returns` may use the formula "A
-  function that takes ... and returns ...".
+- Dual signatures: the data-first overload carries the full contract,
+  wherever it sits — several existing exports declare data-last first,
+  and reordering overloads is a code change (it can affect overload
+  resolution), not a docs change. The data-last overload keeps a one-line
+  summary, its tags, and its own `@since`; its `@returns` may use the
+  formula "A function that takes ... and returns ...". The formula is
+  sanctioned ceremony, exempt from template-text checks.
 - `@param`/`@returns` on every function doc block (convention; nothing
   lint-enforces it). Obvious parameters may keep brief conventional text;
   non-obvious parameters must carry the real content — geometric meaning,
   units, range, default. Placeholder text is banned.
-- `@since` on every public doc block, per overload, no gaps.
+- `@since` on every public doc block, using the behavior clock: the
+  earliest release in which a consumer could obtain the behavior from the
+  public API, under any name. Renames don't reset it. Code that predates
+  its module's public export dates from the export. An overload added
+  later carries its own later tag.
+- Arity-ladder overload sets (`pipe`, `Pipeable.pipe`) take one full doc
+  block on the first overload — plus the class doc, for methods — and
+  nothing on the remaining arities. The per-overload rule is for dual
+  signatures, not ladders.
+- Cross-references are backticked prose names, not `{@link}`: qualified
+  with the consumer's namespace for cross-module targets
+  (`RationalCubicCurve2d.boundingBox`, the existing house form), bare for
+  same-module ones (`solveByDistance`). Editors resolve `{@link}` only
+  against in-scope symbols, oxlint rejects imports that exist only for a
+  doc link, and the package publishes without declaration maps, so a
+  link at best jumps a consumer into a `.d.ts`. Convert old links when
+  touching their block; never add an import to feed a link; when you
+  touch a cross-reference, verify the claim around it.
+- Examples: `@example` with a fenced `ts` code block, call sites written
+  in the consumer's namespaced vocabulary, no import boilerplate. Add one
+  where the signature alone would let a first-time caller hold the API
+  wrong (dual/curried call shapes, compositions) or where a concrete
+  input beats a paragraph; skip it where the first guess is right. An
+  example ships only verified — run it, or check every name against the
+  real API.
 - Exemplars of the standard: `coincident` and `RELATIVE_TOLERANCE` in
   `packages/core/src/number.ts`; `solve` and `boundingBox` in
   `packages/core/src/path/rationalCubic2d.ts`; `transform` in

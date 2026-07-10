@@ -13,13 +13,10 @@ import { flow } from 'curvy/utils'
 import { Vector2 } from 'curvy/vector'
 
 // Build the transform once, apply it many times.
-const nudge = flow(
-  Vector2.scale(2),
-  Vector2.add(Vector2.make(1, 0)),
-)
+const nudge = flow(Vector2.scale(2), Vector2.add(Vector2.make(1, 0)))
 
 nudge(Vector2.make(3, 4)) // Vector2 { x: 7, y: 8 }
-points.map(nudge)         // reuse across a collection
+points.map(nudge) // reuse across a collection
 ```
 
 curvy does not use `flow` internally; it ships alongside `pipe` for consumers assembling their own operation pipelines.

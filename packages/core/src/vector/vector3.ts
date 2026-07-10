@@ -25,8 +25,11 @@ export const isVector3: (v: unknown) => v is Vector3 = internal.isVector3
 
 export const equals: {
   /**
-   * Checks if two `Vector3` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Vector3` instances are approximately equal.
+   *
+   * Each pair of components is compared with `coincident` from
+   * `curvy/number`, an absolute-plus-relative tolerance band. See
+   * `PRECISION.md` for the mechanics.
    *
    * @param a - The first vector.
    * @param b - The second vector.
@@ -35,8 +38,7 @@ export const equals: {
    */
   (a: Vector3, b: Vector3): boolean
   /**
-   * Checks if two `Vector3` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Vector3` instances are approximately equal.
    *
    * @param b - The second vector.
    * @returns A function that takes the first vector and returns the comparison result.
@@ -87,7 +89,7 @@ export const fromTuple: (t: readonly [number, number, number]) => Vector3 = inte
 
 /**
  * Transposes a 3-tuple of items into one or more `Vector3`s, one per channel
- * extracted by the projection function. See {@link Vector4.transpose} for the
+ * extracted by the projection function. See `Vector4.transpose` for the
  * full operation description; this is the 3-component analog.
  *
  * @param inputs - Exactly three items of any type.
@@ -206,11 +208,11 @@ export const softmax: (v: Vector3) => Vector3 = internal.softmax
 export const zero = make(0)
 
 /**
- * Creates a unit vector.
+ * The constant vector `(1, 1, 1)`.
  *
  * @since 1.0.0
  */
-export const unit = make(1)
+export const one = make(1)
 
 /**
  * Creates a unit vector in the x direction.

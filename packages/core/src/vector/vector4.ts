@@ -25,8 +25,11 @@ export const isVector4: (v: unknown) => v is Vector4 = internal.isVector4
 
 export const equals: {
   /**
-   * Checks if two `Vector4` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Vector4` instances are approximately equal.
+   *
+   * Each pair of components is compared with `coincident` from
+   * `curvy/number`, an absolute-plus-relative tolerance band. See
+   * `PRECISION.md` for the mechanics.
    *
    * @param a - The first vector.
    * @param b - The second vector.
@@ -35,8 +38,7 @@ export const equals: {
    */
   (a: Vector4, b: Vector4): boolean
   /**
-   * Checks if two `Vector4` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Vector4` instances are approximately equal.
    *
    * @param b - The second vector.
    * @returns A function that takes the first vector and returns the comparison result.
@@ -191,11 +193,11 @@ export const softmax: (v: Vector4) => Vector4 = internal.softmax
 export const zero = make(0)
 
 /**
- * Creates a unit vector.
+ * The constant vector `(1, 1, 1, 1)`.
  *
  * @since 1.0.0
  */
-export const unit = make(1)
+export const one = make(1)
 
 export const add: {
   /**

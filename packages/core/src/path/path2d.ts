@@ -1,10 +1,10 @@
 import type { Curve2dOps } from '../curve/curve2d.ts'
 import * as Interval from '../interval/interval.ts'
 import * as Interval2d from '../interval/interval2d.ts'
-import { coincident } from '../number.ts'
+import { coincident, EPSILON } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import { dual, Pipeable } from '../utils.ts'
+import { dual, invariant, Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import {
   PathTraits,
@@ -90,9 +90,15 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
     (u: number) => (p: Path2d<C>) => Vector2,
     (p: Path2d<C>, u: number) => Vector2
   >(2, (p: Path2d<C>, u: number) => {
+    // Parameter space is normalized, so a fixed absolute EPSILON is the
+    // grazing band (PRECISION.md, regime 1); beyond it is misuse.
+    invariant(u >= -EPSILON && u <= 1 + EPSILON, 'path parameter must be within [0, 1]')
     const curves = p instanceof Path2dImpl ? (p.curves as ReadonlyArray<C>) : [...p]
-    if (u === 1) {
+    if (u >= 1) {
       return ops.solve(curves.at(-1) as C, 1)
+    }
+    if (u <= 0) {
+      return ops.solve(curves[0] as C, 0)
     }
     const t = u * curves.length
     const i = Math.floor(t)

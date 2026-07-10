@@ -215,7 +215,7 @@ export const curvature: {
  * box is tight against the curve and not just the control polygon.
  *
  * @param c - The cubic curve.
- * @returns A closed `Box2d` enclosing the curve.
+ * @returns A closed `Interval2d` enclosing the curve.
  * @since 2.0.0
  */
 export const boundingBox: (c: CubicCurve2d) => Interval2d<Closed, Closed> = internal.boundingBox

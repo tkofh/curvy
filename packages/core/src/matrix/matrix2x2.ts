@@ -50,8 +50,11 @@ export const isMatrix2x2: (m: unknown) => m is Matrix2x2 = internal.isMatrix2x2
 
 export const equals: {
   /**
-   * Checks if two `Matrix2x2` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Matrix2x2` instances are approximately equal.
+   *
+   * Each pair of components is compared with `coincident` from
+   * `curvy/number`, an absolute-plus-relative tolerance band. See
+   * `PRECISION.md` for the mechanics.
    *
    * @param a - The first matrix.
    * @param b - The second matrix.
@@ -60,8 +63,7 @@ export const equals: {
    */
   (a: Matrix2x2, b: Matrix2x2): boolean
   /**
-   * Checks if two `Matrix2x2` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Matrix2x2` instances are approximately equal.
    *
    * @param b - The second matrix.
    * @returns A function that takes the first matrix and returns the comparison result.

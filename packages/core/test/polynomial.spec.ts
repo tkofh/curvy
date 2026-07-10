@@ -372,30 +372,29 @@ describe('cubic', () => {
   test('domain', () => {
     const p = cubic.make(0, -1.5, 0, 0.5)
 
-    expect(cubic.domain(p, interval.make(-3, -2))).toBeCloseToValue(
-      interval.make(-2.355301397608, -2.195823345446),
-      1e-9,
-    )
-    expect(cubic.domain(p, interval.make(-2, -1))).toBeCloseToValue(
-      interval.make(-2.195823345446, 1),
-      1e-9,
-    )
-    expect(cubic.domain(p, interval.make(-1, 0))).toBeCloseToValue(
-      interval.make(-2, 1.732050807569),
-      1e-9,
-    )
-    expect(cubic.domain(p, interval.make(0, 1))).toBeCloseToValue(
-      interval.make(-1.732050807569, 2),
-      1e-9,
-    )
-    expect(cubic.domain(p, interval.make(1, 2))).toBeCloseToValue(
-      interval.make(-1, 2.195823345446),
-      1e-9,
-    )
-    expect(cubic.domain(p, interval.make(2, 3))).toBeCloseToValue(
-      interval.make(2.195823345446, 2.355301397608),
-      1e-9,
-    )
+    const at = (start: number, end: number) => {
+      const sol = cubic.domain(p, interval.make(start, end))
+      expect(sol).toHaveLength(1)
+      return [...sol][0]
+    }
+
+    expect(at(-3, -2)).toBeCloseToValue(interval.make(-2.355301397608, -2.195823345446), 1e-9)
+    expect(at(-2, -1)).toBeCloseToValue(interval.make(-2.195823345446, 1), 1e-9)
+    expect(at(-1, 0)).toBeCloseToValue(interval.make(-2, 1.732050807569), 1e-9)
+    expect(at(0, 1)).toBeCloseToValue(interval.make(-1.732050807569, 2), 1e-9)
+    expect(at(1, 2)).toBeCloseToValue(interval.make(-1, 2.195823345446), 1e-9)
+    expect(at(2, 3)).toBeCloseToValue(interval.make(2.195823345446, 2.355301397608), 1e-9)
+  })
+  test('domain of a degree-collapsed cubic returns none for an unattained range', () => {
+    // c3 = 0 collapses p to x², whose image is [0, ∞) — a range strictly
+    // below is attained at neither endpoint.
+    const parabola = cubic.make(0, 0, 1, 0)
+
+    expect(cubic.domain(parabola, interval.make(-4, -1))).toHaveLength(0)
+
+    const hull = cubic.domain(parabola, interval.make(1, 4))
+    expect(hull).toHaveLength(1)
+    expect([...hull][0]).toBeCloseToValue(interval.make(-2, 2))
   })
   test('range', () => {
     const p = cubic.make(0, -1.5, 0, 0.5)
