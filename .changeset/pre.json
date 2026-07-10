@@ -5,6 +5,7 @@
     "curvy": "1.0.9"
   },
   "changesets": [
+    "affine2d-transforms",
     "arc-length-sampling",
     "bezier-subdivide",
     "cardinal-options",
@@ -22,6 +23,7 @@
     "matrix-invertible-trait",
     "matrix4x4-primitives",
     "module-restructure",
+    "numerical-robustness",
     "path-axis-monotonicity",
     "path-solveAt-knot-fix",
     "polynomial-unit-range-interval-approx",
@@ -29,6 +31,7 @@
     "punch-list",
     "rational-approximation",
     "rational-curves",
+    "rational-easing",
     "rename-curvature-aligned",
     "solution-type",
     "sour-apples-like",
