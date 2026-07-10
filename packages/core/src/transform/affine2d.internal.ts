@@ -54,10 +54,10 @@ export const fromMatrix = (matrix: Matrix3x3): Affine2d => {
     Math.abs(matrix.m11),
     Math.abs(matrix.m12),
   )
-  const zeroBand = { absolute: EPSILON + RELATIVE_TOLERANCE * scale }
+  const zeroTolerance = EPSILON + RELATIVE_TOLERANCE * scale
   invariant(
-    coincident(matrix.m20, 0, zeroBand) &&
-      coincident(matrix.m21, 0, zeroBand) &&
+    coincident(matrix.m20, 0, zeroTolerance) &&
+      coincident(matrix.m21, 0, zeroTolerance) &&
       coincident(matrix.m22, 1),
     'Affine2d requires the third row of its matrix to be [0, 0, 1]',
   )

@@ -65,19 +65,22 @@ export function epsEquals(a: number, b: number, eps: number = EPSILON): boolean 
  * the band. Pairwise semantics are intentional (e.g. path continuity checks
  * each junction locally).
  *
+ * The tolerance parameters are positional, mirroring {@link epsEquals}: the
+ * common override is `absolute` alone, for a domain with a known resolution.
+ *
  * @param a - The first value.
  * @param b - The second value.
- * @param options - Optional `absolute` and `relative` tolerance overrides.
+ * @param absolute - Absolute floor of the band. Defaults to {@link EPSILON}.
+ * @param relative - Magnitude-proportional term of the band. Defaults to {@link RELATIVE_TOLERANCE}.
  * @returns `true` when the values are equal to within the combined band.
  * @since 2.0.0
  */
 export function coincident(
   a: number,
   b: number,
-  options?: { readonly absolute?: number; readonly relative?: number },
+  absolute: number = EPSILON,
+  relative: number = RELATIVE_TOLERANCE,
 ): boolean {
-  const absolute = options?.absolute ?? EPSILON
-  const relative = options?.relative ?? RELATIVE_TOLERANCE
   return Math.abs(a - b) <= absolute + relative * Math.max(Math.abs(a), Math.abs(b))
 }
 

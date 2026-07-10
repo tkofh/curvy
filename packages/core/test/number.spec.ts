@@ -30,8 +30,8 @@ describe('coincident', () => {
   })
 
   test('accepts explicit tolerance overrides', () => {
-    expect(coincident(0, 0.5, { absolute: 1 })).toBe(true)
-    expect(coincident(1e9, 1e9 + 1, { relative: 1e-8 })).toBe(true)
-    expect(coincident(1, 1 + 1e-11, { absolute: 0, relative: 0 })).toBe(false)
+    expect(coincident(0, 0.5, 1)).toBe(true)
+    expect(coincident(1e9, 1e9 + 1, undefined, 1e-8)).toBe(true)
+    expect(coincident(1, 1 + 1e-11, 0, 0)).toBe(false)
   })
 })
