@@ -6,9 +6,10 @@ import type * as Vector4 from '../vector/vector4.ts'
  * The cubic Bézier characteristic matrix.
  *
  * Maps Bernstein-basis control points `(P₀, P₁, P₂, P₃)` to monomial cubic
- * coefficients `(c₀, c₁, c₂, c₃)` for `c₀ + c₁·t + c₂·t² + c₃·t³`. The matrix
- * IS the Bézier spline family — combined with control points (via {@link apply}),
- * it produces the cubic polynomial that parameterizes the curve.
+ * coefficients `(c₀, c₁, c₂, c₃)` for `c₀ + c₁·t + c₂·t² + c₃·t³`. The
+ * matrix is the spline family's defining data: combined with control
+ * points via `apply`, it produces the cubic polynomial that parameterizes
+ * the curve.
  *
  * @since 2.0.0
  */
@@ -34,8 +35,8 @@ export const cubicBezier: Matrix4x4.Matrix4x4 = Matrix4x4.make(
 /**
  * The cubic Hermite characteristic matrix.
  *
- * Maps Hermite control data `(P₀, V₀, P₁, V₁)` — two endpoints and two
- * tangent vectors — to monomial cubic coefficients.
+ * Maps Hermite control data `(P₀, V₀, P₁, V₁)`, two endpoints and two
+ * tangent vectors, to monomial cubic coefficients.
  *
  * @since 2.0.0
  */
@@ -93,16 +94,15 @@ const cardinalCache = new Map<number, Matrix4x4.Matrix4x4>()
  * The cubic Cardinal spline characteristic matrix, parameterized by tension.
  *
  * Maps four control points to the monomial cubic coefficients of one
- * Cardinal segment. The tension `s` controls how tightly the curve hugs
- * the control points: `s = 0` produces straight-line segments between
- * adjacent points, `s = 0.5` is the Catmull-Rom variant (see
- * {@link cubicCatmullRom}), and higher values produce looser, more curved
- * shapes.
+ * Cardinal segment. The tension controls how tightly the curve hugs the
+ * control points: `0` produces straight-line segments between adjacent
+ * points, `0.5` is the Catmull-Rom variant (`cubicCatmullRom`), and
+ * higher values produce looser, more curved shapes.
  *
- * Cached per tension value — repeated calls with the same tension return
+ * Cached per tension value: repeated calls with the same tension return
  * the same matrix instance.
  *
- * @param tension - The tension parameter.
+ * @param tension - How tightly the curve hugs the control points; `0` gives straight segments, `0.5` Catmull-Rom.
  * @returns The characteristic matrix for that tension.
  * @since 2.0.0
  */
@@ -133,9 +133,8 @@ export const cubicCardinal = (tension: number): Matrix4x4.Matrix4x4 => {
 }
 
 /**
- * The cubic Catmull-Rom characteristic matrix — Cardinal with tension `0.5`.
- * The most common Cardinal-family variant; reused widely enough to deserve
- * a constant.
+ * The cubic Catmull-Rom characteristic matrix: Cardinal with tension
+ * `0.5`, the most common Cardinal-family variant.
  *
  * @since 2.0.0
  */
@@ -152,8 +151,8 @@ export const cubicCatmullRom: Matrix4x4.Matrix4x4 = cubicCardinal(0.5)
  * The polynomial 2D spline pipeline applies this with two channels (x, y);
  * the rational 2D pipeline uses three (x, y, w) where `w` is the projective
  * denominator. Higher channel counts generalize to 3D, rational 3D, and
- * beyond — the characteristic matrix doesn't care about the geometric
- * domain, only about how to combine four samples per channel.
+ * beyond: the characteristic matrix reads nothing about the geometric
+ * domain, only how to combine four samples per channel.
  *
  * @param matrix - The characteristic matrix of the spline family.
  * @param channels - One `Vector4` per output polynomial, packing the four control values for that channel.
