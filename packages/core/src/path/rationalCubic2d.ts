@@ -13,14 +13,14 @@ import * as internal from './rationalCubic2d.internal.ts'
  *
  * Holds a non-empty sequence of `RationalCubicCurve2d` segments; iteration
  * yields the segments in order. The path parameter `u ∈ [0, 1]` is mapped
- * uniformly across segments — `u = 0` is the start of the first segment,
+ * uniformly across segments: `u = 0` is the start of the first segment,
  * `u = 1` is the end of the last segment, and intermediate values pick a
  * segment by index and a local parameter within it.
  *
  * Counterpart to `CubicPath2d` for curves whose evaluation includes the
  * homogeneous-to-plane projection.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly; no operation mutates a path.
  *
  * @since 2.0.0
  */
@@ -41,8 +41,9 @@ export const isRationalCubicPath2d: (p: unknown) => p is RationalCubicPath2d =
 /**
  * Creates a new `RationalCubicPath2d` from a sequence of curves.
  *
- * @param curves - The curves to create the path from.
+ * @param curves - The curves to create the path from; at least one is required.
  * @returns A new `RationalCubicPath2d` instance.
+ * @throws `Error` when called with no curves.
  * @since 2.0.0
  */
 export const make: (...curves: ReadonlyArray<RationalCubicCurve2d>) => RationalCubicPath2d =
@@ -51,8 +52,9 @@ export const make: (...curves: ReadonlyArray<RationalCubicCurve2d>) => RationalC
 /**
  * Creates a new `RationalCubicPath2d` from an array of curves.
  *
- * @param curves - The curves to create the path from.
+ * @param curves - The curves to create the path from; at least one is required.
  * @returns A new `RationalCubicPath2d` instance.
+ * @throws `Error` when the array is empty.
  * @since 2.0.0
  */
 export const fromArray: (curves: ReadonlyArray<RationalCubicCurve2d>) => RationalCubicPath2d =
@@ -82,9 +84,12 @@ export const solve: {
   /**
    * Evaluates the rational cubic path at parameter `u ∈ [0, 1]`.
    *
-   * Picks the segment containing `u` (uniform mapping across segments) and
-   * delegates to `RationalCubicCurve2d.solve` on that segment with the local
-   * parameter.
+   * Segments split `u` uniformly: each curve gets an equal share of the
+   * parameter range, regardless of its arc length. The selected segment's
+   * curve is evaluated at the corresponding local parameter.
+   *
+   * `u` is not range-checked; values outside `[0, 1]` index past the
+   * segment array and fail.
    *
    * @param p - The path to evaluate.
    * @param u - The path parameter in `[0, 1]`.
@@ -107,10 +112,10 @@ export const boundingBox: {
    * Computes a closed axis-aligned bounding box for a rational cubic path,
    * tight to within `tolerance` per side.
    *
-   * Per-segment delegates to `RationalCubicCurve2d.boundingBox(c, tolerance)`
-   * — recursive subdivision producing a hull-AABB union tight to within
-   * `tolerance` per side. The path box is the union of segment boxes; since
-   * each segment box has slack ≤ tolerance per side, so does the union.
+   * Each segment's box is `RationalCubicCurve2d.boundingBox` at the same
+   * `tolerance`: recursive subdivision producing a hull-AABB union. The
+   * path box is the union of segment boxes; since each segment box has
+   * slack ≤ `tolerance` per side, so does the union.
    *
    * @param p - The rational cubic path.
    * @param tolerance - Maximum allowed slack per side; must be positive.
@@ -135,7 +140,7 @@ export const approximateAsCubicPath: {
    * deviates from a polynomial-cubic candidate by at most `tolerance`; the
    * surviving candidates are concatenated into a new path.
    *
-   * Lossy in general — only exact when every input segment has uniform
+   * Lossy in general: only exact when every input segment has uniform
    * weights, in which case segment count is preserved. Tighter tolerance
    * produces more segments.
    *

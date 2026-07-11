@@ -18,15 +18,14 @@ import {
 } from './traits.ts'
 
 /**
- * Generic 2D path — a sequence of curves of a single kind `C` plus optional
+ * Generic 2D path: a sequence of curves of a single kind `C` plus optional
  * trait brands (`Continuous`, `MonotonicX`, etc.) tracking properties of the
  * path as a whole.
  *
  * Each concrete path kind (`LinearPath2d`, `QuadraticPath2d`, `CubicPath2d`)
  * is a `Path2d<TheirCurveKind, Trait>` plus a per-kind `TypeId` slot for
  * cheap runtime identification. The per-kind modules re-export an operation
- * surface derived from {@link makeMethods} over their curve's
- * {@link Curve2dOps}.
+ * surface derived from `makeMethods` over their curve's `Curve2dOps`.
  *
  * @since 2.0.0
  */
@@ -59,13 +58,16 @@ export class Path2dImpl<C> extends Pipeable implements Path2d<C, unknown> {
 
 /**
  * Builds the bundle of generic path operations for a curve kind `C`, given
- * that curve's {@link Curve2dOps} and the per-kind `TypeId` symbol. Each
+ * that curve's `Curve2dOps` and the per-kind `TypeId` symbol. Each
  * polynomial-degree path module calls this once and re-exports the returned
  * functions with curve-narrowed signatures.
  *
  * `ops` and `typeId` are captured by closure, so the returned operations
  * incur no per-call lookup overhead.
  *
+ * @param typeId - The per-kind brand symbol stamped onto each path instance.
+ * @param ops - The curve kind's operation bundle.
+ * @returns The generic path operations, specialized to `C`.
  * @since 2.0.0
  */
 export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
