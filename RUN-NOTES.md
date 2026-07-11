@@ -551,3 +551,45 @@ Other findings:
   whose documented call throws (`Matrix3x3.solveSystem`). "An example
   ships only verified — run it" is the single highest-value rule in the
   skill for this codebase.
+
+## Feedback round 1 (2026-07-11)
+
+Tim's review of the pass surfaced two trends, now encoded in the skills
+(comment-doctor: member-contract placement, House Style + failure mode
+10; prose-doctor technical register: "Layout carries the joints") and
+applied here as three commits.
+
+- **Member migration.** Interface blocks that absorbed their members'
+  contracts now name only the type's role; the contracts moved into
+  per-property JSDoc, where hover and autocomplete inside an object
+  literal actually deliver them. Touched: Cardinal `Options` and
+  `Cardinal2d`, Solution `One`/`Two`/`Three`, `Bounds` (endpoint-order
+  caveat on `start`/`end`), `ScaleShift`, `Weighted.weight`,
+  `RationalCubicCurve2d.x`/`y`/`w`, and `dimensions.ts` — previously
+  undocumented, but its properties are the hover targets for
+  `Vector2.x` and every curve's `.x`/`.y` (interfaces dated
+  `@since 2.0.0`; introduced in the 2.0 rework, first shipped in
+  `2.0.0-alpha.0`). Matrix elements, polynomial coefficients, and
+  `Affine2d.matrix` already followed the pattern; property blocks carry
+  no `@since`, matching that precedent.
+- **Semicolon sweep.** All 186 prose semicolon joints in public doc
+  comments became sentences (or a comma where the second half was an
+  apposition). No survivors claimed the tight-antithesis or comma-list
+  exemptions; the one untouched semicolon sits in an `@example` code
+  comment (`quadratic.ts` domain example), which is code.
+- **Colon sweep.** 153 clause-gluing colons converted: sentence breaks
+  for claim-plus-elaboration, ", so"/", since" for causal glue, comma
+  appositions for definitional renames, and `@returns` folds where the
+  glued clause was the return description all along (path `length` and
+  `boundingBox`, polynomial `roots`/`extreme`/`stationaryPoints`,
+  `unitRange` — each fold also replaced an `@returns` that restated the
+  name). 78 colons remain by design: value enumerations (matrix
+  row/column selectors), labels (`Default: 0.5`), formula and code
+  introductions (`closed form: ...`), and notation glosses
+  (`M · v`: operand order).
+
+Checks rerun after the three commits: typecheck clean, oxlint 0/0,
+oxfmt clean, vitest 553/553, and the `f9baeb0..HEAD` diff over
+`packages/core/src` contains only comment lines. Tim's concurrent
+working-tree edits (`utils.ts` provenance header, `affine2d.internal.ts`
+refactor) were kept out of these commits via hunk-level staging.
