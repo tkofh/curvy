@@ -17,10 +17,50 @@ type AnyFunction = (...args: Array<any>) => any
 // or a deferred closure.
 
 export const dual: {
+  /**
+   * Builds a dual-signature function from a data-first implementation.
+   *
+   * The result dispatches on argument count. A call with at least `arity`
+   * arguments runs `body` directly; a call with fewer returns
+   * `(self) => body(self, ...args)`, the data-last form.
+   *
+   * Count dispatch cannot see types, so a data-first call that elides an
+   * optional trailing argument is routed data-last. For signatures with
+   * optional or rest parameters, use the predicate overload.
+   *
+   * The type parameters declare the two public signatures; `dual` returns
+   * their intersection without checking `body` against `DataLast`.
+   *
+   * @param arity - Parameter count of the data-first signature. Must be at least 2.
+   * @param body - The data-first implementation.
+   * @returns A function callable in both shapes.
+   * @throws `RangeError` when `arity` is `0` or `1`.
+   * @example
+   * ```ts
+   * const scaleBy = dual<
+   *   (factor: number) => (value: number) => number,
+   *   (value: number, factor: number) => number
+   * >(2, (value, factor) => value * factor)
+   *
+   * scaleBy(10, 2) // 20 (data-first)
+   * scaleBy(2)(10) // 20 (data-last)
+   * ```
+   * @since 1.0.4
+   */
   <DataLast extends AnyFunction, DataFirst extends AnyFunction>(
     arity: Parameters<DataFirst>['length'],
     body: DataFirst,
   ): DataLast & DataFirst
+  /**
+   * Builds a dual-signature function that asks `isDataFirst` to classify
+   * each call. Use it for signatures where argument count is ambiguous:
+   * optional trailing parameters or rest parameters.
+   *
+   * @param isDataFirst - Receives each call's `arguments` object; `true` routes the call data-first.
+   * @param body - The data-first implementation.
+   * @returns A function callable in both shapes.
+   * @since 1.0.4
+   */
   <DataLast extends AnyFunction, DataFirst extends AnyFunction>(
     isDataFirst: (args: IArguments) => boolean,
     body: DataFirst,
@@ -96,6 +136,25 @@ export const dual: {
   }
 }
 
+/**
+ * Composes functions left to right: `flow(f, g)(x)` is `g(f(x))`.
+ *
+ * The first function sets the composite's parameters and may take any
+ * number of them; each later function is unary, receiving the previous
+ * result. Overloads accept up to nine functions.
+ *
+ * Where `pipe` applies a value immediately, `flow` builds the composite
+ * for later use.
+ *
+ * @param ab - The first function; its parameters become the composite's.
+ * @returns The left-to-right composite of the given functions.
+ * @example
+ * ```ts
+ * const toRange = flow(normalize(0, 10), lerp(100, 200))
+ * toRange(2.5) // 125
+ * ```
+ * @since 2.0.0
+ */
 export function flow<A extends ReadonlyArray<unknown>, B = never>(
   ab: (...a: A) => B,
 ): (...a: A) => B
@@ -254,6 +313,22 @@ export function flow(
   return
 }
 
+/**
+ * Pipes a value through a sequence of unary functions: `pipe(x, f, g)` is
+ * `g(f(x))`.
+ *
+ * `pipe(x)` alone returns `x`. The typed overloads accept up to nineteen
+ * functions after the value. Every dual-signature operation in the library
+ * has a data-last form shaped for these positions.
+ *
+ * @param a - The starting value.
+ * @returns The result of applying every function, in order, to the value.
+ * @example
+ * ```ts
+ * pipe(0.3, normalize(0, 2), lerp(10, 20)) // 11.5
+ * ```
+ * @since 1.0.4
+ */
 export function pipe<A>(a: A): A
 export function pipe<A, B = never>(a: A, ab: (a: A) => B): B
 export function pipe<A, B = never, C = never>(a: A, ab: (a: A) => B, bc: (b: B) => C): C
@@ -732,7 +807,26 @@ export function pipe(...args: [unknown, ...Array<AnyFunction>]): unknown {
   }
 }
 
+/**
+ * Base class supplying a `pipe` method: `value.pipe(f, g)` is
+ * `g(f(value))`.
+ *
+ * The library's value types extend it, so any curvy value can flow
+ * through data-last operations from method position.
+ *
+ * @since 1.0.4
+ */
 export class Pipeable {
+  /**
+   * Pipes this value through a sequence of unary functions, left to right.
+   *
+   * @returns The result of applying every function, in order, to this value; with no arguments, this value.
+   * @example
+   * ```ts
+   * Vector2.make(3, 4).pipe(Vector2.scale(2), Vector2.magnitude) // 10
+   * ```
+   * @since 1.0.4
+   */
   pipe<A>(this: A): A
   pipe<A, B = never>(this: A, ab: (_: A) => B): B
   pipe<A, B = never, C = never>(this: A, ab: (_: A) => B, bc: (_: B) => C): C
@@ -1202,19 +1296,20 @@ export class Pipeable {
 }
 
 /**
- * Asserts that a condition is true, throwing an error with the provided message if it is not.
+ * Throws an `Error` carrying `message` when `condition` is false.
  *
- * @param condition - The condition to assert.
- * @param message - The error message to throw if the condition is false.
- * @throws An error with the provided message if the condition is false.
+ * Declared `asserts condition`: after a call that returns, TypeScript
+ * narrows by whatever `condition` proved.
+ *
+ * @param condition - The claim being asserted.
+ * @param message - The message of the thrown error.
+ * @throws `Error` with `message` when `condition` is false.
  * @example
  * ```ts
- * import { invariant } from 'curvy/utils'
- *
- * invariant(1 + 1 === 2, 'Math is broken!') // No error
- * invariant(1 + 1 === 3, 'Math is broken!') // Throws: Math is broken!
+ * invariant(1 + 1 === 2, 'Math is broken!') // passes
+ * invariant(1 + 1 === 3, 'Math is broken!') // throws Error: Math is broken!
  * ```
- * @since 1.0.0
+ * @since 1.0.4
  */
 export function invariant(condition: boolean, message: string): asserts condition {
   if (!condition) {
