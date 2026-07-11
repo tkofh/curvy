@@ -1,5 +1,96 @@
 # Change Log
 
+## 2.0.0-alpha.15
+
+### Minor Changes
+
+- e1a0f36: **New `curvy/transform` module: `Affine2d`, plus `transform` on every curve, path, and spline.**
+
+  `Affine2d` is an immutable 2D affine transform backed by a homogeneous `Matrix3x3`. Constructors cover the standard family:
+
+  ```ts
+  import { Affine2d } from 'curvy/transform'
+  import { Vector2 } from 'curvy/vector'
+
+  Affine2d.identity
+  Affine2d.translate(10, 0) // or translateBy(Vector2.make(10, 0))
+  Affine2d.rotate(Math.PI / 4) // or rotateAround(theta, origin)
+  Affine2d.scale(2) // or scale(sx, sy), scaleAround(sx, sy, origin)
+  Affine2d.shear(kx, ky)
+  Affine2d.reflectX // constants; or reflectAcrossLine(origin, direction)
+  Affine2d.fromMatrix(m) // validates the bottom row is affine
+  ```
+
+  `andThen` composes transforms; `apply` / `applyTo` send a `Vector2` through one. Accessors `translation`, `linear`, and `linearPart` decompose a transform into its translation vector and linear part. `equals` compares component-wise. `inverse` / `inverseUnsafe` and the `Invertible` trait integration are described in the matrix `Invertible` changeset — an invertible `Affine2d` is one whose underlying matrix is invertible.
+
+  **`transform(x, t: Affine2d)` is available on every geometric carrier** — `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`, `RationalCubicCurve2d`, the four path types, and all six spline types — in both data-first and data-last forms. Each returns a new instance of the same kind with the transform applied to its geometry; `Cardinal2d.transform` preserves `tension` and `alpha`, and `RationalBezier2d.transform` preserves control-point weights.
+
+  Transforming **drops trait brands** — the result is unbranded even when the input carried `Monotonic*` or `Continuous`. An affine map can break axis monotonicity outright (rotate an x-increasing curve by 90°), so the brands can't travel through in general; re-refine with the `is*` / `as*` refiners after transforming when the property still matters.
+
+  ```ts
+  import { Affine2d } from 'curvy/transform'
+  import { CubicPath2d } from 'curvy/path'
+
+  const flipped = path.pipe(CubicPath2d.transform(Affine2d.reflectY))
+  ```
+
+  **`Matrix3x3` gains `identity` and `multiply`** (matching `Matrix4x4`'s existing primitives), used by the transform composition but useful standalone.
+
+- e1a0f36: **Scale-aware tolerance policy across the library; `coincident`, `RELATIVE_TOLERANCE`, `Monotonicity.fromDerivativeRange`, and `Solution.clipApprox` added.**
+
+  v2's exact-IEEE value model gets its other half: constructions stay exact, and every predicate that asks "are these the same value?" or "is this sign real?" now widens its tolerance with the magnitude of its inputs, so classification is invariant under uniform scaling of the data. The full model — which checks are exact, which are tolerant, and how to choose tolerances — is documented in `PRECISION.md` at the repo root.
+  - **`coincident(a, b, absolute?, relative?)` in `curvy/number`** is the policy answer to point/value identity: true when `|a - b| <= absolute + relative * max(|a|, |b|)`, defaulting to `absolute = EPSILON` (`1e-10`) and `relative = RELATIVE_TOLERANCE` (`1e-12`, newly exported). The tolerance parameters are positional, mirroring `epsEquals(a, b, eps)`. The relative term covers rounding noise, which grows with magnitude (ulps near `1e9` are ~`1.2e-7`, far outside any fixed band); the absolute term covers the neighborhood of zero, where relative comparison degenerates. Migrated call sites: `Path2d` continuity and knot checks, `toPathData` move-insertion, `solveAtX`/`solveAtY` snapping and bracketing, `equals` on every vector/matrix/polynomial/interval type, `Affine2d.fromMatrix`'s bottom-row test, and `solveByDistance`'s Newton convergence (now relative to segment length — results are invariant under uniform scaling of the path, and long segments no longer burn all 16 iterations). `coincident` is deliberately not transitive; pairwise semantics are intentional. `epsEquals` is unchanged and remains the raw absolute tool.
+
+  - **Monotonicity classifies by derivative values, not root locations.** Root locations are ill-conditioned exactly where classification matters — a root computed from rounded coefficients lands an ulp to either side of the interval boundary. `QuadraticPolynomial.monotonicity` and `CubicPolynomial.monotonicity` now feed the derivative's exact range into the new `Monotonicity.fromDerivativeRange(min, max, tolerance?)`: a sign only counts when it exceeds `RELATIVE_TOLERANCE` scaled by the larger bound. Pinned-endpoint Cardinal paths no longer fail `asMonotonicX` on float-ulp parity; `t³` on `[-1, 1]` correctly classifies `Increasing` (previously `None`); genuine reversals are unaffected. The `Monotonic`/`Increasing`/`Decreasing` brands accordingly carry an honest numerical contract.
+
+  - **Matrix singularity is scale-relative.** `isInvertible` / `asInvertible` / `inverse` on `Matrix3x3`, `Matrix4x4`, and `Affine2d` compare the determinant against `RELATIVE_TOLERANCE` × Hadamard's bound (the product of row norms) instead of an absolute epsilon. `diag(1e-8, 1e-8, 1)` is correctly non-singular; a large matrix with nearly dependent rows is correctly singular.
+
+  - **Quadratic root finding is cancellation-stable.** `QuadraticPolynomial.solveInverse` computes the larger-magnitude root with matching signs and recovers the other from the root product (Vieta) — for `t² + 1e8·t + 1` the small root's error drops from 25% to one ulp. Quadratic and cubic discriminant sign tests move from absolute to relative clamps, so root-count dispatch is scale-invariant and `solveInverse((t-1)², -Number.EPSILON)` reports the double root.
+
+  - **Cubic roots are Newton-refined; `Solution.clipApprox` added.** `CubicPolynomial.solveInverse` follows its closed-form step with up to four Newton iterations, recovering the ~3 digits the trig branch loses when roots cluster. The remaining ulp-level boundary overshoot is handled by `Solution.clipApprox(s, interval)` — like `Solution.clip` but treating values within `EPSILON` of a boundary as in-range, intended for post-processing solver output. The quadratic, cubic, and rational `solveAtX` / `solveAtY` implementations use it internally (the linear inverse is a single division with no drift to absorb, so it keeps the strict clip); this fixes rational cubics whose `t = 1` root drifted past the strict clip.
+
+  - **The uniform B-spline characteristic matrix uses the exact `1/6`.** One entry was `roundDown(1/6)`, a relic of the v1 rounding model; under exact-IEEE values it pushed the c₀ row's partition-of-unity error to `6.7e-9`. Coincident control points now reproduce their point to within an ulp.
+
+- e1a0f36: **Easing constructors on `RationalCubicCurve2d`.** Two ways to build a `y(x)` easing curve directly, without assembling control points by hand.
+
+  **`fromSlopesAndCurvatures(m0, m1, k0, k1)`** takes endpoint slopes _and_ signed curvatures, interpolates `(0, 0)` and `(1, 1)`, and pins `x(t) = t` exactly — so `solveAtX` is exact rather than approximate for these curves.
+
+  ```ts
+  import { RationalCubicCurve2d } from 'curvy/curve'
+
+  // Smoothstep — y'(0) = y'(1) = 0, y''(0) = 6, y''(1) = -6.
+  const smoothstep = RationalCubicCurve2d.fromSlopesAndCurvatures(0, 0, 6, -6)
+
+  // Linear — y(t) = t. Special-cased from the degenerate constraint system.
+  const linear = RationalCubicCurve2d.fromSlopesAndCurvatures(1, 1, 0, 0)
+
+  // Asymmetric ease with a flat start.
+  const ease = RationalCubicCurve2d.fromSlopesAndCurvatures(0, 2, 2, 0.18)
+  ```
+
+  Curvature inputs are the signed differential-geometric curvatures `κ = y''(x) / (1 + y'(x)²)^(3/2)` — the parameterization-invariant "bend" of the easing graph, positive for concave-up. Because `x(t) = t` is pinned, parametric and Cartesian second derivatives agree at the endpoints, so the conversion is simply `y''(0) = κ₀ · (1 + m₀²)^(3/2)` (and likewise at 1). Under the hood the denominator polynomial is quadratic, giving six free parameters for six endpoint constraints; solving for its Bernstein control values is a closed-form 2×2 linear system. Construction throws on non-finite inputs, a singular constraint system (other than the canonical linear case), or a denominator that vanishes on `[0, 1]`.
+
+  Monotonicity is not enforced at construction. Callers who need the `Increasing` brand — for `solveAtX`'s narrowed `Solution.AtMostOne` return — follow construction with `asIncreasing` / `asMonotonic`, which run a rigorous Bernstein sign-convexity check:
+
+  ```ts
+  const ease = RationalCubicCurve2d.asIncreasing(
+    RationalCubicCurve2d.fromSlopesAndCurvatures(0.5, 1.5, 1, -1),
+  )
+  RationalCubicCurve2d.solveAtX(ease, 0.7) // → Solution.AtMostOne<number>
+  ```
+
+  **`fromBezierPoints(p1, p2)` — a 2-arg easing overload.** Pins the endpoints at `(0, 0)` and `(1, 1)` with unit weights, leaving the two interior handles as the only inputs — the rational analog of CSS's `cubic-bezier(x1, y1, x2, y2)`, with weights available for true rational control. Unit weights recover the polynomial Bézier. The four-arg form is unchanged; the runtime dispatches on `arguments.length`.
+
+  ```ts
+  import { Vector2 } from 'curvy/vector'
+
+  // CSS ease-in-out.
+  const ease = RationalCubicCurve2d.fromBezierPoints(
+    Vector2.makeWeighted(0.42, 0, 1),
+    Vector2.makeWeighted(0.58, 1, 1),
+  )
+  ```
+
 ## 2.0.0-alpha.14
 
 ### Major Changes
