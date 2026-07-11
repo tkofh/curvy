@@ -14,11 +14,8 @@ import * as internal from './solution.internal.ts'
  * keep working), and is `Pipeable` (so a `Solution` value can be the head of
  * a `pipe` chain).
  *
- * Variant-specific accessors:
- * - `One<T>`, `Two<T>`, and `Three<T>` all expose `.value: T` (the first /
- *   primary value).
- * - `Two<T>` and `Three<T>` additionally expose `.values: readonly [T, ...]`
- *   for explicit positional access.
+ * Every non-empty variant exposes `.value` for the first value. `Two` and
+ * `Three` add `.values` for positional access.
  *
  * Operations that return narrower cardinalities (e.g. inverse-solving a
  * monotonic polynomial) use the `AtMost{One,Two,Three}` aliases to express
@@ -46,32 +43,45 @@ export interface None extends Pipeable, Iterable<never> {
 export interface One<T> extends Pipeable, Iterable<T> {
   readonly _tag: 'one'
   readonly length: 1
+  /**
+   * The held value.
+   */
   readonly value: T
 }
 
 /**
- * A solution holding exactly two values, in construction order. `.value`
- * is the first; `.values` gives positional access to both.
+ * A solution holding exactly two values, in construction order.
  *
  * @since 2.0.0
  */
 export interface Two<T> extends Pipeable, Iterable<T> {
   readonly _tag: 'two'
   readonly length: 2
+  /**
+   * The first of the two values.
+   */
   readonly value: T
+  /**
+   * Both values, in construction order.
+   */
   readonly values: readonly [T, T]
 }
 
 /**
- * A solution holding exactly three values, in construction order. `.value`
- * is the first; `.values` gives positional access to all three.
+ * A solution holding exactly three values, in construction order.
  *
  * @since 2.0.0
  */
 export interface Three<T> extends Pipeable, Iterable<T> {
   readonly _tag: 'three'
   readonly length: 3
+  /**
+   * The first of the three values.
+   */
   readonly value: T
+  /**
+   * All three values, in construction order.
+   */
   readonly values: readonly [T, T, T]
 }
 

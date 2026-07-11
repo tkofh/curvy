@@ -13,7 +13,17 @@ import type { Pipeable } from '../utils.ts'
  * @since 2.0.0
  */
 export interface Bounds {
+  /**
+   * The start of the range. On a branded `Interval` the constructors
+   * enforce `start <= end`. A structural `Bounds` may hold its endpoints
+   * in either order.
+   */
   readonly start: number
+  /**
+   * The end of the range. On a branded `Interval` the constructors
+   * enforce `start <= end`. A structural `Bounds` may hold its endpoints
+   * in either order.
+   */
   readonly end: number
 }
 
@@ -686,6 +696,12 @@ export const scaleShift: (source: Bounds, target: Bounds) => ScaleShift = intern
  * @since 1.0.0
  */
 export interface ScaleShift {
+  /**
+   * The multiplicative coefficient of the map `x * scale + shift`.
+   */
   readonly scale: number
+  /**
+   * The additive coefficient of the map `x * scale + shift`.
+   */
   readonly shift: number
 }

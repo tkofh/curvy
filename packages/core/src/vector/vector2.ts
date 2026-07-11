@@ -27,7 +27,6 @@ export interface Vector2 extends Pipeable, TwoDimensional<number> {
  * (`add`, `subtract`, `scale`, etc.) where weighted operations are not
  * well-defined.
  *
- * The weight is always finite and positive; the constructors enforce it.
  * Construct via `makeWeighted` (from raw components) or `withWeight` (from
  * an existing `Vector2`).
  *
@@ -35,8 +34,18 @@ export interface Vector2 extends Pipeable, TwoDimensional<number> {
  */
 export interface Weighted extends Pipeable {
   readonly [WeightedVector2TypeId]: WeightedVector2TypeId
+  /**
+   * The point's x coordinate.
+   */
   readonly x: number
+  /**
+   * The point's y coordinate.
+   */
   readonly y: number
+  /**
+   * The point's influence weight in rational evaluation. Always finite
+   * and positive. The constructors throw for other values.
+   */
   readonly weight: number
 }
 

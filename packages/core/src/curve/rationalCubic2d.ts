@@ -43,8 +43,19 @@ export interface RationalCubicCurve2d<
 > extends Pipeable {
   readonly [RationalCubicCurve2dTypeId]: RationalCubicCurve2dTypeId
   readonly [RationalCurveTraits]: [XTraits, YTraits]
+  /**
+   * The x numerator. The curve's x coordinate at `t` is `x(t) / w(t)`.
+   */
   readonly x: CubicPolynomial
+  /**
+   * The y numerator. The curve's y coordinate at `t` is `y(t) / w(t)`.
+   */
   readonly y: CubicPolynomial
+  /**
+   * The denominator shared by both axes. Constant when the source weights
+   * are all equal, in which case the curve coincides with a polynomial
+   * cubic.
+   */
   readonly w: CubicPolynomial
 }
 

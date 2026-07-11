@@ -9,12 +9,11 @@ import * as internal from './cardinal2d.internal.ts'
 /**
  * A Cardinal spline in 2D space.
  *
- * Carries its parameterization (`tension` and `alpha`) as part of the spline's
- * identity rather than as evaluation arguments: the same control points with
- * different tensions describe different curves, so the spline TYPE includes
- * them. See `Options` for parameter semantics.
+ * Carries its parameterization (`tension` and `alpha`) as part of the
+ * spline's identity rather than as evaluation arguments, since the same
+ * control points with different tensions describe different curves.
  *
- * All fields are readonly; no operation mutates a spline.
+ * All fields are readonly. No operation mutates a spline.
  *
  * The classical Cardinal characteristic matrix (uniform parameterization,
  * arbitrary tension) is exposed as `Characteristic.cubicCardinal(tension)`.
@@ -25,34 +24,51 @@ import * as internal from './cardinal2d.internal.ts'
  */
 export interface Cardinal2d extends Pipeable {
   readonly [Cardinal2dTypeId]: Cardinal2dTypeId
+  /**
+   * The control points the spline interpolates, in order.
+   */
   readonly points: ReadonlyArray<Vector2>
+  /**
+   * How loose or tight the curve is at each interior control point,
+   * resolved from `Options.tension`. `0.5` is classical Catmull-Rom.
+   */
   readonly tension: number
+  /**
+   * How chord lengths between control points scale the tangents, resolved
+   * from `Options.alpha`. `0` is uniform, `0.5` centripetal, `1` chordal.
+   */
   readonly alpha: number
   [Symbol.iterator](): IterableIterator<Vector2>
 }
 
 /**
- * Configuration for a Cardinal spline. Both fields are optional and carry
- * sensible defaults.
- *
- * - **`tension`** controls how loose or tight the curve is at each interior
- *   control point. `tension = 0.5` is classical Catmull-Rom; `tension = 0`
- *   produces zero-tangent endpoints (smoothstep-shaped segments between
- *   consecutive control points); higher values produce looser, more curved
- *   shapes. Default: `0.5`.
- *
- * - **`alpha`** controls how chord lengths between control points scale the
- *   tangents. `alpha = 0` is uniform parameterization (classical Catmull-Rom),
- *   which can produce cusps and self-intersections when control points
- *   cluster. `alpha = 0.5` is centripetal parameterization, Yuksel's
- *   recommended default, eliminating those failure modes at minimal shape
- *   cost. `alpha = 1` is chordal parameterization. Default: `0.5`
- *   (centripetal).
+ * Configuration for a Cardinal spline. Both fields are optional and
+ * default to `0.5`.
  *
  * @since 2.0.0
  */
 export interface Options {
+  /**
+   * How loose or tight the curve is at each interior control point.
+   *
+   * `0.5` is classical Catmull-Rom. `0` produces zero-tangent endpoints
+   * (smoothstep-shaped segments between consecutive control points).
+   * Higher values produce looser, more curved shapes.
+   *
+   * Default: `0.5`.
+   */
   readonly tension?: number
+  /**
+   * How chord lengths between control points scale the tangents.
+   *
+   * `0` is uniform parameterization (classical Catmull-Rom), which can
+   * produce cusps and self-intersections when control points cluster.
+   * `0.5` is centripetal parameterization, Yuksel's recommended default,
+   * eliminating those failure modes at minimal shape cost. `1` is chordal
+   * parameterization.
+   *
+   * Default: `0.5` (centripetal).
+   */
   readonly alpha?: number
 }
 
