@@ -307,7 +307,8 @@ export const multiply = dual<
 )
 
 // Singularity threshold relative to the matrix's own scale, via Hadamard's
-// bound |det| ≤ Π row norms. See the Matrix3x3 counterpart for the rationale.
+// bound |det| <= product of row norms. See the Matrix3x3 counterpart for the
+// rationale.
 const singularityThreshold = (m: Matrix4x4): number =>
   RELATIVE_TOLERANCE *
   Math.hypot(m.m00, m.m01, m.m02, m.m03) *

@@ -66,4 +66,4 @@ import { CubicPolynomial } from 'curvy/polynomial'
 const [c0, c1, c2, c3] = CubicPolynomial.coefficients(p)
 ```
 
-Tuple arity matches the polynomial's degree (`Linear` → `[number, number]`, etc.).
+Tuple arity matches the polynomial's degree (`Linear` -> `[number, number]`, etc.).

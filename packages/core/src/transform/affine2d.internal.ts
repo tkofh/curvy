@@ -34,6 +34,15 @@ class Affine2dImpl extends Pipeable implements Affine2d<unknown> {
   }
 }
 
+const affineMatrix = (
+  m00: number,
+  m01: number,
+  m02: number,
+  m10: number,
+  m11: number,
+  m12: number,
+): Matrix3x3 => matrix3x3.make(m00, m01, m02, m10, m11, m12, 0, 0, 1)
+
 /** @internal */
 export const isAffine2d = (a: unknown): a is Affine2d =>
   typeof a === 'object' && a !== null && Affine2dTypeId in a
@@ -77,49 +86,44 @@ export const translateBy = (v: Vector2): Affine2d => translate(v.x, v.y)
 /** @internal */
 export const scale = (sx: number, sy?: number): Affine2d => {
   const y = sy ?? sx
-  return new Affine2dImpl(matrix3x3.make(sx, 0, 0, 0, y, 0, 0, 0, 1))
+  return new Affine2dImpl(affineMatrix(sx, 0, 0, 0, y, 0))
 }
 
 /** @internal */
 export const scaleAround = (sx: number, sy: number, origin: Vector2): Affine2d => {
-  // T(o) · S(sx, sy) · T(-o), expanded so the third row stays exact.
-  return new Affine2dImpl(
-    matrix3x3.make(sx, 0, origin.x * (1 - sx), 0, sy, origin.y * (1 - sy), 0, 0, 1),
-  )
+  // T(o) * S(sx, sy) * T(-o), expanded so the third row stays exact.
+  return new Affine2dImpl(affineMatrix(sx, 0, origin.x * (1 - sx), 0, sy, origin.y * (1 - sy)))
 }
 
 /** @internal */
 export const rotate = (theta: number): Affine2d => {
   const c = Math.cos(theta)
   const s = Math.sin(theta)
-  return new Affine2dImpl(matrix3x3.make(c, -s, 0, s, c, 0, 0, 0, 1))
+  return new Affine2dImpl(affineMatrix(c, -s, 0, s, c, 0))
 }
 
 /** @internal */
 export const rotateAround = (theta: number, origin: Vector2): Affine2d => {
-  // T(o) · R(θ) · T(-o), expanded.
+  // T(o) * R(theta) * T(-o), expanded.
   const c = Math.cos(theta)
   const s = Math.sin(theta)
   return new Affine2dImpl(
-    matrix3x3.make(
+    affineMatrix(
       c,
       -s,
       origin.x - origin.x * c + origin.y * s,
       s,
       c,
       origin.y - origin.x * s - origin.y * c,
-      0,
-      0,
-      1,
     ),
   )
 }
 
 /** @internal */
-export const reflectX: Affine2d = new Affine2dImpl(matrix3x3.make(1, 0, 0, 0, -1, 0, 0, 0, 1))
+export const reflectX: Affine2d = new Affine2dImpl(affineMatrix(1, 0, 0, 0, -1, 0))
 
 /** @internal */
-export const reflectY: Affine2d = new Affine2dImpl(matrix3x3.make(-1, 0, 0, 0, 1, 0, 0, 0, 1))
+export const reflectY: Affine2d = new Affine2dImpl(affineMatrix(-1, 0, 0, 0, 1, 0))
 
 /** @internal */
 export const reflectAcrossLine = (origin: Vector2, direction: Vector2): Affine2d => {
@@ -130,31 +134,28 @@ export const reflectAcrossLine = (origin: Vector2, direction: Vector2): Affine2d
 
   // Householder-style reflection across the line through `origin` with unit
   // direction (dx, dy):
-  //   M = [dx² - dy²,   2 dx dy  ]
-  //       [ 2 dx dy,   dy² - dx² ]
+  //   M = [dx^2 - dy^2,   2 dx dy  ]
+  //       [ 2 dx dy,   dy^2 - dx^2 ]
   // Then translate so the line passes through `origin` instead of the origin.
   const a = dx * dx - dy * dy
   const b = 2 * dx * dy
-  const negA = -a // dy² - dx²
+  const negA = -a // dy^2 - dx^2
 
   return new Affine2dImpl(
-    matrix3x3.make(
+    affineMatrix(
       a,
       b,
       origin.x - a * origin.x - b * origin.y,
       b,
       negA,
       origin.y - b * origin.x - negA * origin.y,
-      0,
-      0,
-      1,
     ),
   )
 }
 
 /** @internal */
 export const shear = (kx: number, ky: number): Affine2d =>
-  new Affine2dImpl(matrix3x3.make(1, kx, 0, ky, 1, 0, 0, 0, 1))
+  new Affine2dImpl(affineMatrix(1, kx, 0, ky, 1, 0))
 
 /** @internal */
 export const andThen = dual<
@@ -163,7 +164,7 @@ export const andThen = dual<
 >(
   2,
   // `andThen(a, b)` (or `a.pipe(andThen(b))`) means "apply `a` first, then
-  // `b`". For column-vector points that is `b · a`.
+  // `b`". For column-vector points that is `b * a`.
   (a: Affine2d, b: Affine2d) => new Affine2dImpl(matrix3x3.multiply(b.matrix, a.matrix)),
 )
 
@@ -220,7 +221,7 @@ export const translation = (a: Affine2d): Vector2 => vector2.make(a.matrix.m02, 
 /** @internal */
 export const linearPart = (a: Affine2d): Affine2d => {
   const m = a.matrix
-  return new Affine2dImpl(matrix3x3.make(m.m00, m.m01, 0, m.m10, m.m11, 0, 0, 0, 1))
+  return new Affine2dImpl(affineMatrix(m.m00, m.m01, 0, m.m10, m.m11, 0))
 }
 
 /** @internal */

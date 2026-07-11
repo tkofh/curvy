@@ -6,7 +6,11 @@ import * as internal from './vector4.internal.ts'
 /**
  * A 4D vector.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly. No operation mutates a vector. Operations
+ * return new instances, except that identity operations (like scaling by
+ * exactly `1`) may return the input itself.
+ *
+ * Construct via `make` or `fromTuple`.
  *
  * @since 1.0.0
  */
@@ -16,6 +20,9 @@ export interface Vector4 extends Pipeable, FourDimensional<number> {
 
 /**
  * Checks if a value is a `Vector4`.
+ *
+ * True only for values built by this module's constructors, which carry
+ * the brand. A structural `{ x, y, z, w }` object is not a `Vector4`.
  *
  * @param v - The value to check.
  * @returns `true` if the value is a `Vector4`, `false` otherwise.
@@ -34,7 +41,7 @@ export const equals: {
    * @param a - The first vector.
    * @param b - The second vector.
    * @returns `true` when each pair of components is within tolerance.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (a: Vector4, b: Vector4): boolean
   /**
@@ -42,35 +49,36 @@ export const equals: {
    *
    * @param b - The second vector.
    * @returns A function that takes the first vector and returns the comparison result.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (b: Vector4): (a: Vector4) => boolean
 } = internal.equals
 
 export const make: {
   /**
-   * Creates a new `Vector4` instance.
+   * Creates a new `Vector4` with all four components set to `xyzw`.
    *
-   * @param xyzw - The x, y, z, and w components of the vector.
+   * @param xyzw - The value of the x, y, z, and w components.
    * @returns A new `Vector4` instance.
    * @since 1.0.0
    */
   (xyzw: number): Vector4
   /**
-   * Creates a new `Vector4` instance.
+   * Creates a new `Vector4` with the y, z, and w components all set to
+   * `yzw`.
    *
    * @param x - The x component of the vector.
-   * @param yzw - The y, z, and w components of the vector.
+   * @param yzw - The value of the y, z, and w components.
    * @returns A new `Vector4` instance.
    * @since 1.0.0
    */
   (x: number, yzw: number): Vector4
   /**
-   * Creates a new `Vector4` instance.
+   * Creates a new `Vector4` with the z and w components both set to `zw`.
    *
    * @param x - The x component of the vector.
    * @param y - The y component of the vector.
-   * @param zw - The z and w components of the vector.
+   * @param zw - The value of both the z and w components.
    * @returns A new `Vector4` instance.
    * @since 1.0.0
    */
@@ -90,7 +98,7 @@ export const make: {
 
 /**
  * Creates a new `Vector4` instance from a `[x, y, z, w]` tuple. Inverse of
- * {@link components}.
+ * `components`.
  *
  * @param t - The `[x, y, z, w]` tuple.
  * @returns A new `Vector4` instance.
@@ -100,29 +108,27 @@ export const fromTuple: (t: readonly [number, number, number, number]) => Vector
   internal.fromTuple
 
 /**
- * Transposes a 4-tuple of items into one or more `Vector4`s, one per channel
- * extracted by the projection function.
+ * Builds one `Vector4` per projected channel from four items. For each
+ * output channel, takes the corresponding number from each projected item
+ * and packs the four into a `Vector4`. The data-layout transformation
+ * NumPy calls a transpose, FP calls `unzip`, and GPUs call a gather.
  *
- * For each output channel, takes the corresponding number from each of the
- * four projected items and packs them into a `Vector4` — the data-layout
- * transformation NumPy calls a transpose, FP calls `unzip`, GPUs call a
- * gather, and DSP people inexplicably call deinterleaving.
+ * The projection runs once per item and must return the same number of
+ * channels for each. The return-tuple arity determines the number of
+ * output vectors and is preserved in the return type.
  *
- * The projection's return-tuple arity determines the number of output
- * vectors, and that arity is preserved in the return type.
- *
+ * @param inputs - Exactly four items of any type.
+ * @param project - Extracts a fixed-arity tuple of numbers, one per output channel.
+ * @returns A tuple of `Vector4`s with the same arity as the projection's return tuple.
  * @example
  * ```ts
  * // Pack the x and y coordinates of four control points into two Vector4s.
  * const [xs, ys] = Vector4.transpose(
- *   [p0, p1, p2, p3],
- *   (p) => [p.x, p.y],
+ *   [Vector2.make(1, 2), Vector2.make(3, 4), Vector2.make(5, 6), Vector2.make(7, 8)],
+ *   Vector2.components,
  * )
+ * // xs = (1, 3, 5, 7), ys = (2, 4, 6, 8)
  * ```
- *
- * @param inputs - Exactly four items of any type.
- * @param project - A function returning a fixed-arity tuple of numbers — one per output channel.
- * @returns A tuple of `Vector4`s with the same arity as the projection's return tuple.
  * @since 2.0.0
  */
 export const transpose: <T, const Channels extends ReadonlyArray<number>>(
@@ -134,16 +140,19 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
  * Gets the magnitude of a `Vector4`.
  *
  * @param vector - The vector to calculate the magnitude of.
- * @returns The magnitude of the vector.
+ * @returns The Euclidean length `sqrt(x^2 + y^2 + z^2 + w^2)`.
  * @since 1.0.0
  */
 export const magnitude: (vector: Vector4) => number = internal.magnitude
 
 /**
- * Normalizes a `Vector4`.
+ * Normalizes a `Vector4` to magnitude `1`, preserving its direction.
+ *
+ * The zero vector has no direction, so `normalize(zero)` is
+ * `(NaN, NaN, NaN, NaN)`.
  *
  * @param vector - The vector to normalize.
- * @returns A new `Vector4` instance with the same direction as the input vector but with a magnitude of 1.
+ * @returns A new `Vector4` instance with the same direction and a magnitude of 1.
  * @since 1.0.0
  */
 export const normalize: (vector: Vector4) => Vector4 = internal.normalize
@@ -169,31 +178,38 @@ export const dot: {
 } = internal.dot
 
 /**
- * Returns the components of a `Vector4` as an array.
+ * Returns the components of a `Vector4` as an `[x, y, z, w]` tuple.
  *
- * @param v - The vector to get the components of.
- * @returns An array containing the x, y, z, and w components of the vector.
+ * Inverse of `fromTuple`.
+ *
+ * @param v - The vector to read.
+ * @returns The `[x, y, z, w]` tuple.
  * @since 1.0.0
  */
 export const components: (v: Vector4) => [number, number, number, number] = internal.components
 
 /**
- * Applies the softmax function to a `Vector4`.
+ * Applies the softmax function to a `Vector4`: `(e^x, e^y, e^z, e^w)` scaled
+ * to sum to `1`.
  *
- * @param v - The vector to calculate the softmax of.
- * @returns A new `Vector4` instance representing the softmax of the input vector.
+ * All result components are positive and sum to `1`. Equal inputs produce
+ * `(1/4, 1/4, 1/4, 1/4)`. Large components do not overflow.
+ *
+ * @param v - The vector to transform.
+ * @returns A new `Vector4` with positive components summing to `1`.
+ * @since 1.0.0
  */
 export const softmax: (v: Vector4) => Vector4 = internal.softmax
 
 /**
- * Creates a zero vector.
+ * The zero vector `(0, 0, 0, 0)`, the additive identity.
  *
  * @since 1.0.0
  */
 export const zero = make(0)
 
 /**
- * The constant vector `(1, 1, 1, 1)`.
+ * The all-ones vector `(1, 1, 1, 1)`, the `hadamard` identity.
  *
  * @since 1.0.0
  */
@@ -222,19 +238,19 @@ export const add: {
 
 export const subtract: {
   /**
-   * Subtracts one `Vector4` instance from another.
+   * Subtracts `b` from `a`, component-wise.
    *
-   * @param a - The first vector.
-   * @param b - The second vector.
-   * @returns A new `Vector4` instance representing the difference of the two vectors.
+   * @param a - The vector subtracted from.
+   * @param b - The vector to subtract.
+   * @returns A new `Vector4` representing `a - b`.
    * @since 1.0.0
    */
   (a: Vector4, b: Vector4): Vector4
   /**
-   * Subtracts a `Vector4` instance from another vector.
+   * Subtracts the given vector from another, component-wise.
    *
-   * @param b - The second vector.
-   * @returns A function that takes the first vector and returns the difference.
+   * @param b - The vector to subtract.
+   * @returns A function that takes a vector and subtracts `b` from it.
    * @since 1.0.0
    */
   (b: Vector4): (a: Vector4) => Vector4
@@ -272,9 +288,9 @@ export const scale: {
   /**
    * Scales a `Vector4` by a scalar.
    *
-   * @param s - The scalar to scale the vector by.
    * @param v - The vector to scale.
-   * @returns A new `Vector4` instance representing the scaled vector.
+   * @param s - The scalar to scale the vector by.
+   * @returns A new `Vector4` scaled by `s`, or the input instance itself when `s` is exactly `1`.
    * @since 1.0.0
    */
   (v: Vector4, s: number): Vector4

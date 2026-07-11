@@ -10,21 +10,24 @@ import type { Invertible, MatrixTraits } from './traits.ts'
 export type { Invertible } from './traits.ts'
 
 /**
- * A coordinate in a 4x4 matrix.
+ * A row or column selector for a `Matrix4x4`: a numeric index
+ * (`0 | 1 | 2 | 3`) or the equivalent component name
+ * (`'x' | 'y' | 'z' | 'w'`).
  *
  * @since 1.0.0
  */
 export type Matrix4x4Coordinate = FourDimensionalIndex | FourDimensionalComponent
 
 /**
- * A 4x4 matrix.
+ * A 4x4 matrix, stored as sixteen `m<row><column>` fields.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly. No operation mutates a matrix. Construct via
+ * `make`, `fromRows`, or `fromColumns`.
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
  * brands as the matrix is refined via `isInvertible` / `asInvertible`. The
- * runtime value carries no trait data — `Traits` only flows through the type
- * system to enable tighter return types on operations like {@link inverse}.
+ * runtime value carries no trait data. `Traits` only flows through the type
+ * system to enable tighter return types on operations like `inverse`.
  *
  * @since 1.0.0
  */
@@ -101,6 +104,9 @@ export interface Matrix4x4<out Traits = unknown> extends Pipeable {
 /**
  * Checks if a value is a `Matrix4x4`.
  *
+ * True only for values built by this module's constructors, which carry
+ * the brand. A structural object with `m00`...`m33` fields does not match.
+ *
  * @param m - The value to check.
  * @returns `true` if the value is a `Matrix4x4`, `false` otherwise.
  * @since 1.0.0
@@ -110,7 +116,7 @@ export const isMatrix4x4: (m: unknown) => m is Matrix4x4 = internal.isMatrix4x4
 /**
  * The 4x4 identity matrix.
  *
- * @since 1.1.0
+ * @since 2.0.0
  */
 export const identity: Matrix4x4 = internal.identity
 
@@ -125,7 +131,7 @@ export const equals: {
    * @param a - The first matrix.
    * @param b - The second matrix.
    * @returns `true` when each pair of components is within tolerance.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (a: Matrix4x4, b: Matrix4x4): boolean
   /**
@@ -133,13 +139,18 @@ export const equals: {
    *
    * @param b - The second matrix.
    * @returns A function that takes the first matrix and returns the comparison result.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (b: Matrix4x4): (a: Matrix4x4) => boolean
 } = internal.equals
 
 /**
- * Creates a new `Matrix4x4` instance.
+ * Creates a new `Matrix4x4` instance, in row-major argument order.
+ *
+ * Within the first row, each omitted value copies the previous argument.
+ * Each later row defaults to the first row's values. So `make(1, 2, 3, 4)`
+ * repeats that row four times, `make(5)` fills the matrix with `5`, and
+ * `make()` is the zero matrix.
  *
  * @param m00 - The value of the first row and first column.
  * @param m01 - The value of the first row and second column.
@@ -199,6 +210,8 @@ export const fromRows: (v0: Vector4, v1: Vector4, v2: Vector4, v3: Vector4) => M
  * @param v1 - The second column vector.
  * @param v2 - The third column vector.
  * @param v3 - The fourth column vector.
+ * @returns A new `Matrix4x4` instance.
+ * @since 1.0.0
  */
 export const fromColumns: (v0: Vector4, v1: Vector4, v2: Vector4, v3: Vector4) => Matrix4x4 =
   internal.fromColumns
@@ -207,8 +220,8 @@ export const setRow: {
   /**
    * Sets a row of a `Matrix4x4` to a new vector.
    *
-   * @param m - The matrix to modify.
-   * @param row - The row to set.
+   * @param m - The matrix to update.
+   * @param row - The row to replace: `0`-`3` or `'x'`/`'y'`/`'z'`/`'w'`.
    * @param v - The new vector.
    * @returns A new `Matrix4x4` instance with the specified row set to the new vector.
    * @since 1.0.0
@@ -229,8 +242,8 @@ export const setColumn: {
   /**
    * Sets a column of a `Matrix4x4` to a new vector.
    *
-   * @param m - The matrix to modify.
-   * @param column - The column to set.
+   * @param m - The matrix to update.
+   * @param column - The column to replace: `0`-`3` or `'x'`/`'y'`/`'z'`/`'w'`.
    * @param v - The new vector.
    * @returns A new `Matrix4x4` instance with the specified column set to the new vector.
    * @since 1.0.0
@@ -257,12 +270,16 @@ export const setColumn: {
 export const determinant: (m: Matrix4x4) => number = internal.determinant
 
 /**
- * Calculates the minor of a `Matrix4x4` at a given row and column.
+ * Returns the 3x3 submatrix obtained by deleting one row and one column.
  *
- * @param m - The matrix to calculate the minor of.
- * @param row - The row to exclude.
- * @param column - The column to exclude.
- * @returns The minor of the matrix at the given row and column.
+ * The submatrix itself, not its determinant. Take `Matrix3x3.determinant`
+ * of the result for the scalar minor.
+ *
+ * @param m - The matrix to extract from.
+ * @param row - The row to delete: `0`-`3` or `'x'`/`'y'`/`'z'`/`'w'`.
+ * @param column - The column to delete, same selectors.
+ * @returns The `Matrix3x3` left after deleting the row and column.
+ * @since 1.0.0
  */
 export const minor: (
   m: Matrix4x4,
@@ -272,47 +289,28 @@ export const minor: (
 
 export const vectorProductLeft: {
   /**
-   * Calculates the left vector product of a `Matrix4x4` and a `Vector4`.
+   * Computes `M * v`: the matrix on the left, the vector as a column.
+   * Component `k` of the result is the dot product of row `k` with `v`.
    *
+   * @param m - The matrix to multiply by.
+   * @param v - The vector to transform.
+   * @returns The vector `M * v`.
    * @example
    * ```ts
-   * import * as Matrix4x4 from 'curvy/matrix4x4'
-   * import * as Vector4 from 'curvy/vector4'
-   *
    * const m = Matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
    * const v = Vector4.make(17, 18, 19, 20)
    *
-   * // Result:
-   * // x = 1 * 17 + 2 * 18 + 3 * 19 + 4 * 20
-   * // y = 5 * 17 + 6 * 18 + 7 * 19 + 8 * 20
-   * // z = 9 * 17 + 10 * 18 + 11 * 19 + 12 * 20
-   * // w = 13 * 17 + 14 * 18 + 15 * 19 + 16 * 20
-   * const result = Matrix4x4.vectorProductLeft(m, v)
+   * // x = 1 * 17 + 2 * 18 + 3 * 19 + 4 * 20 = 190
+   * Matrix4x4.vectorProductLeft(m, v) // (190, 486, 782, 1078)
    * ```
-   * @param m - The matrix to multiply.
-   * @param v - The vector to multiply.
-   * @returns The resulting vector.
    * @since 1.0.0
    */
   (m: Matrix4x4, v: Vector4): Vector4
   /**
-   * Calculates the left vector product of a `Matrix4x4` and a `Vector4`.
+   * Computes `M * v`: the matrix on the left, the vector as a column.
    *
-   * @example
-   * ```ts
-   * import * as Matrix4x4 from 'curvy/matrix4x4'
-   * import * as Vector4 from 'curvy/vector4'
-   *
-   * const m = Matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
-   * const v = Vector4.make(17, 18, 19, 20)
-   *
-   * // Result:
-   * // x = 1 * 17 + 2 * 18 + 3 * 19 + 4 * 20
-   * // y = 5 * 17 + 6 * 18 + 7 * 19 + 8 * 20
-   * // z = 9 * 17 + 10 * 18 + 11 * 19 + 12 * 20
-   * // w = 13 * 17 + 14 * 18 + 15 * 19 + 16 * 20
-   * const result = Matrix4x4.vectorProductLeft(v)(m)
-   * ```
+   * @param v - The vector to transform.
+   * @returns A function that takes a matrix and returns `M * v`.
    * @since 1.0.0
    */
   (v: Vector4): (m: Matrix4x4) => Vector4
@@ -320,44 +318,28 @@ export const vectorProductLeft: {
 
 export const vectorProductRight: {
   /**
-   * Calculates the right vector product of a `Matrix4x4` and a `Vector4`.
+   * Computes `v^T * M`: the vector as a row, the matrix on the right.
+   * Component `k` of the result is the dot product of column `k` with `v`.
    *
+   * @param m - The matrix to multiply by.
+   * @param v - The vector to transform.
+   * @returns The vector `v^T * M`.
    * @example
    * ```ts
-   * import * as Matrix4x4 from 'curvy/matrix4x4'
-   * import * as Vector4 from 'curvy/vector4'
-   *
    * const m = Matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
    * const v = Vector4.make(17, 18, 19, 20)
    *
-   * // Result:
-   * // x = 1 * 17 + 5 * 18 + 9 * 19 + 13 * 20
-   * // y = 2 * 17 + 6 * 18 + 10 * 19 + 14 * 20
-   * // z = 3 * 17 + 7 * 18 + 11 * 19 + 15 * 20
-   * // w = 4 * 17 + 8 * 18 + 12 * 19 + 16 * 20
-   * const result = Matrix4x4.vectorProductRight(m, v)
+   * // x = 1 * 17 + 5 * 18 + 9 * 19 + 13 * 20 = 538
+   * Matrix4x4.vectorProductRight(m, v) // (538, 612, 686, 760)
    * ```
    * @since 1.0.0
    */
   (m: Matrix4x4, v: Vector4): Vector4
   /**
-   * Calculates the right vector product of a `Matrix4x4` and a `Vector4`.
+   * Computes `v^T * M`: the vector as a row, the matrix on the right.
    *
-   * @example
-   * ```ts
-   * import * as Matrix4x4 from 'curvy/matrix4x4'
-   * import * as Vector4 from 'curvy/vector4'
-   *
-   * const m = Matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
-   * const v = Vector4.make(17, 18, 19, 20)
-   *
-   * // Result:
-   * // x = 1 * 17 + 5 * 18 + 9 * 19 + 13 * 20
-   * // y = 2 * 17 + 6 * 18 + 10 * 19 + 14 * 20
-   * // z = 3 * 17 + 7 * 18 + 11 * 19 + 15 * 20
-   * // w = 4 * 17 + 8 * 18 + 12 * 19 + 16 * 20
-   * const result = Matrix4x4.vectorProductRight(v)(m)
-   * ```
+   * @param v - The vector to transform.
+   * @returns A function that takes a matrix and returns `v^T * M`.
    * @since 1.0.0
    */
   (v: Vector4): (m: Matrix4x4) => Vector4
@@ -365,20 +347,20 @@ export const vectorProductRight: {
 
 export const multiply: {
   /**
-   * Multiplies two `Matrix4x4` instances. Result is `a · b`.
+   * Multiplies two `Matrix4x4` instances. Result is `a * b`.
    *
    * @param a - The left-hand matrix.
    * @param b - The right-hand matrix.
    * @returns The product matrix.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (a: Matrix4x4, b: Matrix4x4): Matrix4x4
   /**
-   * Multiplies two `Matrix4x4` instances. Result is `a · b`.
+   * Multiplies two `Matrix4x4` instances. Result is `a * b`.
    *
    * @param b - The right-hand matrix.
    * @returns A function that takes the left-hand matrix and returns the product.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (b: Matrix4x4): (a: Matrix4x4) => Matrix4x4
 } = internal.multiply
@@ -390,45 +372,48 @@ export const multiply: {
 export const inverse: {
   /**
    * Returns the inverse of an `Invertible`-branded `Matrix4x4`. Because the
-   * brand guarantees non-singularity, the result is always a single matrix —
+   * brand guarantees non-singularity, the result is always a single matrix,
    * wrapped in `Solution.One`.
    *
    * @param m - The matrix to invert.
+   * @returns The inverse, wrapped in `Solution.One`.
    * @since 2.0.0
    */
   <T extends Invertible>(m: Matrix4x4<T>): Solution.One<Matrix4x4<T>>
   /**
    * Returns the inverse of a `Matrix4x4`. Returns `Solution.none` if the
-   * matrix is singular (determinant approximately zero). Use {@link asInvertible}
-   * or {@link isInvertible} to refine the type and tighten the return to
-   * `Solution.One`, or use {@link inverseUnsafe} if you want the throwing form.
+   * matrix is singular, meaning its determinant falls below `RELATIVE_TOLERANCE`
+   * times the Hadamard bound (see `PRECISION.md`). Use `asInvertible` or
+   * `isInvertible` to refine the type and tighten the return to
+   * `Solution.One`, or `inverseUnsafe` for the throwing form.
    *
    * @param m - The matrix to invert.
+   * @returns The inverse in `Solution.One`, or `Solution.none` when singular.
    * @since 2.0.0
    */
   <T>(m: Matrix4x4<T>): Solution.AtMostOne<Matrix4x4<T>>
 } = internal.inverse as never
 
 /**
- * Returns the inverse of a `Matrix4x4`. Throws when the matrix is singular
- * (determinant approximately zero). Useful when you've already validated
- * invertibility out-of-band and want the unwrapped matrix directly; otherwise
- * prefer {@link inverse}.
+ * Returns the inverse of a `Matrix4x4`, throwing when the matrix is
+ * singular. Useful when you've already validated invertibility out-of-band
+ * and want the unwrapped matrix directly. Otherwise prefer `inverse`.
  *
  * @param m - The matrix to invert.
  * @returns The inverse matrix.
- * @throws If `m` is singular.
+ * @throws `Error` when `m` is singular (below the Hadamard-bound threshold).
  * @since 2.0.0
  */
 export const inverseUnsafe: (m: Matrix4x4) => Matrix4x4 = internal.inverseUnsafe
 
 /**
- * Type-narrowing predicate: refines a `Matrix4x4<T>` to
- * `Matrix4x4<T & Invertible>` when the matrix's determinant is non-zero
- * (within the default absolute tolerance).
+ * Checks if a matrix is invertible, meaning its determinant exceeds
+ * `RELATIVE_TOLERANCE` times the Hadamard bound (the product of the row
+ * norms), a scale-free singularity test. See `PRECISION.md` for the
+ * mechanics.
  *
  * @param m - The matrix to check.
- * @returns `true` when `m` is invertible.
+ * @returns `true` when `m` is invertible, narrowing to `Matrix4x4<T & Invertible>`.
  * @since 2.0.0
  */
 export const isInvertible: <T>(m: Matrix4x4<T>) => m is Matrix4x4<T & Invertible> =
@@ -439,26 +424,33 @@ export const isInvertible: <T>(m: Matrix4x4<T>) => m is Matrix4x4<T & Invertible
  *
  * @param m - The matrix to assert against.
  * @returns The same matrix, typed with the `Invertible` brand.
- * @throws When `m` is singular.
+ * @throws `Error` when `m` is singular (below the Hadamard-bound threshold).
  * @since 2.0.0
  */
 export const asInvertible: <T>(m: Matrix4x4<T>) => Matrix4x4<T & Invertible> = internal.asInvertible
 
 export const solveSystem: {
   /**
-   * Solves a system of linear equations represented by a `Matrix4x4` and a `Vector4`.
+   * Solves the linear system `M * x = v` for `x`.
    *
-   * @param m - The matrix representing the coefficients of the equations.
-   * @param v - The vector representing the constants of the equations.
-   * @returns The solution vector.
+   * Rejects only exact singularity. A determinant of exactly `0` throws.
+   * A nearly singular system returns a result whose error grows with the
+   * system's conditioning — the honest outcome for a construction (see
+   * `PRECISION.md`).
+   *
+   * @param m - The coefficient matrix.
+   * @param v - The constants of the system.
+   * @returns The solution vector `x`.
+   * @throws `Error` when the determinant is exactly `0`.
    * @since 1.0.0
    */
   (m: Matrix4x4, v: Vector4): Vector4
   /**
-   * Solves a system of linear equations represented by a `Matrix4x4` and a `Vector4`.
+   * Solves the linear system `M * x = v` for `x`.
    *
-   * @param v - The vector representing the constants of the equations.
-   * @returns A function that takes a matrix and returns the solution vector.
+   * @param v - The constants of the system.
+   * @returns A function that takes the coefficient matrix and returns the solution vector.
+   * @throws `Error` when the determinant is exactly `0`.
    * @since 1.0.0
    */
   (v: Vector4): (m: Matrix4x4) => Vector4

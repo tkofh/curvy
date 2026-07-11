@@ -1,9 +1,9 @@
 /**
  * Trait brands for affine transforms.
  *
- * The `Invertible` brand is shared with matrices — an invertible `Affine2d`
- * is one whose underlying 3x3 matrix is invertible — so it is re-exported
- * from {@link ../matrix/traits.ts} rather than redeclared here.
+ * The `Invertible` brand is shared with matrices (an invertible `Affine2d`
+ * is one whose underlying 3x3 matrix is invertible), so it is re-exported
+ * from the matrix traits module rather than redeclared here.
  *
  * @since 2.0.0
  */

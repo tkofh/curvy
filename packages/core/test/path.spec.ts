@@ -272,7 +272,7 @@ describe('cubic2d', () => {
   test('solveByDistance arc-length matches target', () => {
     // non-uniform parameterization: control points clustered toward middle.
     // Verifies the round-trip property: arc length from start to the point
-    // returned by solveByDistance(s) ≈ s * totalLength.
+    // returned by solveByDistance(s) matches s * totalLength within tolerance.
     const p = Bezier2d.toPath(
       Bezier2d.make(
         vector2.make(0, 0),
@@ -544,7 +544,7 @@ describe('rationalCubicPath2d.boundingBox', () => {
     const box1 = rationalCubicCurve2d.boundingBox(seg1, tolerance)
 
     // Per-segment boxes feed straight into the union — the path-level
-    // result is exactly what a hand-rolled `union(boxᵢ)` would produce.
+    // result is exactly what a hand-rolled `union(box_i)` would produce.
     expect(pathBox.x.start).toBeCloseTo(Math.min(box0.x.start, box1.x.start), 12)
     expect(pathBox.x.end).toBeCloseTo(Math.max(box0.x.end, box1.x.end), 12)
     expect(pathBox.y.start).toBeCloseTo(Math.min(box0.y.start, box1.y.start), 12)

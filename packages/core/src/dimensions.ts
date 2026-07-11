@@ -3,32 +3,74 @@ import { invariant } from './utils.ts'
 export type TwoDimensionalIndex = 0 | 1
 export type TwoDimensionalComponent = 'x' | 'y'
 
+/**
+ * A value with two components, addressable by name (`x`, `y`) and by
+ * position (`0`, `1`).
+ *
+ * @since 2.0.0
+ */
 export interface TwoDimensional<out T1, out T2 = T1> {
+  /**
+   * The first component.
+   */
   readonly x: T1
+  /**
+   * The second component.
+   */
   readonly y: T2
 
+  /**
+   * Positional alias for `x`.
+   */
   readonly 0: T1
+  /**
+   * Positional alias for `y`.
+   */
   readonly 1: T2
 }
 
 export type ThreeDimensionalIndex = TwoDimensionalIndex | 2
 export type ThreeDimensionalComponent = TwoDimensionalComponent | 'z'
 
+/**
+ * A value with three components, adding `z` (position `2`) to
+ * `TwoDimensional`.
+ *
+ * @since 2.0.0
+ */
 export interface ThreeDimensional<out T1, out T2 = T1, out T3 = T2> extends TwoDimensional<T1, T2> {
+  /**
+   * The third component.
+   */
   readonly z: T3
+  /**
+   * Positional alias for `z`.
+   */
   readonly 2: T3
 }
 
 export type FourDimensionalIndex = ThreeDimensionalIndex | 3
 export type FourDimensionalComponent = ThreeDimensionalComponent | 'w'
 
+/**
+ * A value with four components, adding `w` (position `3`) to
+ * `ThreeDimensional`.
+ *
+ * @since 2.0.0
+ */
 export interface FourDimensional<
   out T1,
   out T2 = T1,
   out T3 = T2,
   out T4 = T3,
 > extends ThreeDimensional<T1, T2, T3> {
+  /**
+   * The fourth component.
+   */
   readonly w: T4
+  /**
+   * Positional alias for `w`.
+   */
   readonly 3: T4
 }
 

@@ -64,7 +64,7 @@ describe('linear2d', () => {
     expect(linear2d.endPoint(c)).toBeCloseToValue(vector2.make(7, 11))
   })
   test('xRange and yRange enclose the curve over [0, 1]', () => {
-    // x decreasing 5 → -1, y increasing -2 → 4
+    // x decreasing 5 -> -1, y increasing -2 -> 4
     const c = linear2d.fromEndpoints(vector2.make(5, -2), vector2.make(-1, 4))
     expect(linear2d.xRange(c)).toBeCloseToValue(interval.make(-1, 5))
     expect(linear2d.yRange(c)).toBeCloseToValue(interval.make(-2, 4))
@@ -112,7 +112,7 @@ describe('quadratic2d', () => {
     const p2 = vector2.make(4, 0)
     const c = quadratic2d.fromBezierPoints(p0, p1, p2)
     expect(quadratic2d.solve(c, 0)).toBeCloseToValue(p0)
-    // Bezier at t=0.5 is (p0 + 2·p1 + p2) / 4 = (2, 2)
+    // Bezier at t=0.5 is (p0 + 2*p1 + p2) / 4 = (2, 2)
     expect(quadratic2d.solve(c, 0.5)).toBeCloseToValue(vector2.make(2, 2))
     expect(quadratic2d.solve(c, 1)).toBeCloseToValue(p2)
   })
@@ -159,7 +159,7 @@ describe('quadratic2d', () => {
     expect(quadratic2d.endPoint(c)).toBeCloseToValue(vector2.make(7, -1))
   })
   test('xRange and yRange include interior extremum', () => {
-    // y(t) = (1-t)²·0 + 2(1-t)t·4 + t²·0 = 8t - 8t² → peaks at t=0.5 with y=2
+    // y(t) = (1-t)^2*0 + 2(1-t)t*4 + t^2*0 = 8t - 8t^2 -> peaks at t=0.5 with y=2
     const c = quadratic2d.fromBezierPoints(
       vector2.make(0, 0),
       vector2.make(1, 4),
@@ -218,7 +218,7 @@ describe('cubic2d', () => {
     const c = cubic2d.fromBezierPoints(p0, p1, p2, p3)
     expect(cubic2d.solve(c, 0)).toBeCloseToValue(p0)
     expect(cubic2d.solve(c, 1)).toBeCloseToValue(p3)
-    // Bezier at t=0.5 is (p0 + 3·p1 + 3·p2 + p3) / 8 = (0.5, 0.75)
+    // Bezier at t=0.5 is (p0 + 3*p1 + 3*p2 + p3) / 8 = (0.5, 0.75)
     expect(cubic2d.solve(c, 0.5)).toBeCloseToValue(vector2.make(0.5, 0.75))
   })
   test('solve', () => {
@@ -334,9 +334,9 @@ describe('rationalCubic2d.fromBezierPoints', () => {
 })
 
 describe('rationalCubic2d.fromSlopesAndCurvatures', () => {
-  // Closed-form signed curvatures for the smoothstep y = 3t² - 2t³ at the
+  // Closed-form signed curvatures for the smoothstep y = 3t^2 - 2t^3 at the
   // endpoints: y'(0) = y'(1) = 0, y''(0) = 6, y''(1) = -6, and at slope 0 the
-  // κ = y'' / (1+y'²)^(3/2) formula collapses to κ = y''.
+  // k = y'' / (1+y'^2)^(3/2) formula collapses to k = y''.
   const SMOOTHSTEP_INPUTS = [0, 0, 6, -6] as const
 
   test('endpoints land at (0, 0) and (1, 1)', () => {
@@ -378,7 +378,7 @@ describe('rationalCubic2d.fromSlopesAndCurvatures', () => {
     //
     // For y(t) = Y(t)/W(t) with our construction's Y.c0 = 0:
     //   y'(0)  = Y.c1 / W.c0
-    //   y''(0) = 2·(Y.c2·W.c0 − Y.c0·W.c2)/W.c0²  −  2·y'(0)·W.c1/W.c0
+    //   y''(0) = 2*(Y.c2*W.c0 - Y.c0*W.c2)/W.c0^2  -  2*y'(0)*W.c1/W.c0
     // At t = 1 we sum coefficients to get Y, Y', Y'', W, W', W'' there.
     const cases: ReadonlyArray<readonly [number, number, number, number]> = [
       [0, 0, 6, -6],
@@ -424,14 +424,14 @@ describe('rationalCubic2d.fromSlopesAndCurvatures', () => {
   })
 
   test('rejects singular constraint systems', () => {
-    // m₀ = m₁ = 1 with κ ≠ 0 is the inconsistent-redundant case: u = v = 0
+    // m0 = m1 = 1 with k != 0 is the inconsistent-redundant case: u = v = 0
     // collapses the LHS to 0 while the RHS demands a nonzero curvature.
     expect(() => rationalCubic2d.fromSlopesAndCurvatures(1, 1, 1, 0)).toThrowError()
     expect(() => rationalCubic2d.fromSlopesAndCurvatures(1, 1, 0, -1)).toThrowError()
   })
 
   test('rejects denominator that vanishes on [0, 1]', () => {
-    // Strongly negative endpoint curvature with slope-1 start pulls w₁ deep
+    // Strongly negative endpoint curvature with slope-1 start pulls w1 deep
     // negative and forces W to cross zero inside [0, 1].
     expect(() => rationalCubic2d.fromSlopesAndCurvatures(1, 0, -100, -100)).toThrowError()
   })
@@ -466,8 +466,8 @@ describe('rationalCubic2d.solveAtX', () => {
   })
 
   test('returns the matching y for asymmetric ease', () => {
-    // y(t) = t² satisfies y(0)=0, y(1)=1, y'(0)=0, y'(1)=2, y''=2 (constant).
-    // At slope 0, κ(0) = y''(0) = 2. At slope 2, κ(1) = 2 / (1+4)^(3/2) = 2/5√5.
+    // y(t) = t^2 satisfies y(0)=0, y(1)=1, y'(0)=0, y'(1)=2, y''=2 (constant).
+    // At slope 0, k(0) = y''(0) = 2. At slope 2, k(1) = 2 / (1+4)^(3/2) = 2 / (5 * sqrt(5)).
     const ease = rationalCubic2d.fromSlopesAndCurvatures(0, 2, 2, 2 / Math.pow(5, 1.5))
     const result = rationalCubic2d.solveAtX(ease, 0.5)
     const got = Solution.valueOrUndefined(result)
@@ -478,7 +478,7 @@ describe('rationalCubic2d.solveAtX', () => {
 
 describe('rationalCubic2d.solveAtY', () => {
   test('inverts solveAtX', () => {
-    // Same y(t) = t² configuration as above; y = 0.25 → x = 0.5.
+    // Same y(t) = t^2 configuration as above; y = 0.25 -> x = 0.5.
     const ease = rationalCubic2d.fromSlopesAndCurvatures(0, 2, 2, 2 / Math.pow(5, 1.5))
     const result = rationalCubic2d.solveAtY(ease, 0.25)
     const got = Solution.valueOrUndefined(result)
@@ -489,7 +489,7 @@ describe('rationalCubic2d.solveAtY', () => {
 
 describe('rationalCubic2d.approximateAsCubicCurves', () => {
   test('uniform weights yield a single segment that matches exactly', () => {
-    // All weights = 1 → the rational degenerates to a polynomial cubic, so
+    // All weights = 1 -> the rational degenerates to a polynomial cubic, so
     // the projection-based candidate is exact at every t.
     const rational = rationalCubic2d.fromBezierPoints(
       vector2.makeWeighted(0, 0, 1),
@@ -604,7 +604,7 @@ describe('rationalCubic2d.approximateAsCubicCurves', () => {
     }
     // Loose bound: midpoint tolerance is local per sub-segment; the geometric
     // distance from any output point to the input curve should comfortably
-    // beat 10× tolerance.
+    // beat 10x tolerance.
     expect(maxError).toBeLessThan(tolerance * 10)
   })
 
@@ -649,11 +649,11 @@ describe('rationalCubic2d.subdivide', () => {
     const tSplit = 0.4
     const [left, right] = rationalCubic2d.subdivide(rational, tSplit)
     for (const u of [0.1, 0.5, 0.9]) {
-      // Map u ∈ [0, 1] on left back to [0, tSplit] on the original.
+      // Map u in [0, 1] on left back to [0, tSplit] on the original.
       expect(rationalCubic2d.solve(left, u)).toBeCloseToValue(
         rationalCubic2d.solve(rational, u * tSplit),
       )
-      // Map u ∈ [0, 1] on right back to [tSplit, 1] on the original.
+      // Map u in [0, 1] on right back to [tSplit, 1] on the original.
       expect(rationalCubic2d.solve(right, u)).toBeCloseToValue(
         rationalCubic2d.solve(rational, tSplit + u * (1 - tSplit)),
       )
@@ -776,7 +776,7 @@ describe('rationalCubic2d monotonicity refiners', () => {
   // x(t) = t (increasing), y is the smoothstep cubic (increasing on [0,1])
   const xIncYSmoothInc = rationalCubic2d.fromSlopesAndCurvatures(0, 0, 6, -6)
 
-  // U-shape in x via control points 0, 1, -1, 0 with unit weights → x not monotonic
+  // U-shape in x via control points 0, 1, -1, 0 with unit weights -> x not monotonic
   const xNotMono = rationalCubic2d.fromBezierPoints(
     vector2.makeWeighted(0, 0, 1),
     vector2.makeWeighted(1, 0, 1),

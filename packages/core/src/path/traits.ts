@@ -1,7 +1,7 @@
 /**
  * Trait brands for paths.
  *
- * Brands are phantom types — they exist only at the type level and carry no
+ * Brands are phantom types. They exist only at the type level and carry no
  * runtime data. Refiners (`isContinuous`) and assertions (`asContinuous`) on
  * each path module attach these brands to the path's `Trait` parameter at the
  * type level.
@@ -11,7 +11,7 @@
 
 declare const ContinuousId: unique symbol
 /**
- * Brand for paths whose adjacent curves connect at their join points (G⁰
+ * Brand for paths whose adjacent curves connect at their join points (G^0
  * continuity). Calling `toPathData` on a `Continuous` path skips the
  * per-segment discontinuity check and emits a single `M` followed by drawing
  * commands.
@@ -23,7 +23,7 @@ export type Continuous = { readonly [ContinuousId]: 'continuous' }
 declare const MonotonicXId: unique symbol
 /**
  * Brand for paths whose x-coordinate is monotonic as the path parameter
- * `u ∈ [0, 1]` advances. Implies every segment's x-polynomial is monotonic
+ * `u in [0, 1]` advances. Implies every segment's x-polynomial is monotonic
  * and that adjacent segments' x-ranges don't overlap (so the path is
  * monotonic in x across the join, modulo a small floating-point tolerance).
  *
@@ -54,7 +54,7 @@ export type DecreasingX = MonotonicX & { readonly [DecreasingXId]: 'decreasing-x
 declare const MonotonicYId: unique symbol
 /**
  * Brand for paths whose y-coordinate is monotonic as the path parameter
- * advances. The y analog of {@link MonotonicX}.
+ * advances. The y analog of `MonotonicX`.
  *
  * @since 2.0.0
  */

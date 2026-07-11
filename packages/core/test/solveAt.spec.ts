@@ -13,15 +13,15 @@ import * as vector2 from '../src/vector/vector2.ts'
 
 describe('LinearCurve2d.solveAtX/solveAtY', () => {
   test('on a line within the [0, 1] parameter domain', () => {
-    // x(t) = t, y(t) = 1 + 2t — so y = 2x + 1 for x ∈ [0, 1]
+    // x(t) = t, y(t) = 1 + 2t — so y = 2x + 1 for x in [0, 1]
     const c = linearCurve2d.fromCoefficients(vector2.make(0, 1), vector2.make(1, 2))
     expect([...linearCurve2d.solveAtX(c, 0.5)]).toEqual([2])
     expect([...linearCurve2d.solveAtY(c, 2)]).toEqual([0.5])
   })
   test('returns empty solution when query is outside the parameter domain', () => {
-    // line from (0, 1) to (1, 3) — t ∈ [0, 1] gives x ∈ [0, 1]
+    // line from (0, 1) to (1, 3) — t in [0, 1] gives x in [0, 1]
     const c = linearCurve2d.fromCoefficients(vector2.make(0, 1), vector2.make(1, 2))
-    expect(Solution.isNone(linearCurve2d.solveAtX(c, 3))).toBe(true) // x=3 → t=3, outside [0, 1]
+    expect(Solution.isNone(linearCurve2d.solveAtX(c, 3))).toBe(true) // x=3 -> t=3, outside [0, 1]
     expect(Solution.isNone(linearCurve2d.solveAtX(c, -1))).toBe(true)
   })
   test('returns empty solution when the queried axis is constant', () => {
@@ -43,8 +43,8 @@ describe('LinearCurve2d.solveAtX/solveAtY', () => {
 })
 
 describe('QuadraticCurve2d.solveAtX/solveAtY', () => {
-  test('parabola x=t, y=t² over [0, 1]: solveAtY filters to in-domain t', () => {
-    // y = 0.25 has roots t = ±0.5; only t = 0.5 is in [0, 1]
+  test('parabola x=t, y=t^2 over [0, 1]: solveAtY filters to in-domain t', () => {
+    // y = 0.25 has roots t = +/-0.5; only t = 0.5 is in [0, 1]
     const c = quadraticCurve2d.fromPolynomials(
       quadraticPolynomial.make(0, 1, 0),
       quadraticPolynomial.make(0, 0, 1),
@@ -52,7 +52,7 @@ describe('QuadraticCurve2d.solveAtX/solveAtY', () => {
     const xs = quadraticCurve2d.solveAtY(c, 0.25)
     expect([...xs]).toEqual([0.5])
   })
-  test('parabola x=t, y=t²: solveAtX(0.5) returns y at t=0.5', () => {
+  test('parabola x=t, y=t^2: solveAtX(0.5) returns y at t=0.5', () => {
     const c = quadraticCurve2d.fromPolynomials(
       quadraticPolynomial.make(0, 1, 0),
       quadraticPolynomial.make(0, 0, 1),
@@ -60,7 +60,7 @@ describe('QuadraticCurve2d.solveAtX/solveAtY', () => {
     expect([...quadraticCurve2d.solveAtX(c, 0.5)]).toEqual([0.25])
   })
   test('returns empty solution when no solution exists in [0, 1]', () => {
-    // y = x² has no real solution for y < 0
+    // y = x^2 has no real solution for y < 0
     const c = quadraticCurve2d.fromPolynomials(
       quadraticPolynomial.make(0, 1, 0),
       quadraticPolynomial.make(0, 0, 1),
@@ -68,8 +68,8 @@ describe('QuadraticCurve2d.solveAtX/solveAtY', () => {
     expect(Solution.isNone(quadraticCurve2d.solveAtY(c, -1))).toBe(true)
   })
   test('non-monotonic-y curve can have two solveAtY solutions in [0, 1]', () => {
-    // y(t) = -4(t-0.5)² + 1 — peak at t=0.5 (y=1), endpoints y=0
-    // expanded: y = -4t² + 4t = 0t⁰ + 4t - 4t²
+    // y(t) = -4(t-0.5)^2 + 1 — peak at t=0.5 (y=1), endpoints y=0
+    // expanded: y = -4t^2 + 4t = 0t^0 + 4t - 4t^2
     // x = t for simplicity
     const c = quadraticCurve2d.fromPolynomials(
       quadraticPolynomial.make(0, 1, 0),
@@ -99,7 +99,7 @@ describe('QuadraticCurve2d.solveAtX/solveAtY', () => {
 
 describe('CubicCurve2d.solveAtX/solveAtY', () => {
   test('non-monotonic cubic can have multiple solveAtY solutions in [0, 1]', () => {
-    // x(t) = t, y(t) = t³ - t — roots at t = -1, 0, 1
+    // x(t) = t, y(t) = t^3 - t — roots at t = -1, 0, 1
     // Only t = 0 and t = 1 are in the curve's parameter domain [0, 1].
     const c = cubicCurve2d.fromPolynomials(
       cubicPolynomial.make(0, 1, 0, 0),
@@ -112,13 +112,13 @@ describe('CubicCurve2d.solveAtX/solveAtY', () => {
     expect(xsArr[1]).toBeCloseTo(1, 6)
   })
   test('monotonic cubic has at most one solveAtY solution', () => {
-    // y = x³ + x is monotonic everywhere — for any y there is exactly one x
+    // y = x^3 + x is monotonic everywhere — for any y there is exactly one x
     const c = cubicCurve2d.fromPolynomials(
       cubicPolynomial.make(0, 1, 0, 0),
       cubicPolynomial.make(0, 1, 0, 1),
     )
     const xs = cubicCurve2d.solveAtY(c, 2)
-    // y = x³ + x = 2 → x = 1 (only real root)
+    // y = x^3 + x = 2 -> x = 1 (only real root)
     expect(xs).toHaveLength(1)
     expect([...xs][0]).toBeCloseTo(1, 10)
   })
@@ -137,7 +137,7 @@ describe('CubicCurve2d.solveAtX/solveAtY', () => {
     expect([...ysAtEnd][0]).toBeCloseTo(1, 10)
   })
   test('Monotonic narrowing tightens to ZeroToOne', () => {
-    // x = t (monotonic), y = t³ + t (also monotonic — chosen so we can use asMonotonic)
+    // x = t (monotonic), y = t^3 + t (also monotonic — chosen so we can use asMonotonic)
     const c = cubicCurve2d.fromPolynomials(
       cubicPolynomial.make(0, 1, 0, 0),
       cubicPolynomial.make(0, 1, 0, 1),
@@ -150,13 +150,13 @@ describe('CubicCurve2d.solveAtX/solveAtY', () => {
     }
   })
   test('result order matches t-ascending', () => {
-    // x(t) = t, y(t) = (t - 0.3)·(t - 0.7)·t · 4 — three roots within [0, 1]
-    // expanded: y = 4t³ - 4t² + 0.84t  (rough approximation)
+    // x(t) = t, y(t) = (t - 0.3)*(t - 0.7)*t * 4 — three roots within [0, 1]
+    // expanded: y = 4t^3 - 4t^2 + 0.84t  (rough approximation)
     // Easier: pick a cubic where y(t) = (t-0.2)(t-0.5)(t-0.8) — roots in t-order
     // Since x = t monotonically, x values should equal the roots in their t-order.
     // (t-0.2)(t-0.5)(t-0.8) expanded:
-    //   (t-0.2)(t-0.5) = t² - 0.7t + 0.1
-    //   * (t-0.8): t³ - 0.8t² - 0.7t² + 0.56t + 0.1t - 0.08 = t³ - 1.5t² + 0.66t - 0.08
+    //   (t-0.2)(t-0.5) = t^2 - 0.7t + 0.1
+    //   * (t-0.8): t^3 - 0.8t^2 - 0.7t^2 + 0.56t + 0.1t - 0.08 = t^3 - 1.5t^2 + 0.66t - 0.08
     const c = cubicCurve2d.fromPolynomials(
       cubicPolynomial.make(0, 1, 0, 0),
       cubicPolynomial.make(-0.08, 0.66, -1.5, 1),
@@ -208,15 +208,15 @@ describe('Path solveAtX / solveAtY (Monotonic-axis required)', () => {
       throw new Error('expected MonotonicY')
     }
     const xs = linearPath2d.solveAtY(p, 2)
-    // y=2 is on the second segment ((3,1)→(-2,4)); halfway through y range,
-    // so x ≈ 3 + (-2 - 3) * (2 - 1)/(4 - 1) = 3 - 5/3
+    // y=2 is on the second segment ((3,1)->(-2,4)); halfway through y range,
+    // so x = 3 + (-2 - 3) * (2 - 1)/(4 - 1) = 3 - 5/3
     expect(xs).toHaveLength(1)
     if (Solution.isSome(xs)) {
       expect(xs.value).toBeCloseTo(3 - 5 / 3, 10)
     }
   })
   test('QuadraticPath: solveAtX on a monotonic-x path round-trips at a known x', () => {
-    // c0: x goes 0→2 over [0,1], y is some quadratic
+    // c0: x goes 0->2 over [0,1], y is some quadratic
     const c0 = quadraticCurve2d.fromBezierPoints(
       vector2.make(0, 0),
       vector2.make(1, 1),

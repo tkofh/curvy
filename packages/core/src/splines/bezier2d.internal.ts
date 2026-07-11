@@ -15,7 +15,7 @@ import { toCurves, toPointQuads } from './util.ts'
 const characteristicInverse = Matrix4x4.inverseUnsafe(Characteristic.cubicBezier)
 
 // Maps a source spline's characteristic matrix to its precomputed conversion
-// matrix `M_bezier_inverse · M_source`, so each `fromBasis` call is one
+// matrix `M_bezier_inverse * M_source`, so each `fromBasis` call is one
 // matrix-vector product per axis instead of running Cramer's rule per quad.
 const conversionCache = new WeakMap<Matrix4x4.Matrix4x4, Matrix4x4.Matrix4x4>()
 

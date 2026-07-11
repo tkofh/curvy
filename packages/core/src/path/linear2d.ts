@@ -31,7 +31,7 @@ export type {
 /**
  * A linear path in 2D space.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly. No operation mutates a path.
  *
  * The `Trait` type parameter accumulates trait brands as the path is refined
  * via `isContinuous` / `asContinuous`. A `Continuous` path's `toPathData`
@@ -47,8 +47,9 @@ export interface LinearPath2d<out Trait = unknown> extends Pipeable, Iterable<Li
 /**
  * Creates a new `LinearPath2d` instance from a sequence of curves.
  *
- * @param curves - The curves to create the path from.
+ * @param curves - The curves to create the path from. At least one is required.
  * @returns A new `LinearPath2d` instance.
+ * @throws `Error` when called with no curves.
  * @since 2.0.0
  */
 export const make: (...curves: ReadonlyArray<LinearCurve2d>) => LinearPath2d = internal.make
@@ -56,8 +57,9 @@ export const make: (...curves: ReadonlyArray<LinearCurve2d>) => LinearPath2d = i
 /**
  * Creates a new `LinearPath2d` instance from an array of curves.
  *
- * @param curves - The curves to create the path from.
+ * @param curves - The curves to create the path from. At least one is required.
  * @returns A new `LinearPath2d` instance.
+ * @throws `Error` when the array is empty.
  * @since 2.0.0
  */
 export const fromArray: (curves: ReadonlyArray<LinearCurve2d>) => LinearPath2d = internal.fromArray
@@ -92,29 +94,38 @@ export const append: {
 } = internal.append
 
 /**
- * Calculates the length of a linear path.
+ * Calculates the total arc length of a linear path.
  *
- * @param p - The linear path to calculate the length of.
- * @returns The length of the linear path.
+ * @param p - The linear path to measure.
+ * @returns The sum of the segments' arc lengths.
  * @since 1.0.0
  */
 export const length: (p: LinearPath2d) => number = internal.length
 
 export const solve: {
   /**
-   * Solves a linear path for a given parameter.
+   * Evaluates the linear path at parameter `u in [0, 1]`.
    *
-   * @param u - The parameter to solve for.
-   * @returns A function that takes a linear path and returns the solved point.
+   * @param u - The path parameter in `[0, 1]`.
+   * @returns A function that takes a linear path and returns the point at `u`.
+   * @throws `Error` when `u` is outside `[0, 1]` by more than `EPSILON`.
    * @since 1.0.0
    */
   (u: number): (p: LinearPath2d) => Vector2
   /**
-   * Solves a linear path for a given parameter.
+   * Evaluates the linear path at parameter `u in [0, 1]`.
    *
-   * @param p - The linear path to solve.
-   * @param u - The parameter to solve for.
-   * @returns The solved point on the linear path.
+   * Segments split `u` uniformly. Each curve gets an equal share of the
+   * parameter range, regardless of its arc length. The selected segment's
+   * curve is evaluated at the corresponding local parameter.
+   *
+   * `u` may graze the domain by up to `EPSILON` (values in the band clamp
+   * to the nearest endpoint). Beyond that the call throws.
+   *
+   * @param p - The linear path to evaluate.
+   * @param u - The path parameter in `[0, 1]`.
+   * @returns The point on the path at parameter `u`.
+   * @throws `Error` when `u` is outside `[0, 1]` by more than `EPSILON`.
    * @since 1.0.0
    */
   (p: LinearPath2d, u: number): Vector2
@@ -132,12 +143,12 @@ export const solve: {
 export const toPathData: (p: LinearPath2d) => string = internal.toPathData
 
 /**
- * Type-narrowing predicate: refines `LinearPath2d<T>` to
- * `LinearPath2d<T & Continuous>` when adjacent curves connect at their join
- * points.
+ * Checks if adjacent curves connect at their join points (G^0 continuity),
+ * each junction compared with `coincident` tolerance (see `PRECISION.md`),
+ * adding `Continuous` to the path's traits.
  *
  * @param p - The linear path to check.
- * @returns `true` when the path is continuous (G⁰).
+ * @returns `true` when every junction connects, narrowing to `LinearPath2d<T & Continuous>`.
  * @since 2.0.0
  */
 export const isContinuous: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & Continuous> =
@@ -148,64 +159,83 @@ export const isContinuous: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & Cont
  *
  * @param p - The linear path to assert against.
  * @returns The same path, typed with the `Continuous` brand.
- * @throws When the path has a discontinuity between adjacent curves.
+ * @throws `Error` when the path has a discontinuity between adjacent curves.
  * @since 2.0.0
  */
 export const asContinuous: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Continuous> =
   internal.asContinuous
 
 /**
- * Type-narrowing predicate: refines `LinearPath2d<T>` to
- * `LinearPath2d<T & IncreasingX>` when every segment's x-polynomial is
- * strictly increasing and adjacent segments' x-ranges don't overlap.
+ * Checks if the path's x-coordinate increases as the path parameter
+ * advances. Every segment's x polynomial is strictly increasing and
+ * adjacent segments' x-ranges don't overlap. Adds `IncreasingX` to the
+ * path's traits.
  *
+ * @param p - The linear path to check.
+ * @returns `true` when x increases along the path, narrowing to `LinearPath2d<T & IncreasingX>`.
  * @since 2.0.0
  */
 export const isIncreasingX: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & IncreasingX> =
   internal.isIncreasingX
 
 /**
- * Type-narrowing predicate: refines `LinearPath2d<T>` to
- * `LinearPath2d<T & DecreasingX>` when every segment's x-polynomial is
- * strictly decreasing and adjacent segments' x-ranges don't overlap.
+ * Checks if the path's x-coordinate decreases as the path parameter
+ * advances. Every segment's x polynomial is strictly decreasing and
+ * adjacent segments' x-ranges don't overlap. Adds `DecreasingX` to the
+ * path's traits.
  *
+ * @param p - The linear path to check.
+ * @returns `true` when x decreases along the path, narrowing to `LinearPath2d<T & DecreasingX>`.
  * @since 2.0.0
  */
 export const isDecreasingX: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & DecreasingX> =
   internal.isDecreasingX
 
 /**
- * Type-narrowing predicate: refines `LinearPath2d<T>` to
- * `LinearPath2d<T & MonotonicX>` when the path is either increasing or
- * decreasing in x along its full parameter domain.
+ * Checks if the path's x-coordinate is monotonic (increasing or
+ * decreasing) along its full parameter domain, the property the brand
+ * `solveAtX` requires. Adds `MonotonicX` to the path's traits.
  *
+ * @param p - The linear path to check.
+ * @returns `true` when x is monotonic along the path, narrowing to `LinearPath2d<T & MonotonicX>`.
  * @since 2.0.0
  */
 export const isMonotonicX: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & MonotonicX> =
   internal.isMonotonicX
 
 /**
- * Type-narrowing predicate: refines `LinearPath2d<T>` to
- * `LinearPath2d<T & IncreasingY>`. The y-axis analog of {@link isIncreasingX}.
+ * Checks if the path's y-coordinate increases as the path parameter
+ * advances. Every segment's y polynomial is strictly increasing and
+ * adjacent segments' y-ranges don't overlap. Adds `IncreasingY` to the
+ * path's traits.
  *
+ * @param p - The linear path to check.
+ * @returns `true` when y increases along the path, narrowing to `LinearPath2d<T & IncreasingY>`.
  * @since 2.0.0
  */
 export const isIncreasingY: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & IncreasingY> =
   internal.isIncreasingY
 
 /**
- * Type-narrowing predicate: refines `LinearPath2d<T>` to
- * `LinearPath2d<T & DecreasingY>`. The y-axis analog of {@link isDecreasingX}.
+ * Checks if the path's y-coordinate decreases as the path parameter
+ * advances. Every segment's y polynomial is strictly decreasing and
+ * adjacent segments' y-ranges don't overlap. Adds `DecreasingY` to the
+ * path's traits.
  *
+ * @param p - The linear path to check.
+ * @returns `true` when y decreases along the path, narrowing to `LinearPath2d<T & DecreasingY>`.
  * @since 2.0.0
  */
 export const isDecreasingY: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & DecreasingY> =
   internal.isDecreasingY
 
 /**
- * Type-narrowing predicate: refines `LinearPath2d<T>` to
- * `LinearPath2d<T & MonotonicY>`. The y-axis analog of {@link isMonotonicX}.
+ * Checks if the path's y-coordinate is monotonic (increasing or
+ * decreasing) along its full parameter domain, the property the brand
+ * `solveAtY` requires. Adds `MonotonicY` to the path's traits.
  *
+ * @param p - The linear path to check.
+ * @returns `true` when y is monotonic along the path, narrowing to `LinearPath2d<T & MonotonicY>`.
  * @since 2.0.0
  */
 export const isMonotonicY: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & MonotonicY> =
@@ -214,6 +244,9 @@ export const isMonotonicY: <T>(p: LinearPath2d<T>) => p is LinearPath2d<T & Mono
 /**
  * Asserts that the path is strictly increasing in x, throwing on failure.
  *
+ * @param p - The linear path to assert against.
+ * @returns The same path, with `IncreasingX` added to its traits.
+ * @throws `Error` when the path is not strictly increasing in x.
  * @since 2.0.0
  */
 export const asIncreasingX: <T>(p: LinearPath2d<T>) => LinearPath2d<T & IncreasingX> =
@@ -222,6 +255,9 @@ export const asIncreasingX: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Increasi
 /**
  * Asserts that the path is strictly decreasing in x, throwing on failure.
  *
+ * @param p - The linear path to assert against.
+ * @returns The same path, with `DecreasingX` added to its traits.
+ * @throws `Error` when the path is not strictly decreasing in x.
  * @since 2.0.0
  */
 export const asDecreasingX: <T>(p: LinearPath2d<T>) => LinearPath2d<T & DecreasingX> =
@@ -230,6 +266,9 @@ export const asDecreasingX: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Decreasi
 /**
  * Asserts that the path is monotonic in x, throwing on failure.
  *
+ * @param p - The linear path to assert against.
+ * @returns The same path, with `MonotonicX` added to its traits.
+ * @throws `Error` when the path is not monotonic in x.
  * @since 2.0.0
  */
 export const asMonotonicX: <T>(p: LinearPath2d<T>) => LinearPath2d<T & MonotonicX> =
@@ -238,6 +277,9 @@ export const asMonotonicX: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Monotonic
 /**
  * Asserts that the path is strictly increasing in y, throwing on failure.
  *
+ * @param p - The linear path to assert against.
+ * @returns The same path, with `IncreasingY` added to its traits.
+ * @throws `Error` when the path is not strictly increasing in y.
  * @since 2.0.0
  */
 export const asIncreasingY: <T>(p: LinearPath2d<T>) => LinearPath2d<T & IncreasingY> =
@@ -246,6 +288,9 @@ export const asIncreasingY: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Increasi
 /**
  * Asserts that the path is strictly decreasing in y, throwing on failure.
  *
+ * @param p - The linear path to assert against.
+ * @returns The same path, with `DecreasingY` added to its traits.
+ * @throws `Error` when the path is not strictly decreasing in y.
  * @since 2.0.0
  */
 export const asDecreasingY: <T>(p: LinearPath2d<T>) => LinearPath2d<T & DecreasingY> =
@@ -254,6 +299,9 @@ export const asDecreasingY: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Decreasi
 /**
  * Asserts that the path is monotonic in y, throwing on failure.
  *
+ * @param p - The linear path to assert against.
+ * @returns The same path, with `MonotonicY` added to its traits.
+ * @throws `Error` when the path is not monotonic in y.
  * @since 2.0.0
  */
 export const asMonotonicY: <T>(p: LinearPath2d<T>) => LinearPath2d<T & MonotonicY> =
@@ -262,7 +310,7 @@ export const asMonotonicY: <T>(p: LinearPath2d<T>) => LinearPath2d<T & Monotonic
 export const solveAtX: {
   /**
    * Evaluates the path's y value at a given x. Requires the path to carry the
-   * `MonotonicX` brand — without it, an x query could match multiple
+   * `MonotonicX` brand. Without it, an x query could match multiple
    * segments and the return cardinality would be unbounded.
    *
    * Returns `Solution.none` when x falls outside the path's x-range.
@@ -273,7 +321,13 @@ export const solveAtX: {
    * @since 2.0.0
    */
   <T extends MonotonicX>(p: LinearPath2d<T>, x: number): Solution.AtMostOne<number>
-  /** @since 2.0.0 */
+  /**
+   * Evaluates the path's y value at a given x.
+   *
+   * @param x - The x coordinate.
+   * @returns A function that takes a `MonotonicX`-branded path and returns the y value at `x`.
+   * @since 2.0.0
+   */
   (x: number): <T extends MonotonicX>(p: LinearPath2d<T>) => Solution.AtMostOne<number>
 } = internal.solveAtX as never
 
@@ -289,16 +343,21 @@ export const solveAtY: {
    * @since 2.0.0
    */
   <T extends MonotonicY>(p: LinearPath2d<T>, y: number): Solution.AtMostOne<number>
-  /** @since 2.0.0 */
+  /**
+   * Evaluates the path's x value at a given y.
+   *
+   * @param y - The y coordinate.
+   * @returns A function that takes a `MonotonicY`-branded path and returns the x value at `y`.
+   * @since 2.0.0
+   */
   (y: number): <T extends MonotonicY>(p: LinearPath2d<T>) => Solution.AtMostOne<number>
 } = internal.solveAtY as never
 
 /**
- * Computes the axis-aligned bounding box of the path — the smallest closed
- * `Interval2d` enclosing every segment.
+ * Computes the axis-aligned bounding box of the path.
  *
  * @param p - The linear path.
- * @returns A closed `Interval2d` enclosing the path.
+ * @returns The smallest closed `Interval2d` enclosing every segment.
  * @since 2.0.0
  */
 export const boundingBox: (p: LinearPath2d) => Interval2d<Closed, Closed> = internal.boundingBox
@@ -307,7 +366,7 @@ export const transform: {
   /**
    * Applies an `Affine2d` transform to every curve in a `LinearPath2d`,
    * returning a new path whose image is the affine image of the original.
-   * Trait brands are dropped — affine maps can flip the sense of monotonicity
+   * Trait brands are dropped, since affine maps can flip the sense of monotonicity
    * (a reflection turns `IncreasingX` into `DecreasingX`), so any brands the
    * caller still wants must be reasserted on the result.
    *

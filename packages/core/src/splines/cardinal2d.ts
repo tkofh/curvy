@@ -9,12 +9,11 @@ import * as internal from './cardinal2d.internal.ts'
 /**
  * A Cardinal spline in 2D space.
  *
- * Carries its parameterization (`tension` and `alpha`) as part of the spline's
- * identity rather than as evaluation arguments — the same control points with
- * different tensions describe different curves, so the spline TYPE includes
- * them. See {@link Options} for parameter semantics.
+ * Carries its parameterization (`tension` and `alpha`) as part of the
+ * spline's identity rather than as evaluation arguments, since the same
+ * control points with different tensions describe different curves.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly. No operation mutates a spline.
  *
  * The classical Cardinal characteristic matrix (uniform parameterization,
  * arbitrary tension) is exposed as `Characteristic.cubicCardinal(tension)`.
@@ -25,34 +24,51 @@ import * as internal from './cardinal2d.internal.ts'
  */
 export interface Cardinal2d extends Pipeable {
   readonly [Cardinal2dTypeId]: Cardinal2dTypeId
+  /**
+   * The control points the spline interpolates, in order.
+   */
   readonly points: ReadonlyArray<Vector2>
+  /**
+   * How loose or tight the curve is at each interior control point,
+   * resolved from `Options.tension`. `0.5` is classical Catmull-Rom.
+   */
   readonly tension: number
+  /**
+   * How chord lengths between control points scale the tangents, resolved
+   * from `Options.alpha`. `0` is uniform, `0.5` centripetal, `1` chordal.
+   */
   readonly alpha: number
   [Symbol.iterator](): IterableIterator<Vector2>
 }
 
 /**
- * Configuration for a Cardinal spline. Both fields are optional and carry
- * sensible defaults.
- *
- * - **`tension`** controls how loose or tight the curve is at each interior
- *   control point. `tension = 0.5` is classical Catmull-Rom; `tension = 0`
- *   produces zero-tangent endpoints (smoothstep-shaped segments between
- *   consecutive control points); higher values produce looser, more curved
- *   shapes. Default: `0.5`.
- *
- * - **`alpha`** controls how chord lengths between control points scale the
- *   tangents. `alpha = 0` is uniform parameterization (classical Catmull-Rom),
- *   which can produce cusps and self-intersections when control points
- *   cluster. `alpha = 0.5` is centripetal parameterization — Yuksel's
- *   recommended default, eliminating those failure modes at minimal shape
- *   cost. `alpha = 1` is chordal parameterization. Default: `0.5`
- *   (centripetal).
+ * Configuration for a Cardinal spline. Both fields are optional and
+ * default to `0.5`.
  *
  * @since 2.0.0
  */
 export interface Options {
+  /**
+   * How loose or tight the curve is at each interior control point.
+   *
+   * `0.5` is classical Catmull-Rom. `0` produces zero-tangent endpoints
+   * (smoothstep-shaped segments between consecutive control points).
+   * Higher values produce looser, more curved shapes.
+   *
+   * Default: `0.5`.
+   */
   readonly tension?: number
+  /**
+   * How chord lengths between control points scale the tangents.
+   *
+   * `0` is uniform parameterization (classical Catmull-Rom), which can
+   * produce cusps and self-intersections when control points cluster.
+   * `0.5` is centripetal parameterization, Yuksel's recommended default,
+   * eliminating those failure modes at minimal shape cost. `1` is chordal
+   * parameterization.
+   *
+   * Default: `0.5` (centripetal).
+   */
   readonly alpha?: number
 }
 
@@ -79,7 +95,7 @@ export const make: {
   /**
    * Creates a new `Cardinal2d` with the given options.
    *
-   * @param options - Tension and alpha. See {@link Options}.
+   * @param options - Tension and alpha. See `Options`.
    * @param p0 - The first control point.
    * @param p1 - The second control point.
    * @param points - The remaining control points.
@@ -93,7 +109,7 @@ export const make: {
  * Creates a new `Cardinal2d` from an array of control points.
  *
  * @param points - The control points.
- * @param options - Tension and alpha. See {@link Options}. Defaults to centripetal Catmull-Rom.
+ * @param options - Tension and alpha. See `Options`. Defaults to centripetal Catmull-Rom.
  * @returns A new `Cardinal2d` instance.
  * @since 1.0.0
  */
@@ -104,7 +120,7 @@ export const fromArray: (points: ReadonlyArray<Vector2>, options?: Options) => C
  * Creates a new `Cardinal2d` from an array of `[x, y]` tuples.
  *
  * @param tuples - The control points as `[x, y]` tuples.
- * @param options - Tension and alpha. See {@link Options}. Defaults to centripetal Catmull-Rom.
+ * @param options - Tension and alpha. See `Options`. Defaults to centripetal Catmull-Rom.
  * @returns A new `Cardinal2d` instance.
  * @since 2.0.0
  */
@@ -167,8 +183,8 @@ export const withDuplicatedEndpoints: (c: Cardinal2d) => Cardinal2d =
 /**
  * Pads the spline so that it interpolates its first and last control points.
  * The resulting path passes through `points[0]` at `u = 0` and `points[points.length - 1]`
- * at `u = 1`. Equivalent to {@link withReflectedEndpoints} called with
- * `scale = 0` (and to {@link withDuplicatedEndpoints}), but reads more
+ * at `u = 1`. Equivalent to `withReflectedEndpoints` called with
+ * `scale = 0` (and to `withDuplicatedEndpoints`), but reads more
  * directly as the user-facing intent.
  *
  * Tension and alpha are preserved.
@@ -204,7 +220,7 @@ export const withReflectedEndpoints: {
 
 export const withTension: {
   /**
-   * Returns a new `Cardinal2d` with the given tension; control points and
+   * Returns a new `Cardinal2d` with the given tension. Control points and
    * alpha are preserved.
    *
    * @param tension - The new tension value.
@@ -213,7 +229,7 @@ export const withTension: {
    */
   (tension: number): (c: Cardinal2d) => Cardinal2d
   /**
-   * Returns a new `Cardinal2d` with the given tension; control points and
+   * Returns a new `Cardinal2d` with the given tension. Control points and
    * alpha are preserved.
    *
    * @param c - The `Cardinal2d` to update.
@@ -226,7 +242,7 @@ export const withTension: {
 
 export const withAlpha: {
   /**
-   * Returns a new `Cardinal2d` with the given alpha; control points and
+   * Returns a new `Cardinal2d` with the given alpha. Control points and
    * tension are preserved.
    *
    * @param alpha - The new alpha value.
@@ -235,7 +251,7 @@ export const withAlpha: {
    */
   (alpha: number): (c: Cardinal2d) => Cardinal2d
   /**
-   * Returns a new `Cardinal2d` with the given alpha; control points and
+   * Returns a new `Cardinal2d` with the given alpha. Control points and
    * tension are preserved.
    *
    * @param c - The `Cardinal2d` to update.
@@ -292,7 +308,7 @@ export const flatMap: {
   /**
    * Hands the spline's full control-point array to `f` and uses its returned
    * `Cardinal2d` as the result. The returned spline's tension and alpha come
-   * from the mapper's output, not the input — to preserve the input's
+   * from the mapper's output, not the input. To preserve the input's
    * parameterization, the mapper should re-supply it (e.g. by reading the
    * original spline in the data-first form, or chaining `withOptions`
    * afterward).
@@ -328,7 +344,7 @@ export const transform: {
    * curve is still a sensible Cardinal spline on the transformed control
    * points, but it no longer matches the affine image of the original
    * pointwise. For pixel-exact transforms of centripetal splines, convert to
-   * `Bezier2d` via {@link toBezier} first, then transform.
+   * `Bezier2d` via `toBezier` first, then transform.
    *
    * @param s - The cardinal spline.
    * @param a - The affine transform.
@@ -350,7 +366,7 @@ export const transform: {
 /**
  * Converts a `Cardinal2d` to a `CubicPath2d` using the spline's `tension` and
  * `alpha`. With the default options (`{ tension: 0.5, alpha: 0.5 }`) the
- * result is a centripetal Catmull-Rom path — the canonical recommended
+ * result is a centripetal Catmull-Rom path, the canonical recommended
  * Catmull-Rom variant, which avoids the cusps and self-intersections that
  * uniform Catmull-Rom can produce when control points cluster.
  *
@@ -361,9 +377,9 @@ export const transform: {
 export const toPath: (c: Cardinal2d) => CubicPath2d = internal.toPath
 
 /**
- * Converts a `Cardinal2d` to a `Bezier2d`. Equivalent to {@link toPath}
- * followed by per-segment monomial-to-Bernstein conversion — same underlying
- * curve, expressed in cubic Bézier control-point form. Uses the spline's
+ * Converts a `Cardinal2d` to a `Bezier2d`. Equivalent to `toPath`
+ * followed by per-segment monomial-to-Bernstein conversion. The result is
+ * the same underlying curve, expressed in cubic Bézier control-point form. Uses the spline's
  * `tension` and `alpha`.
  *
  * @param c - The Cardinal spline.

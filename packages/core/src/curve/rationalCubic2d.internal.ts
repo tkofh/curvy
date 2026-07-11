@@ -68,7 +68,7 @@ const EASING_P0 = Vector2.makeWeighted(0, 0, 1)
 const EASING_P3 = Vector2.makeWeighted(1, 1, 1)
 
 // Applies the cubic Bézier characteristic matrix in homogeneous space —
-// each control point is lifted to `(w·x, w·y, w)` and the same matrix that
+// each control point is lifted to `(w*x, w*y, w)` and the same matrix that
 // drives `CubicCurve2d.fromBezierPoints` runs on each of the three channels
 // independently. The shared `w` polynomial is the projective denominator;
 // at solve time, x(t)/w(t) and y(t)/w(t) project the curve back to the plane.
@@ -85,7 +85,7 @@ export const fromBezierPoints = (
   return new RationalCubicCurve2dImpl(
     ...Characteristic.apply(
       Characteristic.cubicBezier,
-      // Lift each control point to homogeneous (w·x, w·y, w), then transpose
+      // Lift each control point to homogeneous (w*x, w*y, w), then transpose
       // the four lifted CPs into three per-channel Vector4s for the matrix.
       ...Vector4.transpose([p0, p1, p2, p3], (p) => [p.x * p.weight, p.y * p.weight, p.weight]),
     ),
@@ -97,21 +97,21 @@ export const fromBezierPoints = (
 // Construction: rational cubic with quadratic denominator, embedded in the 2D
 // pipeline by pinning x(t) = t exactly. The 2D embedding stores three cubic
 // polynomials:
-//   X(t) = t · W(t)        (cubic, with c0 = 0)        so x(t) = t
+//   X(t) = t * W(t)        (cubic, with c0 = 0)        so x(t) = t
 //   Y(t) = cubic numerator
 //   W(t) = quadratic denominator (stored as cubic with c3 = 0)
 //
-// Six endpoint constraints — y(0)=0, y(1)=1, y'(0)=m₀, y'(1)=m₁, y''(0), y''(1)
-// — determine the six free Bernstein control values (p₁, p₂, w₀, w₁, w₂) up to
-// overall scaling; p₀ = 0 and p₃ = w₂ are pinned by the endpoint values. We
-// normalize w₀ = 1 and solve a 2×2 linear system for (w₁, w₂); p₁, p₂ then
+// Six endpoint constraints — y(0)=0, y(1)=1, y'(0)=m0, y'(1)=m1, y''(0), y''(1)
+// — determine the six free Bernstein control values (p1, p2, w0, w1, w2) up to
+// overall scaling; p0 = 0 and p3 = w2 are pinned by the endpoint values. We
+// normalize w0 = 1 and solve a 2x2 linear system for (w1, w2); p1, p2 then
 // follow algebraically. With those Bernstein control values, conversion to
 // monomial form is closed-form (no root finding required).
 //
 // Curvature inputs are the signed differential-geometric curvatures
-// κ = y''(x) / (1 + y'(x)²)^(3/2). Because x(t) = t, parametric y'(t), y''(t)
-// equal the Cartesian dy/dx, d²y/dx², so the conversion at endpoints is
-// y''(0) = κ₀ · (1 + m₀²)^(3/2) and y''(1) = κ₁ · (1 + m₁²)^(3/2).
+// k = y''(x) / (1 + y'(x)^2)^(3/2). Because x(t) = t, parametric y'(t), y''(t)
+// equal the Cartesian dy/dx, d^2y/dx^2, so the conversion at endpoints is
+// y''(0) = k0 * (1 + m0^2)^(3/2) and y''(1) = k1 * (1 + m1^2)^(3/2).
 //
 // Throws when:
 //   - inputs are non-finite,
@@ -139,28 +139,28 @@ export const fromSlopesAndCurvatures = (
   const m0 = startSlope
   const m1 = endSlope
 
-  // y''(0) = κ₀ · (1 + m₀²)^(3/2), y''(1) = κ₁ · (1 + m₁²)^(3/2).
-  // (Standard signed-curvature → second-derivative conversion for a graph y(x).)
+  // y''(0) = k0 * (1 + m0^2)^(3/2), y''(1) = k1 * (1 + m1^2)^(3/2).
+  // (Standard signed-curvature -> second-derivative conversion for a graph y(x).)
   const d0 = startCurvature * Math.pow(1 + m0 * m0, 1.5)
   const d1 = endCurvature * Math.pow(1 + m1 * m1, 1.5)
 
-  // Linear system from the two curvature constraints, normalized at w₀ = 1:
-  //   4·u·w₁ + 2·v·w₂ = d₀
-  //   4·v·w₁ +   d₁·w₂ = -2·u
-  // where u = 1 - m₀, v = 1 - m₁. By Cramer's rule:
-  //   det = 4·u·d₁ - 8·v²
-  //   w₁  = (d₀·d₁ + 4·u·v) / det
-  //   w₂  = (-8·u² - 4·d₀·v) / det
+  // Linear system from the two curvature constraints, normalized at w0 = 1:
+  //   4*u*w1 + 2*v*w2 = d0
+  //   4*v*w1 +   d1*w2 = -2*u
+  // where u = 1 - m0, v = 1 - m1. By Cramer's rule:
+  //   det = 4*u*d1 - 8*v^2
+  //   w1  = (d0*d1 + 4*u*v) / det
+  //   w2  = (-8*u^2 - 4*d0*v) / det
   const u = 1 - m0
   const v = 1 - m1
   const det = 4 * u * d1 - 8 * v * v
 
-  // When the input curvatures sit exactly on the boundary `u·d₁ = 2·v²` the
+  // When the input curvatures sit exactly on the boundary `u*d1 = 2*v^2` the
   // constraint system goes singular: either inconsistent (no curve satisfies
   // the constraints) or redundant (a 1-parameter family of curves does). The
   // tolerance below catches inputs that are mathematically redundant but
-  // float-perturbed off zero (e.g. y(t) = t², where the conversion from κ to
-  // d picks up ε-level error). Use a relative scale so the test scales with
+  // float-perturbed off zero (e.g. y(t) = t^2, where the conversion from k to
+  // d picks up epsilon-level error). Use a relative scale so the test scales with
   // the magnitude of the coefficients.
   const detScale = Math.max(Math.abs(4 * u * d1), Math.abs(8 * v * v), 1)
   const SINGULAR_TOLERANCE = 1e-12
@@ -174,12 +174,12 @@ export const fromSlopesAndCurvatures = (
     w1 = (d0 * d1 + 4 * u * v) / det
     w2 = (-8 * u * u - 4 * d0 * v) / det
   } else if (u === 0 && v === 0) {
-    // m₀ = m₁ = 1: both equations collapse to `0 = d₀` and `0 = d₁`, so the
+    // m0 = m1 = 1: both equations collapse to `0 = d0` and `0 = d1`, so the
     // system is consistent iff both curvatures vanish. The only easing
     // satisfying that is linear y(t) = t — return it directly.
     invariant(
       d0 === 0 && d1 === 0,
-      `fromSlopesAndCurvatures: inputs (m₀=${m0}, m₁=${m1}, κ₀=${startCurvature}, κ₁=${endCurvature}) yield an inconsistent constraint system`,
+      `fromSlopesAndCurvatures: inputs (m0=${m0}, m1=${m1}, k0=${startCurvature}, k1=${endCurvature}) yield an inconsistent constraint system`,
     )
     return new RationalCubicCurve2dImpl(
       CubicPolynomial.make(0, 1, 0, 0),
@@ -189,16 +189,16 @@ export const fromSlopesAndCurvatures = (
   } else {
     // Singular but not at the linear-easing point. The two rows are
     // proportional; consistency requires the augmented column to match. The
-    // residual `−8·u² − 4·v·d₀` is the Cramer numerator of w₂, which must
-    // also vanish for the system to be consistent (otherwise w₂ would need
+    // residual `-8*u^2 - 4*v*d0` is the Cramer numerator of w2, which must
+    // also vanish for the system to be consistent (otherwise w2 would need
     // to be both finite and 0/0).
     const residual = -8 * u * u - 4 * v * d0
     invariant(
       Math.abs(residual) <= SINGULAR_TOLERANCE * detScale,
-      `fromSlopesAndCurvatures: inputs (m₀=${m0}, m₁=${m1}, κ₀=${startCurvature}, κ₁=${endCurvature}) yield an inconsistent constraint system`,
+      `fromSlopesAndCurvatures: inputs (m0=${m0}, m1=${m1}, k0=${startCurvature}, k1=${endCurvature}) yield an inconsistent constraint system`,
     )
-    // Pick the canonical solution from the 1-parameter family: w₂ = 1, then
-    // w₁ follows from whichever of the two equations has a nonzero pivot.
+    // Pick the canonical solution from the 1-parameter family: w2 = 1, then
+    // w1 follows from whichever of the two equations has a nonzero pivot.
     // (At least one of u, v is nonzero here, since u = v = 0 branched above.)
     w0 = 1
     w2 = 1
@@ -206,13 +206,13 @@ export const fromSlopesAndCurvatures = (
   }
 
   // W(t) must be > 0 throughout [0, 1] for the rational to be well-defined.
-  // W(0) = w₀ = 1 > 0 always; check W(1) = w₂ > 0, then guard the interior.
+  // W(0) = w0 = 1 > 0 always; check W(1) = w2 > 0, then guard the interior.
   // W as a quadratic in t has monomial coefficients (c, b, a) below; on [0, 1]
   // its minimum is at an endpoint unless `a > 0` and the vertex `t* = -b/(2a)`
   // lies inside (0, 1), in which case the vertex value is the candidate min.
   invariant(
     w2 > 0,
-    `fromSlopesAndCurvatures: inputs (m₀=${m0}, m₁=${m1}, κ₀=${startCurvature}, κ₁=${endCurvature}) yield denominator ≤ 0 at t = 1`,
+    `fromSlopesAndCurvatures: inputs (m0=${m0}, m1=${m1}, k0=${startCurvature}, k1=${endCurvature}) yield denominator <= 0 at t = 1`,
   )
   const a = w0 - 2 * w1 + w2
   const b = 2 * (w1 - w0)
@@ -222,22 +222,22 @@ export const fromSlopesAndCurvatures = (
       const wStar = w0 + tStar * (b + a * tStar)
       invariant(
         wStar > 0,
-        `fromSlopesAndCurvatures: inputs (m₀=${m0}, m₁=${m1}, κ₀=${startCurvature}, κ₁=${endCurvature}) yield denominator ≤ 0 in (0, 1)`,
+        `fromSlopesAndCurvatures: inputs (m0=${m0}, m1=${m1}, k0=${startCurvature}, k1=${endCurvature}) yield denominator <= 0 in (0, 1)`,
       )
     }
   }
 
   // Numerator Bernstein control values, from the endpoint value & slope
-  // constraints (p₀ = 0, p₃ = w₂, p₁ = m₀·w₀/3, p₂ = ((1-m₁)·w₂ + 2·w₁)/3).
+  // constraints (p0 = 0, p3 = w2, p1 = m0*w0/3, p2 = ((1-m1)*w2 + 2*w1)/3).
   const p1 = (m0 * w0) / 3
   const p2 = (v * w2 + 2 * w1) / 3
   const p3 = w2
 
-  // Bernstein → monomial conversion. For cubic Y with p₀ = 0:
-  //   Y(t) = 3·p₁·t + 3·(p₂ - 2·p₁)·t² + (p₃ - 3·p₂ + 3·p₁)·t³
+  // Bernstein -> monomial conversion. For cubic Y with p0 = 0:
+  //   Y(t) = 3*p1*t + 3*(p2 - 2*p1)*t^2 + (p3 - 3*p2 + 3*p1)*t^3
   // For quadratic W:
-  //   W(t) = w₀ + 2·(w₁ - w₀)·t + (w₀ - 2·w₁ + w₂)·t²
-  // X(t) = t · W(t) shifts W up one degree.
+  //   W(t) = w0 + 2*(w1 - w0)*t + (w0 - 2*w1 + w2)*t^2
+  // X(t) = t * W(t) shifts W up one degree.
   const yC1 = 3 * p1
   const yC2 = 3 * (p2 - 2 * p1)
   const yC3 = p3 - 3 * p2 + 3 * p1
@@ -261,7 +261,7 @@ export const solve = dual<
   return Vector2.make(CubicPolynomial.solve(c.x, t) / w, CubicPolynomial.solve(c.y, t) / w)
 })
 
-// At t = 0, every cubic polynomial's Horner evaluation is just its c₀ term, so
+// At t = 0, every cubic polynomial's Horner evaluation is just its c0 term, so
 // the projection (x(0)/w(0), y(0)/w(0)) collapses to closed-form scalar divides.
 /** @internal */
 export const startPoint = (c: RationalCubicCurve2d): Vector2.Vector2 =>
@@ -279,7 +279,7 @@ export const endPoint = (c: RationalCubicCurve2d): Vector2.Vector2 => {
   )
 }
 
-// Inverse-solve x(t)/w(t) = X by finding roots of X(t) - X·w(t) = 0.
+// Inverse-solve x(t)/w(t) = X by finding roots of X(t) - X*w(t) = 0.
 // Both X(t) and w(t) are cubic in t, so their linear combination is also
 // cubic — solvable with the existing cubic root-finder. Solutions outside
 // the [0, 1] unit interval are discarded; for each surviving t, y(t)/w(t)
@@ -317,17 +317,17 @@ export const solveAtY = dual(
     ),
 )
 
-// Monomial coefficients of the quartic q(t) = N'(t)·D(t) − N(t)·D'(t).
+// Monomial coefficients of the quartic q(t) = N'(t)*D(t) - N(t)*D'(t).
 //
-// Since `r(t) = N(t)/D(t)` and `r'(t) = (N'·D − N·D')/D²`, with D² > 0 wherever
-// D ≠ 0, the sign of `r'` equals the sign of `q` on the unit interval (the
+// Since `r(t) = N(t)/D(t)` and `r'(t) = (N'*D - N*D')/D^2`, with D^2 > 0 wherever
+// D != 0, the sign of `r'` equals the sign of `q` on the unit interval (the
 // documented invariant assumes D is nonvanishing on `[0, 1]`). So per-axis
 // monotonicity of the rational reduces to sign analysis of `q`.
 //
-// `q` is the difference of two degree-5 products, but the leading t⁵ terms of
-// `N'·D` and `N·D'` both equal `3·n₃·d₃` and cancel — so `q` is actually
+// `q` is the difference of two degree-5 products, but the leading t^5 terms of
+// `N'*D` and `N*D'` both equal `3*n3*d3` and cancel — so `q` is actually
 // degree 4. (For equal-degree-n rationals, the derivative-numerator has degree
-// `2n − 2`.) Five monomial coefficients suffice.
+// `2n - 2`.) Five monomial coefficients suffice.
 const derivativeNumeratorQuartic = (
   n: CubicPolynomial.CubicPolynomial,
   d: CubicPolynomial.CubicPolynomial,
@@ -339,11 +339,11 @@ const derivativeNumeratorQuartic = (
   n.c3 * d.c2 - n.c2 * d.c3,
 ]
 
-// Monomial → Bernstein basis conversion for degree 4 on [0, 1].
+// Monomial -> Bernstein basis conversion for degree 4 on [0, 1].
 //
-//   bⱼ = Σᵢ₌₀..ⱼ C(j, i)/C(4, i) · cᵢ
+//   b_j = sum(i = 0..j, C(j, i)/C(4, i) * c_i)
 //
-// Closed-form for n = 4 using C(4,·) = (1, 4, 6, 4, 1). Five outputs.
+// Closed-form for n = 4 using C(4,*) = (1, 4, 6, 4, 1). Five outputs.
 const bernsteinFromQuarticMonomial = (
   c0: number,
   c1: number,
@@ -359,7 +359,7 @@ const bernsteinFromQuarticMonomial = (
 ]
 
 // At depth 32 the recursion has bracketed any sign change to an interval of
-// width 2⁻³² ≈ 2 × 10⁻¹⁰ — well below floating-point noise for typical
+// width 2^-32 (~2e-10) — well below floating-point noise for typical
 // curve coefficients. Surviving ambiguity at this depth indicates a
 // tangential zero (touches but does not cross), which we report as
 // `Monotonicity.None`.
@@ -548,10 +548,10 @@ export const asDecreasing = <XT, YT>(
   isDecreasing(c) ? c : fail('rational cubic curve is not decreasing in both axes')
 
 // Affine transform on a rational curve. R(s) = (X(s)/W(s), Y(s)/W(s)), so
-//   f(R(s)) = A · (X/W, Y/W) + t
-//          = ((A · (X, Y) + t · W) / W)
+//   f(R(s)) = A * (X/W, Y/W) + t
+//          = ((A * (X, Y) + t * W) / W)
 // The denominator W is unchanged; each numerator pulls in a translation term
-// weighted by W per-coefficient. Unlike the polynomial case, t·W contributes
+// weighted by W per-coefficient. Unlike the polynomial case, t*W contributes
 // to every coefficient, not just c0.
 /** @internal */
 export const transform = dual<
@@ -576,7 +576,7 @@ export const transform = dual<
   )
 })
 
-// Depth cap for tight bounding box recursion. 2²⁰ ≈ 1M leaves is well past
+// Depth cap for tight bounding box recursion. 2^20 (~1M) leaves is well past
 // the point where any geometrically meaningful tolerance would still be
 // driving subdivision — the cap is here to guard against tolerances
 // approaching zero.
@@ -618,9 +618,9 @@ export const boundingBox = dual<
   //
   // The reference is the segment's endpoint AABB: `r(0)` and `r(1)` both lie
   // on the curve and therefore inside its true bounding box. So
-  //   endpointBox ⊆ trueBox ⊆ hullBox
-  // and the gap `hullBox − endpointBox` (per side) upper-bounds the gap
-  // `hullBox − trueBox`. When that gap is ≤ tolerance on every side, the
+  //   endpointBox within trueBox within hullBox
+  // and the gap `hullBox - endpointBox` (per side) upper-bounds the gap
+  // `hullBox - trueBox`. When that gap is <= tolerance on every side, the
   // leaf's hull box is provably within tolerance of its true range; the
   // union of all leaves is then within tolerance of the curve's tight box.
   const recurse = (
@@ -659,15 +659,15 @@ export const boundingBox = dual<
   return recurse(c, 0)
 })
 
-// Approximation cap. At depth 20 we'd emit up to 2²⁰ ≈ 1M segments for one
+// Approximation cap. At depth 20 we'd emit up to 2^20 (~1M) segments for one
 // input curve — well past any sane target — so the cap is really just a guard
 // against pathological tolerances (e.g. tolerance approaching 0).
 const MAX_APPROX_DEPTH = 20
 
 // Builds the polynomial-cubic candidate for one rational segment by:
-//   1. Inverting Bernstein → monomial on each of x, y, w to recover the four
-//      homogeneous Bézier control points (Xᵢ, Yᵢ, Wᵢ).
-//   2. Projecting each CP back to 2D as (Xᵢ/Wᵢ, Yᵢ/Wᵢ).
+//   1. Inverting Bernstein -> monomial on each of x, y, w to recover the four
+//      homogeneous Bézier control points (X_i, Y_i, W_i).
+//   2. Projecting each CP back to 2D as (X_i/W_i, Y_i/W_i).
 //   3. Lifting those 2D CPs back to a polynomial cubic via fromBezierPoints.
 // The result matches the rational at t=0 and t=1 exactly and matches endpoint
 // tangent directions, but interior shape diverges whenever the weights are
@@ -696,7 +696,7 @@ const buildCubicCandidate = (c: RationalCubicCurve2d): CubicCurve2d.CubicCurve2d
   )
 }
 
-// Splits a rational cubic at parameter `t ∈ (0, 1)` by applying
+// Splits a rational cubic at parameter `t in (0, 1)` by applying
 // `CubicPolynomial.subdivide` independently to each of x, y, w. Equivalent to
 // de Casteljau on the homogeneous control polygon but stays in monomial form
 // throughout, so no Bernstein round-trip is required.
@@ -721,7 +721,7 @@ export const subdivide = dual<
 //
 // Rational Bézier curves with positive weights satisfy the projected
 // convex-hull property: the curve lies inside the convex hull of the four
-// projected 2D control points (Wᵢ⁻¹·Xᵢ, Wᵢ⁻¹·Yᵢ). Their AABB is a strict
+// projected 2D control points (W_i^-1*X_i, W_i^-1*Y_i). Their AABB is a strict
 // superset of the hull, so it is a valid (and cheap) bound on the curve.
 //
 // Looser than the public tight box — for that we'd need the extrema of
@@ -764,7 +764,7 @@ const hullBoundingBox = (
 // the rational. When `false`, the rational is subdivided and the procedure
 // recurses.
 //
-// Implementation: for each direction (rational → candidate, candidate →
+// Implementation: for each direction (rational -> candidate, candidate ->
 // rational), run a depth-first subdivision on the source side. At each
 // piece, compute
 //
@@ -779,14 +779,14 @@ const hullBoundingBox = (
 // and target overlap (which they usually do here — the candidate matches the
 // rational at endpoints and tangents). Early-terminate on the first piece
 // whose `lower` exceeds `tolerance` (definitive miss) or accept whenever
-// every piece's `upper` ≤ tolerance.
+// every piece's `upper` <= tolerance.
 
 const MAX_HAUSDORFF_DEPTH = 30
 
 // Coarse sample + bisection on the squared-distance derivative. Returns the
 // minimum squared distance from (qx, qy) to a parametric curve described by
-// `eval_`. Stationary points of (P(s) - q) · P'(s) are local extrema of
-// D²(s); 32 coarse samples reliably bracket the global min for cubic-degree
+// `eval_`. Stationary points of (P(s) - q) * P'(s) are local extrema of
+// D^2(s); 32 coarse samples reliably bracket the global min for cubic-degree
 // curves (which have at most ~5 critical points of squared distance).
 const closestSquaredDistance = (
   eval_: (s: number) => { px: number; py: number; tx: number; ty: number },
@@ -843,7 +843,7 @@ const polynomialEval = (c: CubicCurve2d.CubicCurve2d, s: number) => ({
   ty: c.y.c1 + s * (2 * c.y.c2 + s * 3 * c.y.c3),
 })
 
-// R(s) = (X(s)/W(s), Y(s)/W(s))  →  R'(s) = ((X'W - XW')/W², (Y'W - YW')/W²)
+// R(s) = (X(s)/W(s), Y(s)/W(s))  ->  R'(s) = ((X'W - XW')/W^2, (Y'W - YW')/W^2)
 const rationalEval = (c: RationalCubicCurve2d, s: number) => {
   const X = c.x.c0 + s * (c.x.c1 + s * (c.x.c2 + s * c.x.c3))
   const Y = c.y.c0 + s * (c.y.c1 + s * (c.y.c2 + s * c.y.c3))
@@ -959,7 +959,7 @@ const hausdorffWithinTolerance = (
   // Algebraic fast path: when the denominator polynomial is constant — every
   // weighted Bézier control point shares the same weight, so the rational
   // reduces to a polynomial cubic — `buildCubicCandidate` is exact. The
-  // Bernstein → monomial transform produces exact zero higher coefficients
+  // Bernstein -> monomial transform produces exact zero higher coefficients
   // for a uniform input (integer cancellation), and `CubicPolynomial.subdivide`
   // preserves constants, so this check holds at every recursion depth.
   //

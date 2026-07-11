@@ -46,7 +46,7 @@ export const fromCoefficients: (c0: Vector2.Vector2, c1: Vector2.Vector2) => Lin
   c1,
 ) => new LinearCurve2dImpl(LinearPolynomial.make(c0.x, c1.x), LinearPolynomial.make(c0.y, c1.y))
 
-// Linear Bernstein basis: B(t) = (1-t)·p0 + t·p1
+// Linear Bernstein basis: B(t) = (1-t)*p0 + t*p1
 // Expanding to monomial form gives c0 = p0, c1 = p1 - p0.
 /** @internal */
 export const fromEndpoints: (p0: Vector2.Vector2, p1: Vector2.Vector2) => LinearCurve2d = (
@@ -196,8 +196,8 @@ export const asDecreasing = <XT, YT>(
 ): LinearCurve2d<XT & Decreasing, YT & Decreasing> =>
   isDecreasing(c) ? c : fail('linear curve is not decreasing in both axes')
 
-// Affine transform on a coefficient-form curve: f(p(t)) = A·p(t) + b expands
-// to (A·c0 + b) + (A·c1)·t. The constant coefficient receives the full affine
+// Affine transform on a coefficient-form curve: f(p(t)) = A*p(t) + b expands
+// to (A*c0 + b) + (A*c1)*t. The constant coefficient receives the full affine
 // (translation included), higher coefficients see only the linear part.
 /** @internal */
 export const transform = dual<
