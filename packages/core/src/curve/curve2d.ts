@@ -11,8 +11,8 @@ import type { Vector2 } from '../vector/vector2.ts'
  * instance which the corresponding path module passes to
  * `Path2d.make(ops)` to derive its operation surface.
  *
- * The interface is intentionally small — anything that isn't shared
- * structurally across curve degrees stays on the per-degree module.
+ * The interface stays small: anything that isn't shared structurally
+ * across curve degrees stays on the per-degree module.
  *
  * @since 2.0.0
  */
@@ -49,7 +49,7 @@ export interface Curve2dOps<C> {
   solveAtX(c: C, x: number): Solution.AtMostOne<number>
 
   /**
-   * y-axis analog of {@link solveAtX}.
+   * y-axis analog of `solveAtX`.
    */
   solveAtY(c: C, y: number): Solution.AtMostOne<number>
 

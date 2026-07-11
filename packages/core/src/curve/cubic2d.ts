@@ -15,7 +15,7 @@ export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
 /**
  * A cubic curve in 2D space.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly; no operation mutates a curve.
  *
  * The two type parameters carry the trait sets of the curve's per-axis
  * polynomials. Refiners check monotonicity over the unit interval `[0, 1]` —
@@ -93,19 +93,22 @@ export const isCubicCurve2d: (c: unknown) => c is CubicCurve2d = internal.isCubi
 
 export const solve: {
   /**
-   * Solves the cubic curve for a given parameter t.
+   * Evaluates the curve at parameter `t`.
    *
-   * @param t - The parameter value.
-   * @returns A function that takes a cubic curve and returns the point on the curve at parameter t.
+   * @param t - The curve parameter, conventionally in `[0, 1]`.
+   * @returns A function that takes a cubic curve and returns the point at `t`.
    * @since 1.0.0
    */
   (t: number): (c: CubicCurve2d) => Vector2
   /**
-   * Solves the cubic curve for a given parameter t.
+   * Evaluates the curve at parameter `t`.
    *
-   * @param c - The cubic curve to solve.
-   * @param t - The parameter value.
-   * @returns The point on the curve at parameter t.
+   * `t` is not clamped; values outside `[0, 1]` extrapolate the curve's
+   * polynomials.
+   *
+   * @param c - The cubic curve to evaluate.
+   * @param t - The curve parameter, conventionally in `[0, 1]`.
+   * @returns The point on the curve at parameter `t`.
    * @since 1.0.0
    */
   (c: CubicCurve2d, t: number): Vector2
@@ -113,19 +116,21 @@ export const solve: {
 
 export const length: {
   /**
-   * Calculates (approximates) the length of a cubic curve.
+   * Calculates the arc length of a cubic curve over an interval of its
+   * parameter domain, approximated by numerical quadrature.
    *
-   * @param c - The cubic curve to calculate the length of.
-   * @param i - The interval over which to calculate the length.
-   * @returns The length of the cubic curve.
+   * @param c - The cubic curve to measure.
+   * @param i - The parameter interval to measure over.
+   * @returns The arc length over the interval, to quadrature accuracy.
    * @since 1.0.0
    */
   (c: CubicCurve2d, i: Interval): number
   /**
-   * Calculates (approximates) the length of a cubic curve.
+   * Calculates the arc length of a cubic curve over an interval of its
+   * parameter domain, approximated by numerical quadrature.
    *
-   * @param i - The interval over which to calculate the length.
-   * @returns A function that takes a cubic curve and returns the length of the cubic curve.
+   * @param i - The parameter interval to measure over.
+   * @returns A function that takes a cubic curve and returns the arc length.
    * @since 1.0.0
    */
   (i: Interval): (c: CubicCurve2d) => number
@@ -134,7 +139,7 @@ export const length: {
 export const solveAtX: {
   /**
    * Evaluates the curve's y values at a given x. Because the x polynomial is
-   * `Monotonic`, the inverse has at most one solution — at most one y value.
+   * `Monotonic`, the inverse has at most one solution, at most one y value.
    *
    * @param c - The cubic curve.
    * @param x - The x coordinate.
@@ -144,7 +149,7 @@ export const solveAtX: {
   <XT extends Monotonic, YT>(c: CubicCurve2d<XT, YT>, x: number): Solution.AtMostOne<number>
   /**
    * Evaluates the curve's y values at a given x. The result is the y values
-   * the curve passes through where x(t) = the given x — up to three solutions
+   * the curve passes through where x(t) = the given x, up to three solutions
    * for a cubic curve.
    *
    * @param c - The cubic curve.
@@ -153,7 +158,13 @@ export const solveAtX: {
    * @since 2.0.0
    */
   <XT, YT>(c: CubicCurve2d<XT, YT>, x: number): Solution.AtMostThree<number>
-  /** @since 2.0.0 */
+  /**
+   * Evaluates the curve's y values at a given x.
+   *
+   * @param x - The x coordinate.
+   * @returns A function that takes a cubic curve and returns the y values at `x`.
+   * @since 2.0.0
+   */
   (x: number): {
     <XT extends Monotonic, YT>(c: CubicCurve2d<XT, YT>): Solution.AtMostOne<number>
     <XT, YT>(c: CubicCurve2d<XT, YT>): Solution.AtMostThree<number>
@@ -173,7 +184,7 @@ export const solveAtY: {
   <XT, YT extends Monotonic>(c: CubicCurve2d<XT, YT>, y: number): Solution.AtMostOne<number>
   /**
    * Evaluates the curve's x values at a given y. The result is the x values
-   * the curve passes through where y(t) = the given y — up to three solutions
+   * the curve passes through where y(t) = the given y, up to three solutions
    * for a cubic curve.
    *
    * @param c - The cubic curve.
@@ -182,7 +193,13 @@ export const solveAtY: {
    * @since 2.0.0
    */
   <XT, YT>(c: CubicCurve2d<XT, YT>, y: number): Solution.AtMostThree<number>
-  /** @since 2.0.0 */
+  /**
+   * Evaluates the curve's x values at a given y.
+   *
+   * @param y - The y coordinate.
+   * @returns A function that takes a cubic curve and returns the x values at `y`.
+   * @since 2.0.0
+   */
   (y: number): {
     <XT, YT extends Monotonic>(c: CubicCurve2d<XT, YT>): Solution.AtMostOne<number>
     <XT, YT>(c: CubicCurve2d<XT, YT>): Solution.AtMostThree<number>
@@ -221,7 +238,7 @@ export const curvature: {
 export const boundingBox: (c: CubicCurve2d) => Interval2d<Closed, Closed> = internal.boundingBox
 
 /**
- * Evaluates the curve at `t = 0` in closed form — `(c.x.c0, c.y.c0)`.
+ * Evaluates the curve at `t = 0` in closed form: `(c.x.c0, c.y.c0)`.
  *
  * @param c - The cubic curve.
  * @returns The point at the start of the curve's parameter domain.
@@ -230,7 +247,7 @@ export const boundingBox: (c: CubicCurve2d) => Interval2d<Closed, Closed> = inte
 export const startPoint: (c: CubicCurve2d) => Vector2 = internal.startPoint
 
 /**
- * Evaluates the curve at `t = 1` in closed form — the sum of the per-axis
+ * Evaluates the curve at `t = 1` in closed form: the sum of the per-axis
  * monomial coefficients.
  *
  * @param c - The cubic curve.
@@ -260,7 +277,7 @@ export const xRange: (c: CubicCurve2d) => Closed = internal.xRange
 export const yRange: (c: CubicCurve2d) => Closed = internal.yRange
 
 /**
- * Renders the curve as a single SVG path-data drawing command — for a cubic
+ * Renders the curve as a single SVG path-data drawing command: for a cubic
  * curve, `C ctrl1X,ctrl1Y ctrl2X,ctrl2Y endX,endY`. Bernstein control points
  * are recovered from the monomial coefficients in closed form. Does not
  * include a leading `M`.
@@ -272,77 +289,154 @@ export const yRange: (c: CubicCurve2d) => Closed = internal.yRange
 export const toPathDataSegment: (c: CubicCurve2d) => string = internal.toPathDataSegment
 
 /**
- * Type-narrowing predicate: refines the curve's x-axis trait to include
- * `Monotonic` when the x polynomial is strictly monotonic on the unit
- * interval `[0, 1]`. The y-axis trait is unchanged.
+ * Checks if the curve's x polynomial is strictly monotonic on the unit
+ * interval `[0, 1]`, adding `Monotonic` to the x-axis trait. The y-axis
+ * trait is unchanged.
  *
+ * @param c - The cubic curve to check.
+ * @returns `true` when x is strictly monotonic on `[0, 1]`, narrowing the x-axis trait.
  * @since 2.0.0
  */
 export const isMonotonicX: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => c is CubicCurve2d<XT & Monotonic, YT> = internal.isMonotonicX
 
-/** @since 2.0.0 */
+/**
+ * Checks if the curve's x polynomial is strictly increasing on the
+ * unit interval `[0, 1]`, adding `Increasing` to the x-axis trait.
+ * The y-axis trait is unchanged.
+ *
+ * @param c - The cubic curve to check.
+ * @returns `true` when x is strictly increasing on `[0, 1]`, narrowing the x-axis trait.
+ * @since 2.0.0
+ */
 export const isIncreasingX: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => c is CubicCurve2d<XT & Increasing, YT> = internal.isIncreasingX
 
-/** @since 2.0.0 */
+/**
+ * Checks if the curve's x polynomial is strictly decreasing on the
+ * unit interval `[0, 1]`, adding `Decreasing` to the x-axis trait.
+ * The y-axis trait is unchanged.
+ *
+ * @param c - The cubic curve to check.
+ * @returns `true` when x is strictly decreasing on `[0, 1]`, narrowing the x-axis trait.
+ * @since 2.0.0
+ */
 export const isDecreasingX: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => c is CubicCurve2d<XT & Decreasing, YT> = internal.isDecreasingX
 
 /**
- * Type-narrowing predicate: refines the curve's y-axis trait to include
- * `Monotonic`. The x-axis trait is unchanged.
+ * Checks if the curve's y polynomial is strictly monotonic on the unit
+ * interval `[0, 1]`, adding `Monotonic` to the y-axis trait. The x-axis
+ * trait is unchanged.
  *
+ * @param c - The cubic curve to check.
+ * @returns `true` when y is strictly monotonic on `[0, 1]`, narrowing the y-axis trait.
  * @since 2.0.0
  */
 export const isMonotonicY: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => c is CubicCurve2d<XT, YT & Monotonic> = internal.isMonotonicY
 
-/** @since 2.0.0 */
+/**
+ * Checks if the curve's y polynomial is strictly increasing on the
+ * unit interval `[0, 1]`, adding `Increasing` to the y-axis trait.
+ * The x-axis trait is unchanged.
+ *
+ * @param c - The cubic curve to check.
+ * @returns `true` when y is strictly increasing on `[0, 1]`, narrowing the y-axis trait.
+ * @since 2.0.0
+ */
 export const isIncreasingY: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => c is CubicCurve2d<XT, YT & Increasing> = internal.isIncreasingY
 
-/** @since 2.0.0 */
+/**
+ * Checks if the curve's y polynomial is strictly decreasing on the
+ * unit interval `[0, 1]`, adding `Decreasing` to the y-axis trait.
+ * The x-axis trait is unchanged.
+ *
+ * @param c - The cubic curve to check.
+ * @returns `true` when y is strictly decreasing on `[0, 1]`, narrowing the y-axis trait.
+ * @since 2.0.0
+ */
 export const isDecreasingY: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => c is CubicCurve2d<XT, YT & Decreasing> = internal.isDecreasingY
 
 /**
- * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
- * when both x and y polynomials are monotonic over the unit interval `[0, 1]`.
+ * Checks if both the x and y polynomials are strictly monotonic on the
+ * unit interval `[0, 1]`, adding `Monotonic` to both axes' traits.
  *
+ * @param c - The cubic curve to check.
+ * @returns `true` when both axes are strictly monotonic on `[0, 1]`, narrowing both traits.
  * @since 2.0.0
  */
 export const isMonotonic: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => c is CubicCurve2d<XT & Monotonic, YT & Monotonic> = internal.isMonotonic
 
-/** @since 2.0.0 */
+/**
+ * Checks if both the x and y polynomials are strictly increasing on
+ * the unit interval `[0, 1]`, adding `Increasing` to both axes' traits.
+ *
+ * @param c - The cubic curve to check.
+ * @returns `true` when both axes are strictly increasing on `[0, 1]`, narrowing both traits.
+ * @since 2.0.0
+ */
 export const isIncreasing: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => c is CubicCurve2d<XT & Increasing, YT & Increasing> = internal.isIncreasing
 
-/** @since 2.0.0 */
+/**
+ * Checks if both the x and y polynomials are strictly decreasing on
+ * the unit interval `[0, 1]`, adding `Decreasing` to both axes' traits.
+ *
+ * @param c - The cubic curve to check.
+ * @returns `true` when both axes are strictly decreasing on `[0, 1]`, narrowing both traits.
+ * @since 2.0.0
+ */
 export const isDecreasing: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => c is CubicCurve2d<XT & Decreasing, YT & Decreasing> = internal.isDecreasing
 
-/** @since 2.0.0 */
+/**
+ * Asserts that both axes are strictly monotonic on the unit interval
+ * `[0, 1]`, throwing on failure.
+ *
+ * @param c - The cubic curve to assert against.
+ * @returns The same curve, with `Monotonic` on both axes' traits.
+ * @throws `Error` when either axis fails the check.
+ * @since 2.0.0
+ */
 export const asMonotonic: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => CubicCurve2d<XT & Monotonic, YT & Monotonic> = internal.asMonotonic
 
-/** @since 2.0.0 */
+/**
+ * Asserts that both axes are strictly increasing on the unit interval
+ * `[0, 1]`, throwing on failure.
+ *
+ * @param c - The cubic curve to assert against.
+ * @returns The same curve, with `Increasing` on both axes' traits.
+ * @throws `Error` when either axis fails the check.
+ * @since 2.0.0
+ */
 export const asIncreasing: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => CubicCurve2d<XT & Increasing, YT & Increasing> = internal.asIncreasing
 
-/** @since 2.0.0 */
+/**
+ * Asserts that both axes are strictly decreasing on the unit interval
+ * `[0, 1]`, throwing on failure.
+ *
+ * @param c - The cubic curve to assert against.
+ * @returns The same curve, with `Decreasing` on both axes' traits.
+ * @throws `Error` when either axis fails the check.
+ * @since 2.0.0
+ */
 export const asDecreasing: <XT, YT>(
   c: CubicCurve2d<XT, YT>,
 ) => CubicCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing
@@ -351,7 +445,7 @@ export const transform: {
   /**
    * Applies an `Affine2d` transform to a `CubicCurve2d`, returning a new
    * curve whose image is the affine image of the original. Internally the
-   * transformation works directly on monomial coefficients — `c0` receives
+   * transformation works directly on monomial coefficients: `c0` receives
    * the full affine, `c1`/`c2`/`c3` receive only the linear part.
    *
    * @param c - The cubic curve.

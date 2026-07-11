@@ -19,21 +19,21 @@ export { RationalCurveTraits } from './rationalCubic2d.internal.ts'
  *
  * Represented as three cubic polynomials in the parameter `t`: per-axis
  * numerators `x`, `y`, and a shared denominator `w`. Evaluation is
- * `(x(t)/w(t), y(t)/w(t))` — the projection from homogeneous coordinates
+ * `(x(t)/w(t), y(t)/w(t))`: the projection from homogeneous coordinates
  * back to the plane. With all weights equal at the source (e.g. produced
  * from a non-rational Bézier with unit weights), `w` is constant and the
  * curve coincides with a polynomial cubic.
  *
  * The two type parameters carry per-axis monotonicity trait brands attached
  * to the rational functions `x(t)/w(t)` and `y(t)/w(t)`. Unlike
- * `CubicCurve2d`, traits do not flow through to the underlying polynomials —
+ * `CubicCurve2d`, traits do not flow through to the underlying polynomials:
  * monotonicity of a ratio of cubics is not the same property as monotonicity
  * of either cubic alone, so the brand lives on the curve itself. Brands are
- * attached after construction via the {@link asMonotonic}, {@link asIncreasing},
- * and {@link asDecreasing} families, which verify the property rigorously
+ * attached after construction via the `asMonotonic`, `asIncreasing`, and
+ * `asDecreasing` families, which verify the property rigorously
  * (Bernstein sign convexity on the derivative-numerator quartic).
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly; no operation mutates a curve.
  *
  * @since 2.0.0
  */
@@ -115,13 +115,13 @@ export const fromBezierPoints: {
  * curvatures).
  *
  * Curvatures are the signed differential-geometric curvatures `κ = y''(x) /
- * (1 + y'(x)²)^(3/2)` — the parameterization-invariant "bend" of the easing
+ * (1 + y'(x)²)^(3/2)`: the parameterization-invariant "bend" of the easing
  * graph. Positive κ is concave-up. Smoothstep is `(0, 0, 6, -6)`; linear is
  * `(1, 1, 0, 0)` (taken as a redundant-system special case).
  *
  * Monotonicity is not enforced. Callers needing the `Increasing` brand for
  * narrowed inverse-solve returns should follow construction with
- * {@link asIncreasing}, which verifies monotonicity rigorously.
+ * `asIncreasing`, which verifies monotonicity rigorously.
  *
  * @param startSlope - The easing function's slope at the start (`dy/dx` at `x = 0`).
  * @param endSlope - The easing function's slope at the end (`dy/dx` at `x = 1`).
@@ -141,7 +141,7 @@ export const fromSlopesAndCurvatures: (
 export const solve: {
   /**
    * Evaluates the rational cubic curve at parameter `t`. Returns
-   * `(x(t)/w(t), y(t)/w(t))` — three Horner evaluations and two divisions.
+   * `(x(t)/w(t), y(t)/w(t))`: three Horner evaluations and two divisions.
    *
    * @param c - The curve to evaluate.
    * @param t - The parameter value.
@@ -160,7 +160,8 @@ export const solve: {
 } = internal.solve
 
 /**
- * Evaluates the curve at `t = 0` in closed form — `(c.x.c0 / c.w.c0, c.y.c0 / c.w.c0)`.
+ * Evaluates the curve at `t = 0` in closed form:
+ * `(c.x.c0 / c.w.c0, c.y.c0 / c.w.c0)`.
  *
  * @param c - The rational cubic curve.
  * @returns The point at the start of the curve's parameter domain.
@@ -200,7 +201,13 @@ export const solveAtX: {
    * @since 2.0.0
    */
   <XT, YT>(c: RationalCubicCurve2d<XT, YT>, x: number): Solution.AtMostThree<number>
-  /** @since 2.0.0 */
+  /**
+   * Evaluates the curve's y values at a given x.
+   *
+   * @param x - The x coordinate.
+   * @returns A function that takes a rational cubic curve and returns the y values at `x`.
+   * @since 2.0.0
+   */
   (x: number): {
     <XT extends Monotonic, YT>(c: RationalCubicCurve2d<XT, YT>): Solution.AtMostOne<number>
     <XT, YT>(c: RationalCubicCurve2d<XT, YT>): Solution.AtMostThree<number>
@@ -227,7 +234,13 @@ export const solveAtY: {
    * @since 2.0.0
    */
   <XT, YT>(c: RationalCubicCurve2d<XT, YT>, y: number): Solution.AtMostThree<number>
-  /** @since 2.0.0 */
+  /**
+   * Evaluates the curve's x values at a given y.
+   *
+   * @param y - The y coordinate.
+   * @returns A function that takes a rational cubic curve and returns the x values at `y`.
+   * @since 2.0.0
+   */
   (y: number): {
     <XT, YT extends Monotonic>(c: RationalCubicCurve2d<XT, YT>): Solution.AtMostOne<number>
     <XT, YT>(c: RationalCubicCurve2d<XT, YT>): Solution.AtMostThree<number>
@@ -304,7 +317,7 @@ export const boundingBox: {
  * exact except at tangential zeros, where it conservatively reports `None`.
  *
  * Returning `Increasing` or `Decreasing` is the trigger for
- * {@link asMonotonic} / {@link asIncreasing} / {@link asDecreasing}.
+ * `asMonotonic` / `asIncreasing` / `asDecreasing`.
  *
  * @param c - The rational cubic curve.
  * @returns The monotonicity of the curve's x projection on `[0, 1]`.
@@ -314,7 +327,7 @@ export const xMonotonicity: (c: RationalCubicCurve2d) => Monotonicity = internal
 
 /**
  * Classifies the monotonicity of the curve's `y(t) = Y(t)/W(t)` projection on
- * the unit interval `[0, 1]`. See {@link xMonotonicity} for the method.
+ * the unit interval `[0, 1]`. See `xMonotonicity` for the method.
  *
  * @param c - The rational cubic curve.
  * @returns The monotonicity of the curve's y projection on `[0, 1]`.
@@ -323,15 +336,15 @@ export const xMonotonicity: (c: RationalCubicCurve2d) => Monotonicity = internal
 export const yMonotonicity: (c: RationalCubicCurve2d) => Monotonicity = internal.yMonotonicity
 
 /**
- * Type-narrowing predicate: refines the curve's x-axis trait to include
- * `Monotonic` when `x(t)/w(t)` is strictly monotonic on `[0, 1]`. The y-axis
- * trait is unchanged.
+ * Checks if `x(t)/w(t)` is strictly monotonic on `[0, 1]`, adding
+ * `Monotonic` to the x-axis trait. The y-axis trait is unchanged.
  *
- * Use this when only x-axis monotonicity is required (e.g. to make {@link solveAtX}
- * narrow to `AtMostOne` without also asserting y-axis monotonicity).
+ * Use this when only x-axis monotonicity is required (e.g. to make
+ * `solveAtX` narrow to `AtMostOne` without also asserting y-axis
+ * monotonicity).
  *
  * @param c - The rational cubic curve.
- * @returns `true` when the x projection is strictly monotonic on `[0, 1]`.
+ * @returns `true` when the x projection is strictly monotonic on `[0, 1]`, narrowing the x-axis trait.
  * @since 2.0.0
  */
 export const isMonotonicX: <XT, YT>(
@@ -339,9 +352,11 @@ export const isMonotonicX: <XT, YT>(
 ) => c is RationalCubicCurve2d<XT & Monotonic, YT> = internal.isMonotonicX
 
 /**
- * Type-narrowing predicate: refines the curve's x-axis trait to include
- * `Increasing`.
+ * Checks if `x(t)/w(t)` is strictly increasing on `[0, 1]`, adding
+ * `Increasing` to the x-axis trait.
  *
+ * @param c - The rational cubic curve.
+ * @returns `true` when the x projection is strictly increasing on `[0, 1]`, narrowing the x-axis trait.
  * @since 2.0.0
  */
 export const isIncreasingX: <XT, YT>(
@@ -349,9 +364,11 @@ export const isIncreasingX: <XT, YT>(
 ) => c is RationalCubicCurve2d<XT & Increasing, YT> = internal.isIncreasingX
 
 /**
- * Type-narrowing predicate: refines the curve's x-axis trait to include
- * `Decreasing`.
+ * Checks if `x(t)/w(t)` is strictly decreasing on `[0, 1]`, adding
+ * `Decreasing` to the x-axis trait.
  *
+ * @param c - The rational cubic curve.
+ * @returns `true` when the x projection is strictly decreasing on `[0, 1]`, narrowing the x-axis trait.
  * @since 2.0.0
  */
 export const isDecreasingX: <XT, YT>(
@@ -359,9 +376,11 @@ export const isDecreasingX: <XT, YT>(
 ) => c is RationalCubicCurve2d<XT & Decreasing, YT> = internal.isDecreasingX
 
 /**
- * Type-narrowing predicate: refines the curve's y-axis trait to include
- * `Monotonic`. The x-axis trait is unchanged. y analog of {@link isMonotonicX}.
+ * Checks if `y(t)/w(t)` is strictly monotonic on `[0, 1]`, adding
+ * `Monotonic` to the y-axis trait. The x-axis trait is unchanged.
  *
+ * @param c - The rational cubic curve.
+ * @returns `true` when the y projection is strictly monotonic on `[0, 1]`, narrowing the y-axis trait.
  * @since 2.0.0
  */
 export const isMonotonicY: <XT, YT>(
@@ -369,9 +388,11 @@ export const isMonotonicY: <XT, YT>(
 ) => c is RationalCubicCurve2d<XT, YT & Monotonic> = internal.isMonotonicY
 
 /**
- * Type-narrowing predicate: refines the curve's y-axis trait to include
- * `Increasing`.
+ * Checks if `y(t)/w(t)` is strictly increasing on `[0, 1]`, adding
+ * `Increasing` to the y-axis trait.
  *
+ * @param c - The rational cubic curve.
+ * @returns `true` when the y projection is strictly increasing on `[0, 1]`, narrowing the y-axis trait.
  * @since 2.0.0
  */
 export const isIncreasingY: <XT, YT>(
@@ -379,9 +400,11 @@ export const isIncreasingY: <XT, YT>(
 ) => c is RationalCubicCurve2d<XT, YT & Increasing> = internal.isIncreasingY
 
 /**
- * Type-narrowing predicate: refines the curve's y-axis trait to include
- * `Decreasing`.
+ * Checks if `y(t)/w(t)` is strictly decreasing on `[0, 1]`, adding
+ * `Decreasing` to the y-axis trait.
  *
+ * @param c - The rational cubic curve.
+ * @returns `true` when the y projection is strictly decreasing on `[0, 1]`, narrowing the y-axis trait.
  * @since 2.0.0
  */
 export const isDecreasingY: <XT, YT>(
@@ -389,13 +412,13 @@ export const isDecreasingY: <XT, YT>(
 ) => c is RationalCubicCurve2d<XT, YT & Decreasing> = internal.isDecreasingY
 
 /**
- * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
- * when both `x(t)/w(t)` and `y(t)/w(t)` are strictly monotonic on `[0, 1]`.
+ * Checks if both `x(t)/w(t)` and `y(t)/w(t)` are strictly monotonic on
+ * `[0, 1]`, adding `Monotonic` to both axes' traits.
  *
- * The constant case is excluded — `Monotonic` is the *strict* brand.
+ * The constant case is excluded: `Monotonic` is the *strict* brand.
  *
  * @param c - The rational cubic curve.
- * @returns `true` when both axes are strictly monotonic on `[0, 1]`.
+ * @returns `true` when both axes are strictly monotonic on `[0, 1]`, narrowing both traits.
  * @since 2.0.0
  */
 export const isMonotonic: <XT, YT>(
@@ -403,9 +426,11 @@ export const isMonotonic: <XT, YT>(
 ) => c is RationalCubicCurve2d<XT & Monotonic, YT & Monotonic> = internal.isMonotonic
 
 /**
- * Type-narrowing predicate: refines both axes' traits to include `Increasing`
- * when both `x(t)/w(t)` and `y(t)/w(t)` are strictly increasing on `[0, 1]`.
+ * Checks if both `x(t)/w(t)` and `y(t)/w(t)` are strictly increasing on
+ * `[0, 1]`, adding `Increasing` to both axes' traits.
  *
+ * @param c - The rational cubic curve.
+ * @returns `true` when both axes are strictly increasing on `[0, 1]`, narrowing both traits.
  * @since 2.0.0
  */
 export const isIncreasing: <XT, YT>(
@@ -413,9 +438,11 @@ export const isIncreasing: <XT, YT>(
 ) => c is RationalCubicCurve2d<XT & Increasing, YT & Increasing> = internal.isIncreasing
 
 /**
- * Type-narrowing predicate: refines both axes' traits to include `Decreasing`
- * when both `x(t)/w(t)` and `y(t)/w(t)` are strictly decreasing on `[0, 1]`.
+ * Checks if both `x(t)/w(t)` and `y(t)/w(t)` are strictly decreasing on
+ * `[0, 1]`, adding `Decreasing` to both axes' traits.
  *
+ * @param c - The rational cubic curve.
+ * @returns `true` when both axes are strictly decreasing on `[0, 1]`, narrowing both traits.
  * @since 2.0.0
  */
 export const isDecreasing: <XT, YT>(
@@ -455,7 +482,7 @@ export const asDecreasingX: <XT, YT>(
 
 /**
  * Asserts that the curve is strictly monotonic in y on `[0, 1]`. y analog of
- * {@link asMonotonicX}.
+ * `asMonotonicX`.
  *
  * @since 2.0.0
  */
@@ -552,7 +579,7 @@ export const approximateAsCubicCurves: {
    *
    * The Hausdorff guarantee means: every point on the rational lies within
    * `tolerance` of some output segment, and every point on the output lies
-   * within `tolerance` of the rational — a true two-sided bound on geometric
+   * within `tolerance` of the rational: a true two-sided bound on geometric
    * deviation, not just a parametric error at one sample.
    *
    * @param c - The rational cubic curve to approximate.
