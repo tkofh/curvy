@@ -14,7 +14,7 @@ export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
 
 /**
  * A linear curve in 2D space, a straight segment parameterized over
- * `t ∈ [0, 1]` by one `LinearPolynomial` per axis.
+ * `t in [0, 1]` by one `LinearPolynomial` per axis.
  *
  * All fields are readonly. No operation mutates a curve. Construct via
  * `fromPolynomials`, `fromCoefficients`, or `fromEndpoints`.
@@ -45,11 +45,11 @@ export const fromPolynomials: (x: LinearPolynomial, y: LinearPolynomial) => Line
  * Creates a new `LinearCurve2d` instance from monomial coefficient vectors.
  *
  * Each argument bundles the per-axis coefficient at the given power. `c0`
- * holds the x⁰ term, `c1` holds the x¹ term. The resulting curve evaluates to
- * `c0 + c1·t` per axis.
+ * holds the x^0 term, `c1` holds the x^1 term. The resulting curve evaluates to
+ * `c0 + c1*t` per axis.
  *
- * @param c0 - The x⁰ coefficients (x and y).
- * @param c1 - The x¹ coefficients (x and y).
+ * @param c0 - The x^0 coefficients (x and y).
+ * @param c1 - The x^1 coefficients (x and y).
  * @returns A new `LinearCurve2d` instance.
  * @since 2.0.0
  */

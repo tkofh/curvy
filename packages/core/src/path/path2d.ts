@@ -281,7 +281,7 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
   // coefficient-vs-position split for its degree, so the path-level call is
   // just a map. Trait brands are dropped — affine maps preserve continuity
   // (since image of a connected set is connected) but can flip monotonicity
-  // sense (a reflection inverts increasing → decreasing) so the brands must
+  // sense (a reflection inverts increasing -> decreasing) so the brands must
   // be reasserted on the result if the caller still wants them.
   const transform = dual<
     (a: Affine2d) => (p: Path2d<C>) => Path2d<C>,

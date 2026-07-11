@@ -13,7 +13,7 @@ import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './trai
 export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 
 /**
- * A quadratic polynomial `c0 + c1·x + c2·x²`, stored by coefficient.
+ * A quadratic polynomial `c0 + c1*x + c2*x^2`, stored by coefficient.
  *
  * All fields are readonly. No operation mutates a polynomial. Construct
  * via `make`, `fromVector`, or `fromPoints`.
@@ -122,7 +122,7 @@ export const solve: {
    *
    * @param p - The quadratic polynomial to evaluate.
    * @param x - The input value.
-   * @returns The value `c0 + c1 * x + c2 * x²`.
+   * @returns The value `c0 + c1 * x + c2 * x^2`.
    * @since 1.0.0
    */
   (p: QuadraticPolynomial, x: number): number
@@ -388,7 +388,7 @@ export const domain: {
    * @returns The enclosing preimage interval, or `Solution.none` when neither boundary value is attained.
    * @example
    * ```ts
-   * // x² attains 1 at ±1 and 4 at ±2; the hull is [-2, 2]
+   * // x^2 attains 1 at +/-1 and 4 at +/-2; the hull is [-2, 2]
    * QuadraticPolynomial.domain(QuadraticPolynomial.make(0, 0, 1), Interval.make(1, 4))
    * // Solution.one of [-2, 2]
    * ```
@@ -469,8 +469,8 @@ export const curvature: {
    * Computes the unsigned curvature of the graph `y = p(x)` at `x`.
    *
    * Unsigned. Bending direction is not reported. Known deviation: the
-   * implementation currently evaluates `|p''| / (1 + |p'(x)|³)` instead
-   * of the standard `|p''| / (1 + p'(x)²)^(3/2)`. The two agree at the
+   * implementation currently evaluates `|p''| / (1 + |p'(x)|^3)` instead
+   * of the standard `|p''| / (1 + p'(x)^2)^(3/2)`. The two agree at the
    * vertex (`p'(x) = 0`) and drift apart away from it.
    *
    * @param p - The quadratic polynomial.

@@ -11,7 +11,7 @@ import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './trai
 export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 
 /**
- * A linear polynomial `c0 + c1·x`, stored by coefficient.
+ * A linear polynomial `c0 + c1*x`, stored by coefficient.
  *
  * All fields are readonly. No operation mutates a polynomial. Construct
  * via `make`, `fromVector`, `fromPointSlope`, or `fromPoints`.
@@ -395,7 +395,7 @@ export const length: {
    * Calculates the arc length of the graph `y = p(x)` over `domain`.
    *
    * For a line the arc length is exact:
-   * `size(domain) * sqrt(1 + c1²)`.
+   * `size(domain) * sqrt(1 + c1^2)`.
    *
    * @param p - The linear polynomial to measure.
    * @param domain - The inputs to measure over.

@@ -10,14 +10,15 @@ import * as internal from './rationalBezier2d.internal.ts'
  * A piecewise rational cubic Bézier curve in 2D space.
  *
  * Each control point is a `Vector2.Weighted` carrying a positive scalar
- * weight. The curve evaluates to `Σ w_i · N_i(t) · P_i / Σ w_i · N_i(t)`,
- * where `N_i` are the cubic Bernstein basis functions. With all weights
+ * weight. The curve evaluates to
+ * `sum(w_i * N_i(t) * P_i) / sum(w_i * N_i(t))`, where `N_i` are the cubic
+ * Bernstein basis functions. With all weights
  * equal, the curve coincides with a non-rational `Bezier2d`. With unequal
  * weights, the curve can exactly represent conic sections (circles,
  * ellipses, parabolas, and hyperbolas) that polynomial Béziers can only
  * approximate.
  *
- * Internally each control point is stored in homogeneous form `(w·x, w·y, w)`,
+ * Internally each control point is stored in homogeneous form `(w*x, w*y, w)`,
  * so de Casteljau evaluation is three independent linear interpolations
  * followed by a single division. Iteration projects back to
  * `Vector2.Weighted`, the same shape accepted by `make`.
@@ -188,10 +189,10 @@ export const transform: {
   /**
    * Applies an `Affine2d` transform to every control-point position of a
    * `RationalBezier2d`, preserving each point's weight. Rational Bézier
-   * evaluation is `Σ w_i N_i(t) P_i / Σ w_i N_i(t)`. Affine maps commute with
-   * the numerator's barycentric combination, so transforming positions while
-   * holding weights fixed exactly parameterizes the affine image of the
-   * original curve.
+   * evaluation is `sum(w_i * N_i(t) * P_i) / sum(w_i * N_i(t))`. Affine maps
+   * commute with the numerator's barycentric combination, so transforming
+   * positions while holding weights fixed exactly parameterizes the affine
+   * image of the original curve.
    *
    * @param s - The rational bezier.
    * @param a - The affine transform.
@@ -213,7 +214,7 @@ export const transform: {
 
 export const subdivide: {
   /**
-   * Splits a `RationalBezier2d` at the given global parameter `u ∈ (0, 1)`
+   * Splits a `RationalBezier2d` at the given global parameter `u in (0, 1)`
    * using de Casteljau's algorithm in homogeneous coordinates. The two
    * returned beziers together trace the same curve as the input. The left
    * covers `[0, u]`, the right covers `[u, 1]`.
@@ -229,7 +230,7 @@ export const subdivide: {
    */
   (r: RationalBezier2d, u: number): [RationalBezier2d, RationalBezier2d]
   /**
-   * Splits a `RationalBezier2d` at the given global parameter `u ∈ (0, 1)`.
+   * Splits a `RationalBezier2d` at the given global parameter `u in (0, 1)`.
    *
    * @param u - The split parameter in the open interval `(0, 1)`.
    * @returns A function that takes a rational bezier and returns the halves.

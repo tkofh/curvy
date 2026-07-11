@@ -18,7 +18,7 @@ export type { Invertible } from './traits.ts'
 export type Matrix3x3Coordinate = ThreeDimensionalIndex | ThreeDimensionalComponent
 
 /**
- * A 3×3 matrix, stored as nine `m<row><column>` fields.
+ * A 3x3 matrix, stored as nine `m<row><column>` fields.
  *
  * All fields are readonly. No operation mutates a matrix. Construct via
  * `make`, `fromRows`, or `fromColumns`.
@@ -75,7 +75,7 @@ export interface Matrix3x3<out Traits = unknown> extends Pipeable {
  * Checks if a value is a `Matrix3x3`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand. A structural object with `m00`…`m22` fields does not match.
+ * the brand. A structural object with `m00`...`m22` fields does not match.
  *
  * @param m - The value to check.
  * @returns `true` if the value is a `Matrix3x3`, `false` otherwise.
@@ -214,7 +214,7 @@ export const setColumn: {
 export const determinant: (m: Matrix3x3) => number = internal.determinant
 
 /**
- * Returns the 2×2 submatrix obtained by deleting one row and one column.
+ * Returns the 2x2 submatrix obtained by deleting one row and one column.
  *
  * The submatrix itself, not its determinant. Take `determinant` of the
  * result for the scalar minor.
@@ -233,12 +233,12 @@ export const minor: (
 
 export const vectorProductLeft: {
   /**
-   * Computes `M · v`: the matrix on the left, the vector as a column.
+   * Computes `M * v`: the matrix on the left, the vector as a column.
    * Component `k` of the result is the dot product of row `k` with `v`.
    *
    * @param m - The matrix to multiply by.
    * @param v - The vector to transform.
-   * @returns The vector `M · v`.
+   * @returns The vector `M * v`.
    * @example
    * ```ts
    * const m = Matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)
@@ -253,10 +253,10 @@ export const vectorProductLeft: {
    */
   (m: Matrix3x3, v: Vector3): Vector3
   /**
-   * Computes `M · v`: the matrix on the left, the vector as a column.
+   * Computes `M * v`: the matrix on the left, the vector as a column.
    *
    * @param v - The vector to transform.
-   * @returns A function that takes a matrix and returns `M · v`.
+   * @returns A function that takes a matrix and returns `M * v`.
    * @since 1.0.0
    */
   (v: Vector3): (m: Matrix3x3) => Vector3
@@ -264,12 +264,12 @@ export const vectorProductLeft: {
 
 export const vectorProductRight: {
   /**
-   * Computes `vᵀ · M`: the vector as a row, the matrix on the right.
+   * Computes `v^T * M`: the vector as a row, the matrix on the right.
    * Component `k` of the result is the dot product of column `k` with `v`.
    *
    * @param m - The matrix to multiply by.
    * @param v - The vector to transform.
-   * @returns The vector `vᵀ · M`.
+   * @returns The vector `v^T * M`.
    * @example
    * ```ts
    * const m = Matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9)
@@ -284,10 +284,10 @@ export const vectorProductRight: {
    */
   (m: Matrix3x3, v: Vector3): Vector3
   /**
-   * Computes `vᵀ · M`: the vector as a row, the matrix on the right.
+   * Computes `v^T * M`: the vector as a row, the matrix on the right.
    *
    * @param v - The vector to transform.
-   * @returns A function that takes a matrix and returns `vᵀ · M`.
+   * @returns A function that takes a matrix and returns `v^T * M`.
    * @since 1.0.0
    */
   (v: Vector3): (m: Matrix3x3) => Vector3
@@ -295,7 +295,7 @@ export const vectorProductRight: {
 
 export const solveSystem: {
   /**
-   * Solves the linear system `M · x = v` for `x`.
+   * Solves the linear system `M * x = v` for `x`.
    *
    * Rejects only exact singularity. A determinant of exactly `0` throws.
    * A nearly singular system returns a result whose error grows with the
@@ -318,7 +318,7 @@ export const solveSystem: {
    */
   (m: Matrix3x3, v: Vector3): Vector3
   /**
-   * Solves the linear system `M · x = v` for `x`.
+   * Solves the linear system `M * x = v` for `x`.
    *
    * @param v - The constants of the system.
    * @returns A function that takes the coefficient matrix and returns the solution vector.
@@ -426,7 +426,7 @@ export const identity: Matrix3x3 = internal.identity
 
 export const multiply: {
   /**
-   * Multiplies two `Matrix3x3` instances. Result is `a · b`.
+   * Multiplies two `Matrix3x3` instances. Result is `a * b`.
    *
    * @param a - The left-hand matrix.
    * @param b - The right-hand matrix.
@@ -435,7 +435,7 @@ export const multiply: {
    */
   (a: Matrix3x3, b: Matrix3x3): Matrix3x3
   /**
-   * Multiplies two `Matrix3x3` instances. Result is `a · b`.
+   * Multiplies two `Matrix3x3` instances. Result is `a * b`.
    *
    * @param b - The right-hand matrix.
    * @returns A function that takes the left-hand matrix and returns the product.

@@ -631,7 +631,7 @@ export const toLerpFn: (interval: Bounds) => (t: number) => number = internal.to
  * Normalizes a value within bounds. `start` maps to `0` and `end` to `1`.
  *
  * Not clamped. Values outside the bounds map outside `[0, 1]`. Zero-size
- * bounds divide by zero, producing `NaN` or `±Infinity`.
+ * bounds divide by zero, producing `NaN` or `+/-Infinity`.
  *
  * @param interval - The bounds to normalize within.
  * @param x - The value to normalize.
@@ -656,7 +656,7 @@ export const toNormalizeFn: (interval: Bounds) => (x: number) => number = intern
  *
  * Not clamped. Values outside the source map proportionally outside the
  * target. A zero-size source divides by zero, producing `NaN` or
- * `±Infinity`.
+ * `+/-Infinity`.
  *
  * @param source - The source bounds.
  * @param target - The target bounds.

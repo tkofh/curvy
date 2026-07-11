@@ -8,7 +8,7 @@ const PRECISION = 8
  *
  * An absolute band is meaningful where the data's scale is fixed. Curve
  * parameter space is `[0, 1]` by construction, and there `1e-10` sits
- * ~450,000× above per-operation rounding noise (2⁻⁵² ≈ 2.2e-16 at order-1
+ * ~450,000x above per-operation rounding noise (2^-52, ~2.2e-16 at order-1
  * magnitudes) yet far below any meaningful parameter separation. For data
  * with a different natural resolution, pass an explicit tolerance instead.
  * See `PRECISION.md` for where the library applies this band.
@@ -26,7 +26,7 @@ export const EPSILON = 1e-10
  * threshold. Values inside the resulting band are indistinguishable from
  * accumulated rounding noise and must not decide a sign question.
  *
- * The value sits ~4,500× above IEEE double rounding noise (2⁻⁵² ≈ 2.2e-16
+ * The value sits ~4,500x above IEEE double rounding noise (2^-52, ~2.2e-16
  * relative per operation) — generous headroom for noise accumulated across a
  * construction pipeline — and far below any geometrically meaningful feature.
  *
@@ -223,7 +223,7 @@ export const normalize: {
    *
    * Not clamped. `x` outside `[a, b]` maps outside `[0, 1]` in proportion.
    * Degenerate bounds `a === b` divide by zero, producing `NaN` (when
-   * `x === a`) or `±Infinity`.
+   * `x === a`) or `+/-Infinity`.
    *
    * The inverse of `lerp` over the same bounds:
    * `normalize(lerp(t, a, b), a, b)` recovers `t` up to rounding.
@@ -262,7 +262,7 @@ export const remap: {
    *
    * Not clamped. `x` outside the source range maps proportionally outside
    * the target range. A degenerate source range (`x1 === x2`) divides by
-   * zero, producing `NaN` or `±Infinity`.
+   * zero, producing `NaN` or `+/-Infinity`.
    *
    * @param x - The value to remap.
    * @param x1 - Source range start. Maps to `y1`.

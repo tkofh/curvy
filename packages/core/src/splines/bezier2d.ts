@@ -40,7 +40,7 @@ export const make: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => Bezie
 /**
  * Creates a new `Bezier2d` instance from an array of control points.
  *
- * @param points - The control points. The count must be `3n + 1` (4, 7, 10, …).
+ * @param points - The control points. The count must be `3n + 1` (4, 7, 10, ...).
  * @returns A new `Bezier2d` instance.
  * @throws `Error` when the count is less than 4 or not `3n + 1`.
  * @since 1.0.0
@@ -51,7 +51,7 @@ export const fromArray: (points: ReadonlyArray<Vector2>) => Bezier2d = internal.
  * Creates a new `Bezier2d` from an array of `[x, y]` tuples. Convenient for
  * data sourced from JSON, CSV, or other tuple-shaped formats.
  *
- * @param tuples - The control points as `[x, y]` tuples. The count must be `3n + 1` (4, 7, 10, …).
+ * @param tuples - The control points as `[x, y]` tuples. The count must be `3n + 1` (4, 7, 10, ...).
  * @returns A new `Bezier2d` instance.
  * @throws `Error` when the count is less than 4 or not `3n + 1`.
  * @since 2.0.0
@@ -101,7 +101,7 @@ export const appendTangentAligned: {
    * Appends one cubic segment whose start tangent lies along the spline's
    * end tangent.
    *
-   * @param ratio - Length of the derived first handle relative to the incoming handle. `1` matches lengths (C¹). Other positive values preserve direction only (G¹).
+   * @param ratio - Length of the derived first handle relative to the incoming handle. `1` matches lengths (C1). Other positive values preserve direction only (G1).
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
    * @returns A function that takes a `Bezier2d` and returns a new spline with the segment appended.
@@ -115,13 +115,13 @@ export const appendTangentAligned: {
    * The segment's first handle is derived, not passed. The spline's last
    * handle is reflected across the shared end point and scaled by `ratio`.
    * `ratio = 1` reproduces the incoming handle length, matching velocity
-   * across the join (C¹, what `appendVelocityAligned` does). Other
-   * positive values keep only the tangent direction (G¹). `0` collapses
+   * across the join (C1, what `appendVelocityAligned` does). Other
+   * positive values keep only the tangent direction (G1). `0` collapses
    * the handle onto the join. Negative values reverse the tangent and
    * produce a cusp.
    *
    * @param p - The `Bezier2d` to append to.
-   * @param ratio - Length of the derived first handle relative to the incoming handle. `1` matches lengths (C¹). Other positive values preserve direction only (G¹).
+   * @param ratio - Length of the derived first handle relative to the incoming handle. `1` matches lengths (C1). Other positive values preserve direction only (G1).
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
    * @returns A new `Bezier2d` with the segment appended.
@@ -132,7 +132,7 @@ export const appendTangentAligned: {
 
 export const appendCurvatureAligned: {
   /**
-   * Appends one cubic segment joined with matching curvature (G²) at the
+   * Appends one cubic segment joined with matching curvature (G2) at the
    * shared end point.
    *
    * @param a - Length of the derived first handle relative to the incoming handle, along the shared tangent. `1` matches lengths. Must be positive for a direction-preserving join.
@@ -143,7 +143,7 @@ export const appendCurvatureAligned: {
    */
   (a: number, b: number, p6: Vector2): (p: Bezier2d) => Bezier2d
   /**
-   * Appends one cubic segment joined with matching curvature (G²) at the
+   * Appends one cubic segment joined with matching curvature (G2) at the
    * shared end point.
    *
    * Both handles are derived, not passed. The first is the spline's last
@@ -166,7 +166,7 @@ export const appendCurvatureAligned: {
 export const appendVelocityAligned: {
   /**
    * Appends one cubic segment whose starting velocity matches the
-   * spline's ending velocity (C¹).
+   * spline's ending velocity (C1).
    *
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
@@ -176,7 +176,7 @@ export const appendVelocityAligned: {
   (p2: Vector2, p3: Vector2): (p: Bezier2d) => Bezier2d
   /**
    * Appends one cubic segment whose starting velocity matches the
-   * spline's ending velocity (C¹).
+   * spline's ending velocity (C1).
    *
    * The segment's first handle is derived. The spline's last handle
    * reflected across the shared end point at equal length. Equivalent to
@@ -194,7 +194,7 @@ export const appendVelocityAligned: {
 export const appendAccelerationAligned: {
   /**
    * Appends one cubic segment matching both velocity and acceleration at
-   * the join (C²).
+   * the join (C2).
    *
    * @param p3 - The appended segment's end point, the only free input.
    * @returns A function that takes a `Bezier2d` and returns a new spline with the segment appended.
@@ -203,7 +203,7 @@ export const appendAccelerationAligned: {
   (p3: Vector2): (p: Bezier2d) => Bezier2d
   /**
    * Appends one cubic segment matching both velocity and acceleration at
-   * the join (C²).
+   * the join (C2).
    *
    * Both handles are derived from the previous segment's last three
    * control points. Only the end point is free.
@@ -316,7 +316,7 @@ export const fromRational: (r: RationalBezier2d) => Solution.AtMostOne<Bezier2d>
 
 export const subdivide: {
   /**
-   * Splits a `Bezier2d` at the given global parameter `u ∈ (0, 1)` using
+   * Splits a `Bezier2d` at the given global parameter `u in (0, 1)` using
    * de Casteljau's algorithm. The two returned beziers together trace the
    * same curve as the input. The left covers `[0, u]`, the right covers
    * `[u, 1]`.
@@ -328,7 +328,7 @@ export const subdivide: {
    */
   (b: Bezier2d, u: number): [Bezier2d, Bezier2d]
   /**
-   * Splits a `Bezier2d` at the given global parameter `u ∈ (0, 1)`.
+   * Splits a `Bezier2d` at the given global parameter `u in (0, 1)`.
    *
    * @param u - The split parameter in the open interval `(0, 1)`.
    * @returns A function that takes a bezier and returns the two halves.

@@ -12,7 +12,7 @@ import * as internal from './rationalCubic2d.internal.ts'
  * A rational cubic path in 2D space.
  *
  * Holds a non-empty sequence of `RationalCubicCurve2d` segments. Iteration
- * yields the segments in order. The path parameter `u ∈ [0, 1]` is mapped
+ * yields the segments in order. The path parameter `u in [0, 1]` is mapped
  * uniformly across segments. `u = 0` is the start of the first segment,
  * `u = 1` is the end of the last segment, and intermediate values pick a
  * segment by index and a local parameter within it.
@@ -82,7 +82,7 @@ export const append: {
 
 export const solve: {
   /**
-   * Evaluates the rational cubic path at parameter `u ∈ [0, 1]`.
+   * Evaluates the rational cubic path at parameter `u in [0, 1]`.
    *
    * Segments split `u` uniformly. Each curve gets an equal share of the
    * parameter range, regardless of its arc length. The selected segment's
@@ -98,7 +98,7 @@ export const solve: {
    */
   (p: RationalCubicPath2d, u: number): Vector2
   /**
-   * Evaluates the rational cubic path at parameter `u ∈ [0, 1]`.
+   * Evaluates the rational cubic path at parameter `u in [0, 1]`.
    *
    * @param u - The path parameter in `[0, 1]`.
    * @returns A function that takes a path and returns the point at `u`.
@@ -115,7 +115,7 @@ export const boundingBox: {
    * Each segment's box is `RationalCubicCurve2d.boundingBox` at the same
    * `tolerance` (recursive subdivision producing a hull-AABB union). The
    * path box is the union of segment boxes. Since each segment box has
-   * slack ≤ `tolerance` per side, so does the union.
+   * slack <= `tolerance` per side, so does the union.
    *
    * @param p - The rational cubic path.
    * @param tolerance - Maximum allowed slack per side. Must be positive.

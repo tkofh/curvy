@@ -140,7 +140,7 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
  * Gets the magnitude of a `Vector4`.
  *
  * @param vector - The vector to calculate the magnitude of.
- * @returns The Euclidean length `√(x² + y² + z² + w²)`.
+ * @returns The Euclidean length `sqrt(x^2 + y^2 + z^2 + w^2)`.
  * @since 1.0.0
  */
 export const magnitude: (vector: Vector4) => number = internal.magnitude
@@ -189,11 +189,11 @@ export const dot: {
 export const components: (v: Vector4) => [number, number, number, number] = internal.components
 
 /**
- * Applies the softmax function to a `Vector4`: `(eˣ, eʸ, eᶻ, eʷ)` scaled
+ * Applies the softmax function to a `Vector4`: `(e^x, e^y, e^z, e^w)` scaled
  * to sum to `1`.
  *
  * All result components are positive and sum to `1`. Equal inputs produce
- * `(¼, ¼, ¼, ¼)`. Large components do not overflow.
+ * `(1/4, 1/4, 1/4, 1/4)`. Large components do not overflow.
  *
  * @param v - The vector to transform.
  * @returns A new `Vector4` with positive components summing to `1`.

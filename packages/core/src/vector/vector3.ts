@@ -128,9 +128,9 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
  * conventional ranges land where the trigonometry sends them.
  *
  * @param r - The radius. A negative radius reflects through the origin.
- * @param theta - The inclination from the positive z-axis, in radians. Conventionally `[0, π]`.
+ * @param theta - The inclination from the positive z-axis, in radians. Conventionally `[0, pi]`.
  * @param phi - The azimuth from the positive x-axis in the xy-plane, in radians.
- * @returns The vector `(r·sin(theta)·cos(phi), r·sin(theta)·sin(phi), r·cos(theta))`.
+ * @returns The vector `(r*sin(theta)*cos(phi), r*sin(theta)*sin(phi), r*cos(theta))`.
  * @since 1.0.0
  */
 export const fromSpherical: (r: number, theta: number, phi: number) => Vector3 =
@@ -140,7 +140,7 @@ export const fromSpherical: (r: number, theta: number, phi: number) => Vector3 =
  * Calculates the magnitude of a `Vector3`.
  *
  * @param vector - The vector to calculate the magnitude of.
- * @returns The Euclidean length `√(x² + y² + z²)`.
+ * @returns The Euclidean length `sqrt(x^2 + y^2 + z^2)`.
  * @since 1.0.0
  */
 export const magnitude: (vector: Vector3) => number = internal.magnitude
@@ -149,7 +149,7 @@ export const magnitude: (vector: Vector3) => number = internal.magnitude
  * Calculates the length of a `Vector3`. Alias of `magnitude`.
  *
  * @param vector - The vector to calculate the length of.
- * @returns The Euclidean length `√(x² + y² + z²)`.
+ * @returns The Euclidean length `sqrt(x^2 + y^2 + z^2)`.
  * @since 1.0.0
  */
 export const length: (vector: Vector3) => number = magnitude
@@ -223,11 +223,11 @@ export const cross: {
 export const components: (v: Vector3) => [number, number, number] = internal.components
 
 /**
- * Applies the softmax function to a `Vector3`: `(eˣ, eʸ, eᶻ)` scaled to
+ * Applies the softmax function to a `Vector3`: `(e^x, e^y, e^z)` scaled to
  * sum to `1`.
  *
  * All result components are positive and sum to `1`. Equal inputs produce
- * `(⅓, ⅓, ⅓)`. Large components do not overflow.
+ * `(1/3, 1/3, 1/3)`. Large components do not overflow.
  *
  * @param v - The vector to transform.
  * @returns A new `Vector3` with positive components summing to `1`.
@@ -566,7 +566,7 @@ export const mapR: {
  * inclination. The in-plane angle here is `getPhi`.
  *
  * @param v - The vector of which to get the polar angle.
- * @returns The inclination `acos(z / magnitude(v))`, in radians, in `[0, π]`. `NaN` for the zero vector.
+ * @returns The inclination `acos(z / magnitude(v))`, in radians, in `[0, pi]`. `NaN` for the zero vector.
  * @since 1.0.0
  */
 export const getTheta: (v: Vector3) => number = internal.getTheta
@@ -621,7 +621,7 @@ export const mapTheta: {
  * positive x-axis within the xy-plane.
  *
  * @param v - The vector of which to get the azimuthal angle.
- * @returns The azimuth `atan2(y, x)`, in radians, in `[-π, π]`. `0` for any vector on the z-axis.
+ * @returns The azimuth `atan2(y, x)`, in radians, in `[-pi, pi]`. `0` for any vector on the z-axis.
  * @since 1.0.0
  */
 export const getPhi: (v: Vector3) => number = internal.getPhi

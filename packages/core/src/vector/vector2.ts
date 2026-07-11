@@ -122,7 +122,7 @@ export const unweighted: (w: Weighted) => Vector2 = internal.unweighted
 
 export const liftWithWeight: {
   /**
-   * Lifts a `Vector2 → Vector2` function to operate on `Vector2.Weighted` by
+   * Lifts a `Vector2 -> Vector2` function to operate on `Vector2.Weighted` by
    * applying the function to the position and preserving the input's weight.
    *
    * Designed as the bridge between point-only utilities (e.g. `setR`,
@@ -137,7 +137,7 @@ export const liftWithWeight: {
    */
   (fn: (v: Vector2) => Vector2): (w: Weighted) => Weighted
   /**
-   * Lifts a `Vector2 → Vector2` function to operate on `Vector2.Weighted`,
+   * Lifts a `Vector2 -> Vector2` function to operate on `Vector2.Weighted`,
    * replacing the input's weight with the given value.
    *
    * @param fn - The position-only function to lift.
@@ -147,7 +147,7 @@ export const liftWithWeight: {
    */
   (fn: (v: Vector2) => Vector2, weight: number): (w: Weighted) => Weighted
   /**
-   * Applies a `Vector2 → Vector2` function to the position of a
+   * Applies a `Vector2 -> Vector2` function to the position of a
    * `Vector2.Weighted`, preserving the input's weight.
    *
    * @param w - The weighted point to transform.
@@ -157,7 +157,7 @@ export const liftWithWeight: {
    */
   (w: Weighted, fn: (v: Vector2) => Vector2): Weighted
   /**
-   * Applies a `Vector2 → Vector2` function to the position of a
+   * Applies a `Vector2 -> Vector2` function to the position of a
    * `Vector2.Weighted`, replacing the weight with the given value.
    *
    * @param w - The weighted point to transform.
@@ -279,8 +279,8 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
  * Creates a new `Vector2` instance from polar coordinates.
  *
  * The arithmetic is exact IEEE 754, so representation error shows up
- * unrounded. `fromPolar(2, Math.PI / 2)` has `x ≈ 1.2e-16`, not `0`,
- * because `Math.PI / 2` is not exactly π/2. See `PRECISION.md` for the
+ * unrounded. `fromPolar(2, Math.PI / 2)` has `x` near `1.2e-16`, not `0`,
+ * because `Math.PI / 2` is not exactly pi/2. See `PRECISION.md` for the
  * model.
  *
  * @param r - The radius. A negative radius reflects through the origin.
@@ -294,7 +294,7 @@ export const fromPolar: (r: number, theta: number) => Vector2 = internal.fromPol
  * Calculates the magnitude of a `Vector2`.
  *
  * @param vector - The vector to calculate the magnitude of.
- * @returns The Euclidean length `√(x² + y²)`.
+ * @returns The Euclidean length `sqrt(x^2 + y^2)`.
  * @since 1.0.0
  */
 export const magnitude: (vector: Vector2) => number = internal.magnitude
@@ -368,7 +368,7 @@ export const cross: {
 export const components: (v: Vector2) => [number, number] = internal.components
 
 /**
- * Applies the softmax function to a `Vector2`: `(eˣ, eʸ)` scaled to sum
+ * Applies the softmax function to a `Vector2`: `(e^x, e^y)` scaled to sum
  * to `1`.
  *
  * Both result components are positive and sum to `1`. Equal inputs
@@ -636,7 +636,7 @@ export const mapR: {
  * Gets the polar angle of a `Vector2`, measured from the positive x-axis.
  *
  * @param v - The vector to get the angle from.
- * @returns The angle in radians, in `[-π, π]` (`Math.atan2` semantics).
+ * @returns The angle in radians, in `[-pi, pi]` (`Math.atan2` semantics).
  * @since 1.0.0
  */
 export const getTheta: (v: Vector2) => number = internal.getTheta

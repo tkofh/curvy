@@ -69,8 +69,8 @@ export const solve = dual<
 
 // Path-level bounding box: per-segment box is delegated to the curve module
 // (subdivision + hull union, tight to within `tolerance` per side); the path
-// box is then their union. Since each segment box's slack is ≤ tolerance per
-// side, the unioned box's slack is also ≤ tolerance per side — the same
+// box is then their union. Since each segment box's slack is <= tolerance per
+// side, the unioned box's slack is also <= tolerance per side — the same
 // guarantee holds at the path level.
 /** @internal */
 export const boundingBox = dual<
@@ -96,7 +96,7 @@ export const boundingBox = dual<
 
 // Path-level approximation: per-segment approximation is delegated to the
 // curve module; we just concat the results. Segment count grows from N
-// (input) to roughly N × k where k depends on weight magnitude and tolerance —
+// (input) to roughly N * k where k depends on weight magnitude and tolerance —
 // uniform-weight segments stay 1:1.
 /** @internal */
 export const approximateAsCubicPath = dual<

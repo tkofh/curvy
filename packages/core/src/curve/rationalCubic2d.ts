@@ -89,7 +89,7 @@ export const fromBezierPoints: {
   /**
    * Creates a new `RationalCubicCurve2d` from four weighted cubic Bézier
    * control points. The four control points are lifted to homogeneous form
-   * `(w·x, w·y, w)` and the cubic Bernstein basis is expanded into per-channel
+   * `(w*x, w*y, w)` and the cubic Bernstein basis is expanded into per-channel
    * monomial coefficients, yielding the curve's `x`, `y`, and `w` polynomials.
    *
    * @param p0 - The first weighted control point (curve start).
@@ -125,9 +125,9 @@ export const fromBezierPoints: {
  * exactly match the six endpoint constraints (two values, two slopes, two
  * curvatures).
  *
- * Curvatures are the signed differential-geometric curvatures `κ = y''(x) /
- * (1 + y'(x)²)^(3/2)`: the parameterization-invariant "bend" of the easing
- * graph. Positive κ is concave-up. Smoothstep is `(0, 0, 6, -6)`. Linear is
+ * Curvatures are the signed differential-geometric curvatures `k = y''(x) /
+ * (1 + y'(x)^2)^(3/2)`: the parameterization-invariant "bend" of the easing
+ * graph. Positive `k` is concave-up. Smoothstep is `(0, 0, 6, -6)`. Linear is
  * `(1, 1, 0, 0)` (taken as a redundant-system special case).
  *
  * Monotonicity is not enforced. Callers needing the `Increasing` brand for
@@ -184,7 +184,8 @@ export const startPoint: (c: RationalCubicCurve2d) => Vector2 = internal.startPo
 /**
  * Evaluates the curve at `t = 1` in closed form. Both numerator and denominator
  * Horner evaluations at `t = 1` collapse to the sum of their monomial
- * coefficients, so the projection is `(Σxᵢ / Σwᵢ, Σyᵢ / Σwᵢ)`.
+ * coefficients, so the projection is
+ * `(sum(x_i) / sum(w_i), sum(y_i) / sum(w_i))`.
  *
  * @param c - The rational cubic curve.
  * @returns The point at the end of the curve's parameter domain.
@@ -205,7 +206,7 @@ export const solveAtX: {
   <XT extends Monotonic, YT>(c: RationalCubicCurve2d<XT, YT>, x: number): Solution.AtMostOne<number>
   /**
    * Evaluates the curve's y values at a given x. Up to three solutions —
-   * `(X(t) - x·W(t))` is a cubic polynomial in `t`.
+   * `(X(t) - x*W(t))` is a cubic polynomial in `t`.
    *
    * @param c - The rational cubic curve.
    * @param x - The x coordinate.
@@ -261,7 +262,7 @@ export const solveAtY: {
 
 export const subdivide: {
   /**
-   * Subdivides a rational cubic curve at parameter `t ∈ (0, 1)` into two new
+   * Subdivides a rational cubic curve at parameter `t in (0, 1)` into two new
    * rational cubic curves. The first curve's evaluation on `[0, 1]` matches
    * the original's on `[0, t]`. The second matches the original's on `[t, 1]`.
    * Equivalent to de Casteljau subdivision on the homogeneous control polygon,
@@ -274,7 +275,7 @@ export const subdivide: {
    */
   (c: RationalCubicCurve2d, t: number): [RationalCubicCurve2d, RationalCubicCurve2d]
   /**
-   * Subdivides a rational cubic curve at parameter `t ∈ (0, 1)`.
+   * Subdivides a rational cubic curve at parameter `t in (0, 1)`.
    *
    * @param t - The split parameter. Must be in the open interval `(0, 1)`.
    * @returns A function that takes a curve and returns its `[left, right]` halves.
@@ -291,7 +292,7 @@ export const boundingBox: {
    * Implemented as recursive subdivision. At each leaf the curve segment's
    * loose hull AABB (cheap, always valid) is compared against the segment's
    * endpoint AABB (which the curve provably visits). When the per-side gap
-   * between them is ≤ `tolerance`, the leaf returns its hull. Otherwise the
+   * between them is <= `tolerance`, the leaf returns its hull. Otherwise the
    * segment is split at `t = 0.5` and the procedure recurses, unioning the
    * halves.
    *
@@ -321,7 +322,7 @@ export const boundingBox: {
  * the unit interval `[0, 1]`.
  *
  * Decided via Bernstein sign convexity on the derivative-numerator polynomial
- * `q(t) = X'·W − X·W'`. Since `W² > 0` wherever the curve is well-defined,
+ * `q(t) = X'*W - X*W'`. Since `W^2 > 0` wherever the curve is well-defined,
  * the sign of `dx/dt` equals the sign of `q`. Although `q` is a difference of
  * degree-5 products, the leading terms cancel and `q` is in fact a quartic —
  * its 5 Bernstein coefficients on `[0, 1]` are evaluated for uniform sign,
@@ -558,7 +559,7 @@ export const transform: {
    * Applies an `Affine2d` transform to a `RationalCubicCurve2d`, returning a
    * new curve whose image is the affine image of the original. The denominator
    * polynomial is preserved. Each numerator pulls in a translation term
-   * weighted by the denominator so the projected curve matches `A · R(s) + t`
+   * weighted by the denominator so the projected curve matches `A * R(s) + t`
    * pointwise.
    *
    * @param c - The rational cubic curve.

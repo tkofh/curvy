@@ -90,7 +90,7 @@ export const fromCoefficients: (
     QuadraticPolynomial.make(c0.y, c1.y, c2.y),
   )
 
-// Quadratic Bernstein basis: B(t) = (1-t)²·p0 + 2(1-t)t·p1 + t²·p2
+// Quadratic Bernstein basis: B(t) = (1-t)^2*p0 + 2(1-t)t*p1 + t^2*p2
 // Expanding to monomial form gives:
 //   c0 = p0
 //   c1 = -2p0 + 2p1
@@ -235,7 +235,7 @@ export const xRange = (c: QuadraticCurve2d): Interval.Closed => QuadraticPolynom
 /** @internal */
 export const yRange = (c: QuadraticCurve2d): Interval.Closed => QuadraticPolynomial.unitRange(c.y)
 
-// Quadratic Bernstein basis: P(t) = (1-t)²·p0 + 2(1-t)t·p1 + t²·p2
+// Quadratic Bernstein basis: P(t) = (1-t)^2*p0 + 2(1-t)t*p1 + t^2*p2
 // expanded to monomial form gives c0 = p0, c1 = -2p0 + 2p1, c2 = p0 - 2p1 + p2,
 // so the inverse is p0 = c0, p1 = c0 + c1/2, p2 = c0 + c1 + c2.
 /** @internal */

@@ -43,13 +43,13 @@ export const fromPolynomials: (x: CubicPolynomial, y: CubicPolynomial) => CubicC
  * Creates a new `CubicCurve2d` instance from monomial coefficient vectors.
  *
  * Each argument bundles the per-axis coefficient at the given power. `c0`
- * holds the x⁰ term, `c1` holds the x¹ term, and so on. The resulting curve
- * evaluates to `c0 + c1·t + c2·t² + c3·t³` per axis.
+ * holds the x^0 term, `c1` holds the x^1 term, and so on. The resulting curve
+ * evaluates to `c0 + c1*t + c2*t^2 + c3*t^3` per axis.
  *
- * @param c0 - The x⁰ coefficients (x and y).
- * @param c1 - The x¹ coefficients (x and y).
- * @param c2 - The x² coefficients (x and y).
- * @param c3 - The x³ coefficients (x and y).
+ * @param c0 - The x^0 coefficients (x and y).
+ * @param c1 - The x^1 coefficients (x and y).
+ * @param c2 - The x^2 coefficients (x and y).
+ * @param c3 - The x^3 coefficients (x and y).
  * @returns A new `CubicCurve2d` instance.
  * @since 2.0.0
  */

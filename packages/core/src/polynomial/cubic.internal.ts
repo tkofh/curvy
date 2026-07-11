@@ -103,9 +103,9 @@ export const solve = dual<
 export const toSolver = (p: CubicPolynomial) => (x: number) => solve(p, x)
 
 // Newton refinement of a closed-form cubic root estimate. The closed form
-// can drop ~3 digits when the trig branch's acos argument approaches ±1
+// can drop ~3 digits when the trig branch's acos argument approaches +/-1
 // (two roots clustering) — Newton converges quadratically away from
-// multiple roots, so a 0.01-off seed reaches machine epsilon in 2–3 steps.
+// multiple roots, so a 0.01-off seed reaches machine epsilon in 2-3 steps.
 // Bails on a float fixed point or a vanishing slope (multiple root, where
 // Newton degrades to linear convergence and further iterations don't help).
 const refine = (p: CubicPolynomial, y: number, t0: number): number => {
@@ -200,13 +200,13 @@ export const coefficients = (p: CubicPolynomial): readonly [number, number, numb
 /** @internal */
 export const derivative = (p: CubicPolynomial) => Quadratic.make(p.c1, p.c2 * 2, p.c3 * 3)
 
-// Subdivides a cubic polynomial at parameter `t ∈ (0, 1)` into two new cubic
+// Subdivides a cubic polynomial at parameter `t in (0, 1)` into two new cubic
 // polynomials. The first polynomial's evaluation on `[0, 1]` matches the
 // original's evaluation on `[0, t]`; the second matches the original's
-// evaluation on `[t, 1]`. Concretely: `left(u) = p(t·u)` and
-// `right(u) = p(t + (1-t)·u)`. The left half is a uniform scale of the input
+// evaluation on `[t, 1]`. Concretely: `left(u) = p(t*u)` and
+// `right(u) = p(t + (1-t)*u)`. The left half is a uniform scale of the input
 // parameter by powers of `t`; the right half is a binomial expansion in
-// `(s + r·u)` with `s = t` and `r = 1 - t`.
+// `(s + r*u)` with `s = t` and `r = 1 - t`.
 /** @internal */
 export const subdivide = dual<
   (t: number) => (p: CubicPolynomial) => [CubicPolynomial, CubicPolynomial],
@@ -278,7 +278,7 @@ export const monotonicity = dual<
     let min = Math.min(dStart, dEnd)
     let max = Math.max(dStart, dEnd)
 
-    // c3 ≠ 0 on this path, so the derivative's vertex always exists.
+    // c3 != 0 on this path, so the derivative's vertex always exists.
     const tVertex = -d.c1 / (2 * d.c2)
     if (tVertex > i.start && tVertex < i.end) {
       const dVertex = Quadratic.solve(d, tVertex)

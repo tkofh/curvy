@@ -18,7 +18,7 @@ import type { Vector2 } from '../vector/vector2.ts'
  */
 export interface Curve2dOps<C> {
   /**
-   * Evaluate the curve at parameter `t ∈ [0, 1]`.
+   * Evaluate the curve at parameter `t in [0, 1]`.
    */
   solve(c: C, t: number): Vector2
 
@@ -54,7 +54,7 @@ export interface Curve2dOps<C> {
   solveAtY(c: C, y: number): Solution.AtMostOne<number>
 
   /**
-   * SVG path-data drawing command for one segment (`L …`, `Q …`, `C …`),
+   * SVG path-data drawing command for one segment (`L ...`, `Q ...`, `C ...`),
    * without a leading `M`. Move-insertion is decided by the path-level
    * `toPathData` based on continuity with the previous segment.
    */

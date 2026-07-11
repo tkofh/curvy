@@ -142,13 +142,13 @@ describe('interval2d', () => {
     const a = interval.make(0, 5) // [0, 5]
     const b = interval.makeOpen(0, 5) // (0, 5)
     const u = interval.union(a, b)
-    // Both starts at 0, a includes it → result includes start.
-    // Both ends at 5, a includes it → result includes end.
+    // Both starts at 0, a includes it -> result includes start.
+    // Both ends at 5, a includes it -> result includes end.
     expect(u.kind).toBe('closed')
   })
 
   test('union picks contributing endpoint kind when endpoints differ', () => {
-    // a = [0, 5], b = (3, 10] → min start from a (closed), max end from b (closed).
+    // a = [0, 5], b = (3, 10] -> min start from a (closed), max end from b (closed).
     const a = interval.make(0, 5)
     const b = interval.makeOpenStart(3, 10)
     const u = interval.union(a, b)
@@ -181,14 +181,14 @@ describe('interval2d', () => {
   })
 
   test('minDistance is the gap when boxes are axis-separated', () => {
-    // x-separated by 5, y-overlapping → min distance is 5.
+    // x-separated by 5, y-overlapping -> min distance is 5.
     const a = interval2d.make(interval.make(0, 5), interval.make(0, 10))
     const b = interval2d.make(interval.make(10, 15), interval.make(3, 7))
     expect(interval2d.minDistance(a, b)).toBeCloseTo(5, 10)
   })
 
   test('minDistance is corner-to-corner Euclidean when boxes are diagonally separated', () => {
-    // a = [0,1]×[0,1], b = [4,5]×[5,6] — closest corners (1,1) and (4,5), distance hypot(3,4) = 5.
+    // a = [0,1]x[0,1], b = [4,5]x[5,6] — closest corners (1,1) and (4,5), distance hypot(3,4) = 5.
     const a = interval2d.make(interval.make(0, 1), interval.make(0, 1))
     const b = interval2d.make(interval.make(4, 5), interval.make(5, 6))
     expect(interval2d.minDistance(a, b)).toBeCloseTo(5, 10)
@@ -208,13 +208,13 @@ describe('interval2d', () => {
   })
 
   test('maxDistance equals diagonal of identical box', () => {
-    // 3×4 box, diagonal = 5.
+    // 3x4 box, diagonal = 5.
     const a = interval2d.make(interval.make(0, 3), interval.make(0, 4))
     expect(interval2d.maxDistance(a, a)).toBeCloseTo(5, 10)
   })
 
   test('maxDistance is the union-AABB diagonal', () => {
-    // a = [0,1]×[0,1], b = [4,5]×[5,6] — union AABB is [0,5]×[0,6], diagonal hypot(5,6).
+    // a = [0,1]x[0,1], b = [4,5]x[5,6] — union AABB is [0,5]x[0,6], diagonal hypot(5,6).
     const a = interval2d.make(interval.make(0, 1), interval.make(0, 1))
     const b = interval2d.make(interval.make(4, 5), interval.make(5, 6))
     expect(interval2d.maxDistance(a, b)).toBeCloseTo(Math.hypot(5, 6), 10)
@@ -255,12 +255,12 @@ describe('curve boundingBox', () => {
     expect(b.x.start).toBeCloseTo(0, 10)
     expect(b.x.end).toBeCloseTo(2, 10)
     expect(b.y.start).toBeCloseTo(0, 10)
-    // y peak at t=0.5 is (p0 + 2·p1 + p2)/4 = (0 + 8 + 0)/4 = 2.
+    // y peak at t=0.5 is (p0 + 2*p1 + p2)/4 = (0 + 8 + 0)/4 = 2.
     expect(b.y.end).toBeCloseTo(2, 10)
   })
 
   test('CubicCurve2d catches interior extrema', () => {
-    // S-curve: p0=(0,0), p1=(0,1), p2=(1,1), p3=(1,0). Bbox is [0,1] × [0, 0.75].
+    // S-curve: p0=(0,0), p1=(0,1), p2=(1,1), p3=(1,0). Bbox is [0,1] x [0, 0.75].
     const c = cubic2d.fromBezierPoints(
       vector2.make(0, 0),
       vector2.make(0, 1),

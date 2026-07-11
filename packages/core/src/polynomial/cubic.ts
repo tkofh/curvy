@@ -12,7 +12,7 @@ import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './trai
 export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 
 /**
- * A cubic polynomial `c0 + c1·x + c2·x² + c3·x³`, stored by coefficient.
+ * A cubic polynomial `c0 + c1*x + c2*x^2 + c3*x^3`, stored by coefficient.
  *
  * All fields are readonly. No operation mutates a polynomial. Construct
  * via `make`, `fromVector`, or `fromPoints`.
@@ -20,7 +20,7 @@ export type { Monotonic, Increasing, Decreasing } from './traits.ts'
  * The `Traits` type parameter is a phantom marker that accumulates trait
  * brands as the polynomial is refined via `isMonotonic` / `asMonotonic` and
  * friends. A cubic is monotonic only over an interval that avoids both of its
- * extrema (or globally, when c2 = c3 = 0 and c1 ≠ 0).
+ * extrema (or globally, when c2 = c3 = 0 and c1 != 0).
  *
  * @since 1.0.0
  */
@@ -126,7 +126,7 @@ export const solve: {
    *
    * @param p - The cubic polynomial to evaluate.
    * @param x - The input value.
-   * @returns The value `c0 + c1 * x + c2 * x² + c3 * x³`.
+   * @returns The value `c0 + c1 * x + c2 * x^2 + c3 * x^3`.
    * @since 1.0.0
    */
   (p: CubicPolynomial, x: number): number
@@ -173,7 +173,7 @@ export const solveInverse: {
    *
    * @param p - The cubic polynomial to invert.
    * @param y - The output value to find inputs for.
-   * @returns Up to three solving inputs, ascending. A true cubic (`c3 ≠ 0`) always yields at least one. None can arise only for degenerate, lower-degree coefficients.
+   * @returns Up to three solving inputs, ascending. A true cubic (`c3 != 0`) always yields at least one. None can arise only for degenerate, lower-degree coefficients.
    * @since 1.0.0
    */
   <T>(p: CubicPolynomial<T>, y: number): Solution.AtMostThree<number>
@@ -223,7 +223,7 @@ export const derivative: (p: CubicPolynomial) => QuadraticPolynomial = internal.
 
 export const subdivide: {
   /**
-   * Subdivides a cubic polynomial at parameter `t ∈ (0, 1)` into two new
+   * Subdivides a cubic polynomial at parameter `t in (0, 1)` into two new
    * cubic polynomials. The first polynomial's evaluation on `[0, 1]` matches
    * the original's on `[0, t]`. The second matches the original's on
    * `[t, 1]`. Equivalent to de Casteljau subdivision in Bernstein form,
@@ -237,7 +237,7 @@ export const subdivide: {
    */
   (p: CubicPolynomial, t: number): [CubicPolynomial, CubicPolynomial]
   /**
-   * Subdivides a cubic polynomial at parameter `t ∈ (0, 1)`.
+   * Subdivides a cubic polynomial at parameter `t in (0, 1)`.
    *
    * @param t - The split parameter. Must be in the open interval `(0, 1)`.
    * @returns A function that takes a polynomial and returns its `[left, right]` halves.
@@ -473,7 +473,7 @@ export const length: {
 export const curvature: {
   /**
    * Calculates the unsigned curvature of the graph `y = p(x)` at `x`:
-   * `|p''(x)| / (1 + p'(x)²)^(3/2)`.
+   * `|p''(x)| / (1 + p'(x)^2)^(3/2)`.
    *
    * Unsigned. Bending direction is not reported.
    *

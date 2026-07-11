@@ -13,11 +13,11 @@ export type { Invertible } from './traits.ts'
  * A 2D affine transformation: the most general map of the form
  *
  * ```
- * x' = a · x + b · y + tx
- * y' = c · x + d · y + ty
+ * x' = a * x + b * y + tx
+ * y' = c * x + d * y + ty
  * ```
  *
- * Represented internally as a 3×3 matrix in homogeneous form (the third row is
+ * Represented internally as a 3x3 matrix in homogeneous form (the third row is
  * always `[0, 0, 1]`), so that composition is matrix multiplication and a
  * single instance can describe any chain of translates, scales, rotations,
  * reflections, and shears.
@@ -38,7 +38,7 @@ export interface Affine2d<out Traits = unknown> extends Pipeable {
   readonly [Affine2dTypeId]: Affine2dTypeId
   readonly [AffineTraits]: Traits
   /**
-   * The underlying 3×3 homogeneous matrix. Last row is always `[0, 0, 1]`.
+   * The underlying 3x3 homogeneous matrix. Last row is always `[0, 0, 1]`.
    */
   readonly matrix: Matrix3x3
 }
@@ -56,7 +56,7 @@ export const isAffine2d: (a: unknown) => a is Affine2d = internal.isAffine2d
  * Lifts a `Matrix3x3` into an `Affine2d` after asserting its last row is
  * `[0, 0, 1]`. Use this when constructing affine transforms from an
  * already-built matrix. Prefer the named constructors (`translate`,
- * `scale`, `rotate`, …) for ordinary usage.
+ * `scale`, `rotate`, ...) for ordinary usage.
  *
  * @param matrix - The matrix to lift. Must have a last row of `[0, 0, 1]`.
  * @returns A new `Affine2d` wrapping the matrix.
@@ -149,14 +149,14 @@ export const rotate: (theta: number) => Affine2d = internal.rotate
 export const rotateAround: (theta: number, origin: Vector2) => Affine2d = internal.rotateAround
 
 /**
- * Reflects points across the x axis: `(x, y) → (x, -y)`.
+ * Reflects points across the x axis: `(x, y) -> (x, -y)`.
  *
  * @since 2.0.0
  */
 export const reflectX: Affine2d = internal.reflectX
 
 /**
- * Reflects points across the y axis: `(x, y) → (-x, y)`.
+ * Reflects points across the y axis: `(x, y) -> (-x, y)`.
  *
  * @since 2.0.0
  */
@@ -177,8 +177,8 @@ export const reflectAcrossLine: (origin: Vector2, direction: Vector2) => Affine2
   internal.reflectAcrossLine
 
 /**
- * Creates an `Affine2d` shear with `kx` horizontal shear (x gains `kx · y`)
- * and `ky` vertical shear (y gains `ky · x`).
+ * Creates an `Affine2d` shear with `kx` horizontal shear (x gains `kx * y`)
+ * and `ky` vertical shear (y gains `ky * x`).
  *
  * @param kx - The horizontal shear factor.
  * @param ky - The vertical shear factor.
@@ -191,7 +191,7 @@ export const andThen: {
   /**
    * Sequences two `Affine2d` transforms, applying `a` first and then `b`.
    *
-   * In matrix terms this returns `b · a`, the matrix that yields the same
+   * In matrix terms this returns `b * a`, the matrix that yields the same
    * result as applying `a` then `b` to a column-vector point.
    *
    * @param a - The transform applied first.
@@ -303,7 +303,7 @@ export const apply: {
 } = internal.apply
 
 /**
- * Returns a `Vector2 → Vector2` function that applies `a` to its argument.
+ * Returns a `Vector2 -> Vector2` function that applies `a` to its argument.
  * Designed as the bridge to per-point mappers like `Bezier2d.mapPoints`:
  *
  * ```ts
@@ -317,12 +317,12 @@ export const apply: {
 export const applyTo: (a: Affine2d) => (p: Vector2) => Vector2 = internal.applyTo
 
 /**
- * Extracts the 2×2 linear part of an `Affine2d`. The result is the
+ * Extracts the 2x2 linear part of an `Affine2d`. The result is the
  * upper-left block of its homogeneous matrix, ignoring translation. Maps direction vectors
  * (tangents, differences of points) under the transform.
  *
  * @param a - The transform.
- * @returns The 2×2 linear part.
+ * @returns The 2x2 linear part.
  * @since 2.0.0
  */
 export const linear: (a: Affine2d) => Matrix2x2 = internal.linear

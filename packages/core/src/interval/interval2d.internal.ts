@@ -22,7 +22,7 @@ class Interval2dImpl<X extends Interval.Interval, Y extends Interval.Interval>
   }
 
   get [Symbol.toStringTag]() {
-    return `Interval2d(${String(this.x)} × ${String(this.y)})`
+    return `Interval2d(${String(this.x)} x ${String(this.y)})`
   }
 
   get [Symbol.for('nodejs.util.inspect.custom')]() {

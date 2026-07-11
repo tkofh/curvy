@@ -3,8 +3,8 @@
  *
  * Brands are phantom types. They exist only at the type level and carry no
  * runtime data. A polynomial value at runtime is identical regardless of the
- * traits attached to its type. Refiners (`isMonotonic`, `isIncreasing`, …) and
- * assertions (`asMonotonic`, …) on each polynomial module attach these brands
+ * traits attached to its type. Refiners (`isMonotonic`, `isIncreasing`, ...) and
+ * assertions (`asMonotonic`, ...) on each polynomial module attach these brands
  * to the polynomial's `Traits` parameter at the type level.
  *
  * The intersection model is "trait accumulation": a polynomial typed as

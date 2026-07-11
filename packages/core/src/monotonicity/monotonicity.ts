@@ -9,9 +9,9 @@ import { RELATIVE_TOLERANCE } from '../number.ts'
  *
  * The four states fall out of the encoding:
  *
- *   - `0` (`Constant`): derivative ≡ 0 on the interval
- *   - `1` (`Increasing`): ≥ 0, with at least one value > 0
- *   - `2` (`Decreasing`): ≤ 0, with at least one value < 0
+ *   - `0` (`Constant`): derivative = 0 everywhere on the interval
+ *   - `1` (`Increasing`): >= 0, with at least one value > 0
+ *   - `2` (`Decreasing`): <= 0, with at least one value < 0
  *   - `3` (`None`): crosses zero
  *
  * The encoding makes the bitwise OR of two adjacent subintervals'

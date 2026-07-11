@@ -59,7 +59,7 @@ describe('LinearPolynomial traits', () => {
 
 describe('QuadraticPolynomial traits', () => {
   test('isMonotonic over an interval that excludes the extremum returns true', () => {
-    // y = x², extremum at x = 0; on [0.5, 1] the polynomial is monotonic
+    // y = x^2, extremum at x = 0; on [0.5, 1] the polynomial is monotonic
     const p = quadratic.make(0, 0, 1)
     expect(quadratic.isMonotonic(p, interval.make(0.5, 1))).toBe(true)
   })
@@ -89,12 +89,12 @@ describe('QuadraticPolynomial traits', () => {
 
 describe('CubicPolynomial traits', () => {
   test('isMonotonic over a no-extrema interval returns true', () => {
-    // y = x³ + x is monotonic everywhere (derivative 3x² + 1 > 0)
+    // y = x^3 + x is monotonic everywhere (derivative 3x^2 + 1 > 0)
     const p = cubic.make(0, 1, 0, 1)
     expect(cubic.isMonotonic(p, interval.make(-10, 10))).toBe(true)
   })
   test('isMonotonic over an interval containing an extremum returns false', () => {
-    // y = x³ - 3x has extrema at x = ±1
+    // y = x^3 - 3x has extrema at x = +/-1
     const p = cubic.make(0, -3, 0, 1)
     expect(cubic.isMonotonic(p, interval.make(-2, 2))).toBe(false)
   })
@@ -229,7 +229,7 @@ describe('Path Continuous trait', () => {
   })
   test('continuity tolerates knot drift proportional to coordinate magnitude', () => {
     // Non-dyadic coordinates offset to 1e9: segment endpoint sums round at
-    // ulp(1e9) ≈ 2.4e-7, so adjacent knots can drift far beyond the absolute
+    // ulp(1e9), about 2.4e-7, so adjacent knots can drift far beyond the absolute
     // coincidence floor while remaining pure storage noise at this scale.
     const k = 1e9
     const drifted = cardinal2d
@@ -314,7 +314,7 @@ describe('LinearPath2d per-axis monotonicity', () => {
       linearCurve2d.fromEndpoints(vector2.make(3, 1), vector2.make(-2, 4)),
     )
     expect(linearPath2d.isIncreasingY(incY)).toBe(true)
-    expect(linearPath2d.isIncreasingX(incY)).toBe(false) // x goes 0→3→-2
+    expect(linearPath2d.isIncreasingX(incY)).toBe(false) // x goes 0->3->-2
   })
   test('asMonotonicX returns the branded path', () => {
     const p = linearPath2d.make(linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 5)))
@@ -332,7 +332,7 @@ describe('LinearPath2d per-axis monotonicity', () => {
 
 describe('QuadraticPath2d per-axis monotonicity', () => {
   test('isIncreasingX on a monotonic-in-x quadratic path', () => {
-    // x(t) = 0 + 2t + 0t² over [0,1] = [0, 2], strictly increasing
+    // x(t) = 0 + 2t + 0t^2 over [0,1] = [0, 2], strictly increasing
     const c0 = quadraticCurve2d.fromBezierPoints(
       vector2.make(0, 0),
       vector2.make(1, 1),
@@ -347,7 +347,7 @@ describe('QuadraticPath2d per-axis monotonicity', () => {
     expect(quadraticPath2d.isIncreasingX(p)).toBe(true)
   })
   test('isIncreasingX rejects a curve with an interior x-extremum', () => {
-    // x goes up then down: 0 → 1 → 0 (control p1 at x=1, peak in interior)
+    // x goes up then down: 0 -> 1 -> 0 (control p1 at x=1, peak in interior)
     const c = quadraticCurve2d.fromBezierPoints(
       vector2.make(0, 0),
       vector2.make(1, 1),
@@ -376,7 +376,7 @@ describe('CubicPath2d per-axis monotonicity', () => {
     expect(cubicPath2d.isIncreasingX(p)).toBe(true)
   })
   test('isMonotonicY rejects a path with a y-extremum in [0, 1]', () => {
-    // y(t) traces 0 → 1 → 1 → 0 — has an interior maximum
+    // y(t) traces 0 -> 1 -> 1 -> 0 — has an interior maximum
     const c = cubicCurve2d.fromBezierPoints(
       vector2.make(0, 0),
       vector2.make(1, 1),
@@ -424,7 +424,7 @@ describe('Matrix3x3 Invertible trait', () => {
     const scaled = matrix3x3.make(1e-8, 0, 0, 0, 1e-8, 0, 0, 0, 1)
     expect(matrix3x3.isInvertible(scaled)).toBe(true)
 
-    // det ≈ -3e-13 from an ulp-scale perturbation of a genuinely singular
+    // det is about -3e-13 from an ulp-scale perturbation of a genuinely singular
     // matrix with rows of magnitude ~10 — noise relative to the matrix
     // scale, so it must still classify as singular.
     const nearSingular = matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9 + 1e-13)

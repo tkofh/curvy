@@ -96,11 +96,11 @@ export const solveInverse: {
     return Solution.one(-p.c1 / (2 * p.c2))
   }
 
-  // Stable form: `-c1` and `±√discriminant` have opposite signs for one of
+  // Stable form: `-c1` and `+/-sqrt(discriminant)` have opposite signs for one of
   // the two roots, and that subtraction cancels catastrophically when
-  // c1² ≫ |c2·c|. Compute the larger-magnitude root with matching signs
+  // c1^2 >> |c2*c|. Compute the larger-magnitude root with matching signs
   // (no cancellation), then recover the other from the root product
-  // a·b = c/c2 (Vieta), which only multiplies and divides.
+  // a*b = c/c2 (Vieta), which only multiplies and divides.
   const q = -0.5 * (p.c1 + (p.c1 < 0 ? -1 : 1) * Math.sqrt(discriminant))
   const a = q / p.c2
   const b = c / q

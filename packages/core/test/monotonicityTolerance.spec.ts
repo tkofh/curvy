@@ -11,7 +11,7 @@ const biunit = Interval.make(-1, 1)
 
 // Pinned-endpoint Cardinal paths whose final segment has a constructed zero
 // end-tangent: the chord-weighted tangent arithmetic cancels x'(1) to
-// 0 ± 2 ulps, and the derivative's root lands an ulp to either side of t = 1
+// 0 +/- 2 ulps, and the derivative's root lands an ulp to either side of t = 1
 // depending on the inputs' last bits. Before tolerance-aware classification,
 // which side it landed on decided whether `asMonotonicX` passed or threw
 // (see curvy-asmonotonicx-epsilon-report.md).
@@ -75,7 +75,7 @@ describe('tolerance-aware monotonicity classification', () => {
   })
 
   test('an interior derivative touch without a crossing is monotonic', () => {
-    // t³ on [-1, 1]: the derivative 3t² has a double root at 0 — it grazes
+    // t^3 on [-1, 1]: the derivative 3t^2 has a double root at 0 — it grazes
     // zero but never goes negative, so the function is strictly increasing.
     expect(cubic.monotonicity(cubic.make(0, 0, 0, 1), biunit)).toBe(Monotonicity.Increasing)
     expect(cubic.monotonicity(cubic.make(0, 0, 0, -1), biunit)).toBe(Monotonicity.Decreasing)
@@ -94,9 +94,9 @@ describe('tolerance-aware monotonicity classification', () => {
   })
 
   test('genuine reversals still classify as None', () => {
-    // macroscopic: t³ - t turns twice on [-1, 1]
+    // macroscopic: t^3 - t turns twice on [-1, 1]
     expect(cubic.monotonicity(cubic.make(0, -1, 0, 1), biunit)).toBe(Monotonicity.None)
-    // small but real: the derivative (t - 0.5)² - 0.01 dips to -4% of its
+    // small but real: the derivative (t - 0.5)^2 - 0.01 dips to -4% of its
     // interval maximum — far beyond rounding noise, so it must stay a crossing
     expect(cubic.monotonicity(cubic.make(0, 0.24, -0.5, 1 / 3), unit)).toBe(Monotonicity.None)
     // path level: an actually x-reversing spline still refuses the brand

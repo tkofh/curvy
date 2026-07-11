@@ -13,7 +13,7 @@ import * as internal from './matrix2x2.internal.ts'
 export type Matrix2x2Coordinate = TwoDimensionalIndex | TwoDimensionalComponent
 
 /**
- * A 2×2 matrix, stored as four `m<row><column>` fields.
+ * A 2x2 matrix, stored as four `m<row><column>` fields.
  *
  * All fields are readonly. No operation mutates a matrix. Construct via
  * `make`, `fromRows`, or `fromColumns`.
@@ -45,7 +45,7 @@ export interface Matrix2x2 extends Pipeable {
  * Checks if a value is a `Matrix2x2`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand. A structural object with `m00`…`m11` fields does not match.
+ * the brand. A structural object with `m00`...`m11` fields does not match.
  *
  * @param m - The value to check.
  * @returns `true` if the value is a `Matrix2x2`, `false` otherwise.
@@ -168,12 +168,12 @@ export const determinant: (m: Matrix2x2) => number = internal.determinant
 
 export const vectorProductLeft: {
   /**
-   * Computes `M · v`: the matrix on the left, the vector as a column.
+   * Computes `M * v`: the matrix on the left, the vector as a column.
    * Component `k` of the result is the dot product of row `k` with `v`.
    *
    * @param m - The matrix to multiply by.
    * @param v - The vector to transform.
-   * @returns The vector `M · v`.
+   * @returns The vector `M * v`.
    * @example
    * ```ts
    * const m = Matrix2x2.make(1, 2, 3, 4)
@@ -187,10 +187,10 @@ export const vectorProductLeft: {
    */
   (m: Matrix2x2, v: Vector2): Vector2
   /**
-   * Computes `M · v`: the matrix on the left, the vector as a column.
+   * Computes `M * v`: the matrix on the left, the vector as a column.
    *
    * @param v - The vector to transform.
-   * @returns A function that takes a matrix and returns `M · v`.
+   * @returns A function that takes a matrix and returns `M * v`.
    * @since 1.0.0
    */
   (v: Vector2): (m: Matrix2x2) => Vector2
@@ -198,12 +198,12 @@ export const vectorProductLeft: {
 
 export const vectorProductRight: {
   /**
-   * Computes `vᵀ · M`: the vector as a row, the matrix on the right.
+   * Computes `v^T * M`: the vector as a row, the matrix on the right.
    * Component `k` of the result is the dot product of column `k` with `v`.
    *
    * @param m - The matrix to multiply by.
    * @param v - The vector to transform.
-   * @returns The vector `vᵀ · M`.
+   * @returns The vector `v^T * M`.
    * @example
    * ```ts
    * const m = Matrix2x2.make(1, 2, 3, 4)
@@ -217,10 +217,10 @@ export const vectorProductRight: {
    */
   (m: Matrix2x2, v: Vector2): Vector2
   /**
-   * Computes `vᵀ · M`: the vector as a row, the matrix on the right.
+   * Computes `v^T * M`: the vector as a row, the matrix on the right.
    *
    * @param v - The vector to transform.
-   * @returns A function that takes a matrix and returns `vᵀ · M`.
+   * @returns A function that takes a matrix and returns `v^T * M`.
    * @since 1.0.0
    */
   (v: Vector2): (m: Matrix2x2) => Vector2
@@ -228,7 +228,7 @@ export const vectorProductRight: {
 
 export const solveSystem: {
   /**
-   * Solves the linear system `M · x = v` for `x`.
+   * Solves the linear system `M * x = v` for `x`.
    *
    * Rejects only exact singularity. A determinant of exactly `0` throws.
    * A nearly singular system returns a result whose error grows with the
@@ -250,7 +250,7 @@ export const solveSystem: {
    */
   (m: Matrix2x2, v: Vector2): Vector2
   /**
-   * Solves the linear system `M · x = v` for `x`.
+   * Solves the linear system `M * x = v` for `x`.
    *
    * @param v - The constants of the system.
    * @returns A function that takes the coefficient matrix and returns the solution vector.

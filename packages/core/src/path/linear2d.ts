@@ -104,7 +104,7 @@ export const length: (p: LinearPath2d) => number = internal.length
 
 export const solve: {
   /**
-   * Evaluates the linear path at parameter `u ∈ [0, 1]`.
+   * Evaluates the linear path at parameter `u in [0, 1]`.
    *
    * @param u - The path parameter in `[0, 1]`.
    * @returns A function that takes a linear path and returns the point at `u`.
@@ -113,7 +113,7 @@ export const solve: {
    */
   (u: number): (p: LinearPath2d) => Vector2
   /**
-   * Evaluates the linear path at parameter `u ∈ [0, 1]`.
+   * Evaluates the linear path at parameter `u in [0, 1]`.
    *
    * Segments split `u` uniformly. Each curve gets an equal share of the
    * parameter range, regardless of its arc length. The selected segment's
@@ -143,7 +143,7 @@ export const solve: {
 export const toPathData: (p: LinearPath2d) => string = internal.toPathData
 
 /**
- * Checks if adjacent curves connect at their join points (G⁰ continuity),
+ * Checks if adjacent curves connect at their join points (G^0 continuity),
  * each junction compared with `coincident` tolerance (see `PRECISION.md`),
  * adding `Continuous` to the path's traits.
  *

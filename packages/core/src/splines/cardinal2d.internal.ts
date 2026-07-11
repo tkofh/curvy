@@ -45,7 +45,7 @@ const resolveOptions = (options?: Options): { tension: number; alpha: number } =
 })
 
 // Overload: `make(options, p0, p1, ...points)` vs `make(p0, p1, ...points)`.
-// First-arg-is-Vector2 ⇒ no options, defaults apply.
+// First-arg-is-Vector2 -> no options, defaults apply.
 /** @internal */
 export const make = (
   ...args:
@@ -196,10 +196,10 @@ export const transform = dual<
 
 // Builds one segment from P1 to P2, using P0 and P3 as the surrounding
 // neighbors for tangent computation. Math: standard non-uniform Catmull-Rom
-// tangents, generalized to a tension τ such that τ=0.5 recovers classical
-// Catmull-Rom and τ=0 produces zero tangents (smoothstep-shaped segments).
-// For each endpoint, the local-parameter velocity is the alpha-weighted
-// Hermite tangent scaled by 2τ. When alpha = 0 the chord-length terms
+// tangents, generalized by `tension`: 0.5 recovers classical Catmull-Rom and
+// 0 produces zero tangents (smoothstep-shaped segments). For each endpoint,
+// the local-parameter velocity is the alpha-weighted Hermite tangent scaled
+// by 2*tension. When alpha = 0 the chord-length terms
 // collapse to 1 and the formula reduces algebraically to the cached
 // `cubicCardinal` matrix output.
 const buildCardinalSegment = (
@@ -222,7 +222,7 @@ const buildCardinalSegment = (
   const factor = 2 * tension
 
   // Coincident-point handling: when `d01 = 0` (P0 = P1) and `alpha > 0`, the
-  // first tangent term contains `0 × ∞`. The mathematical limit is 0 — the
+  // first tangent term contains `0 * Infinity`. The mathematical limit is 0 — the
   // phantom side doesn't contribute — so we drop the term explicitly rather
   // than propagate NaN. Same at the trailing edge with `d23 = 0`.
   // When `alpha = 0`, `d = 1` regardless of chord, so no special-casing.
@@ -242,8 +242,8 @@ const buildCardinalSegment = (
   // Monomial cubic from Hermite (P1, v1, P2, v2):
   //   c0 = P1
   //   c1 = v1
-  //   c2 = 3·(P2 - P1) - 2·v1 - v2
-  //   c3 = 2·(P1 - P2) + v1 + v2
+  //   c2 = 3*(P2 - P1) - 2*v1 - v2
+  //   c3 = 2*(P1 - P2) + v1 + v2
   const dx = p2.x - p1.x
   const dy = p2.y - p1.y
 

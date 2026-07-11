@@ -593,3 +593,35 @@ oxfmt clean, vitest 553/553, and the `f9baeb0..HEAD` diff over
 `packages/core/src` contains only comment lines. Tim's concurrent
 working-tree edits (`utils.ts` provenance header, `affine2d.internal.ts`
 refactor) were kept out of these commits via hunk-level staging.
+
+## Character-set sweep (2026-07-11)
+
+A further ruling from review: comments stay in the keyboard character
+set — anything a reader deletes, they can retype without hunting down a
+glyph. Math notation is written as code (`t^2`, `k0`, `w*x`, `<=`,
+`sqrt(...)`, `sum(...)`, `t in [0, 1]`, `pi`), never as glyphs. Em
+dashes and accented proper names (Bézier, Holmér) stay. Encoded in
+comment-doctor House Style plus a Quick Check and a CLAUDE.md
+Conventions bullet; applied here as two commits.
+
+- **Comment sweep.** 839 mechanical conversions across 56 files (src
+  and test), rule-scripted behind a comment-span tokenizer so string
+  literals went untouched, plus 24 hand-rewritten judgment sites: `Σ`
+  formulas became `sum(...)` (rationalBezier2d evaluation, the
+  Bernstein conversion), `Π row norms` became `product of row norms`,
+  `≈` became `~` or "about", `⊆` became "within", `τ` became the
+  option's real name (`tension`), `0 × ∞` became `0 * Infinity`, and
+  monotonicity's `≡ 0` became `= 0 everywhere`. Comment-only diff,
+  verified by comment-stripped comparison against HEAD.
+- **String sweep.** Runtime and test strings carried the same glyphs:
+  the four `fromSlopesAndCurvatures` invariant messages (`m₀`, `κ₀`,
+  `≤`), `Interval2d`'s `toStringTag` (`×`), and seven test titles. No
+  test asserts on any of these strings.
+
+Out of scope, flagged: `PRECISION.md` carries ~21 math glyphs
+(superscripts, `·`, `≤`, `≈`, and a `ǀ` click-letter standing in for a
+table pipe). It is a repo doc, not a comment, so the ruling as stated
+doesn't bind it — Tim to decide whether it should.
+
+Checks after both layers: typecheck clean, oxlint 0/0, oxfmt clean,
+vitest 553/553.

@@ -5,8 +5,8 @@ import type * as Vector4 from '../vector/vector4.ts'
 /**
  * The cubic Bézier characteristic matrix.
  *
- * Maps Bernstein-basis control points `(P₀, P₁, P₂, P₃)` to monomial cubic
- * coefficients `(c₀, c₁, c₂, c₃)` for `c₀ + c₁·t + c₂·t² + c₃·t³`. The
+ * Maps Bernstein-basis control points `(P0, P1, P2, P3)` to monomial cubic
+ * coefficients `(c0, c1, c2, c3)` for `c0 + c1*t + c2*t^2 + c3*t^3`. The
  * matrix is the spline family's defining data. Combined with control
  * points via `apply`, it produces the cubic polynomial that parameterizes
  * the curve.
@@ -35,7 +35,7 @@ export const cubicBezier: Matrix4x4.Matrix4x4 = Matrix4x4.make(
 /**
  * The cubic Hermite characteristic matrix.
  *
- * Maps Hermite control data `(P₀, V₀, P₁, V₁)`, two endpoints and two
+ * Maps Hermite control data `(P0, V0, P1, V1)`, two endpoints and two
  * tangent vectors, to monomial cubic coefficients.
  *
  * @since 2.0.0
@@ -64,7 +64,7 @@ export const cubicHermite: Matrix4x4.Matrix4x4 = Matrix4x4.make(
  *
  * Maps a window of four control points to the monomial cubic coefficients
  * of one segment of the corresponding uniform cubic B-spline. Stride-1
- * application produces a C² piecewise spline. The curve does not generally
+ * application produces a C2 piecewise spline. The curve does not generally
  * pass through the control points.
  *
  * @since 2.0.0
@@ -145,7 +145,7 @@ export const cubicCatmullRom: Matrix4x4.Matrix4x4 = cubicCardinal(0.5)
  * N cubic polynomials in monomial form.
  *
  * Each channel is a `Vector4` packing one axis's values across the four
- * control points: `(v₀, v₁, v₂, v₃)`. The result tuple has the same arity
+ * control points: `(v0, v1, v2, v3)`. The result tuple has the same arity
  * as the input.
  *
  * The polynomial 2D spline pipeline applies this with two channels (x, y).

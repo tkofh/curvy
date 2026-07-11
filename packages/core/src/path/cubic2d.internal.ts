@@ -167,10 +167,10 @@ const getCumulativeLengths = (p: CubicPath2d): ReadonlyArray<number> => {
   return cached
 }
 
-// Newton's method to find the local parameter t ∈ [0, 1] within `curve` such
+// Newton's method to find the local parameter t in [0, 1] within `curve` such
 // that the arc length from 0 to t equals `target`. Each iteration costs one
-// GL32 quadrature plus one velocity eval; converges in 3–5 iterations for
-// well-behaved curves. Falls back to bisection on cusps where speed → 0.
+// GL32 quadrature plus one velocity eval; converges in 3-5 iterations for
+// well-behaved curves. Falls back to bisection on cusps where speed -> 0.
 const solveCurveByDistance = (
   curve: CubicCurve2d.CubicCurve2d,
   target: number,
@@ -238,7 +238,7 @@ export const solveByDistance = dual<
   const total = lengths[lengths.length - 1] as number
   const target = s * total
 
-  // find segment k such that lengths[k-1] ≤ target ≤ lengths[k]
+  // find segment k such that lengths[k-1] <= target <= lengths[k]
   let k = 0
   while (k < lengths.length - 1 && (lengths[k] as number) < target) {
     k++

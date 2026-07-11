@@ -72,6 +72,11 @@ never inlined into them.
   input beats a paragraph; skip it where the first guess is right. An
   example ships only verified — run it, or check every name against the
   real API.
+- Comments stay in the keyboard character set: formulas written as code
+  (`t^2`, `k0`, `w*x`, `<=`, `sqrt(x^2 + y^2)`, `sum(w_i * P_i)`,
+  `t in [0, 1]`, `pi`), never math glyphs — no sub/superscripts, Greek
+  letters, `·`, `∈`, `≤`, `√`, `Σ`. Em dashes and accented proper names
+  (Bézier, Holmér) stay.
 - Exemplars of the standard: `coincident` and `RELATIVE_TOLERANCE` in
   `packages/core/src/number.ts`; `solve` and `boundingBox` in
   `packages/core/src/path/rationalCubic2d.ts`; `transform` in

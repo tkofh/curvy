@@ -91,7 +91,7 @@ export const scale = (sx: number, sy?: number): Affine2d => {
 
 /** @internal */
 export const scaleAround = (sx: number, sy: number, origin: Vector2): Affine2d => {
-  // T(o) · S(sx, sy) · T(-o), expanded so the third row stays exact.
+  // T(o) * S(sx, sy) * T(-o), expanded so the third row stays exact.
   return new Affine2dImpl(affineMatrix(sx, 0, origin.x * (1 - sx), 0, sy, origin.y * (1 - sy)))
 }
 
@@ -104,7 +104,7 @@ export const rotate = (theta: number): Affine2d => {
 
 /** @internal */
 export const rotateAround = (theta: number, origin: Vector2): Affine2d => {
-  // T(o) · R(θ) · T(-o), expanded.
+  // T(o) * R(theta) * T(-o), expanded.
   const c = Math.cos(theta)
   const s = Math.sin(theta)
   return new Affine2dImpl(
@@ -134,12 +134,12 @@ export const reflectAcrossLine = (origin: Vector2, direction: Vector2): Affine2d
 
   // Householder-style reflection across the line through `origin` with unit
   // direction (dx, dy):
-  //   M = [dx² - dy²,   2 dx dy  ]
-  //       [ 2 dx dy,   dy² - dx² ]
+  //   M = [dx^2 - dy^2,   2 dx dy  ]
+  //       [ 2 dx dy,   dy^2 - dx^2 ]
   // Then translate so the line passes through `origin` instead of the origin.
   const a = dx * dx - dy * dy
   const b = 2 * dx * dy
-  const negA = -a // dy² - dx²
+  const negA = -a // dy^2 - dx^2
 
   return new Affine2dImpl(
     affineMatrix(
@@ -164,7 +164,7 @@ export const andThen = dual<
 >(
   2,
   // `andThen(a, b)` (or `a.pipe(andThen(b))`) means "apply `a` first, then
-  // `b`". For column-vector points that is `b · a`.
+  // `b`". For column-vector points that is `b * a`.
   (a: Affine2d, b: Affine2d) => new Affine2dImpl(matrix3x3.multiply(b.matrix, a.matrix)),
 )
 

@@ -230,7 +230,7 @@ export const mapTheta = dual<
 /** @internal */
 export const getPhi = (v: Vector3) => Math.atan2(v.y, v.x)
 // setPhi rotates only in the xy plane: preserve z and the xy-projection
-// length ρ = r·sin(θ) = hypot(v.x, v.y). That keeps both r and θ invariant.
+// length rho = r*sin(theta) = hypot(v.x, v.y). That keeps both r and theta invariant.
 /** @internal */
 export const setPhi = dual<
   (phi: number) => (v: Vector3) => Vector3,

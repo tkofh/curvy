@@ -7,7 +7,7 @@ import * as internal from './solution.internal.ts'
  * between zero and three values of `T`. It generalizes the zoo of "0 or 1",
  * "0 to 2", "0 to 3" return shapes used throughout curvy under one type, and
  * provides a small namespace of operations (`valueOrUndefined`, `last`,
- * `min`, `max`, `filter`, `map`, `match`, …) for working with the result.
+ * `min`, `max`, `filter`, `map`, `match`, ...) for working with the result.
  *
  * Each variant carries a `_tag` discriminator and a `length` field, is
  * iterable via `Symbol.iterator` (so existing `for..of` and spread patterns

@@ -46,7 +46,7 @@ describe('vector2', () => {
   })
   test('mapTheta rotates, preserving radius', () => {
     const v = vector2.make(1, 0)
-    // rotate by π/2 → should land near (0, 1)
+    // rotate by pi/2 -> should land near (0, 1)
     expect(vector2.mapTheta(v, (t) => t + Math.PI / 2)).toBeCloseToValue(vector2.make(0, 1))
   })
   test('softmax', () => {
@@ -174,7 +174,7 @@ describe('vector3', () => {
   })
   test('mapPhi rotates around z', () => {
     const v = vector3.make(1, 0, 5)
-    // rotate by π/2 in the xy plane → (0, 1, 5)
+    // rotate by pi/2 in the xy plane -> (0, 1, 5)
     expect(vector3.mapPhi(v, (p) => p + Math.PI / 2)).toBeCloseToValue(vector3.make(0, 1, 5))
   })
   test('softmax', () => {
@@ -314,7 +314,7 @@ describe('transpose', () => {
   })
 
   test('Vector4.transpose fuses lift + transpose for rational/weighted inputs', () => {
-    // Lift each Vector2.Weighted to homogeneous (w·x, w·y, w) inside the
+    // Lift each Vector2.Weighted to homogeneous (w*x, w*y, w) inside the
     // projection — same shape RationalCubicCurve2d.fromBezierPoints uses.
     const p0 = vector2.makeWeighted(1, 0, 1)
     const p1 = vector2.makeWeighted(1, 1, 2)
@@ -331,7 +331,7 @@ describe('transpose', () => {
   })
 
   test('output tuple arity matches projection arity', () => {
-    // Single-channel projection → one output vector.
+    // Single-channel projection -> one output vector.
     const result = vector4.transpose([{ v: 10 }, { v: 20 }, { v: 30 }, { v: 40 }], (p) => [p.v])
     expect(result).toHaveLength(1)
     expect(result[0]).toBeCloseToValue(vector4.make(10, 20, 30, 40))
