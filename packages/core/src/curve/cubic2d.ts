@@ -42,7 +42,7 @@ export const fromPolynomials: (x: CubicPolynomial, y: CubicPolynomial) => CubicC
 /**
  * Creates a new `CubicCurve2d` instance from monomial coefficient vectors.
  *
- * Each argument bundles the per-axis coefficient at the given power: `c0`
+ * Each argument bundles the per-axis coefficient at the given power. `c0`
  * holds the x⁰ term, `c1` holds the x¹ term, and so on. The resulting curve
  * evaluates to `c0 + c1·t + c2·t² + c3·t³` per axis.
  *
@@ -63,7 +63,7 @@ export const fromCoefficients: (
 /**
  * Creates a new `CubicCurve2d` instance from cubic Bézier control points.
  *
- * The four arguments are the Bernstein-basis control points: `p0` and `p3` are
+ * The four arguments are the Bernstein-basis control points. `p0` and `p3` are
  * the curve's endpoints and `p1` and `p2` are the off-curve control handles.
  * The implementation converts to the curve's internal monomial form in closed
  * form.
@@ -247,7 +247,7 @@ export const boundingBox: (c: CubicCurve2d) => Interval2d<Closed, Closed> = inte
 export const startPoint: (c: CubicCurve2d) => Vector2 = internal.startPoint
 
 /**
- * Evaluates the curve at `t = 1` in closed form: the sum of the per-axis
+ * Evaluates the curve at `t = 1` in closed form, the sum of the per-axis
  * monomial coefficients.
  *
  * @param c - The cubic curve.
@@ -277,7 +277,7 @@ export const xRange: (c: CubicCurve2d) => Closed = internal.xRange
 export const yRange: (c: CubicCurve2d) => Closed = internal.yRange
 
 /**
- * Renders the curve as a single SVG path-data drawing command: for a cubic
+ * Renders the curve as a single SVG path-data drawing command. For a cubic
  * curve, `C ctrl1X,ctrl1Y ctrl2X,ctrl2Y endX,endY`. Bernstein control points
  * are recovered from the monomial coefficients in closed form. Does not
  * include a leading `M`.
@@ -445,7 +445,7 @@ export const transform: {
   /**
    * Applies an `Affine2d` transform to a `CubicCurve2d`, returning a new
    * curve whose image is the affine image of the original. Internally the
-   * transformation works directly on monomial coefficients: `c0` receives
+   * transformation works directly on monomial coefficients. `c0` receives
    * the full affine, `c1`/`c2`/`c3` receive only the linear part.
    *
    * @param c - The cubic curve.

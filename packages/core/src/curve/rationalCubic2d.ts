@@ -152,7 +152,8 @@ export const fromSlopesAndCurvatures: (
 export const solve: {
   /**
    * Evaluates the rational cubic curve at parameter `t`. Returns
-   * `(x(t)/w(t), y(t)/w(t))`: three Horner evaluations and two divisions.
+   * `(x(t)/w(t), y(t)/w(t))`, costing three Horner evaluations and two
+   * divisions.
    *
    * @param c - The curve to evaluate.
    * @param t - The parameter value.
@@ -287,7 +288,7 @@ export const boundingBox: {
    * Computes a closed axis-aligned bounding box for a rational cubic curve,
    * tight to within `tolerance` per side.
    *
-   * Implemented as recursive subdivision: at each leaf the curve segment's
+   * Implemented as recursive subdivision. At each leaf the curve segment's
    * loose hull AABB (cheap, always valid) is compared against the segment's
    * endpoint AABB (which the curve provably visits). When the per-side gap
    * between them is ≤ `tolerance`, the leaf returns its hull. Otherwise the
@@ -426,7 +427,7 @@ export const isDecreasingY: <XT, YT>(
  * Checks if both `x(t)/w(t)` and `y(t)/w(t)` are strictly monotonic on
  * `[0, 1]`, adding `Monotonic` to both axes' traits.
  *
- * The constant case is excluded: `Monotonic` is the *strict* brand.
+ * The constant case is excluded. `Monotonic` is the *strict* brand.
  *
  * @param c - The rational cubic curve.
  * @returns `true` when both axes are strictly monotonic on `[0, 1]`, narrowing both traits.
@@ -588,9 +589,9 @@ export const approximateAsCubicCurves: {
    * curve that is already polynomial (uniform weights) the result is a
    * single exact segment.
    *
-   * The Hausdorff guarantee means: every point on the rational lies within
+   * The Hausdorff guarantee means that every point on the rational lies within
    * `tolerance` of some output segment, and every point on the output lies
-   * within `tolerance` of the rational: a true two-sided bound on geometric
+   * within `tolerance` of the rational, a true two-sided bound on geometric
    * deviation, not just a parametric error at one sample.
    *
    * @param c - The rational cubic curve to approximate.

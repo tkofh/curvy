@@ -20,7 +20,7 @@ export type { Monotonic, Increasing, Decreasing } from './traits.ts'
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
  * brands as the polynomial is refined via `isMonotonic` / `asMonotonic` and
- * friends. Refinements may be parameterized by an `Interval`: a quadratic is
+ * friends. Refinements may be parameterized by an `Interval`, since a quadratic is
  * monotonic on an interval that avoids its extremum, even though it is not
  * monotonic globally.
  *
@@ -93,7 +93,7 @@ export const equals: {
 export const make: (c0?: number, c1?: number, c2?: number) => QuadraticPolynomial = internal.make
 
 /**
- * Creates a new `QuadraticPolynomial` instance from a vector: `v.x`
+ * Creates a new `QuadraticPolynomial` instance from a vector. `v.x`
  * becomes `c0`, `v.y` becomes `c1`, and `v.z` becomes `c2`.
  *
  * @param v - The coefficients as a vector, in monomial order.
@@ -137,7 +137,7 @@ export const solve: {
 } = internal.solve
 
 /**
- * Converts a quadratic polynomial to an evaluation function: the
+ * Converts a quadratic polynomial to an evaluation function, the
  * single-argument form of `solve`, shaped for `pipe` and `map`.
  *
  * @param p - The quadratic polynomial to convert.
@@ -163,7 +163,7 @@ export const solveInverse: {
    * Finds the inputs at which the polynomial attains `y`, in ascending
    * order.
    *
-   * The root count is tolerance-aware: a discriminant within rounding
+   * The root count is tolerance-aware. A discriminant within rounding
    * distance of zero, relative to its own terms, counts as a double root
    * and yields one solution. See `PRECISION.md` for the mechanics.
    *
@@ -188,7 +188,7 @@ export const solveInverse: {
 } = internal.solveInverse as never
 
 /**
- * Converts a quadratic polynomial to an inverse-solving function: the
+ * Converts a quadratic polynomial to an inverse-solving function, the
  * single-argument form of `solveInverse`, shaped for `pipe` and `map`.
  *
  * @param p - The quadratic polynomial to convert.
@@ -219,24 +219,22 @@ export const coefficients: (p: QuadraticPolynomial) => readonly [number, number,
 export const derivative: (p: QuadraticPolynomial) => LinearPolynomial = internal.derivative
 
 /**
- * Finds the roots of the quadratic polynomial: the inputs where
- * `p(x) = 0`, in ascending order.
+ * Finds the roots of the quadratic polynomial.
  *
  * Root count follows the tolerance-aware discriminant test of
  * `solveInverse`.
  *
  * @param p - The quadratic polynomial.
- * @returns Zero, one, or two roots, ascending.
+ * @returns Zero, one, or two inputs where `p(x) = 0`, ascending.
  * @since 1.0.0
  */
 export const roots: (p: QuadraticPolynomial) => Solution.AtMostTwo<number> = internal.roots
 
 /**
- * Finds the vertex of the quadratic polynomial: the point `(x, p(x))`
- * where the derivative is zero.
+ * Finds the vertex of the quadratic polynomial.
  *
  * @param p - The quadratic polynomial.
- * @returns The vertex as a `Vector2`, or `null` when the polynomial is degenerate (`c2` exactly `0`) and has none.
+ * @returns The point `(x, p(x))` where the derivative is zero, or `null` when the polynomial is degenerate (`c2` exactly `0`) and has none.
  * @since 1.0.0
  */
 export const extreme: (p: QuadraticPolynomial) => Vector2 | null = internal.extreme
@@ -245,7 +243,7 @@ export const monotonicity: {
   /**
    * Computes the monotonicity of the quadratic polynomial over a given
    * interval, or globally when `i` is omitted. Throws when the interval
-   * has zero width: the question is undefined at a single point.
+   * has zero width, since the question is undefined at a single point.
    *
    * @param p - The quadratic polynomial.
    * @param i - The interval to compute the monotonicity over.
@@ -373,7 +371,7 @@ export const antiderivative: {
 export const domain: {
   /**
    * Computes the interval of inputs over which `p` attains the values in
-   * `range`: the hull of every solution of `p(x) = range.start` and
+   * `range`. This is the hull of every solution of `p(x) = range.start` and
    * `p(x) = range.end`.
    *
    * The result is the exact preimage when `p` is monotonic over it. When
@@ -410,9 +408,9 @@ export const domain: {
 
 export const range: {
   /**
-   * Computes the exact values `p` attains over `domain`: the closed
-   * interval covering both endpoint values and the vertex value when the
-   * vertex lies inside `domain`.
+   * Computes the exact values `p` attains over `domain`. The result is
+   * the closed interval covering both endpoint values and the vertex
+   * value when the vertex lies inside `domain`.
    *
    * `domain` is the inverse query.
    *
@@ -470,7 +468,7 @@ export const curvature: {
   /**
    * Computes the unsigned curvature of the graph `y = p(x)` at `x`.
    *
-   * Unsigned: bending direction is not reported. Known deviation: the
+   * Unsigned. Bending direction is not reported. Known deviation: the
    * implementation currently evaluates `|p''| / (1 + |p'(x)|³)` instead
    * of the standard `|p''| / (1 + p'(x)²)^(3/2)`. The two agree at the
    * vertex (`p'(x) = 0`) and drift apart away from it.

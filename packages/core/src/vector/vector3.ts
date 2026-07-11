@@ -157,7 +157,7 @@ export const length: (vector: Vector3) => number = magnitude
 /**
  * Normalizes a `Vector3` to magnitude `1`, preserving its direction.
  *
- * The zero vector has no direction: `normalize(zero)` is
+ * The zero vector has no direction, so `normalize(zero)` is
  * `(NaN, NaN, NaN)`.
  *
  * @param vector - The vector to normalize.
@@ -193,7 +193,7 @@ export const cross: {
    * The result is perpendicular to both inputs, right-handed:
    * `cross(unitX, unitY)` is `unitZ`. Its magnitude is the area of the
    * parallelogram the inputs span, so parallel or zero inputs give the
-   * zero vector. Anticommutative: `cross(b, a)` is `-cross(a, b)`.
+   * zero vector. Anticommutative. `cross(b, a)` is `-cross(a, b)`.
    *
    * @param a - The first vector.
    * @param b - The second vector.
@@ -236,14 +236,14 @@ export const components: (v: Vector3) => [number, number, number] = internal.com
 export const softmax: (v: Vector3) => Vector3 = internal.softmax
 
 /**
- * The zero vector `(0, 0, 0)`: the additive identity.
+ * The zero vector `(0, 0, 0)`, the additive identity.
  *
  * @since 1.0.0
  */
 export const zero = make(0)
 
 /**
- * The all-ones vector `(1, 1, 1)`: the `hadamard` identity.
+ * The all-ones vector `(1, 1, 1)`, the `hadamard` identity.
  *
  * @since 1.0.0
  */
@@ -502,7 +502,7 @@ export const mapZ: {
 } = internal.mapZ
 
 /**
- * Gets the spherical radius of a `Vector3`: its magnitude.
+ * Gets the spherical radius of a `Vector3`.
  *
  * @param v - The vector of which to get the radius.
  * @returns The radius (the vector's magnitude).
@@ -515,7 +515,7 @@ export const setR: {
    * Sets the spherical radius of a `Vector3`, preserving its direction.
    *
    * A negative `r` reflects through the origin. The zero vector has no
-   * direction to preserve: `setR(zero, r)` is `(NaN, NaN, NaN)`.
+   * direction to preserve, so `setR(zero, r)` is `(NaN, NaN, NaN)`.
    *
    * @param v - The vector of which to set the radius.
    * @param r - The new radius.
@@ -538,7 +538,7 @@ export const mapR: {
    * Returns a new `Vector3` with the radius replaced by `f(magnitude(v))`,
    * preserving direction.
    *
-   * For the zero vector the result is `(NaN, NaN, NaN)`: it has no
+   * For the zero vector the result is `(NaN, NaN, NaN)`, since it has no
    * direction to preserve.
    *
    * @param v - The vector to update.
@@ -559,8 +559,8 @@ export const mapR: {
 } = internal.mapR
 
 /**
- * Gets the polar angle (theta) of a `Vector3`: its inclination from the
- * positive z-axis.
+ * Gets the polar angle (theta) of a `Vector3`, measured as inclination
+ * from the positive z-axis.
  *
  * Unlike `Vector2.getTheta` (an azimuth), this is the physics-convention
  * inclination. The in-plane angle here is `getPhi`.
@@ -576,7 +576,7 @@ export const setTheta: {
    * Sets the polar angle (theta) of a `Vector3`, preserving its magnitude
    * and azimuth (phi).
    *
-   * The zero vector stays zero: it has magnitude `0` at every angle.
+   * The zero vector stays zero, since it has magnitude `0` at every angle.
    *
    * @param v - The vector of which to set the polar angle.
    * @param theta - The new inclination from the positive z-axis, in radians.
@@ -617,7 +617,7 @@ export const mapTheta: {
 } = internal.mapTheta
 
 /**
- * Gets the azimuthal angle (phi) of a `Vector3`: its angle from the
+ * Gets the azimuthal angle (phi) of a `Vector3`, measured from the
  * positive x-axis within the xy-plane.
  *
  * @param v - The vector of which to get the azimuthal angle.
@@ -631,7 +631,7 @@ export const setPhi: {
    * Sets the azimuthal angle (phi) of a `Vector3`, preserving its
    * magnitude and inclination (theta).
    *
-   * The zero vector stays zero: it has magnitude `0` at every angle.
+   * The zero vector stays zero, since it has magnitude `0` at every angle.
    *
    * @param v - The vector of which to set the azimuthal angle.
    * @param phi - The new azimuth from the positive x-axis in the xy-plane, in radians.

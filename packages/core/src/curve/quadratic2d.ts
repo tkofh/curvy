@@ -45,7 +45,7 @@ export const fromPolynomials: (
 /**
  * Creates a new `QuadraticCurve2d` instance from monomial coefficient vectors.
  *
- * Each argument bundles the per-axis coefficient at the given power: `c0`
+ * Each argument bundles the per-axis coefficient at the given power. `c0`
  * holds the x⁰ term, `c1` holds the x¹ term, and so on. The resulting curve
  * evaluates to `c0 + c1·t + c2·t²` per axis.
  *
@@ -62,7 +62,7 @@ export const fromCoefficients: (c0: Vector2, c1: Vector2, c2: Vector2) => Quadra
  * Creates a new `QuadraticCurve2d` instance from quadratic Bézier control
  * points.
  *
- * The three arguments are the Bernstein-basis control points: `p0` and `p2`
+ * The three arguments are the Bernstein-basis control points. `p0` and `p2`
  * are the curve's endpoints and `p1` is the off-curve control handle. The
  * implementation converts to the curve's internal monomial form in closed
  * form.
@@ -248,7 +248,7 @@ export const boundingBox: (c: QuadraticCurve2d) => Interval2d<Closed, Closed> = 
 export const startPoint: (c: QuadraticCurve2d) => Vector2 = internal.startPoint
 
 /**
- * Evaluates the curve at `t = 1` in closed form: the sum of the per-axis
+ * Evaluates the curve at `t = 1` in closed form, the sum of the per-axis
  * monomial coefficients.
  *
  * @param c - The quadratic curve.
@@ -278,7 +278,7 @@ export const xRange: (c: QuadraticCurve2d) => Closed = internal.xRange
 export const yRange: (c: QuadraticCurve2d) => Closed = internal.yRange
 
 /**
- * Renders the curve as a single SVG path-data drawing command: for a
+ * Renders the curve as a single SVG path-data drawing command. For a
  * quadratic curve, `Q ctrlX,ctrlY endX,endY`, where the control point is
  * recovered from the monomial coefficients via the inverse Bernstein
  * expansion. Does not include a leading `M`.

@@ -5,7 +5,7 @@ import type { Interval2dTypeId } from './interval2d.internal.ts'
 import * as internal from './interval2d.internal.ts'
 
 /**
- * An axis-aligned 2D interval: the Cartesian product of two 1D intervals.
+ * An axis-aligned 2D interval, the Cartesian product of two 1D intervals.
  * Used as a bounding box for curves and paths, and as a region for
  * containment tests. Construct via `make`, `fromCorners`, or
  * `fromVectors`.
@@ -29,7 +29,7 @@ export interface Interval2d<
 
 /**
  * A pair of per-axis `Bounds` carrying no endpoint-inclusivity
- * information: the structural counterpart of `Interval2d`. Any value with
+ * information, the structural counterpart of `Interval2d`. Any value with
  * `Bounds`-shaped `x` and `y` fields satisfies it.
  *
  * Operations that never read inclusivity (`size`, `minDistance`,
@@ -69,7 +69,7 @@ export const make: <X extends Interval, Y extends Interval>(x: X, y: Y) => Inter
 
 /**
  * Creates a closed `Interval2d` from two corner points. The corners can be
- * in any order: each axis is built from the min and max of the coordinate.
+ * in any order. Each axis is built from the min and max of the coordinate.
  *
  * @param p0 - The first corner.
  * @param p1 - The second corner.
@@ -115,7 +115,7 @@ export const containsVector: {
 export const containsInterval2d: {
   /**
    * Checks if `inner` is a subset of `outer`. The check is per-axis
-   * interval containment: for each axis, every point of the inner interval
+   * interval containment. For each axis, every point of the inner interval
    * must also be in the outer interval, respecting endpoint inclusivity on
    * both sides. Endpoint comparisons are exact — no tolerance is applied.
    *
@@ -218,7 +218,7 @@ export const minDistance: {
    * axis-aligned 2D intervals. Returns `0` when the boxes overlap
    * (including edge or corner touching).
    *
-   * Accepts the broader `Bounds2d` type: endpoint inclusivity is not
+   * Accepts the broader `Bounds2d` type. Endpoint inclusivity is not
    * consulted, so a "touching" pair of open intervals still returns `0`
    * because the closest *points* coincide geometrically. Reversed
    * structural bounds are normalized with min/max.
@@ -242,14 +242,14 @@ export const minDistance: {
 
 export const maxDistance: {
   /**
-   * Computes the diagonal of the union AABB enclosing both inputs: an
+   * Computes the diagonal of the union AABB enclosing both inputs, which is an
    * upper bound on the Euclidean distance between any point of `a` and any
    * point of `b`.
    *
    * The bound is the exact farthest-pair distance unless, on some axis,
    * one interval's endpoints lie strictly inside the other's. There the
    * union span exceeds the farthest-pair separation. Accepts the broader
-   * `Bounds2d` type: endpoint inclusivity is not consulted, and reversed
+   * `Bounds2d` type. Endpoint inclusivity is not consulted, and reversed
    * structural bounds are normalized with min/max.
    *
    * @param a - The first 2D interval.
@@ -259,7 +259,7 @@ export const maxDistance: {
    */
   (a: Bounds2d, b: Bounds2d): number
   /**
-   * Computes the diagonal of the union AABB enclosing both inputs: an
+   * Computes the diagonal of the union AABB enclosing both inputs, which is an
    * upper bound on the distance between any point of `a` and any point of
    * `b`.
    *

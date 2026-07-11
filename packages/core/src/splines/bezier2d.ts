@@ -8,8 +8,8 @@ import * as internal from './bezier2d.internal.ts'
 import type { RationalBezier2d } from './rationalBezier2d.ts'
 
 /**
- * A cubic Bézier spline in 2D space: one or more cubic segments sharing
- * endpoints, stored as `3n + 1` control points. Iteration yields the
+ * A cubic Bézier spline in 2D space, made of one or more cubic segments
+ * sharing endpoints and stored as `3n + 1` control points. Iteration yields the
  * control points in order.
  *
  * All fields are readonly. No operation mutates a spline. Construct via
@@ -112,7 +112,7 @@ export const appendTangentAligned: {
    * Appends one cubic segment whose start tangent lies along the spline's
    * end tangent.
    *
-   * The segment's first handle is derived, not passed: the spline's last
+   * The segment's first handle is derived, not passed. The spline's last
    * handle is reflected across the shared end point and scaled by `ratio`.
    * `ratio = 1` reproduces the incoming handle length, matching velocity
    * across the join (C¹, what `appendVelocityAligned` does). Other
@@ -178,7 +178,7 @@ export const appendVelocityAligned: {
    * Appends one cubic segment whose starting velocity matches the
    * spline's ending velocity (C¹).
    *
-   * The segment's first handle is derived: the spline's last handle
+   * The segment's first handle is derived. The spline's last handle
    * reflected across the shared end point at equal length. Equivalent to
    * `appendTangentAligned` with `ratio = 1`.
    *
@@ -304,7 +304,7 @@ export const toPath: (p: Bezier2d) => CubicPath2d = internal.toPath
  *
  * Succeeds with `Solution.one(bezier)` when the rational curve's weights are
  * uniform (the curve is mathematically a polynomial Bézier) and returns
- * `Solution.none` otherwise: the rational curve cannot be represented
+ * `Solution.none` otherwise, since the rational curve cannot be represented
  * exactly by a non-rational cubic Bézier.
  *
  * @param r - The rational bezier to convert.
@@ -318,7 +318,7 @@ export const subdivide: {
   /**
    * Splits a `Bezier2d` at the given global parameter `u ∈ (0, 1)` using
    * de Casteljau's algorithm. The two returned beziers together trace the
-   * same curve as the input: the left covers `[0, u]`, the right covers
+   * same curve as the input. The left covers `[0, u]`, the right covers
    * `[u, 1]`.
    *
    * @param b - The bezier to split.

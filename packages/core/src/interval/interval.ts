@@ -2,7 +2,7 @@ import * as internal from './interval.internal.ts'
 import type { Pipeable } from '../utils.ts'
 
 /**
- * A `start`/`end` pair carrying no endpoint-inclusivity information: the
+ * A `start`/`end` pair carrying no endpoint-inclusivity information, the
  * structural counterpart of `Interval`. Any value with numeric `start` and
  * `end` fields satisfies it, in any order — unlike `Interval`, nothing
  * enforces `start <= end`.
@@ -96,7 +96,7 @@ export const equals: {
   /**
    * Checks if two `Interval` instances are approximately equal.
    *
-   * Both endpoints and the kind must match: a `Closed` and an `OpenStart`
+   * Both endpoints and the kind must match. A `Closed` and an `OpenStart`
    * with the same numeric endpoints are not equal. Use `aligned` for the
    * looser "same numeric range" check.
    *
@@ -265,7 +265,7 @@ export const fromMinMax: (...values: ReadonlyArray<number>) => Closed = internal
 /**
  * Calculates the size of an interval.
  *
- * Kind-agnostic: `size` of `[0, 1]` and `(0, 1)` are both `1`.
+ * Kind-agnostic. `size` of `[0, 1]` and `(0, 1)` are both `1`.
  *
  * @param i - The bounds to calculate the size of.
  * @returns The absolute difference `|end - start|`. Never negative, even for reversed structural `Bounds`.
@@ -296,7 +296,7 @@ export const contains: {
 } = internal.contains
 
 /**
- * Float-tolerant containment: returns `true` if `value` is in the interval or
+ * Float-tolerant containment. Returns `true` if `value` is in the interval or
  * within `eps` of either boundary. Endpoint inclusivity is ignored — at the
  * `EPSILON` scale the open/closed distinction loses meaning, and the use case
  * is "is this query approximately in this range, accounting for float drift?".
@@ -313,7 +313,7 @@ export const containsApprox: (interval: Interval, value: number, eps?: number) =
 
 export const containsInterval: {
   /**
-   * Checks if `inner` is a subset of `outer`: every point of `inner` is
+   * Checks if `inner` is a subset of `outer`. Every point of `inner` is
    * also in `outer`.
    *
    * Respects endpoint inclusivity on both sides. A closed inner endpoint
@@ -343,7 +343,7 @@ export const union: {
    * inclusivity follows the input that contributed it. When both endpoints
    * tie, the result is closed at that point if either input includes it.
    *
-   * The enclosing hull, not a set union: disjoint inputs are bridged, gap
+   * The enclosing hull, not a set union. Disjoint inputs are bridged, gap
    * included.
    *
    * @param a - The first interval.
@@ -385,7 +385,7 @@ export const filter: {
 
 export const clamp: {
   /**
-   * Clamps a value to be within bounds. Kind-agnostic: clamps to the
+   * Clamps a value to be within bounds. Kind-agnostic, clamping to the
    * numeric range regardless of endpoint inclusivity. Assumes
    * `start <= end` (structural `Bounds` do not enforce it).
    *
@@ -604,7 +604,7 @@ export const unitOpen: Open = internal.unitOpen
 export const biunit: Closed = internal.biunit
 
 /**
- * Linearly interpolates a value within bounds: `t = 0` returns exactly
+ * Linearly interpolates a value within bounds. `t = 0` returns exactly
  * `start`, `t = 1` exactly `end`.
  *
  * `t` is not clamped. Values outside `[0, 1]` extrapolate along the same
@@ -618,8 +618,8 @@ export const biunit: Closed = internal.biunit
 export const lerp: (interval: Bounds, t: number) => number = internal.lerp
 
 /**
- * Creates a linear interpolation function for given bounds: the
- * single-argument form of `lerp`, shaped for `pipe` and `map`.
+ * Creates the single-argument form of `lerp` for given bounds, shaped
+ * for `pipe` and `map`.
  *
  * @param interval - The bounds to interpolate within.
  * @returns A function that takes a factor `t` and returns the interpolated value.
@@ -628,7 +628,7 @@ export const lerp: (interval: Bounds, t: number) => number = internal.lerp
 export const toLerpFn: (interval: Bounds) => (t: number) => number = internal.toLerpFn
 
 /**
- * Normalizes a value within bounds: `start` maps to `0` and `end` to `1`.
+ * Normalizes a value within bounds. `start` maps to `0` and `end` to `1`.
  *
  * Not clamped. Values outside the bounds map outside `[0, 1]`. Zero-size
  * bounds divide by zero, producing `NaN` or `±Infinity`.
@@ -641,8 +641,8 @@ export const toLerpFn: (interval: Bounds) => (t: number) => number = internal.to
 export const normalize: (interval: Bounds, x: number) => number = internal.normalize
 
 /**
- * Creates a normalization function for given bounds: the single-argument
- * form of `normalize`, shaped for `pipe` and `map`.
+ * Creates the single-argument form of `normalize` for given bounds,
+ * shaped for `pipe` and `map`.
  *
  * @param interval - The bounds to normalize within.
  * @returns A function that takes a value `x` and returns the normalized value.
@@ -667,8 +667,8 @@ export const toNormalizeFn: (interval: Bounds) => (x: number) => number = intern
 export const remap: (source: Bounds, target: Bounds, x: number) => number = internal.remap
 
 /**
- * Creates a remapping function for given bounds: the single-argument form
- * of `remap`, shaped for `pipe` and `map`.
+ * Creates the single-argument form of `remap` for given bounds, shaped
+ * for `pipe` and `map`.
  *
  * @param source - The source bounds.
  * @param target - The target bounds.

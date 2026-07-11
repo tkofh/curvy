@@ -61,7 +61,7 @@ export const isCubicPolynomial: (value: unknown) => value is CubicPolynomial =
 
 export const equals: {
   /**
-   * Checks if two `CubicPolynomial` instances are approximately equal: each
+   * Checks if two `CubicPolynomial` instances are approximately equal. Each
    * coefficient pair is compared with `coincident` from `curvy/number`, an
    * absolute-plus-relative band (see `PRECISION.md`).
    *
@@ -96,7 +96,7 @@ export const make: (c0: number, c1: number, c2: number, c3: number) => CubicPoly
   internal.make
 
 /**
- * Creates a new `CubicPolynomial` instance from a vector: `v.x` becomes
+ * Creates a new `CubicPolynomial` instance from a vector. `v.x` becomes
  * `c0`, `v.y` becomes `c1`, `v.z` becomes `c2`, and `v.w` becomes `c3`.
  *
  * @param v - The coefficients as a vector, in monomial order.
@@ -141,7 +141,7 @@ export const solve: {
 } = internal.solve
 
 /**
- * Converts a cubic polynomial to an evaluation function: the
+ * Converts a cubic polynomial to an evaluation function, the
  * single-argument form of `solve`, shaped for `pipe` and `map`.
  *
  * @param p - The cubic polynomial to convert.
@@ -166,7 +166,7 @@ export const solveInverse: {
    * Finds the inputs at which the polynomial attains `y`, in ascending
    * order.
    *
-   * The root count is tolerance-aware: the solver's branch dispatch reads
+   * The root count is tolerance-aware. The solver's branch dispatch reads
    * the depressed discriminant against a band scaled by its own terms, so
    * near-multiple roots collapse instead of splitting on rounding noise.
    * See `PRECISION.md` for the mechanics.
@@ -192,7 +192,7 @@ export const solveInverse: {
 } = internal.solveInverse as never
 
 /**
- * Converts a cubic polynomial to an inverse-solving function: the
+ * Converts a cubic polynomial to an inverse-solving function, the
  * single-argument form of `solveInverse`, shaped for `pipe` and `map`.
  *
  * @param p - The cubic polynomial to convert.
@@ -248,24 +248,22 @@ export const subdivide: {
 } = internal.subdivide
 
 /**
- * Calculates the roots of a cubic polynomial: the inputs where
- * `p(x) = 0`, in ascending order.
+ * Calculates the roots of a cubic polynomial.
  *
  * Root count follows the tolerance-aware branch dispatch of
  * `solveInverse`.
  *
  * @param p - The cubic polynomial to find the roots of.
- * @returns Up to three roots, ascending.
+ * @returns Up to three inputs where `p(x) = 0`, ascending.
  * @since 1.0.0
  */
 export const roots: (p: CubicPolynomial) => Solution.AtMostThree<number> = internal.roots
 
 /**
- * Calculates the stationary points of a cubic polynomial: the inputs
- * where the derivative is zero, in ascending order.
+ * Calculates the stationary points of a cubic polynomial.
  *
  * @param p - The cubic polynomial to find the extrema of.
- * @returns Zero, one, or two stationary inputs (`x` locations, not points), ascending.
+ * @returns Zero, one, or two inputs where the derivative is zero (`x` locations, not points), ascending.
  * @since 1.0.0
  */
 export const extrema: (p: CubicPolynomial) => Solution.AtMostTwo<number> = internal.extrema
@@ -274,7 +272,7 @@ export const monotonicity: {
   /**
    * Calculates the monotonicity of a cubic polynomial over an interval,
    * or globally when `i` is omitted. Throws when the interval has zero
-   * width: the question is undefined at a single point.
+   * width, since the question is undefined at a single point.
    *
    * @param p - The cubic polynomial to analyze.
    * @param i - The interval to restrict the analysis to.
@@ -382,7 +380,7 @@ export const asDecreasing: <T>(
 export const domain: {
   /**
    * Computes the interval of inputs over which `p` attains the values in
-   * `range`: the hull of every solution of `p(x) = range.start` and
+   * `range`. This is the hull of every solution of `p(x) = range.start` and
    * `p(x) = range.end`.
    *
    * The result is the exact preimage when `p` is monotonic over it. When
@@ -413,9 +411,9 @@ export const domain: {
 
 export const range: {
   /**
-   * Computes the exact values `p` attains over `domain`: the closed
-   * interval covering both endpoint values and any stationary values
-   * inside `domain`.
+   * Computes the exact values `p` attains over `domain`. The result is
+   * the closed interval covering both endpoint values and any stationary
+   * values inside `domain`.
    *
    * `domain` is the inverse query.
    *
@@ -477,7 +475,7 @@ export const curvature: {
    * Calculates the unsigned curvature of the graph `y = p(x)` at `x`:
    * `|p''(x)| / (1 + p'(x)²)^(3/2)`.
    *
-   * Unsigned: bending direction is not reported.
+   * Unsigned. Bending direction is not reported.
    *
    * @param p - The cubic polynomial to measure.
    * @param x - The input at which to measure curvature.

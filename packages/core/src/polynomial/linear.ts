@@ -86,7 +86,7 @@ export const equals: {
 export const make: (c0?: number, c1?: number) => LinearPolynomial = internal.make
 
 /**
- * Creates a new `LinearPolynomial` instance from a vector: `v.x` becomes
+ * Creates a new `LinearPolynomial` instance from a vector. `v.x` becomes
  * `c0` and `v.y` becomes `c1`.
  *
  * @param v - The coefficients as a vector, in monomial order.
@@ -109,7 +109,7 @@ export const fromPointSlope: (p: Vector2, slope: number) => LinearPolynomial =
 /**
  * Creates a new `LinearPolynomial` instance through two points.
  *
- * Vertically aligned points (`p1.x === p2.x`) divide by zero: the slope
+ * Vertically aligned points (`p1.x === p2.x`) divide by zero, so the slope
  * is a vertical line's, and the coefficients come out non-finite.
  *
  * @param p1 - The first point.
@@ -140,7 +140,7 @@ export const solve: {
 } = internal.solve
 
 /**
- * Converts a linear polynomial to an evaluation function: the
+ * Converts a linear polynomial to an evaluation function, the
  * single-argument form of `solve`, shaped for `pipe` and `map`.
  *
  * @param p - The linear polynomial to convert.
@@ -189,7 +189,7 @@ export const solveInverse: {
 } = internal.solveInverse as never
 
 /**
- * Converts a linear polynomial to an inverse-solving function: the
+ * Converts a linear polynomial to an inverse-solving function, the
  * single-argument form of `solveInverse`, shaped for `pipe` and `map`.
  *
  * @param p - The linear polynomial to convert.
@@ -200,10 +200,10 @@ export const toInverseSolver: (p: LinearPolynomial) => (y: number) => Solution.A
   internal.toInverseSolver
 
 /**
- * Finds the root of a linear polynomial: the `x` where `p(x) = 0`.
+ * Finds the root of a linear polynomial.
  *
  * @param p - The linear polynomial to find the root of.
- * @returns The root in `Solution.One`, or `Solution.none` for constant polynomials — including the zero polynomial, where every `x` is a root.
+ * @returns The `x` where `p(x) = 0` in `Solution.One`, or `Solution.none` for constant polynomials — including the zero polynomial, where every `x` is a root.
  * @since 1.0.0
  */
 export const root: (p: LinearPolynomial) => Solution.AtMostOne<number> = (p) =>
@@ -213,11 +213,11 @@ export const root: (p: LinearPolynomial) => Solution.AtMostOne<number> = (p) =>
  * Calculates the monotonicity of a linear polynomial from the sign of
  * `c1`.
  *
- * The test is exact: any nonzero `c1`, however small, classifies as
+ * The test is exact. Any nonzero `c1`, however small, classifies as
  * increasing or decreasing. Only `c1 === 0` is `Constant`.
  *
  * @param p - The linear polynomial to check.
- * @returns `Increasing`, `Decreasing`, or `Constant` (never `None`: a line cannot change direction).
+ * @returns `Increasing`, `Decreasing`, or `Constant` (never `None`, since a line cannot change direction).
  * @since 1.0.0
  */
 export const monotonicity: (p: LinearPolynomial) => GuaranteedMonotonicity = internal.monotonicity
@@ -328,7 +328,7 @@ export const antiderivative: {
 export const domain: {
   /**
    * Computes the interval of inputs over which `p` attains the values in
-   * `range`: for an increasing polynomial, the exact preimage
+   * `range`. For an increasing polynomial, this is the exact preimage
    * `[x(range.start), x(range.end)]`.
    *
    * A constant polynomial yields the full line `[-Infinity, Infinity]`
@@ -341,7 +341,7 @@ export const domain: {
    * @param p - The linear polynomial to invert.
    * @param range - The output values to find inputs for.
    * @returns The preimage interval in `Solution.One`, or `Solution.none` for constant polynomials.
-   * @throws `Error` when `p` is decreasing: the preimage endpoints are built in descending order, which the interval constructor rejects.
+   * @throws `Error` when `p` is decreasing. The preimage endpoints are built in descending order, which the interval constructor rejects.
    * @since 1.0.0
    */
   (p: LinearPolynomial, range: Interval): Solution.AtMostOne<Interval>
@@ -351,7 +351,7 @@ export const domain: {
    *
    * @param range - The output values to find inputs for.
    * @returns A function that takes a `LinearPolynomial` and returns the preimage interval.
-   * @throws `Error` when the polynomial is decreasing: the preimage endpoints are built in descending order, which the interval constructor rejects.
+   * @throws `Error` when the polynomial is decreasing. The preimage endpoints are built in descending order, which the interval constructor rejects.
    * @since 1.0.0
    */
   (range: Interval): (p: LinearPolynomial) => Solution.AtMostOne<Interval>
@@ -359,8 +359,8 @@ export const domain: {
 
 export const range: {
   /**
-   * Computes the values `p` attains over `domain`: the closed interval
-   * between the two endpoint values, in either order.
+   * Computes the values `p` attains over `domain`. The result is the
+   * closed interval between the two endpoint values, in either order.
    *
    * `domain` is the inverse query.
    *
@@ -382,11 +382,10 @@ export const range: {
 
 /**
  * Calculates the range of a linear polynomial over the unit interval
- * `[0, 1]`: the closed interval between `c0` and `c0 + c1`. Equivalent to
- * `range(p, Interval.unit)`.
+ * `[0, 1]`. Equivalent to `range(p, Interval.unit)`.
  *
  * @param p - The linear polynomial.
- * @returns The closed range of the polynomial over `[0, 1]`.
+ * @returns The closed interval between `c0` and `c0 + c1`.
  * @since 2.0.0
  */
 export const unitRange: (p: LinearPolynomial) => Closed = internal.unitRange

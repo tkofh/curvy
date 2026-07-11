@@ -230,7 +230,7 @@ export const solveSystem: {
   /**
    * Solves the linear system `M · x = v` for `x`.
    *
-   * Rejects only exact singularity: a determinant of exactly `0` throws.
+   * Rejects only exact singularity. A determinant of exactly `0` throws.
    * A nearly singular system returns a result whose error grows with the
    * system's conditioning — the honest outcome for a construction (see
    * `PRECISION.md`).

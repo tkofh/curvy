@@ -216,7 +216,7 @@ export const determinant: (m: Matrix3x3) => number = internal.determinant
 /**
  * Returns the 2×2 submatrix obtained by deleting one row and one column.
  *
- * The submatrix itself, not its determinant: take `determinant` of the
+ * The submatrix itself, not its determinant. Take `determinant` of the
  * result for the scalar minor.
  *
  * @param m - The matrix to extract from.
@@ -297,7 +297,7 @@ export const solveSystem: {
   /**
    * Solves the linear system `M · x = v` for `x`.
    *
-   * Rejects only exact singularity: a determinant of exactly `0` throws.
+   * Rejects only exact singularity. A determinant of exactly `0` throws.
    * A nearly singular system returns a result whose error grows with the
    * system's conditioning — the honest outcome for a construction (see
    * `PRECISION.md`).
@@ -461,7 +461,7 @@ export const inverse: {
   <T extends Invertible>(m: Matrix3x3<T>): Solution.One<Matrix3x3<T>>
   /**
    * Returns the inverse of a `Matrix3x3`. Returns `Solution.none` if the
-   * matrix is singular: its determinant falls below `RELATIVE_TOLERANCE`
+   * matrix is singular, meaning its determinant falls below `RELATIVE_TOLERANCE`
    * times the Hadamard bound (see `PRECISION.md`). Use `asInvertible` or
    * `isInvertible` to refine the type and tighten the return to
    * `Solution.One`, or `inverseUnsafe` for the throwing form.
@@ -486,7 +486,7 @@ export const inverse: {
 export const inverseUnsafe: (m: Matrix3x3) => Matrix3x3 = internal.inverseUnsafe
 
 /**
- * Checks if a matrix is invertible: its determinant exceeds
+ * Checks if a matrix is invertible, meaning its determinant exceeds
  * `RELATIVE_TOLERANCE` times the Hadamard bound (the product of the row
  * norms), a scale-free singularity test. See `PRECISION.md` for the
  * mechanics.

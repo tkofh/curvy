@@ -71,7 +71,7 @@ export const fromArray: (points: ReadonlyArray<Weighted>) => RationalBezier2d = 
 
 /**
  * Creates a new `RationalBezier2d` from an array of `[x, y, weight]` tuples.
- * Weight is the projective denominator at each control point: `1` everywhere
+ * Weight is the projective denominator at each control point. `1` everywhere
  * yields the polynomial Bézier. Varying weights bend the curve toward the
  * heavier control points.
  *
@@ -121,7 +121,7 @@ export const fromBezier: (b: Bezier2d) => RationalBezier2d = internal.fromBezier
  * denominator `w`), yielding a path whose evaluator is three Horner passes
  * plus two divisions per call.
  *
- * Mirrors `Bezier2d.toPath`: spline construction is converted to path
+ * Mirrors `Bezier2d.toPath`. Spline construction is converted to path
  * evaluation form, and forward evaluation thereafter routes through the
  * path's `solve`.
  *
@@ -215,7 +215,7 @@ export const subdivide: {
   /**
    * Splits a `RationalBezier2d` at the given global parameter `u ∈ (0, 1)`
    * using de Casteljau's algorithm in homogeneous coordinates. The two
-   * returned beziers together trace the same curve as the input: the left
+   * returned beziers together trace the same curve as the input. The left
    * covers `[0, u]`, the right covers `[u, 1]`.
    *
    * The subdivided halves' control-point weights generally differ from the

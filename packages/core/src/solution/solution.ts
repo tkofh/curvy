@@ -392,7 +392,7 @@ export const match: {
   /**
    * Pattern matches on a solution, calling `onNone` for the empty case and
    * `onSome` for any non-empty case. The `onSome` parameter is typed
-   * against the input's narrowed shape: for an `AtMostOne<T>` input,
+   * against the input's narrowed shape. For an `AtMostOne<T>` input,
    * `onSome` receives `One<T>` and can read `.value` directly.
    *
    * @param self - The solution to match on.

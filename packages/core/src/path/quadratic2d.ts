@@ -94,11 +94,10 @@ export const append: {
 } = internal.append
 
 /**
- * Calculates the total arc length of a quadratic path: the sum of its
- * segments' arc lengths.
+ * Calculates the total arc length of a quadratic path.
  *
  * @param p - The quadratic path to measure.
- * @returns The total arc length.
+ * @returns The sum of the segments' arc lengths.
  * @since 1.0.0
  */
 export const length: (p: QuadraticPath2d) => number = internal.length
@@ -116,7 +115,7 @@ export const solve: {
   /**
    * Evaluates the quadratic path at parameter `u ∈ [0, 1]`.
    *
-   * Segments split `u` uniformly: each curve gets an equal share of the
+   * Segments split `u` uniformly. Each curve gets an equal share of the
    * parameter range, regardless of its arc length. The selected segment's
    * curve is evaluated at the corresponding local parameter.
    *
@@ -168,7 +167,7 @@ export const asContinuous: <T>(p: QuadraticPath2d<T>) => QuadraticPath2d<T & Con
 
 /**
  * Checks if the path's x-coordinate increases as the path parameter
- * advances: every segment's x polynomial is strictly increasing on
+ * advances. Every segment's x polynomial is strictly increasing on
  * `[0, 1]` and adjacent segments' x-ranges don't overlap. Adds
  * `IncreasingX` to the path's traits.
  *
@@ -181,7 +180,7 @@ export const isIncreasingX: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T
 
 /**
  * Checks if the path's x-coordinate decreases as the path parameter
- * advances: every segment's x polynomial is strictly decreasing on
+ * advances. Every segment's x polynomial is strictly decreasing on
  * `[0, 1]` and adjacent segments' x-ranges don't overlap. Adds
  * `DecreasingX` to the path's traits.
  *
@@ -194,8 +193,8 @@ export const isDecreasingX: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T
 
 /**
  * Checks if the path's x-coordinate is monotonic (increasing or
- * decreasing) as the path parameter advances: the brand `solveAtX`
- * requires. Adds `MonotonicX` to the path's traits.
+ * decreasing) as the path parameter advances, the property the brand
+ * `solveAtX` requires. Adds `MonotonicX` to the path's traits.
  *
  * @param p - The quadratic path to check.
  * @returns `true` when x is monotonic along the path, narrowing to `QuadraticPath2d<T & MonotonicX>`.
@@ -206,7 +205,7 @@ export const isMonotonicX: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T 
 
 /**
  * Checks if the path's y-coordinate increases as the path parameter
- * advances: every segment's y polynomial is strictly increasing on
+ * advances. Every segment's y polynomial is strictly increasing on
  * `[0, 1]` and adjacent segments' y-ranges don't overlap. Adds
  * `IncreasingY` to the path's traits.
  *
@@ -219,7 +218,7 @@ export const isIncreasingY: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T
 
 /**
  * Checks if the path's y-coordinate decreases as the path parameter
- * advances: every segment's y polynomial is strictly decreasing on
+ * advances. Every segment's y polynomial is strictly decreasing on
  * `[0, 1]` and adjacent segments' y-ranges don't overlap. Adds
  * `DecreasingY` to the path's traits.
  *
@@ -232,8 +231,8 @@ export const isDecreasingY: <T>(p: QuadraticPath2d<T>) => p is QuadraticPath2d<T
 
 /**
  * Checks if the path's y-coordinate is monotonic (increasing or
- * decreasing) as the path parameter advances: the brand `solveAtY`
- * requires. Adds `MonotonicY` to the path's traits.
+ * decreasing) as the path parameter advances, the property the brand
+ * `solveAtY` requires. Adds `MonotonicY` to the path's traits.
  *
  * @param p - The quadratic path to check.
  * @returns `true` when y is monotonic along the path, narrowing to `QuadraticPath2d<T & MonotonicY>`.
@@ -353,11 +352,10 @@ export const solveAtY: {
 } = internal.solveAtY as never
 
 /**
- * Computes the axis-aligned bounding box of the path: the smallest closed
- * `Interval2d` enclosing every segment.
+ * Computes the axis-aligned bounding box of the path.
  *
  * @param p - The quadratic path.
- * @returns A closed `Interval2d` enclosing the path.
+ * @returns The smallest closed `Interval2d` enclosing every segment.
  * @since 2.0.0
  */
 export const boundingBox: (p: QuadraticPath2d) => Interval2d<Closed, Closed> = internal.boundingBox

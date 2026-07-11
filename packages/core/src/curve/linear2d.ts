@@ -13,7 +13,7 @@ import * as internal from './linear2d.internal.ts'
 export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
 
 /**
- * A linear curve in 2D space: a straight segment parameterized over
+ * A linear curve in 2D space, a straight segment parameterized over
  * `t ∈ [0, 1]` by one `LinearPolynomial` per axis.
  *
  * All fields are readonly. No operation mutates a curve. Construct via
@@ -44,7 +44,7 @@ export const fromPolynomials: (x: LinearPolynomial, y: LinearPolynomial) => Line
 /**
  * Creates a new `LinearCurve2d` instance from monomial coefficient vectors.
  *
- * Each argument bundles the per-axis coefficient at the given power: `c0`
+ * Each argument bundles the per-axis coefficient at the given power. `c0`
  * holds the x⁰ term, `c1` holds the x¹ term. The resulting curve evaluates to
  * `c0 + c1·t` per axis.
  *
@@ -80,7 +80,7 @@ export const fromEndpoints: (p0: Vector2, p1: Vector2) => LinearCurve2d = intern
 export const isLinearCurve2d: (c: unknown) => c is LinearCurve2d = internal.isLinearCurve2d
 
 /**
- * Gets the derivative of a linear curve: its constant velocity vector.
+ * Gets the derivative of a linear curve.
  *
  * @param c - The linear curve to get the derivative of.
  * @returns The constant velocity `(x.c1, y.c1)`.
@@ -188,7 +188,7 @@ export const xRange: (c: LinearCurve2d) => Closed = internal.xRange
 export const yRange: (c: LinearCurve2d) => Closed = internal.yRange
 
 /**
- * Renders the curve as a single SVG path-data drawing command: for a linear
+ * Renders the curve as a single SVG path-data drawing command. For a linear
  * curve, `L endX,endY`. Does not include a leading `M`. Callers (typically a
  * path-level `toPathData`) decide whether to emit a move based on continuity
  * with the previous segment.
@@ -396,7 +396,7 @@ export const transform: {
   /**
    * Applies an `Affine2d` transform to a `LinearCurve2d`, returning a new
    * curve whose image is the affine image of the original. The transformation
-   * is exact: linear curves are degree-1 in every basis, and affine maps
+   * is exact. Linear curves are degree-1 in every basis, and affine maps
    * commute with the basis.
    *
    * @param c - The linear curve.

@@ -11,7 +11,7 @@ import type { Vector2 } from '../vector/vector2.ts'
  * instance which the corresponding path module passes to
  * `Path2d.make(ops)` to derive its operation surface.
  *
- * The interface stays small: anything that isn't shared structurally
+ * The interface stays small. Anything that isn't shared structurally
  * across curve degrees stays on the per-degree module.
  *
  * @since 2.0.0
@@ -84,7 +84,7 @@ export interface Curve2dOps<C> {
    * Apply an affine transform to the curve, returning a new curve whose
    * geometric image is the affine image of the original.
    *
-   * For non-rational coefficient-form curves this is per-coefficient: the
+   * For non-rational coefficient-form curves this is per-coefficient. The
    * constant coefficient receives the full affine, and all higher-degree
    * coefficients receive only the linear part. For rational curves the
    * translation is folded into the numerator polynomials weighted by the

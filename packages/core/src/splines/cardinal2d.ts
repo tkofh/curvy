@@ -366,7 +366,7 @@ export const transform: {
 /**
  * Converts a `Cardinal2d` to a `CubicPath2d` using the spline's `tension` and
  * `alpha`. With the default options (`{ tension: 0.5, alpha: 0.5 }`) the
- * result is a centripetal Catmull-Rom path: the canonical recommended
+ * result is a centripetal Catmull-Rom path, the canonical recommended
  * Catmull-Rom variant, which avoids the cusps and self-intersections that
  * uniform Catmull-Rom can produce when control points cluster.
  *
@@ -378,8 +378,8 @@ export const toPath: (c: Cardinal2d) => CubicPath2d = internal.toPath
 
 /**
  * Converts a `Cardinal2d` to a `Bezier2d`. Equivalent to `toPath`
- * followed by per-segment monomial-to-Bernstein conversion: same underlying
- * curve, expressed in cubic Bézier control-point form. Uses the spline's
+ * followed by per-segment monomial-to-Bernstein conversion. The result is
+ * the same underlying curve, expressed in cubic Bézier control-point form. Uses the spline's
  * `tension` and `alpha`.
  *
  * @param c - The Cardinal spline.

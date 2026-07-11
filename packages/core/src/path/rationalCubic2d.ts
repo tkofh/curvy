@@ -13,7 +13,7 @@ import * as internal from './rationalCubic2d.internal.ts'
  *
  * Holds a non-empty sequence of `RationalCubicCurve2d` segments. Iteration
  * yields the segments in order. The path parameter `u ∈ [0, 1]` is mapped
- * uniformly across segments: `u = 0` is the start of the first segment,
+ * uniformly across segments. `u = 0` is the start of the first segment,
  * `u = 1` is the end of the last segment, and intermediate values pick a
  * segment by index and a local parameter within it.
  *
@@ -84,7 +84,7 @@ export const solve: {
   /**
    * Evaluates the rational cubic path at parameter `u ∈ [0, 1]`.
    *
-   * Segments split `u` uniformly: each curve gets an equal share of the
+   * Segments split `u` uniformly. Each curve gets an equal share of the
    * parameter range, regardless of its arc length. The selected segment's
    * curve is evaluated at the corresponding local parameter.
    *
@@ -113,7 +113,7 @@ export const boundingBox: {
    * tight to within `tolerance` per side.
    *
    * Each segment's box is `RationalCubicCurve2d.boundingBox` at the same
-   * `tolerance`: recursive subdivision producing a hull-AABB union. The
+   * `tolerance` (recursive subdivision producing a hull-AABB union). The
    * path box is the union of segment boxes. Since each segment box has
    * slack ≤ `tolerance` per side, so does the union.
    *
@@ -140,7 +140,7 @@ export const approximateAsCubicPath: {
    * deviates from a polynomial-cubic candidate by at most `tolerance`. The
    * surviving candidates are concatenated into a new path.
    *
-   * Lossy in general: only exact when every input segment has uniform
+   * Lossy in general. Exact only when every input segment has uniform
    * weights, in which case segment count is preserved. Tighter tolerance
    * produces more segments.
    *

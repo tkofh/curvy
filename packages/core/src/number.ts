@@ -3,7 +3,7 @@ import { dual } from './utils.ts'
 const PRECISION = 8
 
 /**
- * Default absolute tolerance for approximate equality: the `eps` of
+ * Default absolute tolerance for approximate equality, used as the `eps` of
  * `epsEquals` and the `absolute` floor of `coincident`.
  *
  * An absolute band is meaningful where the data's scale is fixed. Curve
@@ -21,7 +21,7 @@ export const EPSILON = 1e-10
  * Default relative tolerance for sign and degeneracy decisions about
  * *computed* quantities — derivative values, determinants, discriminants.
  *
- * Scale-free: multiply by the natural magnitude of the quantity under test
+ * Scale-free. Multiply by the natural magnitude of the quantity under test
  * (e.g. the largest derivative value over the interval) to get an absolute
  * threshold. Values inside the resulting band are indistinguishable from
  * accumulated rounding noise and must not decide a sign question.
@@ -37,7 +37,7 @@ export const RELATIVE_TOLERANCE = 1e-12
 /**
  * Tests approximate equality of two numbers within an absolute tolerance.
  *
- * This is the raw absolute comparison: the right tool when the domain is
+ * This is the raw absolute comparison, the right tool when the domain is
  * normalized by construction (curve parameter space, where `[0, 1]` makes an
  * absolute band meaningful) or when a caller-chosen absolute band is the
  * actual question. For identity questions about computed values of arbitrary
@@ -69,9 +69,9 @@ export function epsEquals(a: number, b: number, eps: number = EPSILON): boolean 
  * `absolute` when your data has a different natural resolution. Both
  * parameters are positional, mirroring `epsEquals`.
  *
- * Not transitive: `coincident(a, b)` and `coincident(b, c)` do not imply
+ * Not transitive. `coincident(a, b)` and `coincident(b, c)` do not imply
  * `coincident(a, c)`, because chains of pairwise-coincident values can
- * drift beyond the band. Path continuity relies on exactly that: it claims
+ * drift beyond the band. Path continuity relies on exactly that. It claims
  * each junction's two knots agree, while a long path's first and last
  * knots may still sit far apart.
  *
@@ -106,7 +106,7 @@ export function clampToZero(value: number, eps: number): number {
 /**
  * Rounds `value` to `precision` decimal places.
  *
- * Rounding follows the stored binary value, not its decimal spelling: the
+ * Rounding follows the stored binary value, not its decimal spelling. The
  * double nearest `1.005` sits just below it, so `round(1.005, 2)` is `1`,
  * not `1.01`. Ties round toward `+Infinity` (`Math.round` semantics).
  * `-0` normalizes to `0`.
@@ -133,7 +133,7 @@ export function round(value: number, precision = PRECISION): number {
 /**
  * Rounds `value` down, toward `-Infinity`, to `precision` decimal places.
  *
- * For negative values, down moves away from zero: `roundDown(-1.231, 2)` is
+ * For negative values, down moves away from zero. `roundDown(-1.231, 2)` is
  * `-1.24`, not `-1.23`. Rounding follows the stored binary value, not its
  * decimal spelling. `-0` normalizes to `0`.
  *
@@ -159,7 +159,7 @@ export function roundDown(value: number, precision = PRECISION): number {
 /**
  * Rounds `value` up, toward `+Infinity`, to `precision` decimal places.
  *
- * For negative values, up moves toward zero: `roundUp(-1.239, 2)` is
+ * For negative values, up moves toward zero. `roundUp(-1.239, 2)` is
  * `-1.23`, not `-1.24`. Rounding follows the stored binary value, not its
  * decimal spelling. `-0` normalizes to `0`.
  *
@@ -186,7 +186,7 @@ export const lerp: {
   /**
    * Linearly interpolates between `a` (at `t = 0`) and `b` (at `t = 1`).
    *
-   * Exact at the endpoints: `t = 0` returns exactly `a`, and `t = 1` exactly
+   * Exact at the endpoints. `t = 0` returns exactly `a`, and `t = 1` exactly
    * `b`. `t` is not clamped. Values outside `[0, 1]` extrapolate along the
    * same line.
    *
@@ -221,7 +221,7 @@ export const normalize: {
   /**
    * Normalizes `x` from the range `[a, b]` to the unit interval.
    *
-   * Not clamped: `x` outside `[a, b]` maps outside `[0, 1]` in proportion.
+   * Not clamped. `x` outside `[a, b]` maps outside `[0, 1]` in proportion.
    * Degenerate bounds `a === b` divide by zero, producing `NaN` (when
    * `x === a`) or `±Infinity`.
    *
@@ -260,7 +260,7 @@ export const remap: {
    * Remaps `x` from the source range `[x1, x2]` to the target range
    * `[y1, y2]`, preserving its relative position.
    *
-   * Not clamped: `x` outside the source range maps proportionally outside
+   * Not clamped. `x` outside the source range maps proportionally outside
    * the target range. A degenerate source range (`x1 === x2`) divides by
    * zero, producing `NaN` or `±Infinity`.
    *
@@ -302,7 +302,7 @@ export const clamp: {
   /**
    * Clamps `value` to the closed range `[min, max]`.
    *
-   * `NaN` passes through unchanged: it compares false against both bounds.
+   * `NaN` passes through unchanged, because it compares false against both bounds.
    * Assumes `min <= max`.
    *
    * @param value - The value to clamp.
@@ -338,7 +338,7 @@ export const clip: {
    * Returns `value` when it lies in `[min, max]` and `onClip` when it does
    * not.
    *
-   * Bounds are inclusive: `value === min` and `value === max` both count as
+   * Bounds are inclusive. `value === min` and `value === max` both count as
    * inside. `NaN` also passes through, because it compares false against
    * both bounds. It is never replaced by `onClip`. Where `clamp` moves an
    * out-of-range value to the nearer bound, `clip` replaces it wholesale.
@@ -396,7 +396,7 @@ export function minMax(a: number, b: number): [number, number] {
  * Computes `n` modulo `m`, with the result taking the sign of `m`.
  *
  * This is floored-division modulo. The remainder operator `%` takes the
- * sign of `n` instead: `mod(-10, 3)` is `2` where `-10 % 3` is `-1`. The
+ * sign of `n` instead. `mod(-10, 3)` is `2` where `-10 % 3` is `-1`. The
  * result lies in `[0, m)` for positive `m` and `(m, 0]` for negative `m`.
  * `m === 0` produces `NaN`.
  *

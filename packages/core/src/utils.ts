@@ -137,7 +137,7 @@ export const dual: {
 }
 
 /**
- * Composes functions left to right: `flow(f, g)(x)` is `g(f(x))`.
+ * Composes functions left to right. `flow(f, g)(x)` is `g(f(x))`.
  *
  * The first function sets the composite's parameters and may take any
  * number of them. Each later function is unary, receiving the previous
@@ -314,7 +314,7 @@ export function flow(
 }
 
 /**
- * Pipes a value through a sequence of unary functions: `pipe(x, f, g)` is
+ * Pipes a value through a sequence of unary functions. `pipe(x, f, g)` is
  * `g(f(x))`.
  *
  * `pipe(x)` alone returns `x`. The typed overloads accept up to nineteen
@@ -808,7 +808,7 @@ export function pipe(...args: [unknown, ...Array<AnyFunction>]): unknown {
 }
 
 /**
- * Base class supplying a `pipe` method: `value.pipe(f, g)` is
+ * Base class supplying a `pipe` method. `value.pipe(f, g)` is
  * `g(f(value))`.
  *
  * The library's value types extend it, so any curvy value can flow
@@ -1298,7 +1298,7 @@ export class Pipeable {
 /**
  * Throws an `Error` carrying `message` when `condition` is false.
  *
- * Declared `asserts condition`: after a call that returns, TypeScript
+ * Declared `asserts condition`, so after a call that returns, TypeScript
  * narrows by whatever `condition` proved.
  *
  * @param condition - The claim being asserted.

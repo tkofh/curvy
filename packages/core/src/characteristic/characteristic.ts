@@ -7,7 +7,7 @@ import type * as Vector4 from '../vector/vector4.ts'
  *
  * Maps Bernstein-basis control points `(P₀, P₁, P₂, P₃)` to monomial cubic
  * coefficients `(c₀, c₁, c₂, c₃)` for `c₀ + c₁·t + c₂·t² + c₃·t³`. The
- * matrix is the spline family's defining data: combined with control
+ * matrix is the spline family's defining data. Combined with control
  * points via `apply`, it produces the cubic polynomial that parameterizes
  * the curve.
  *
@@ -95,11 +95,11 @@ const cardinalCache = new Map<number, Matrix4x4.Matrix4x4>()
  *
  * Maps four control points to the monomial cubic coefficients of one
  * Cardinal segment. The tension controls how tightly the curve hugs the
- * control points: `0` produces straight-line segments between adjacent
+ * control points. `0` produces straight-line segments between adjacent
  * points, `0.5` is the Catmull-Rom variant (`cubicCatmullRom`), and
  * higher values produce looser, more curved shapes.
  *
- * Cached per tension value: repeated calls with the same tension return
+ * Cached per tension value, so repeated calls with the same tension return
  * the same matrix instance.
  *
  * @param tension - How tightly the curve hugs the control points. `0` gives straight segments, `0.5` Catmull-Rom.
@@ -151,7 +151,7 @@ export const cubicCatmullRom: Matrix4x4.Matrix4x4 = cubicCardinal(0.5)
  * The polynomial 2D spline pipeline applies this with two channels (x, y).
  * The rational 2D pipeline uses three (x, y, w) where `w` is the projective
  * denominator. Higher channel counts generalize to 3D, rational 3D, and
- * beyond: the characteristic matrix reads nothing about the geometric
+ * beyond, since the characteristic matrix reads nothing about the geometric
  * domain, only how to combine four samples per channel.
  *
  * @param matrix - The characteristic matrix of the spline family.

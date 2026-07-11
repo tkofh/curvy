@@ -78,7 +78,7 @@ export const isStrict = (m: Monotonicity): m is 1 | 2 => m === Increasing || m =
  * endpoints, when the function is known a priori to be monotonic on the
  * spanning interval (e.g. a linear polynomial).
  *
- * The comparison is exact: endpoint values one ulp apart classify as
+ * The comparison is exact. Endpoint values one ulp apart classify as
  * increasing or decreasing, never `Constant`. Use `fromDerivativeRange`
  * when the inputs carry rounding noise.
  *
@@ -95,7 +95,7 @@ export const fromComparison = (s0: number, s1: number): GuaranteedMonotonicity =
  * over an interval, tolerating rounding noise in the derivative.
  *
  * `min` and `max` must be the true range extremes of the derivative on the
- * interval (for a polynomial derivative: its values at the interval endpoints
+ * interval (for a polynomial derivative, its values at the interval endpoints
  * and at any interior stationary point). Each bound sets its sign-coverage
  * bit only when it exceeds the tolerance, so a derivative that merely grazes
  * zero, or dips past it by an amount indistinguishable from rounding noise,
@@ -104,7 +104,7 @@ export const fromComparison = (s0: number, s1: number): GuaranteedMonotonicity =
  * The default tolerance is `RELATIVE_TOLERANCE` scaled by the larger
  * bound magnitude, making the classification invariant under scaling of the
  * input data. Derivative values are used rather than derivative *root
- * locations* because values are well-conditioned where roots are not: a root
+ * locations* because values are well-conditioned where roots are not. A root
  * computed from rounded coefficients can land on either side of an interval
  * boundary, while the value it corresponds to stays pinned near zero.
  *

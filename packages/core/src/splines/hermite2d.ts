@@ -162,7 +162,7 @@ export const flatMap: {
 export const transform: {
   /**
    * Applies an `Affine2d` transform to a `Hermite2d`, treating the entries
-   * correctly by kind: positions (even indices) receive the full affine, and
+   * correctly by kind. Positions (even indices) receive the full affine, and
    * tangent vectors (odd indices) receive only the linear part. Translation
    * doesn't move tangents, only the linear map does.
    *

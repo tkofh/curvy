@@ -23,7 +23,7 @@ export interface Vector2 extends Pipeable, TwoDimensional<number> {
  *
  * Used by rational primitives (e.g. `RationalBezier2d`) where each control
  * point carries an influence weight. The interface is structurally distinct
- * from `Vector2`: its brand prevents accidental use with vector arithmetic
+ * from `Vector2`. Its brand prevents accidental use with vector arithmetic
  * (`add`, `subtract`, `scale`, etc.) where weighted operations are not
  * well-defined.
  *
@@ -249,7 +249,7 @@ export const make: {
 export const fromTuple: (t: readonly [number, number]) => Vector2 = internal.fromTuple
 
 /**
- * Builds one `Vector2` per projected channel from a pair of items: vector
+ * Builds one `Vector2` per projected channel from a pair of items. Vector
  * `k` is `(project(first)[k], project(second)[k])`.
  *
  * The projection runs once per item and must return the same number of
@@ -279,7 +279,7 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
  * Creates a new `Vector2` instance from polar coordinates.
  *
  * The arithmetic is exact IEEE 754, so representation error shows up
- * unrounded: `fromPolar(2, Math.PI / 2)` has `x ≈ 1.2e-16`, not `0`,
+ * unrounded. `fromPolar(2, Math.PI / 2)` has `x ≈ 1.2e-16`, not `0`,
  * because `Math.PI / 2` is not exactly π/2. See `PRECISION.md` for the
  * model.
  *
@@ -302,7 +302,7 @@ export const magnitude: (vector: Vector2) => number = internal.magnitude
 /**
  * Normalizes a `Vector2` to magnitude `1`, preserving its direction.
  *
- * The zero vector has no direction: `normalize(zero)` is `(NaN, NaN)`.
+ * The zero vector has no direction, so `normalize(zero)` is `(NaN, NaN)`.
  *
  * @param vector - The vector to normalize.
  * @returns A new `Vector2` instance with the same direction and a magnitude of 1.
@@ -334,8 +334,8 @@ export const cross: {
   /**
    * Calculates the 2D cross product `a.x * b.y - a.y * b.x`.
    *
-   * A scalar, not a vector: the z component of the 3D cross product of
-   * the two vectors lifted into the plane. The sign gives orientation
+   * A scalar, not a vector. The value is the z component of the 3D cross
+   * product of the two vectors lifted into the plane. The sign gives orientation
    * (positive when rotating from `a` toward `b` is counterclockwise in a
    * y-up frame). The magnitude is the area of the parallelogram the two
    * vectors span.
@@ -382,14 +382,14 @@ export const components: (v: Vector2) => [number, number] = internal.components
 export const softmax: (v: Vector2) => Vector2 = internal.softmax
 
 /**
- * The zero vector `(0, 0)`: the additive identity.
+ * The zero vector `(0, 0)`, the additive identity.
  *
  * @since 1.0.0
  */
 export const zero = make(0)
 
 /**
- * The all-ones vector `(1, 1)`: the `hadamard` identity.
+ * The all-ones vector `(1, 1)`, the `hadamard` identity.
  *
  * @since 1.0.0
  */
@@ -576,7 +576,7 @@ export const mapY: {
 } = internal.mapY
 
 /**
- * Gets the polar radius of a `Vector2`: its magnitude.
+ * Gets the polar radius of a `Vector2`.
  *
  * @param v - The vector to get the radius from.
  * @returns The radius (the vector's magnitude).
@@ -589,7 +589,7 @@ export const setR: {
    * Sets the polar radius of a `Vector2`, preserving its angle.
    *
    * A negative `r` reflects through the origin. The zero vector has no
-   * angle to preserve: `setR(zero, r)` is `(NaN, NaN)`.
+   * angle to preserve, so `setR(zero, r)` is `(NaN, NaN)`.
    *
    * @param v - The vector to set the radius of.
    * @param r - The new radius.
@@ -612,7 +612,7 @@ export const mapR: {
    * Returns a new `Vector2` with the radius replaced by `f(magnitude(v))`,
    * preserving the angle.
    *
-   * For the zero vector the result is `(NaN, NaN)`: it has no angle to
+   * For the zero vector the result is `(NaN, NaN)`, since it has no angle to
    * preserve.
    *
    * @param v - The vector to update.
@@ -645,7 +645,7 @@ export const setTheta: {
   /**
    * Sets the polar angle of a `Vector2`, preserving its magnitude.
    *
-   * The zero vector stays zero: it has magnitude `0` at every angle.
+   * The zero vector stays zero, since it has magnitude `0` at every angle.
    *
    * @param v - The vector to set the angle of.
    * @param theta - The new angle, in radians.

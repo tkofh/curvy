@@ -108,7 +108,7 @@ export const fromTuple: (t: readonly [number, number, number, number]) => Vector
   internal.fromTuple
 
 /**
- * Builds one `Vector4` per projected channel from four items: for each
+ * Builds one `Vector4` per projected channel from four items. For each
  * output channel, takes the corresponding number from each projected item
  * and packs the four into a `Vector4`. The data-layout transformation
  * NumPy calls a transpose, FP calls `unzip`, and GPUs call a gather.
@@ -148,7 +148,7 @@ export const magnitude: (vector: Vector4) => number = internal.magnitude
 /**
  * Normalizes a `Vector4` to magnitude `1`, preserving its direction.
  *
- * The zero vector has no direction: `normalize(zero)` is
+ * The zero vector has no direction, so `normalize(zero)` is
  * `(NaN, NaN, NaN, NaN)`.
  *
  * @param vector - The vector to normalize.
@@ -202,14 +202,14 @@ export const components: (v: Vector4) => [number, number, number, number] = inte
 export const softmax: (v: Vector4) => Vector4 = internal.softmax
 
 /**
- * The zero vector `(0, 0, 0, 0)`: the additive identity.
+ * The zero vector `(0, 0, 0, 0)`, the additive identity.
  *
  * @since 1.0.0
  */
 export const zero = make(0)
 
 /**
- * The all-ones vector `(1, 1, 1, 1)`: the `hadamard` identity.
+ * The all-ones vector `(1, 1, 1, 1)`, the `hadamard` identity.
  *
  * @since 1.0.0
  */

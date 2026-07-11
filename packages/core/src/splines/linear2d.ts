@@ -6,7 +6,7 @@ import * as internal from './linear2d.internal.ts'
 import type { Linear2dTypeId } from './linear2d.internal.ts'
 
 /**
- * A polyline in 2D space: an ordered list of points that converts to a
+ * A polyline in 2D space, an ordered list of points that converts to a
  * `LinearPath2d` by joining consecutive points with straight segments.
  *
  * Each spline requires at least 2 points (1 segment minimum). `toPath`

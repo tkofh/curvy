@@ -1,7 +1,7 @@
 /**
  * Trait brands for matrices.
  *
- * Brands are phantom types: they exist only at the type level and carry no
+ * Brands are phantom types. They exist only at the type level and carry no
  * runtime data. A matrix value at runtime is identical regardless of the
  * traits attached to its type. Refiners (`isInvertible`) and assertions
  * (`asInvertible`) on the `Matrix3x3` and `Matrix4x4` modules attach these
@@ -12,7 +12,7 @@
 
 declare const InvertibleId: unique symbol
 /**
- * Brand for invertible matrices: matrices whose determinant exceeds
+ * Brand for invertible matrices, those whose determinant exceeds
  * `RELATIVE_TOLERANCE` times the Hadamard bound (the product of the row
  * norms) — a scale-free singularity test. See `PRECISION.md` for the
  * mechanics.

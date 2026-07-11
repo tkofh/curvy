@@ -22,7 +22,7 @@ export type { Invertible } from './traits.ts'
  * single instance can describe any chain of translates, scales, rotations,
  * reflections, and shears.
  *
- * Affine maps commute with polynomial evaluation: transforming a spline's
+ * Affine maps commute with polynomial evaluation. Transforming a spline's
  * control points and then sampling produces the same point as sampling first
  * and then transforming. Concrete spline modules expose `transform(s, a)`
  * helpers that take advantage of this.
@@ -66,7 +66,7 @@ export const isAffine2d: (a: unknown) => a is Affine2d = internal.isAffine2d
 export const fromMatrix: (matrix: Matrix3x3) => Affine2d = internal.fromMatrix
 
 /**
- * The identity transform: leaves every point fixed.
+ * The identity transform, which leaves every point fixed.
  *
  * @since 2.0.0
  */
@@ -209,7 +209,7 @@ export const andThen: {
    */
   (a: Affine2d, b: Affine2d): Affine2d
   /**
-   * Sequences two `Affine2d` transforms: `andThen(b)(a)` applies `a` then
+   * Sequences two `Affine2d` transforms. `andThen(b)(a)` applies `a` then
    * `b`.
    *
    * @param b - The transform applied after the piped-in transform.
@@ -260,7 +260,7 @@ export const inverse: {
 export const inverseUnsafe: (a: Affine2d) => Affine2d = internal.inverseUnsafe
 
 /**
- * Checks if a transform is invertible: its underlying matrix's determinant
+ * Checks if a transform is invertible, meaning its underlying matrix's determinant
  * exceeds `RELATIVE_TOLERANCE` times the Hadamard bound, the scale-free
  * singularity test of `Matrix3x3.isInvertible`. See `PRECISION.md` for the
  * mechanics.
@@ -317,8 +317,8 @@ export const apply: {
 export const applyTo: (a: Affine2d) => (p: Vector2) => Vector2 = internal.applyTo
 
 /**
- * Extracts the 2×2 linear part of an `Affine2d`: the upper-left block of
- * its homogeneous matrix, ignoring translation. Maps direction vectors
+ * Extracts the 2×2 linear part of an `Affine2d`. The result is the
+ * upper-left block of its homogeneous matrix, ignoring translation. Maps direction vectors
  * (tangents, differences of points) under the transform.
  *
  * @param a - The transform.
@@ -328,8 +328,8 @@ export const applyTo: (a: Affine2d) => (p: Vector2) => Vector2 = internal.applyT
 export const linear: (a: Affine2d) => Matrix2x2 = internal.linear
 
 /**
- * Extracts the translation vector of an `Affine2d`: the third column of
- * its homogeneous matrix, ignoring the linear part.
+ * Extracts the translation vector of an `Affine2d`. The result is the
+ * third column of its homogeneous matrix, ignoring the linear part.
  *
  * @param a - The transform.
  * @returns The translation vector.

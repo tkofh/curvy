@@ -1,7 +1,7 @@
 /**
  * Trait brands for polynomials.
  *
- * Brands are phantom types: they exist only at the type level and carry no
+ * Brands are phantom types. They exist only at the type level and carry no
  * runtime data. A polynomial value at runtime is identical regardless of the
  * traits attached to its type. Refiners (`isMonotonic`, `isIncreasing`, …) and
  * assertions (`asMonotonic`, …) on each polynomial module attach these brands
@@ -16,7 +16,7 @@
 
 declare const MonotonicId: unique symbol
 /**
- * Brand for *strictly* monotonic polynomials: `monotonicity()` returns
+ * Brand for *strictly* monotonic polynomials. `monotonicity()` returns
  * `Increasing` or `Decreasing`. The constant case is excluded. Constants
  * have no useful inverse refinement.
  *

@@ -1,7 +1,7 @@
 /**
  * Trait brands for paths.
  *
- * Brands are phantom types: they exist only at the type level and carry no
+ * Brands are phantom types. They exist only at the type level and carry no
  * runtime data. Refiners (`isContinuous`) and assertions (`asContinuous`) on
  * each path module attach these brands to the path's `Trait` parameter at the
  * type level.

@@ -18,7 +18,7 @@ import {
 } from './traits.ts'
 
 /**
- * Generic 2D path: a sequence of curves of a single kind `C` plus optional
+ * Generic 2D path, a sequence of curves of a single kind `C` plus optional
  * trait brands (`Continuous`, `MonotonicX`, etc.) tracking properties of the
  * path as a whole.
  *
