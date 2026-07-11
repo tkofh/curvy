@@ -11,14 +11,14 @@ import type { Vector2 } from '../vector/vector2.ts'
  * instance which the corresponding path module passes to
  * `Path2d.make(ops)` to derive its operation surface.
  *
- * The interface is intentionally small — anything that isn't shared
- * structurally across curve degrees stays on the per-degree module.
+ * The interface stays small. Anything that isn't shared structurally
+ * across curve degrees stays on the per-degree module.
  *
  * @since 2.0.0
  */
 export interface Curve2dOps<C> {
   /**
-   * Evaluate the curve at parameter `t ∈ [0, 1]`.
+   * Evaluate the curve at parameter `t in [0, 1]`.
    */
   solve(c: C, t: number): Vector2
 
@@ -49,12 +49,12 @@ export interface Curve2dOps<C> {
   solveAtX(c: C, x: number): Solution.AtMostOne<number>
 
   /**
-   * y-axis analog of {@link solveAtX}.
+   * y-axis analog of `solveAtX`.
    */
   solveAtY(c: C, y: number): Solution.AtMostOne<number>
 
   /**
-   * SVG path-data drawing command for one segment (`L …`, `Q …`, `C …`),
+   * SVG path-data drawing command for one segment (`L ...`, `Q ...`, `C ...`),
    * without a leading `M`. Move-insertion is decided by the path-level
    * `toPathData` based on continuity with the previous segment.
    */
@@ -84,7 +84,7 @@ export interface Curve2dOps<C> {
    * Apply an affine transform to the curve, returning a new curve whose
    * geometric image is the affine image of the original.
    *
-   * For non-rational coefficient-form curves this is per-coefficient: the
+   * For non-rational coefficient-form curves this is per-coefficient. The
    * constant coefficient receives the full affine, and all higher-degree
    * coefficients receive only the linear part. For rational curves the
    * translation is folded into the numerator polynomials weighted by the

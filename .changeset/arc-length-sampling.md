@@ -2,7 +2,7 @@
 'curvy': minor
 ---
 
-Added **`CubicPath2d.solveByDistance(path, s): Vector2`** for sampling a path by normalized arc length (`s ∈ [0, 1]`).
+Added **`CubicPath2d.solveByDistance(path, s): Vector2`** for sampling a path by normalized arc length (`s in [0, 1]`).
 
 Unlike `solve`, which is parameterized by curve `u`, `solveByDistance` returns points at constant speed along the path — `s = 0.5` is the actual arc-length midpoint regardless of how the underlying parameterization stretches. This is the primitive most motion-design and animation use cases actually want from a curve library.
 

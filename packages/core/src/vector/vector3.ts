@@ -6,7 +6,11 @@ import * as internal from './vector3.internal.ts'
 /**
  * A 3D vector.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly. No operation mutates a vector. Operations
+ * return new instances, except that identity operations (like scaling by
+ * exactly `1`) may return the input itself.
+ *
+ * Construct via `make`, `fromTuple`, or `fromSpherical`.
  *
  * @since 1.0.0
  */
@@ -17,6 +21,9 @@ export interface Vector3 extends Pipeable, ThreeDimensional<number> {
 /**
  * Checks if a value is a `Vector3`.
  *
+ * True only for values built by this module's constructors, which carry
+ * the brand. A structural `{ x, y, z }` object is not a `Vector3`.
+ *
  * @param v - The value to check.
  * @returns `true` if the value is a `Vector3`, `false` otherwise.
  * @since 1.0.0
@@ -25,40 +32,42 @@ export const isVector3: (v: unknown) => v is Vector3 = internal.isVector3
 
 export const equals: {
   /**
-   * Checks if two `Vector3` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Vector3` instances are approximately equal.
+   *
+   * Each pair of components is compared with `coincident` from
+   * `curvy/number`, an absolute-plus-relative tolerance band. See
+   * `PRECISION.md` for the mechanics.
    *
    * @param a - The first vector.
    * @param b - The second vector.
    * @returns `true` when each pair of components is within tolerance.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (a: Vector3, b: Vector3): boolean
   /**
-   * Checks if two `Vector3` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Vector3` instances are approximately equal.
    *
    * @param b - The second vector.
    * @returns A function that takes the first vector and returns the comparison result.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (b: Vector3): (a: Vector3) => boolean
 } = internal.equals
 
 export const make: {
   /**
-   * Creates a new `Vector3` instance.
+   * Creates a new `Vector3` with all three components set to `xyz`.
    *
-   * @param xyz - The x, y, and z components of the vector.
+   * @param xyz - The value of the x, y, and z components.
    * @returns A new `Vector3` instance.
    * @since 1.0.0
    */
   (xyz: number): Vector3
   /**
-   * Creates a new `Vector3` instance.
+   * Creates a new `Vector3` with the y and z components both set to `yz`.
    *
    * @param x - The x component of the vector.
-   * @param yz - The y and z components of the vector.
+   * @param yz - The value of both the y and z components.
    * @returns A new `Vector3` instance.
    * @since 1.0.0
    */
@@ -77,7 +86,7 @@ export const make: {
 
 /**
  * Creates a new `Vector3` instance from a `[x, y, z]` tuple. Inverse of
- * {@link components}.
+ * `components`.
  *
  * @param t - The `[x, y, z]` tuple.
  * @returns A new `Vector3` instance.
@@ -86,13 +95,24 @@ export const make: {
 export const fromTuple: (t: readonly [number, number, number]) => Vector3 = internal.fromTuple
 
 /**
- * Transposes a 3-tuple of items into one or more `Vector3`s, one per channel
- * extracted by the projection function. See {@link Vector4.transpose} for the
- * full operation description; this is the 3-component analog.
+ * Builds one `Vector3` per projected channel from a triple of items:
+ * vector `k` holds channel `k` of each input, in input order.
+ *
+ * The projection runs once per item and must return the same number of
+ * channels for each. The result holds one vector per channel, in channel
+ * order.
  *
  * @param inputs - Exactly three items of any type.
- * @param project - A function returning a fixed-arity tuple of numbers — one per output channel.
+ * @param project - Extracts a fixed-arity tuple of numbers, one per output channel.
  * @returns A tuple of `Vector3`s with the same arity as the projection's return tuple.
+ * @example
+ * ```ts
+ * const [xs, ys, zs] = Vector3.transpose(
+ *   [Vector3.make(1, 2, 3), Vector3.make(4, 5, 6), Vector3.make(7, 8, 9)],
+ *   Vector3.components,
+ * )
+ * // xs = (1, 4, 7), ys = (2, 5, 8), zs = (3, 6, 9)
+ * ```
  * @since 2.0.0
  */
 export const transpose: <T, const Channels extends ReadonlyArray<number>>(
@@ -101,12 +121,16 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
 ) => { readonly [K in keyof Channels]: Vector3 } = internal.transpose
 
 /**
- * Creates a new `Vector3` instance from spherical coordinates.
+ * Creates a new `Vector3` instance from spherical coordinates
+ * (physics convention: `theta` is inclination, `phi` is azimuth).
  *
- * @param r - The radius.
- * @param theta - The polar angle, in radians. Ranges from 0 to π
- * @param phi - The azimuthal angle, in radians. Ranges from 0 to 2π
- * @returns A new `Vector3` instance.
+ * No range is enforced. The formula is total. Values outside the
+ * conventional ranges land where the trigonometry sends them.
+ *
+ * @param r - The radius. A negative radius reflects through the origin.
+ * @param theta - The inclination from the positive z-axis, in radians. Conventionally `[0, pi]`.
+ * @param phi - The azimuth from the positive x-axis in the xy-plane, in radians.
+ * @returns The vector `(r*sin(theta)*cos(phi), r*sin(theta)*sin(phi), r*cos(theta))`.
  * @since 1.0.0
  */
 export const fromSpherical: (r: number, theta: number, phi: number) => Vector3 =
@@ -116,26 +140,28 @@ export const fromSpherical: (r: number, theta: number, phi: number) => Vector3 =
  * Calculates the magnitude of a `Vector3`.
  *
  * @param vector - The vector to calculate the magnitude of.
- * @returns The magnitude of the vector.
+ * @returns The Euclidean length `sqrt(x^2 + y^2 + z^2)`.
  * @since 1.0.0
  */
 export const magnitude: (vector: Vector3) => number = internal.magnitude
 
 /**
- * Calculates the length of a `Vector3`.
+ * Calculates the length of a `Vector3`. Alias of `magnitude`.
  *
  * @param vector - The vector to calculate the length of.
- * @returns The length of the vector.
- * @see {@link magnitude}
+ * @returns The Euclidean length `sqrt(x^2 + y^2 + z^2)`.
  * @since 1.0.0
  */
 export const length: (vector: Vector3) => number = magnitude
 
 /**
- * Normalizes a `Vector3`.
+ * Normalizes a `Vector3` to magnitude `1`, preserving its direction.
+ *
+ * The zero vector has no direction, so `normalize(zero)` is
+ * `(NaN, NaN, NaN)`.
  *
  * @param vector - The vector to normalize.
- * @returns A new `Vector3` instance with the same direction as the input vector, but with a magnitude of 1.
+ * @returns A new `Vector3` instance with the same direction and a magnitude of 1.
  * @since 1.0.0
  */
 export const normalize: (vector: Vector3) => Vector3 = internal.normalize
@@ -164,9 +190,14 @@ export const cross: {
   /**
    * Calculates the cross product of two `Vector3` instances.
    *
+   * The result is perpendicular to both inputs, right-handed:
+   * `cross(unitX, unitY)` is `unitZ`. Its magnitude is the area of the
+   * parallelogram the inputs span, so parallel or zero inputs give the
+   * zero vector. Anticommutative. `cross(b, a)` is `-cross(a, b)`.
+   *
    * @param a - The first vector.
    * @param b - The second vector.
-   * @returns A new `Vector3` instance representing the cross product of the two vectors.
+   * @returns A new `Vector3` perpendicular to both inputs.
    * @since 1.0.0
    */
   (a: Vector3, b: Vector3): Vector3
@@ -181,53 +212,59 @@ export const cross: {
 } = internal.cross
 
 /**
- * Returns the components of a `Vector3` as an array.
+ * Returns the components of a `Vector3` as an `[x, y, z]` tuple.
  *
- * @param v - The vector to get the components of.
- * @returns An array containing the x, y, and z components of the vector.
+ * Inverse of `fromTuple`.
+ *
+ * @param v - The vector to read.
+ * @returns The `[x, y, z]` tuple.
  * @since 1.0.0
  */
 export const components: (v: Vector3) => [number, number, number] = internal.components
 
 /**
- * Calculates the softmax of a `Vector3`.
+ * Applies the softmax function to a `Vector3`: `(e^x, e^y, e^z)` scaled to
+ * sum to `1`.
  *
- * @param v - The vector to calculate the softmax of.
- * @returns A new `Vector3` instance representing the softmax of the input vector.
+ * All result components are positive and sum to `1`. Equal inputs produce
+ * `(1/3, 1/3, 1/3)`. Large components do not overflow.
+ *
+ * @param v - The vector to transform.
+ * @returns A new `Vector3` with positive components summing to `1`.
  * @since 1.0.0
  */
 export const softmax: (v: Vector3) => Vector3 = internal.softmax
 
 /**
- * Creates a zero vector.
+ * The zero vector `(0, 0, 0)`, the additive identity.
  *
  * @since 1.0.0
  */
 export const zero = make(0)
 
 /**
- * Creates a unit vector.
+ * The all-ones vector `(1, 1, 1)`, the `hadamard` identity.
  *
  * @since 1.0.0
  */
-export const unit = make(1)
+export const one = make(1)
 
 /**
- * Creates a unit vector in the x direction.
+ * The unit vector `(1, 0, 0)` along the x-axis.
  *
  * @since 1.0.0
  */
 export const unitX = make(1, 0, 0)
 
 /**
- * Creates a unit vector in the y direction.
+ * The unit vector `(0, 1, 0)` along the y-axis.
  *
  * @since 1.0.0
  */
 export const unitY = make(0, 1, 0)
 
 /**
- * Creates a unit vector in the z direction.
+ * The unit vector `(0, 0, 1)` along the z-axis.
  *
  * @since 1.0.0
  */
@@ -255,19 +292,19 @@ export const add: {
 
 export const subtract: {
   /**
-   * Subtracts one `Vector3` instance from another.
+   * Subtracts `b` from `a`, component-wise.
    *
-   * @param a - The vector to subtract from.
+   * @param a - The vector subtracted from.
    * @param b - The vector to subtract.
-   * @returns A new `Vector3` instance representing the difference of the two vectors.
+   * @returns A new `Vector3` representing `a - b`.
    * @since 1.0.0
    */
   (a: Vector3, b: Vector3): Vector3
   /**
-   * Subtracts one `Vector3` instance from another.
+   * Subtracts the given vector from another, component-wise.
    *
    * @param b - The vector to subtract.
-   * @returns A function that takes the first vector and returns the difference.
+   * @returns A function that takes a vector and subtracts `b` from it.
    * @since 1.0.0
    */
   (b: Vector3): (a: Vector3) => Vector3
@@ -302,16 +339,16 @@ export const scale: {
    * Scales a `Vector3` instance by a scalar value.
    *
    * @param s - The scalar value to scale by.
-   * @return A function that takes a vector and returns the scaled vector.
+   * @returns A function that takes a vector and returns the scaled vector.
    * @since 1.0.0
    */
   (s: number): (v: Vector3) => Vector3
   /**
    * Scales a `Vector3` instance by a scalar value.
    *
-   * @param s - The scalar value to scale by.
    * @param v - The vector to scale.
-   * @returns A new `Vector3` instance representing the scaled vector.
+   * @param s - The scalar value to scale by.
+   * @returns A new `Vector3` scaled by `s`, or the input instance itself when `s` is exactly `1`.
    * @since 1.0.0
    */
   (v: Vector3, s: number): Vector3
@@ -465,17 +502,20 @@ export const mapZ: {
 } = internal.mapZ
 
 /**
- * Gets the radius of a `Vector3`.
+ * Gets the spherical radius of a `Vector3`.
  *
  * @param v - The vector of which to get the radius.
- * @returns The radius of the vector.
+ * @returns The radius (the vector's magnitude).
  * @since 1.0.0
  */
 export const getR: (v: Vector3) => number = magnitude
 
 export const setR: {
   /**
-   * Sets the radius of a `Vector3`.
+   * Sets the spherical radius of a `Vector3`, preserving its direction.
+   *
+   * A negative `r` reflects through the origin. The zero vector has no
+   * direction to preserve, so `setR(zero, r)` is `(NaN, NaN, NaN)`.
    *
    * @param v - The vector of which to set the radius.
    * @param r - The new radius.
@@ -484,7 +524,7 @@ export const setR: {
    */
   (v: Vector3, r: number): Vector3
   /**
-   * Sets the radius of a `Vector3`.
+   * Sets the spherical radius of a `Vector3`, preserving its direction.
    *
    * @param r - The new radius.
    * @returns A function that takes the vector and returns the updated vector.
@@ -497,6 +537,9 @@ export const mapR: {
   /**
    * Returns a new `Vector3` with the radius replaced by `f(magnitude(v))`,
    * preserving direction.
+   *
+   * For the zero vector the result is `(NaN, NaN, NaN)`, since it has no
+   * direction to preserve.
    *
    * @param v - The vector to update.
    * @param f - The function to apply to the radius.
@@ -516,20 +559,27 @@ export const mapR: {
 } = internal.mapR
 
 /**
- * Gets the polar angle (theta) of a `Vector3`.
+ * Gets the polar angle (theta) of a `Vector3`, measured as inclination
+ * from the positive z-axis.
+ *
+ * Unlike `Vector2.getTheta` (an azimuth), this is the physics-convention
+ * inclination. The in-plane angle here is `getPhi`.
  *
  * @param v - The vector of which to get the polar angle.
- * @returns The polar angle of the vector.
+ * @returns The inclination `acos(z / magnitude(v))`, in radians, in `[0, pi]`. `NaN` for the zero vector.
  * @since 1.0.0
  */
 export const getTheta: (v: Vector3) => number = internal.getTheta
 
 export const setTheta: {
   /**
-   * Sets the polar angle (theta) of a `Vector3`.
+   * Sets the polar angle (theta) of a `Vector3`, preserving its magnitude
+   * and azimuth (phi).
+   *
+   * The zero vector stays zero, since it has magnitude `0` at every angle.
    *
    * @param v - The vector of which to set the polar angle.
-   * @param theta - The new polar angle.
+   * @param theta - The new inclination from the positive z-axis, in radians.
    * @returns A new `Vector3` instance with the updated polar angle.
    * @since 1.0.0
    */
@@ -567,20 +617,24 @@ export const mapTheta: {
 } = internal.mapTheta
 
 /**
- * Gets the azimuthal angle (phi) of a `Vector3`.
+ * Gets the azimuthal angle (phi) of a `Vector3`, measured from the
+ * positive x-axis within the xy-plane.
  *
  * @param v - The vector of which to get the azimuthal angle.
- * @returns The azimuthal angle of the vector.
+ * @returns The azimuth `atan2(y, x)`, in radians, in `[-pi, pi]`. `0` for any vector on the z-axis.
  * @since 1.0.0
  */
 export const getPhi: (v: Vector3) => number = internal.getPhi
 
 export const setPhi: {
   /**
-   * Sets the azimuthal angle (phi) of a `Vector3`.
+   * Sets the azimuthal angle (phi) of a `Vector3`, preserving its
+   * magnitude and inclination (theta).
+   *
+   * The zero vector stays zero, since it has magnitude `0` at every angle.
    *
    * @param v - The vector of which to set the azimuthal angle.
-   * @param phi - The new azimuthal angle.
+   * @param phi - The new azimuth from the positive x-axis in the xy-plane, in radians.
    * @returns A new `Vector3` instance with the updated azimuthal angle.
    * @since 1.0.0
    */

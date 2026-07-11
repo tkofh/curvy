@@ -14,7 +14,7 @@ export const RationalBezier2dTypeId = Symbol('curvy/splines/rationalBezier2d')
 export type RationalBezier2dTypeId = typeof RationalBezier2dTypeId
 
 // Internally each control point is stored in homogeneous form as
-// `(w·x, w·y, w)`. De Casteljau in 3D plus a final projection (`x/w`, `y/w`)
+// `(w*x, w*y, w)`. De Casteljau in 3D plus a final projection (`x/w`, `y/w`)
 // is exactly the rational evaluator, so the homogeneous form keeps the hot
 // paths identical to the non-rational case modulo one division at the end.
 
@@ -110,7 +110,7 @@ export const toPath = (r: RationalBezier2d): RationalCubicPath2d.RationalCubicPa
 
     // Project each homogeneous CP back to its weighted form for the
     // `fromBezierPoints` constructor. The constructor re-lifts internally;
-    // the round-trip is exact to within 1–2 ULPs for finite positive weights
+    // the round-trip is exact to within 1-2 ULPs for finite positive weights
     // and the conversion is a one-shot, not a hot path.
     curves.push(
       RationalCubicCurve2d.fromBezierPoints(

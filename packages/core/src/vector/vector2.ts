@@ -6,7 +6,11 @@ import * as internal from './vector2.internal.ts'
 /**
  * A 2D vector.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly. No operation mutates a vector. Operations
+ * return new instances, except that identity operations (like scaling by
+ * exactly `1`) may return the input itself.
+ *
+ * Construct via `make`, `fromTuple`, or `fromPolar`.
  *
  * @since 1.0.0
  */
@@ -19,24 +23,37 @@ export interface Vector2 extends Pipeable, TwoDimensional<number> {
  *
  * Used by rational primitives (e.g. `RationalBezier2d`) where each control
  * point carries an influence weight. The interface is structurally distinct
- * from `Vector2` — its brand prevents accidental use with vector arithmetic
+ * from `Vector2`. Its brand prevents accidental use with vector arithmetic
  * (`add`, `subtract`, `scale`, etc.) where weighted operations are not
  * well-defined.
  *
- * Construct via {@link makeWeighted} (from raw components) or
- * {@link withWeight} (from an existing `Vector2`).
+ * Construct via `makeWeighted` (from raw components) or `withWeight` (from
+ * an existing `Vector2`).
  *
  * @since 2.0.0
  */
 export interface Weighted extends Pipeable {
   readonly [WeightedVector2TypeId]: WeightedVector2TypeId
+  /**
+   * The point's x coordinate.
+   */
   readonly x: number
+  /**
+   * The point's y coordinate.
+   */
   readonly y: number
+  /**
+   * The point's influence weight in rational evaluation. Always finite
+   * and positive. The constructors throw for other values.
+   */
   readonly weight: number
 }
 
 /**
  * Checks if a value is a `Vector2`.
+ *
+ * True only for values built by this module's constructors, which carry
+ * the brand. A structural `{ x, y }` object is not a `Vector2`.
  *
  * @param v - The value to check.
  * @returns `true` if the value is a `Vector2`, `false` otherwise.
@@ -47,6 +64,10 @@ export const isVector2: (v: unknown) => v is Vector2 = internal.isVector2
 /**
  * Checks if a value is a `Vector2.Weighted`.
  *
+ * True only for values built by `makeWeighted` or `withWeight`, which
+ * carry the brand. A structural `{ x, y, weight }` object is not a
+ * `Vector2.Weighted`.
+ *
  * @param v - The value to check.
  * @returns `true` if the value is a `Vector2.Weighted`, `false` otherwise.
  * @since 2.0.0
@@ -54,13 +75,13 @@ export const isVector2: (v: unknown) => v is Vector2 = internal.isVector2
 export const isWeighted: (v: unknown) => v is Weighted = internal.isWeighted
 
 /**
- * Creates a new `Vector2.Weighted` from raw components. The weight must be
- * finite and positive.
+ * Creates a new `Vector2.Weighted` from raw components.
  *
  * @param x - The x component.
  * @param y - The y component.
- * @param weight - The positive scalar weight.
+ * @param weight - The scalar weight. Must be finite and positive.
  * @returns A new `Vector2.Weighted` instance.
+ * @throws `Error` when `weight` is not finite and positive.
  * @since 2.0.0
  */
 export const makeWeighted: (x: number, y: number, weight: number) => Weighted =
@@ -69,20 +90,22 @@ export const makeWeighted: (x: number, y: number, weight: number) => Weighted =
 export const withWeight: {
   /**
    * Promotes a `Vector2` to a `Vector2.Weighted` by attaching the given
-   * positive scalar weight.
+   * weight.
    *
    * @param v - The point to weight.
-   * @param weight - The positive scalar weight.
+   * @param weight - The scalar weight. Must be finite and positive.
    * @returns A new `Vector2.Weighted` instance.
+   * @throws `Error` when `weight` is not finite and positive.
    * @since 2.0.0
    */
   (v: Vector2, weight: number): Weighted
   /**
    * Promotes a `Vector2` to a `Vector2.Weighted` by attaching the given
-   * positive scalar weight.
+   * weight.
    *
-   * @param weight - The positive scalar weight.
+   * @param weight - The scalar weight. Must be finite and positive.
    * @returns A function that takes a `Vector2` and returns a weighted point.
+   * @throws `Error` when `weight` is not finite and positive.
    * @since 2.0.0
    */
   (weight: number): (v: Vector2) => Weighted
@@ -99,15 +122,14 @@ export const unweighted: (w: Weighted) => Vector2 = internal.unweighted
 
 export const liftWithWeight: {
   /**
-   * Lifts a `Vector2 → Vector2` function to operate on `Vector2.Weighted` by
+   * Lifts a `Vector2 -> Vector2` function to operate on `Vector2.Weighted` by
    * applying the function to the position and preserving the input's weight.
    *
-   * Designed as the bridge between point-only utilities (e.g. {@link setR},
-   * `Vector2.add(offset)`) and weighted-spline mappers like
-   * `RationalBezier2d.mapPoints`. The default of "preserve weight" is the safe
-   * choice for the common case — translating, rotating, or scaling positions
-   * on a curve like a conic arc shouldn't silently collapse the curve's
-   * geometry-defining weights to a uniform value.
+   * Designed as the bridge between point-only utilities (e.g. `setR`,
+   * `add(offset)`) and weighted-spline mappers like
+   * `RationalBezier2d.mapPoints`. Preserving weight is the safe default:
+   * translating, rotating, or scaling positions on a conic arc must not
+   * silently collapse the weights that define the curve's geometry.
    *
    * @param fn - The position-only function to lift.
    * @returns A function from `Weighted` to `Weighted` that preserves weight.
@@ -115,7 +137,7 @@ export const liftWithWeight: {
    */
   (fn: (v: Vector2) => Vector2): (w: Weighted) => Weighted
   /**
-   * Lifts a `Vector2 → Vector2` function to operate on `Vector2.Weighted`,
+   * Lifts a `Vector2 -> Vector2` function to operate on `Vector2.Weighted`,
    * replacing the input's weight with the given value.
    *
    * @param fn - The position-only function to lift.
@@ -125,7 +147,7 @@ export const liftWithWeight: {
    */
   (fn: (v: Vector2) => Vector2, weight: number): (w: Weighted) => Weighted
   /**
-   * Applies a `Vector2 → Vector2` function to the position of a
+   * Applies a `Vector2 -> Vector2` function to the position of a
    * `Vector2.Weighted`, preserving the input's weight.
    *
    * @param w - The weighted point to transform.
@@ -135,7 +157,7 @@ export const liftWithWeight: {
    */
   (w: Weighted, fn: (v: Vector2) => Vector2): Weighted
   /**
-   * Applies a `Vector2 → Vector2` function to the position of a
+   * Applies a `Vector2 -> Vector2` function to the position of a
    * `Vector2.Weighted`, replacing the weight with the given value.
    *
    * @param w - The weighted point to transform.
@@ -149,8 +171,12 @@ export const liftWithWeight: {
 
 export const weightedEquals: {
   /**
-   * Checks if two `Vector2.Weighted` instances are approximately equal —
-   * point components and weight all within the default absolute tolerance.
+   * Checks if two `Vector2.Weighted` instances are approximately equal,
+   * point components and weight alike.
+   *
+   * The `x`, `y`, and `weight` fields are each compared with `coincident`
+   * from `curvy/number`, an absolute-plus-relative tolerance band. See
+   * `PRECISION.md` for the mechanics.
    *
    * @param a - The first weighted point.
    * @param b - The second weighted point.
@@ -170,31 +196,33 @@ export const weightedEquals: {
 
 export const equals: {
   /**
-   * Checks if two `Vector2` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Vector2` instances are approximately equal.
+   *
+   * Each pair of components is compared with `coincident` from
+   * `curvy/number`, an absolute-plus-relative tolerance band. See
+   * `PRECISION.md` for the mechanics.
    *
    * @param a - The first vector.
    * @param b - The second vector.
    * @returns `true` when each pair of components is within tolerance.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (a: Vector2, b: Vector2): boolean
   /**
-   * Checks if two `Vector2` instances are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}).
+   * Checks if two `Vector2` instances are approximately equal.
    *
    * @param b - The second vector.
    * @returns A function that takes the first vector and returns the comparison result.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (b: Vector2): (a: Vector2) => boolean
 } = internal.equals
 
 export const make: {
   /**
-   * Creates a new `Vector2` instance.
+   * Creates a new `Vector2` with both components set to `xy`.
    *
-   * @param xy - The x and y components of the vector.
+   * @param xy - The value of both the x and y components.
    * @returns A new `Vector2` instance.
    * @since 1.0.0
    */
@@ -212,7 +240,7 @@ export const make: {
 
 /**
  * Creates a new `Vector2` instance from a `[x, y]` tuple. Inverse of
- * {@link components}.
+ * `components`.
  *
  * @param t - The `[x, y]` tuple.
  * @returns A new `Vector2` instance.
@@ -221,13 +249,25 @@ export const make: {
 export const fromTuple: (t: readonly [number, number]) => Vector2 = internal.fromTuple
 
 /**
- * Transposes a 2-tuple of items into one or more `Vector2`s, one per channel
- * extracted by the projection function. See {@link Vector4.transpose} for the
- * full operation description; this is the 2-component analog.
+ * Builds one `Vector2` per projected channel from a pair of items. Vector
+ * `k` is `(project(first)[k], project(second)[k])`.
+ *
+ * The projection runs once per item and must return the same number of
+ * channels for both. The result holds one vector per channel, in channel
+ * order.
  *
  * @param inputs - Exactly two items of any type.
- * @param project - A function returning a fixed-arity tuple of numbers — one per output channel.
+ * @param project - Extracts a fixed-arity tuple of numbers, one per output channel.
  * @returns A tuple of `Vector2`s with the same arity as the projection's return tuple.
+ * @example
+ * ```ts
+ * const [xs, ys] = Vector2.transpose(
+ *   [Vector2.make(1, 2), Vector2.make(3, 4)],
+ *   Vector2.components,
+ * )
+ * // xs = (1, 3), the two x components
+ * // ys = (2, 4), the two y components
+ * ```
  * @since 2.0.0
  */
 export const transpose: <T, const Channels extends ReadonlyArray<number>>(
@@ -238,9 +278,14 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
 /**
  * Creates a new `Vector2` instance from polar coordinates.
  *
- * @param r - The radius.
+ * The arithmetic is exact IEEE 754, so representation error shows up
+ * unrounded. `fromPolar(2, Math.PI / 2)` has `x` near `1.2e-16`, not `0`,
+ * because `Math.PI / 2` is not exactly pi/2. See `PRECISION.md` for the
+ * model.
+ *
+ * @param r - The radius. A negative radius reflects through the origin.
  * @param theta - The angle, in radians.
- * @returns A new `Vector2` instance.
+ * @returns The vector `(r * cos(theta), r * sin(theta))`.
  * @since 1.0.0
  */
 export const fromPolar: (r: number, theta: number) => Vector2 = internal.fromPolar
@@ -249,13 +294,15 @@ export const fromPolar: (r: number, theta: number) => Vector2 = internal.fromPol
  * Calculates the magnitude of a `Vector2`.
  *
  * @param vector - The vector to calculate the magnitude of.
- * @returns The magnitude of the vector.
+ * @returns The Euclidean length `sqrt(x^2 + y^2)`.
  * @since 1.0.0
  */
 export const magnitude: (vector: Vector2) => number = internal.magnitude
 
 /**
- * Normalizes a `Vector2`.
+ * Normalizes a `Vector2` to magnitude `1`, preserving its direction.
+ *
+ * The zero vector has no direction, so `normalize(zero)` is `(NaN, NaN)`.
  *
  * @param vector - The vector to normalize.
  * @returns A new `Vector2` instance with the same direction and a magnitude of 1.
@@ -285,16 +332,22 @@ export const dot: {
 
 export const cross: {
   /**
-   * Calculates the cross product of two `Vector2` instances.
+   * Calculates the 2D cross product `a.x * b.y - a.y * b.x`.
+   *
+   * A scalar, not a vector. The value is the z component of the 3D cross
+   * product of the two vectors lifted into the plane. The sign gives orientation
+   * (positive when rotating from `a` toward `b` is counterclockwise in a
+   * y-up frame). The magnitude is the area of the parallelogram the two
+   * vectors span.
    *
    * @param a - The first vector.
    * @param b - The second vector.
-   * @returns The cross product of the two vectors.
+   * @returns The scalar cross product `a.x * b.y - a.y * b.x`.
    * @since 1.0.0
    */
   (a: Vector2, b: Vector2): number
   /**
-   * Calculates the cross product of two `Vector2` instances.
+   * Calculates the scalar 2D cross product of two `Vector2` instances.
    *
    * @param b - The second vector.
    * @returns A function that takes the first vector and returns the cross product.
@@ -304,39 +357,43 @@ export const cross: {
 } = internal.cross
 
 /**
- * Returns the components of a `Vector2` as an array.
+ * Returns the components of a `Vector2` as an `[x, y]` tuple.
  *
- * @param r - The radius.
- * @param theta - The angle, in radians.
- * @returns A new `Vector2` instance.
+ * Inverse of `fromTuple`.
+ *
+ * @param v - The vector to read.
+ * @returns The `[x, y]` tuple.
  * @since 1.0.0
  */
 export const components: (v: Vector2) => [number, number] = internal.components
 
 /**
- * Applies the softmax function to a `Vector2`.
+ * Applies the softmax function to a `Vector2`: `(e^x, e^y)` scaled to sum
+ * to `1`.
  *
- * @param v - The vector to apply the softmax function to.
- * @returns A new `Vector2` instance with the softmax applied.
+ * Both result components are positive and sum to `1`. Equal inputs
+ * produce `(0.5, 0.5)`. Large components do not overflow:
+ * `softmax(make(1000, 0))` is `(1, 0)`.
+ *
+ * @param v - The vector to transform.
+ * @returns A new `Vector2` with positive components summing to `1`.
  * @since 1.0.0
  */
 export const softmax: (v: Vector2) => Vector2 = internal.softmax
 
 /**
- * Creates a zero vector.
+ * The zero vector `(0, 0)`, the additive identity.
  *
- * @returns A new `Vector2` instance with both components set to 0.
  * @since 1.0.0
  */
 export const zero = make(0)
 
 /**
- * Creates a unit vector.
+ * The all-ones vector `(1, 1)`, the `hadamard` identity.
  *
- * @returns A new `Vector2` instance with both components set to 1.
  * @since 1.0.0
  */
-export const unit = make(1)
+export const one = make(1)
 
 export const add: {
   /**
@@ -360,19 +417,19 @@ export const add: {
 
 export const subtract: {
   /**
-   * Subtracts one `Vector2` instance from another.
+   * Subtracts `b` from `a`, component-wise.
    *
-   * @param a - The first vector.
-   * @param b - The second vector.
-   * @returns A new `Vector2` instance representing the difference of the two vectors.
+   * @param a - The vector subtracted from.
+   * @param b - The vector to subtract.
+   * @returns A new `Vector2` representing `a - b`.
    * @since 1.0.0
    */
   (a: Vector2, b: Vector2): Vector2
   /**
-   * Subtracts one `Vector2` instance from another.
+   * Subtracts the given vector from another, component-wise.
    *
-   * @param b - The second vector.
-   * @returns A function that takes the first vector and returns the difference.
+   * @param b - The vector to subtract.
+   * @returns A function that takes a vector and subtracts `b` from it.
    * @since 1.0.0
    */
   (b: Vector2): (a: Vector2) => Vector2
@@ -380,19 +437,21 @@ export const subtract: {
 
 export const hadamard: {
   /**
-   * Performs the Hadamard product of two `Vector2` instances.
+   * Computes the Hadamard (component-wise) product
+   * `(a.x * b.x, a.y * b.y)`.
    *
    * @param a - The first vector.
    * @param b - The second vector.
-   * @returns A new `Vector2` instance representing the Hadamard product of the two vectors.
+   * @returns A new `Vector2` holding the component-wise product.
    * @since 1.0.0
    */
   (a: Vector2, b: Vector2): Vector2
   /**
-   * Performs the Hadamard product of two `Vector2` instances.
+   * Computes the Hadamard (component-wise) product of two `Vector2`
+   * instances.
    *
    * @param b - The second vector.
-   * @returns A function that takes the first vector and returns the Hadamard product.
+   * @returns A function that takes the first vector and returns the component-wise product.
    * @since 1.0.0
    */
   (b: Vector2): (a: Vector2) => Vector2
@@ -412,7 +471,7 @@ export const scale: {
    *
    * @param v - The vector to scale.
    * @param s - The scalar value to scale by.
-   * @returns A new `Vector2` instance representing the scaled vector.
+   * @returns A new `Vector2` scaled by `s`, or the input instance itself when `s` is exactly `1`.
    * @since 1.0.0
    */
   (v: Vector2, s: number): Vector2
@@ -517,17 +576,20 @@ export const mapY: {
 } = internal.mapY
 
 /**
- * Gets the radius of a `Vector2`.
+ * Gets the polar radius of a `Vector2`.
  *
  * @param v - The vector to get the radius from.
- * @returns The radius of the vector.
+ * @returns The radius (the vector's magnitude).
  * @since 1.0.0
  */
 export const getR: (v: Vector2) => number = magnitude
 
 export const setR: {
   /**
-   * Sets the radius of a `Vector2`.
+   * Sets the polar radius of a `Vector2`, preserving its angle.
+   *
+   * A negative `r` reflects through the origin. The zero vector has no
+   * angle to preserve, so `setR(zero, r)` is `(NaN, NaN)`.
    *
    * @param v - The vector to set the radius of.
    * @param r - The new radius.
@@ -536,7 +598,7 @@ export const setR: {
    */
   (v: Vector2, r: number): Vector2
   /**
-   * Sets the radius of a `Vector2`.
+   * Sets the polar radius of a `Vector2`, preserving its angle.
    *
    * @param r - The new radius.
    * @returns A function that takes a vector and returns the updated vector.
@@ -549,6 +611,9 @@ export const mapR: {
   /**
    * Returns a new `Vector2` with the radius replaced by `f(magnitude(v))`,
    * preserving the angle.
+   *
+   * For the zero vector the result is `(NaN, NaN)`, since it has no angle to
+   * preserve.
    *
    * @param v - The vector to update.
    * @param f - The function to apply to the radius.
@@ -568,17 +633,19 @@ export const mapR: {
 } = internal.mapR
 
 /**
- * Gets the angle of a `Vector2`.
+ * Gets the polar angle of a `Vector2`, measured from the positive x-axis.
  *
  * @param v - The vector to get the angle from.
- * @returns The angle of the vector in radians.
+ * @returns The angle in radians, in `[-pi, pi]` (`Math.atan2` semantics).
  * @since 1.0.0
  */
 export const getTheta: (v: Vector2) => number = internal.getTheta
 
 export const setTheta: {
   /**
-   * Sets the angle of a `Vector2`.
+   * Sets the polar angle of a `Vector2`, preserving its magnitude.
+   *
+   * The zero vector stays zero, since it has magnitude `0` at every angle.
    *
    * @param v - The vector to set the angle of.
    * @param theta - The new angle, in radians.

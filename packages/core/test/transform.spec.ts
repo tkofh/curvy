@@ -61,12 +61,12 @@ describe('Affine2d', () => {
     )
   })
 
-  test('rotate by 2π is identity', () => {
+  test('rotate by 2pi is identity', () => {
     const p = Vector2.make(3, 4)
     expect(Affine2d.apply(Affine2d.rotate(Math.PI * 2), p)).toBeCloseToValue(p)
   })
 
-  test('rotate by π/2', () => {
+  test('rotate by pi/2', () => {
     expect(Affine2d.apply(Affine2d.rotate(Math.PI / 2), Vector2.make(1, 0))).toBeCloseToValue(
       Vector2.make(0, 1),
     )
@@ -126,7 +126,7 @@ describe('Affine2d', () => {
   })
 
   test('andThen sequences left-to-right', () => {
-    // translate first, then rotate by π/2: (1, 0) → (2, 0) → (0, 2)
+    // translate first, then rotate by pi/2: (1, 0) -> (2, 0) -> (0, 2)
     const t = Affine2d.identity.pipe(
       Affine2d.andThen(Affine2d.translate(1, 0)),
       Affine2d.andThen(Affine2d.rotate(Math.PI / 2)),
@@ -145,7 +145,7 @@ describe('Affine2d', () => {
     expect(Affine2d.apply(inv, Affine2d.apply(a, p))).toBeCloseToValue(p)
   })
 
-  test('linear returns the upper-left 2×2 block', () => {
+  test('linear returns the upper-left 2x2 block', () => {
     const a = Affine2d.translate(10, 20)
     const lin = Affine2d.linear(a)
     expect(lin).toMatchObject({ m00: 1, m01: 0, m10: 0, m11: 1 })
@@ -196,7 +196,7 @@ describe('Affine2d', () => {
   })
 })
 
-// ── splines ─────────────────────────────────────────────────────────────────
+// -- splines -----------------------------------------------------------------
 
 describe('spline transforms', () => {
   const t = Affine2d.identity.pipe(
@@ -334,7 +334,7 @@ describe('spline transforms', () => {
   })
 })
 
-// ── curves & paths ──────────────────────────────────────────────────────────
+// -- curves & paths ----------------------------------------------------------
 
 describe('curve transforms', () => {
   const t = Affine2d.identity.pipe(

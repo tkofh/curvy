@@ -12,14 +12,15 @@ import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './trai
 export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 
 /**
- * A cubic polynomial.
+ * A cubic polynomial `c0 + c1*x + c2*x^2 + c3*x^3`, stored by coefficient.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly. No operation mutates a polynomial. Construct
+ * via `make`, `fromVector`, or `fromPoints`.
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
  * brands as the polynomial is refined via `isMonotonic` / `asMonotonic` and
  * friends. A cubic is monotonic only over an interval that avoids both of its
- * extrema (or globally, when c2 = c3 = 0 and c1 ≠ 0).
+ * extrema (or globally, when c2 = c3 = 0 and c1 != 0).
  *
  * @since 1.0.0
  */
@@ -48,6 +49,9 @@ export interface CubicPolynomial<out Traits = unknown> extends Pipeable {
 /**
  * Checks if a value is a `CubicPolynomial`.
  *
+ * True only for values built by this module's constructors, which carry
+ * the brand. A structural `{ c0, c1, c2, c3 }` object does not match.
+ *
  * @param value - The value to check.
  * @returns `true` if the value is a `CubicPolynomial`, `false` otherwise.
  * @since 1.0.0
@@ -57,41 +61,45 @@ export const isCubicPolynomial: (value: unknown) => value is CubicPolynomial =
 
 export const equals: {
   /**
-   * Checks if two `CubicPolynomial` instances are approximately equal within
-   * the default absolute tolerance ({@link EPSILON}).
+   * Checks if two `CubicPolynomial` instances are approximately equal. Each
+   * coefficient pair is compared with `coincident` from `curvy/number`, an
+   * absolute-plus-relative band (see `PRECISION.md`).
    *
    * @param a - The first polynomial.
    * @param b - The second polynomial.
    * @returns `true` when each pair of coefficients is within tolerance.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (a: CubicPolynomial, b: CubicPolynomial): boolean
   /**
-   * Checks if two `CubicPolynomial` instances are approximately equal within
-   * the default absolute tolerance ({@link EPSILON}).
+   * Checks if two `CubicPolynomial` instances are approximately equal.
    *
    * @param b - The second polynomial.
    * @returns A function that takes the first polynomial and returns the comparison result.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (b: CubicPolynomial): (a: CubicPolynomial) => boolean
 } = internal.equals
 
 /**
- * Creates a new `CubicPolynomial` instance.
+ * Creates a new `CubicPolynomial` instance. All four coefficients are
+ * required.
  *
  * @param c0 - The coefficient of the x^0 term.
  * @param c1 - The coefficient of the x^1 term.
  * @param c2 - The coefficient of the x^2 term.
  * @param c3 - The coefficient of the x^3 term.
+ * @returns A new `CubicPolynomial` instance.
+ * @since 1.0.0
  */
 export const make: (c0: number, c1: number, c2: number, c3: number) => CubicPolynomial =
   internal.make
 
 /**
- * Creates a new `CubicPolynomial` instance from a vector.
+ * Creates a new `CubicPolynomial` instance from a vector. `v.x` becomes
+ * `c0`, `v.y` becomes `c1`, `v.z` becomes `c2`, and `v.w` becomes `c3`.
  *
- * @param v - The vector to convert.
+ * @param v - The coefficients as a vector, in monomial order.
  * @returns A new `CubicPolynomial` instance.
  * @since 1.0.0
  */
@@ -114,60 +122,67 @@ export const fromPoints: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) =>
 
 export const solve: {
   /**
-   * Solves a cubic polynomial for a given value of x.
+   * Evaluates the polynomial at `x`.
    *
-   * @param p - The cubic polynomial to solve.
-   * @param x - The value of x to solve for.
-   * @returns The result of the polynomial evaluation at x.
+   * @param p - The cubic polynomial to evaluate.
+   * @param x - The input value.
+   * @returns The value `c0 + c1 * x + c2 * x^2 + c3 * x^3`.
    * @since 1.0.0
    */
   (p: CubicPolynomial, x: number): number
   /**
-   * Solves a cubic polynomial for a given value of x.
+   * Evaluates the polynomial at `x`.
    *
-   * @param x - The value of x to solve for.
-   * @returns A function that takes a cubic polynomial and returns the result of the polynomial evaluation at x.
+   * @param x - The input value.
+   * @returns A function that takes a `CubicPolynomial` and returns its value at `x`.
    * @since 1.0.0
    */
   (x: number): (p: CubicPolynomial) => number
 } = internal.solve
 
 /**
- * Converts a cubic polynomial to a solver function.
+ * Converts a cubic polynomial to an evaluation function, the
+ * single-argument form of `solve`, shaped for `pipe` and `map`.
  *
  * @param p - The cubic polynomial to convert.
- * @returns A function that takes a value of x and returns the result of the polynomial evaluation at x.
+ * @returns A function that takes `x` and returns the polynomial's value there.
  * @since 1.0.0
  */
 export const toSolver: (p: CubicPolynomial) => (x: number) => number = internal.toSolver
 
 export const solveInverse: {
   /**
-   * Solves a monotonic cubic polynomial for a given value of y. Because the
-   * polynomial is strictly monotonic, the inverse has at most one solution.
+   * Finds the inputs at which a monotonic cubic polynomial attains `y`.
+   * Because the polynomial is strictly monotonic, the inverse has at most
+   * one solution.
    *
-   * @param p - The monotonic cubic polynomial.
-   * @param y - The value of y to solve for.
-   * @returns Zero or one solutions.
+   * @param p - The monotonic cubic polynomial to invert.
+   * @param y - The output value to find inputs for.
+   * @returns Zero or one solving inputs.
    * @since 2.0.0
    */
   <T extends Monotonic>(p: CubicPolynomial<T>, y: number): Solution.AtMostOne<number>
   /**
-   * Solves a cubic polynomial for a given value of y.
+   * Finds the inputs at which the polynomial attains `y`, in ascending
+   * order.
    *
-   * @param p - The cubic polynomial to solve.
-   * @param y - The value of y to solve for.
-   * @returns The roots of the polynomial equation p(x) = y.
+   * The root count is tolerance-aware. The solver's branch dispatch reads
+   * the depressed discriminant against a band scaled by its own terms, so
+   * near-multiple roots collapse instead of splitting on rounding noise.
+   * See `PRECISION.md` for the mechanics.
+   *
+   * @param p - The cubic polynomial to invert.
+   * @param y - The output value to find inputs for.
+   * @returns Up to three solving inputs, ascending. A true cubic (`c3 != 0`) always yields at least one. None can arise only for degenerate, lower-degree coefficients.
    * @since 1.0.0
    */
   <T>(p: CubicPolynomial<T>, y: number): Solution.AtMostThree<number>
   /**
-   * Solves a cubic polynomial for a given value of y.
+   * Finds the inputs at which a cubic polynomial attains `y`.
    *
-   * @param y - The value of y to solve for.
-   * @returns A function that takes a cubic polynomial and returns the roots
-   *   of the polynomial equation p(x) = y. Tightens to `Solution.AtMostOne<number>` for
-   *   monotonic inputs.
+   * @param y - The output value to find inputs for.
+   * @returns A function that takes a cubic polynomial and returns the
+   *   solutions. Tightens to `Solution.AtMostOne<number>` for monotonic inputs.
    * @since 1.0.0
    */
   (y: number): {
@@ -177,10 +192,11 @@ export const solveInverse: {
 } = internal.solveInverse as never
 
 /**
- * Converts a cubic polynomial to an inverse solver function.
+ * Converts a cubic polynomial to an inverse-solving function, the
+ * single-argument form of `solveInverse`, shaped for `pipe` and `map`.
  *
  * @param p - The cubic polynomial to convert.
- * @returns A function that takes a value of y and returns the roots of the polynomial equation p(x) = y.
+ * @returns A function that takes `y` and returns the inverse solutions.
  * @since 1.0.0
  */
 export const toInverseSolver: (p: CubicPolynomial) => (y: number) => Solution.AtMostThree<number> =
@@ -207,23 +223,25 @@ export const derivative: (p: CubicPolynomial) => QuadraticPolynomial = internal.
 
 export const subdivide: {
   /**
-   * Subdivides a cubic polynomial at parameter `t ∈ (0, 1)` into two new
+   * Subdivides a cubic polynomial at parameter `t in (0, 1)` into two new
    * cubic polynomials. The first polynomial's evaluation on `[0, 1]` matches
-   * the original's on `[0, t]`; the second matches the original's on
+   * the original's on `[0, t]`. The second matches the original's on
    * `[t, 1]`. Equivalent to de Casteljau subdivision in Bernstein form,
    * performed directly in monomial form.
    *
    * @param p - The cubic polynomial to subdivide.
-   * @param t - The split parameter; must be in the open interval `(0, 1)`.
+   * @param t - The split parameter. Must be in the open interval `(0, 1)`.
    * @returns A `[left, right]` tuple of cubic polynomials.
+   * @throws `Error` when `t` is outside the open interval `(0, 1)`.
    * @since 2.0.0
    */
   (p: CubicPolynomial, t: number): [CubicPolynomial, CubicPolynomial]
   /**
-   * Subdivides a cubic polynomial at parameter `t ∈ (0, 1)`.
+   * Subdivides a cubic polynomial at parameter `t in (0, 1)`.
    *
-   * @param t - The split parameter; must be in the open interval `(0, 1)`.
+   * @param t - The split parameter. Must be in the open interval `(0, 1)`.
    * @returns A function that takes a polynomial and returns its `[left, right]` halves.
+   * @throws `Error` when `t` is outside the open interval `(0, 1)`.
    * @since 2.0.0
    */
   (t: number): (p: CubicPolynomial) => [CubicPolynomial, CubicPolynomial]
@@ -232,25 +250,29 @@ export const subdivide: {
 /**
  * Calculates the roots of a cubic polynomial.
  *
+ * Root count follows the tolerance-aware branch dispatch of
+ * `solveInverse`.
+ *
  * @param p - The cubic polynomial to find the roots of.
- * @returns The roots of the cubic polynomial.
+ * @returns Up to three inputs where `p(x) = 0`, ascending.
  * @since 1.0.0
  */
 export const roots: (p: CubicPolynomial) => Solution.AtMostThree<number> = internal.roots
 
 /**
- * Calculates the extrema of a cubic polynomial.
+ * Calculates the stationary points of a cubic polynomial.
  *
  * @param p - The cubic polynomial to find the extrema of.
- * @returns The extrema of the cubic polynomial.
+ * @returns Zero, one, or two inputs where the derivative is zero (`x` locations, not points), ascending.
  * @since 1.0.0
  */
 export const extrema: (p: CubicPolynomial) => Solution.AtMostTwo<number> = internal.extrema
 
 export const monotonicity: {
   /**
-   * Calculates the monotonicity of a cubic polynomial. Throws when the
-   * interval has zero width — the question is undefined at a single point.
+   * Calculates the monotonicity of a cubic polynomial over an interval,
+   * or globally when `i` is omitted. Throws when the interval has zero
+   * width, since the question is undefined at a single point.
    *
    * @param p - The cubic polynomial to analyze.
    * @param i - The interval to restrict the analysis to.
@@ -271,13 +293,13 @@ export const monotonicity: {
 } = internal.monotonicity
 
 /**
- * Type-narrowing predicate: refines a `CubicPolynomial<T>` to
- * `CubicPolynomial<T & Monotonic>` when the polynomial is strictly monotonic
- * over the given interval (or globally, when no interval is given).
+ * Checks if the polynomial is strictly monotonic over the given interval
+ * (or globally, when no interval is given) — the condition under which
+ * `solveInverse` has at most one solution.
  *
  * @param p - The cubic polynomial to check.
  * @param i - Optional interval over which to check monotonicity.
- * @returns `true` when monotonicity is `Increasing` or `Decreasing`.
+ * @returns `true` when monotonicity is `Increasing` or `Decreasing`, narrowing to `CubicPolynomial<T & Monotonic>`.
  * @since 2.0.0
  */
 export const isMonotonic: {
@@ -286,8 +308,12 @@ export const isMonotonic: {
 } = internal.isMonotonic
 
 /**
- * Type-narrowing predicate: refines to `CubicPolynomial<T & Increasing>`.
+ * Checks if the polynomial is strictly increasing over the given interval
+ * (or globally, when no interval is given).
  *
+ * @param p - The cubic polynomial to check.
+ * @param i - Optional interval over which to check.
+ * @returns `true` when monotonicity is `Increasing`, narrowing to `CubicPolynomial<T & Increasing>`.
  * @since 2.0.0
  */
 export const isIncreasing: {
@@ -296,8 +322,12 @@ export const isIncreasing: {
 } = internal.isIncreasing
 
 /**
- * Type-narrowing predicate: refines to `CubicPolynomial<T & Decreasing>`.
+ * Checks if the polynomial is strictly decreasing over the given interval
+ * (or globally, when no interval is given).
  *
+ * @param p - The cubic polynomial to check.
+ * @param i - Optional interval over which to check.
+ * @returns `true` when monotonicity is `Decreasing`, narrowing to `CubicPolynomial<T & Decreasing>`.
  * @since 2.0.0
  */
 export const isDecreasing: {
@@ -322,6 +352,10 @@ export const asMonotonic: <T>(
 /**
  * Asserts that the cubic polynomial is increasing, throwing on failure.
  *
+ * @param p - The cubic polynomial to assert against.
+ * @param i - Optional interval over which to check.
+ * @returns The same polynomial, typed with the `Increasing` brand.
+ * @throws `Error` when the polynomial is not increasing over the given (or global) interval.
  * @since 2.0.0
  */
 export const asIncreasing: <T>(
@@ -332,6 +366,10 @@ export const asIncreasing: <T>(
 /**
  * Asserts that the cubic polynomial is decreasing, throwing on failure.
  *
+ * @param p - The cubic polynomial to assert against.
+ * @param i - Optional interval over which to check.
+ * @returns The same polynomial, typed with the `Decreasing` brand.
+ * @throws `Error` when the polynomial is not decreasing over the given (or global) interval.
  * @since 2.0.0
  */
 export const asDecreasing: <T>(
@@ -341,48 +379,64 @@ export const asDecreasing: <T>(
 
 export const domain: {
   /**
-   * Calculates the domain of a cubic polynomial.
+   * Computes the interval of inputs over which `p` attains the values in
+   * `range`. This is the hull of every solution of `p(x) = range.start` and
+   * `p(x) = range.end`.
    *
-   * @param p - The cubic polynomial to analyze.
-   * @param range - The range to restrict the analysis to.
-   * @returns The domain of the cubic polynomial in the specified range.
+   * The result is the exact preimage when `p` is monotonic over it. When
+   * it is not, the true preimage may be disjoint, and the hull encloses
+   * it — possibly including inputs whose values fall outside `range`.
+   * When neither boundary value is attained the result is
+   * `Solution.none`. When only one is, the hull covers that side's
+   * solutions.
+   *
+   * `range` is the forward query.
+   *
+   * @param p - The cubic polynomial to invert.
+   * @param range - The output values to find inputs for.
+   * @returns The enclosing preimage interval, or `Solution.none` when neither boundary value is attained.
    * @since 1.0.0
    */
-  (p: CubicPolynomial, range: Interval): Interval
+  (p: CubicPolynomial, range: Interval): Solution.AtMostOne<Interval>
   /**
-   * Calculates the domain of a cubic polynomial.
+   * Computes the interval of inputs over which a cubic polynomial attains
+   * the values in `range`.
    *
-   * @param range - The range to restrict the analysis to.
-   * @returns A function that takes a cubic polynomial and returns the domain of the cubic polynomial in the specified range.
+   * @param range - The output values to find inputs for.
+   * @returns A function that takes a cubic polynomial and returns the enclosing preimage interval.
    * @since 1.0.0
    */
-  (range: Interval): (p: CubicPolynomial) => Interval
+  (range: Interval): (p: CubicPolynomial) => Solution.AtMostOne<Interval>
 } = internal.domain
 
 export const range: {
   /**
-   * Calculates the range of a cubic polynomial.
+   * Computes the exact values `p` attains over `domain`. The result is
+   * the closed interval covering both endpoint values and any stationary
+   * values inside `domain`.
    *
-   * @param p - The cubic polynomial to analyze.
-   * @param domain - The domain to restrict the analysis to.
-   * @returns The range of the cubic polynomial in the specified domain.
+   * `domain` is the inverse query.
+   *
+   * @param p - The cubic polynomial to evaluate.
+   * @param domain - The inputs to evaluate over.
+   * @returns The closed interval of attained values.
    * @since 1.0.0
    */
   (p: CubicPolynomial, domain: Interval): Closed
   /**
-   * Calculates the range of a cubic polynomial.
+   * Computes the values a cubic polynomial attains over `domain`.
    *
-   * @param domain - The domain to restrict the analysis to.
-   * @returns A function that takes a cubic polynomial and returns the range of the cubic polynomial in the specified domain.
+   * @param domain - The inputs to evaluate over.
+   * @returns A function that takes a cubic polynomial and returns its range over `domain`.
    * @since 1.0.0
    */
   (domain: Interval): (p: CubicPolynomial) => Closed
 } = internal.range
 
 /**
- * Calculates the range of a cubic polynomial over the unit interval `[0, 1]`.
- * Equivalent to `range(p, Interval.unit)` — accounts for up to two interior
- * extrema in `[0, 1]`.
+ * Calculates the range of a cubic polynomial over the unit interval
+ * `[0, 1]`. Equivalent to `range(p, Interval.unit)`, accounting for up to
+ * two interior stationary points in `[0, 1]`.
  *
  * @param p - The cubic polynomial.
  * @returns The closed range of the polynomial over `[0, 1]`.
@@ -392,19 +446,25 @@ export const unitRange: (p: CubicPolynomial) => Closed = internal.unitRange
 
 export const length: {
   /**
-   * Calculates the length of a cubic polynomial.
+   * Calculates the arc length of the graph `y = p(x)` over `domain`.
    *
-   * @param p - The cubic polynomial to analyze.
-   * @param domain - The domain to restrict the analysis to.
-   * @returns The length of the cubic polynomial in the specified domain.
+   * A cubic's arc length has no closed form. The value is computed by
+   * numerical quadrature and is accurate to the quadrature, not exact.
+   * `0` for a zero-size domain. Degenerate (lower-degree) coefficients
+   * fall through to the exact lower-degree formulas.
+   *
+   * @param p - The cubic polynomial to measure.
+   * @param domain - The inputs to measure over.
+   * @returns The arc length of the graph over `domain`.
    * @since 1.0.0
    */
   (p: CubicPolynomial, domain: Interval): number
   /**
-   * Calculates the length of a cubic polynomial.
+   * Calculates the arc length of a cubic polynomial's graph over
+   * `domain`.
    *
-   * @param domain - The domain to restrict the analysis to.
-   * @returns A function that takes a cubic polynomial and returns the length of the cubic polynomial in the specified domain.
+   * @param domain - The inputs to measure over.
+   * @returns A function that takes a cubic polynomial and returns the arc length.
    * @since 1.0.0
    */
   (domain: Interval): (p: CubicPolynomial) => number
@@ -412,19 +472,23 @@ export const length: {
 
 export const curvature: {
   /**
-   * Calculates the curvature of a cubic polynomial.
+   * Calculates the unsigned curvature of the graph `y = p(x)` at `x`:
+   * `|p''(x)| / (1 + p'(x)^2)^(3/2)`.
    *
-   * @param p - The cubic polynomial to analyze.
-   * @param x - The value of x to calculate the curvature at.
-   * @returns The curvature of the cubic polynomial at the specified value of x.
+   * Unsigned. Bending direction is not reported.
+   *
+   * @param p - The cubic polynomial to measure.
+   * @param x - The input at which to measure curvature.
+   * @returns The unsigned curvature at `x`.
    * @since 1.0.0
    */
   (p: CubicPolynomial, x: number): number
   /**
-   * Calculates the curvature of a cubic polynomial.
+   * Calculates the unsigned curvature of a cubic polynomial's graph at
+   * `x`.
    *
-   * @param x - The value of x to calculate the curvature at.
-   * @returns A function that takes a cubic polynomial and returns the curvature of the cubic polynomial at the specified value of x.
+   * @param x - The input at which to measure curvature.
+   * @returns A function that takes a cubic polynomial and returns the curvature at `x`.
    * @since 1.0.0
    */
   (x: number): (p: CubicPolynomial) => number

@@ -5,9 +5,10 @@ import type { Interval2dTypeId } from './interval2d.internal.ts'
 import * as internal from './interval2d.internal.ts'
 
 /**
- * An axis-aligned 2D interval — the Cartesian product of two 1D intervals.
+ * An axis-aligned 2D interval, the Cartesian product of two 1D intervals.
  * Used as a bounding box for curves and paths, and as a region for
- * containment tests.
+ * containment tests. Construct via `make`, `fromCorners`, or
+ * `fromVectors`.
  *
  * The two type parameters carry the per-axis interval subtype so that a value
  * built from closed intervals stays `Interval2d<Closed, Closed>` and a value
@@ -27,10 +28,12 @@ export interface Interval2d<
 }
 
 /**
- * The structural minimum: any value with `x` and `y` fields shaped like
- * {@link Bounds}. Operations that don't read endpoint inclusivity (e.g.
- * {@link size}) accept `Bounds2d` so the signature itself documents what the
- * operation depends on. Mirrors the {@link Bounds}/{@link Interval} split in 1D.
+ * A pair of per-axis `Bounds` carrying no endpoint-inclusivity
+ * information, the structural counterpart of `Interval2d`. Any value with
+ * `Bounds`-shaped `x` and `y` fields satisfies it.
+ *
+ * Operations that never read inclusivity (`size`, `minDistance`,
+ * `maxDistance`) accept `Bounds2d`.
  *
  * @since 2.0.0
  */
@@ -42,6 +45,10 @@ export interface Bounds2d {
 /**
  * Checks if a value is an `Interval2d`.
  *
+ * True only for values built by this module's constructors, which carry
+ * the brand. A structural pair of bounds is `Bounds2d`, not an
+ * `Interval2d`.
+ *
  * @param v - The value to check.
  * @returns `true` if the value is an `Interval2d`, `false` otherwise.
  * @since 2.0.0
@@ -49,7 +56,7 @@ export interface Bounds2d {
 export const isInterval2d: (v: unknown) => v is Interval2d = internal.isInterval2d
 
 /**
- * Creates a new `Interval2d` from two intervals — one for the x axis, one
+ * Creates a new `Interval2d` from two intervals: one for the x axis, one
  * for the y axis. Preserves both interval subtypes at the type level.
  *
  * @param x - The x-axis interval.
@@ -61,8 +68,8 @@ export const make: <X extends Interval, Y extends Interval>(x: X, y: Y) => Inter
   internal.make
 
 /**
- * Creates a closed `Interval2d` from two corner points. The corners can be in
- * any order — each axis is built from the min and max of the coordinate.
+ * Creates a closed `Interval2d` from two corner points. The corners can be
+ * in any order. Each axis is built from the min and max of the coordinate.
  *
  * @param p0 - The first corner.
  * @param p1 - The second corner.
@@ -78,7 +85,7 @@ export const fromCorners: (p0: Vector2, p1: Vector2) => Interval2d<Closed, Close
  *
  * @param points - One or more points to enclose.
  * @returns A new `Interval2d<Closed, Closed>` enclosing all input points.
- * @throws When called with zero points.
+ * @throws `Error` when called with no points.
  * @since 2.0.0
  */
 export const fromVectors: (...points: ReadonlyArray<Vector2>) => Interval2d<Closed, Closed> =
@@ -96,6 +103,8 @@ export const containsVector: {
    */
   (box: Interval2d, v: Vector2): boolean
   /**
+   * Checks if a vector lies within a 2D interval.
+   *
    * @param v - The vector to test.
    * @returns A function that takes a 2D interval and returns the containment result.
    * @since 2.0.0
@@ -105,9 +114,10 @@ export const containsVector: {
 
 export const containsInterval2d: {
   /**
-   * Checks if `inner` is a subset of `outer`. The check is per-axis interval
-   * containment — for each axis, every point of the inner interval must also
-   * be in the outer interval, respecting endpoint inclusivity on both sides.
+   * Checks if `inner` is a subset of `outer`. The check is per-axis
+   * interval containment. For each axis, every point of the inner interval
+   * must also be in the outer interval, respecting endpoint inclusivity on
+   * both sides. Endpoint comparisons are exact — no tolerance is applied.
    *
    * @param outer - The enclosing 2D interval.
    * @param inner - The candidate inner 2D interval.
@@ -116,6 +126,8 @@ export const containsInterval2d: {
    */
   (outer: Interval2d, inner: Interval2d): boolean
   /**
+   * Checks if the given 2D interval is a subset of another.
+   *
    * @param inner - The candidate inner 2D interval.
    * @returns A function that takes the outer 2D interval and returns the containment result.
    * @since 2.0.0
@@ -125,10 +137,10 @@ export const containsInterval2d: {
 
 /**
  * Returns the size as a vector `(width, height)`. Accepts the broader
- * {@link Bounds2d} type because size does not depend on endpoint inclusivity.
+ * `Bounds2d` type because size does not depend on endpoint inclusivity.
  *
  * @param box - The 2D interval (or bounds-shaped value) to measure.
- * @returns The size as a `Vector2`.
+ * @returns The per-axis absolute sizes as a `Vector2`. Never negative, even for reversed structural bounds.
  * @since 2.0.0
  */
 export const size: (box: Bounds2d) => Vector2 = internal.size
@@ -143,8 +155,8 @@ export const union: {
    * that point).
    *
    * When both inputs share the same kind on an axis, the result collapses
-   * back to that kind. Otherwise the axis falls back to the open
-   * {@link Interval} type since the runtime kind depends on the values.
+   * back to that kind. Otherwise the axis falls back to the broader
+   * `Interval` type since the runtime kind depends on the values.
    *
    * @param a - The first 2D interval.
    * @param b - The second 2D interval.
@@ -159,6 +171,8 @@ export const union: {
     AY extends BY ? (BY extends AY ? AY : Interval) : Interval
   >
   /**
+   * Returns the smallest 2D interval enclosing both inputs.
+   *
    * @param b - The second 2D interval.
    * @returns A function that takes the first 2D interval and returns the union.
    * @since 2.0.0
@@ -175,9 +189,12 @@ export const union: {
 
 export const equals: {
   /**
-   * Checks if two `Interval2d` values are approximately equal within the
-   * default absolute tolerance ({@link EPSILON}). Both the numeric endpoints
-   * AND the per-axis kinds must match.
+   * Checks if two `Interval2d` values are approximately equal. Both the
+   * numeric endpoints and the per-axis kinds must match.
+   *
+   * Endpoints are compared per axis with `coincident` from `curvy/number`,
+   * an absolute-plus-relative tolerance band. See `PRECISION.md` for the
+   * mechanics.
    *
    * @param a - The first 2D interval.
    * @param b - The second 2D interval.
@@ -186,6 +203,8 @@ export const equals: {
    */
   (a: Interval2d, b: Interval2d): boolean
   /**
+   * Checks if two `Interval2d` values are approximately equal.
+   *
    * @param b - The second 2D interval.
    * @returns A function that takes the first 2D interval and returns the comparison result.
    * @since 2.0.0
@@ -195,11 +214,14 @@ export const equals: {
 
 export const minDistance: {
   /**
-   * Euclidean distance between the two closest points of two axis-aligned 2D
-   * intervals. Returns `0` when the boxes overlap (including edge or corner
-   * touching). Accepts the broader {@link Bounds2d} type — endpoint
-   * inclusivity is not consulted, so a "touching" pair of open intervals still
-   * returns `0` because the closest *points* coincide geometrically.
+   * Computes the Euclidean distance between the two closest points of two
+   * axis-aligned 2D intervals. Returns `0` when the boxes overlap
+   * (including edge or corner touching).
+   *
+   * Accepts the broader `Bounds2d` type. Endpoint inclusivity is not
+   * consulted, so a "touching" pair of open intervals still returns `0`
+   * because the closest *points* coincide geometrically. Reversed
+   * structural bounds are normalized with min/max.
    *
    * @param a - The first 2D interval.
    * @param b - The second 2D interval.
@@ -208,6 +230,9 @@ export const minDistance: {
    */
   (a: Bounds2d, b: Bounds2d): number
   /**
+   * Computes the Euclidean distance between the two closest points of two
+   * axis-aligned 2D intervals.
+   *
    * @param b - The second 2D interval.
    * @returns A function that takes the first 2D interval and returns the minimum distance.
    * @since 2.0.0
@@ -217,20 +242,29 @@ export const minDistance: {
 
 export const maxDistance: {
   /**
-   * Euclidean distance between the two farthest points of two axis-aligned 2D
-   * intervals. Equals the diagonal of the union AABB enclosing both inputs.
-   * Accepts the broader {@link Bounds2d} type — endpoint inclusivity is not
-   * consulted.
+   * Computes the diagonal of the union AABB enclosing both inputs, which is an
+   * upper bound on the Euclidean distance between any point of `a` and any
+   * point of `b`.
+   *
+   * The bound is the exact farthest-pair distance unless, on some axis,
+   * one interval's endpoints lie strictly inside the other's. There the
+   * union span exceeds the farthest-pair separation. Accepts the broader
+   * `Bounds2d` type. Endpoint inclusivity is not consulted, and reversed
+   * structural bounds are normalized with min/max.
    *
    * @param a - The first 2D interval.
    * @param b - The second 2D interval.
-   * @returns The maximum Euclidean distance between any point of `a` and any point of `b`.
+   * @returns The union-AABB diagonal, at least the distance between any point of `a` and any point of `b`.
    * @since 2.0.0
    */
   (a: Bounds2d, b: Bounds2d): number
   /**
+   * Computes the diagonal of the union AABB enclosing both inputs, which is an
+   * upper bound on the distance between any point of `a` and any point of
+   * `b`.
+   *
    * @param b - The second 2D interval.
-   * @returns A function that takes the first 2D interval and returns the maximum distance.
+   * @returns A function that takes the first 2D interval and returns the union-AABB diagonal.
    * @since 2.0.0
    */
   (b: Bounds2d): (a: Bounds2d) => number

@@ -15,9 +15,9 @@ const decimated = bezier.pipe(
 )
 ```
 
-`RationalBezier2d.mapPoints` takes a `Vector2.Weighted → Vector2.Weighted` mapper, matching its storage form. Two related conveniences:
+`RationalBezier2d.mapPoints` takes a `Vector2.Weighted -> Vector2.Weighted` mapper, matching its storage form. Two related conveniences:
 
-- `Vector2.liftWithWeight(fn)` bridges a position-only `Vector2 → Vector2` function up to a weighted mapper, **preserving the input weight by default** — translating, rotating, or scaling a conic arc no longer risks silently collapsing its geometry-defining weights to 1.
+- `Vector2.liftWithWeight(fn)` bridges a position-only `Vector2 -> Vector2` function up to a weighted mapper, **preserving the input weight by default** — translating, rotating, or scaling a conic arc no longer risks silently collapsing its geometry-defining weights to 1.
 - `Vector2.liftWithWeight(fn, weight)` overrides the weight when you want to reset it explicitly.
 - Dual: `Vector2.liftWithWeight(weighted, fn)` and `Vector2.liftWithWeight(weighted, fn, weight)` apply directly to a single point.
 

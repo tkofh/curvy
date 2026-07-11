@@ -81,9 +81,9 @@ describe('linear', () => {
     )
   })
   test('unitRange evaluates over [0, 1]', () => {
-    // p(t) = 3 + 2t  →  [3, 5] on [0, 1]
+    // p(t) = 3 + 2t  ->  [3, 5] on [0, 1]
     expect(linear.unitRange(linear.make(3, 2))).toBeCloseToValue(interval.make(3, 5))
-    // p(t) = 5 - 2t  →  same range, fromMinMax normalizes order
+    // p(t) = 5 - 2t  ->  same range, fromMinMax normalizes order
     expect(linear.unitRange(linear.make(5, -2))).toBeCloseToValue(interval.make(3, 5))
   })
   test('length', () => {
@@ -107,7 +107,7 @@ describe('quadratic', () => {
     })
   })
   test('fromPoints interpolates a known parabola', () => {
-    // y = x² + 2x + 3, sampled at x = -1, 0, 1.
+    // y = x^2 + 2x + 3, sampled at x = -1, 0, 1.
     const p = quadratic.fromPoints(vector2.make(-1, 2), vector2.make(0, 3), vector2.make(1, 6))
     expect(p.c0).toBeCloseTo(3, 10)
     expect(p.c1).toBeCloseTo(2, 10)
@@ -141,7 +141,7 @@ describe('quadratic', () => {
     expect([...quadratic.solveInverse(quadratic.make(0, 1, 2), -0.5)]).toEqual([])
   })
   test('solveInverse finds a tangency the query undershoots by an ulp', () => {
-    // (t - 1)² touches zero at t = 1; querying y = -Number.EPSILON makes the
+    // (t - 1)^2 touches zero at t = 1; querying y = -Number.EPSILON makes the
     // raw discriminant -8.9e-16 — noise relative to its ~4-magnitude terms.
     // The relative clamp reports the double root instead of no solution.
     expect([...quadratic.solveInverse(quadratic.make(1, -2, 1), -Number.EPSILON)]).toEqual([
@@ -149,8 +149,8 @@ describe('quadratic', () => {
     ])
   })
   test('solveInverse resists cancellation when roots differ wildly in magnitude', () => {
-    // t² + 1e8·t + 1: the naive quadratic formula computes the small root as
-    // (-1e8 + √(1e16 - 4))/2, cancelling to ~-7.45e-9 — off by 25%. The
+    // t^2 + 1e8*t + 1: the naive quadratic formula computes the small root as
+    // (-1e8 + sqrt(1e16 - 4))/2, cancelling to ~-7.45e-9 — off by 25%. The
     // stable form recovers it through the root product instead.
     const roots = [...quadratic.solveInverse(quadratic.make(1, 1e8, 1), 0)]
     expect(roots[0]).toBeCloseTo(-1e8, 5)
@@ -226,7 +226,7 @@ describe('quadratic', () => {
     expect(quadratic.range(p, interval.make(-2, -1))).toBeCloseToValue(interval.make(1, 4))
   })
   test('unitRange captures an interior extremum on [0, 1]', () => {
-    // p(t) = -4t² + 4t  →  peak at t = 0.5, p(0.5) = 1; endpoints both 0.
+    // p(t) = -4t^2 + 4t  ->  peak at t = 0.5, p(0.5) = 1; endpoints both 0.
     const p = quadratic.make(0, 4, -4)
     expect(quadratic.unitRange(p)).toBeCloseToValue(interval.make(0, 1))
   })
@@ -254,7 +254,7 @@ describe('cubic', () => {
     expect(cubic.fromVector(vector4.make(0, 1, 2, 3))).toBeCloseToValue(cubic.make(0, 1, 2, 3))
   })
   test('fromPoints interpolates a known cubic', () => {
-    // y = x³ - 2x² + x + 1, sampled at x = -1, 0, 1, 2.
+    // y = x^3 - 2x^2 + x + 1, sampled at x = -1, 0, 1, 2.
     const p = cubic.fromPoints(
       vector2.make(-1, -3),
       vector2.make(0, 1),
@@ -372,30 +372,29 @@ describe('cubic', () => {
   test('domain', () => {
     const p = cubic.make(0, -1.5, 0, 0.5)
 
-    expect(cubic.domain(p, interval.make(-3, -2))).toBeCloseToValue(
-      interval.make(-2.355301397608, -2.195823345446),
-      1e-9,
-    )
-    expect(cubic.domain(p, interval.make(-2, -1))).toBeCloseToValue(
-      interval.make(-2.195823345446, 1),
-      1e-9,
-    )
-    expect(cubic.domain(p, interval.make(-1, 0))).toBeCloseToValue(
-      interval.make(-2, 1.732050807569),
-      1e-9,
-    )
-    expect(cubic.domain(p, interval.make(0, 1))).toBeCloseToValue(
-      interval.make(-1.732050807569, 2),
-      1e-9,
-    )
-    expect(cubic.domain(p, interval.make(1, 2))).toBeCloseToValue(
-      interval.make(-1, 2.195823345446),
-      1e-9,
-    )
-    expect(cubic.domain(p, interval.make(2, 3))).toBeCloseToValue(
-      interval.make(2.195823345446, 2.355301397608),
-      1e-9,
-    )
+    const at = (start: number, end: number) => {
+      const sol = cubic.domain(p, interval.make(start, end))
+      expect(sol).toHaveLength(1)
+      return [...sol][0]
+    }
+
+    expect(at(-3, -2)).toBeCloseToValue(interval.make(-2.355301397608, -2.195823345446), 1e-9)
+    expect(at(-2, -1)).toBeCloseToValue(interval.make(-2.195823345446, 1), 1e-9)
+    expect(at(-1, 0)).toBeCloseToValue(interval.make(-2, 1.732050807569), 1e-9)
+    expect(at(0, 1)).toBeCloseToValue(interval.make(-1.732050807569, 2), 1e-9)
+    expect(at(1, 2)).toBeCloseToValue(interval.make(-1, 2.195823345446), 1e-9)
+    expect(at(2, 3)).toBeCloseToValue(interval.make(2.195823345446, 2.355301397608), 1e-9)
+  })
+  test('domain of a degree-collapsed cubic returns none for an unattained range', () => {
+    // c3 = 0 collapses p to x^2, whose image is [0, Infinity) — a range strictly
+    // below is attained at neither endpoint.
+    const parabola = cubic.make(0, 0, 1, 0)
+
+    expect(cubic.domain(parabola, interval.make(-4, -1))).toHaveLength(0)
+
+    const hull = cubic.domain(parabola, interval.make(1, 4))
+    expect(hull).toHaveLength(1)
+    expect([...hull][0]).toBeCloseToValue(interval.make(-2, 2))
   })
   test('range', () => {
     const p = cubic.make(0, -1.5, 0, 0.5)
@@ -404,7 +403,7 @@ describe('cubic', () => {
     expect(cubic.range(p, interval.make(-1, 0))).toBeCloseToValue(interval.make(0, 1))
   })
   test('unitRange agrees with range over [0, 1]', () => {
-    // p(t) = t³ - 1.5t² + 1 — has an extremum inside [0, 1]
+    // p(t) = t^3 - 1.5t^2 + 1 — has an extremum inside [0, 1]
     const p = cubic.make(1, 0, -1.5, 1)
     expect(cubic.unitRange(p)).toBeCloseToValue(cubic.range(p, interval.unit))
   })
@@ -416,7 +415,7 @@ describe('cubic', () => {
     expect(cubic.curvature(cubic.make(0, 0, 0, 1), 0)).toBe(0)
   })
   test('subdivide: continuity at split point', () => {
-    // p(t) = 1 + 2t + 3t² + 4t³ — arbitrary non-degenerate cubic.
+    // p(t) = 1 + 2t + 3t^2 + 4t^3 — arbitrary non-degenerate cubic.
     const p = cubic.make(1, 2, 3, 4)
     for (const splitAt of [0.25, 0.5, 0.75]) {
       const [left, right] = cubic.subdivide(p, splitAt)
@@ -428,7 +427,7 @@ describe('cubic', () => {
       expect(cubic.solve(right, 1)).toBeCloseTo(cubic.solve(p, 1), 10)
     }
   })
-  test('subdivide: left half reparameterizes p(splitAt · u)', () => {
+  test('subdivide: left half reparameterizes p(splitAt * u)', () => {
     const p = cubic.make(1, 2, 3, 4)
     const splitAt = 0.3
     const [left] = cubic.subdivide(p, splitAt)
@@ -436,7 +435,7 @@ describe('cubic', () => {
       expect(cubic.solve(left, u)).toBeCloseTo(cubic.solve(p, splitAt * u), 10)
     }
   })
-  test('subdivide: right half reparameterizes p(splitAt + (1-splitAt) · u)', () => {
+  test('subdivide: right half reparameterizes p(splitAt + (1-splitAt) * u)', () => {
     const p = cubic.make(1, 2, 3, 4)
     const splitAt = 0.3
     const [, right] = cubic.subdivide(p, splitAt)

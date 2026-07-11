@@ -34,7 +34,7 @@ tolerance band scaled to the data does not. The
 [background links](#background) at the end cover the mechanics.
 
 The two rules together make every classification in the library **invariant
-under uniform scaling of the input data**. Scale all control points by 10⁶
+under uniform scaling of the input data**. Scale all control points by 1e6
 and every `is*`/`as*` verdict, root count, and continuity check is unchanged,
 because every tolerance is proportional to the magnitudes that enter the
 question.
@@ -60,13 +60,13 @@ absolute comparison for any caller who knows their domain's scale.
 the same point?":
 
 ```
-|a − b| ≤ absolute + relative · max(|a|, |b|)
+|a - b| <= absolute + relative * max(|a|, |b|)
 ```
 
 with `absolute = EPSILON` and `relative = RELATIVE_TOLERANCE` (`1e-12`) by
 default. The rationale for both values lives with their definitions in
 `curvy/number`. The relative term covers rounding noise, which grows with
-magnitude: an ulp at 10⁹ is ~1.2e-7, far outside any fixed absolute band.
+magnitude: an ulp at 1e9 is ~1.2e-7, far outside any fixed absolute band.
 The absolute term covers the neighborhood of zero, where relative comparison
 degenerates: no nonzero value is relatively close to `0`, and real data is
 full of exact zeros. This hybrid band is at least as wide as the absolute
@@ -97,14 +97,14 @@ that formed it. Determinants, discriminants, and derivatives that a
 construction drives to zero all fit this shape, and each such decision names
 its own scale:
 
-| decision                                | scale                                                  |
-| --------------------------------------- | ------------------------------------------------------ |
-| polynomial monotonicity (sign coverage) | largest derivative value attained on the interval      |
-| matrix invertibility                    | Hadamard bound: the product of the row norms           |
-| quadratic root count                    | `max(c1², ǀ4·c2·cǀ)`: the two discriminant terms       |
-| cubic solver branch dispatch            | `max(ǀ4p³ǀ, 27q²)`: the depressed discriminant's terms |
-| rational easing constraint singularity  | the Cramer-system term magnitudes                      |
-| arc-length Newton convergence           | the segment length                                     |
+| decision                                | scale                                                      |
+| --------------------------------------- | ---------------------------------------------------------- |
+| polynomial monotonicity (sign coverage) | largest derivative value attained on the interval          |
+| matrix invertibility                    | Hadamard bound: the product of the row norms               |
+| quadratic root count                    | `max(c1^2, \|4*c2*c\|)`: the two discriminant terms        |
+| cubic solver branch dispatch            | `max(\|4p^3\|, 27q^2)`: the depressed discriminant's terms |
+| rational easing constraint singularity  | the Cramer-system term magnitudes                          |
+| arc-length Newton convergence           | the segment length                                         |
 
 **Monotonicity** classification reads the derivative's _values_ and ignores
 its root locations (`Monotonicity.fromDerivativeRange(min, max, tolerance?)`).
@@ -132,7 +132,7 @@ Trait brands are claims at working precision, in the backward-error sense:
 _the object has the property, or is within rounding distance of one that
 does._ `Monotonic` (and `Increasing`/`Decreasing`, per axis or combined)
 certifies that the derivative takes no opposite-sign values exceeding
-`RELATIVE_TOLERANCE × max|derivative|` on the interval: exactly the
+`RELATIVE_TOLERANCE * max|derivative|` on the interval: exactly the
 condition under which `solveInverse` is unique to matching precision, the
 purpose the brand exists to serve. A brand is not a claim of
 exact-arithmetic truth, and cannot be: near the boundary, exact-arithmetic
@@ -165,9 +165,9 @@ and consumed under another would be unsound.
 
 **Known limit: extreme translation.** The hybrid band scales with coordinate
 _magnitude_, which conflates distance-from-origin with feature size. Geometry
-of unit feature size living at coordinates ~10¹² gets a band of ~1, the same
+of unit feature size living at coordinates ~1e12 gets a band of ~1, the same
 order as its features. The band reflects what doubles can store: at that
-offset, they cannot hold unit-scale geometry to better than ~10⁻⁴. If you
+offset, they cannot hold unit-scale geometry to better than ~1e-4. If you
 need fine features far from the origin, translate toward the origin first:
 doubles near zero have precision to spare.
 
@@ -186,8 +186,8 @@ comparisons and multiplies next to solvers running `sqrt`/`cbrt`/`acos` and
 
 This document leans on three ideas from floating-point arithmetic:
 
-- **ulp**: the gap between two adjacent representable doubles, 2⁻⁵²
-  (≈ 2.2e-16) relative to the value, so it grows with magnitude.
+- **ulp**: the gap between two adjacent representable doubles, 2^-52
+  (~2.2e-16) relative to the value, so it grows with magnitude.
 - **cancellation**: subtracting nearly equal values erases the correct
   leading digits and leaves only prior rounding residue.
 - **backward error**: describing a computed result by the smallest input

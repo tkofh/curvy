@@ -59,7 +59,7 @@ describe('bezier', () => {
     const rightPath = Bezier2d.toPath(right)
 
     // The two halves together should trace the same curve as the original.
-    // Sample left's u ∈ [0, 1] which maps to original u ∈ [0, 0.3].
+    // Sample left's u in [0, 1] which maps to original u in [0, 0.3].
     for (let i = 0; i <= 10; i++) {
       const t = i / 10
       expect(CubicPath2d.solve(leftPath, t)).toBeCloseToValue(CubicPath2d.solve(fullPath, 0.3 * t))
@@ -91,7 +91,7 @@ describe('bezier', () => {
     ).pipe(Bezier2d.append(Vector2.make(1, 2), Vector2.make(2, 1), Vector2.make(2, 2)))
 
     const [left, right] = Bezier2d.subdivide(bezier, 0.5)
-    // 2 segments, split at u=0.5 = exact boundary → left = first segment, right = second
+    // 2 segments, split at u=0.5 = exact boundary -> left = first segment, right = second
     expect([...left]).toHaveLength(4)
     expect([...right]).toHaveLength(4)
   })
@@ -231,7 +231,7 @@ describe('cardinal', () => {
 
   test('toPath: tension = 0 yields smoothstep-shaped segments', () => {
     const path = fourPoints.pipe(Cardinal2d.withTension(0), Cardinal2d.toPath)
-    // Zero-tangent endpoints → each segment is `3t² - 2t³`. Three segments
+    // Zero-tangent endpoints -> each segment is `3t^2 - 2t^3`. Three segments
     // span u in equal thirds; segment midpoints (u = 1/6, 1/2, 5/6) sit at
     // the midpoint of their endpoints (smoothstep value 0.5).
     expect(CubicPath2d.solve(path, 1 / 6)).toBeCloseToValue(Vector2.make(0, 0.5))
@@ -372,7 +372,7 @@ describe('rational bezier', () => {
   test('exactly traces a unit-circle quarter arc', () => {
     // Rational cubic Bézier that exactly represents the unit-circle quarter
     // arc from (1, 0) to (0, 1). Derived by degree-elevating the canonical
-    // rational quadratic (P=(1,0),(1,1),(0,1), w=(1, √2/2, 1)) — the cubic
+    // rational quadratic (P=(1,0),(1,1),(0,1), w=(1, sqrt(2)/2, 1)) — the cubic
     // form is the smallest representation that fits this library's API.
     const sqrt2 = Math.SQRT2
     const w = (1 + sqrt2) / 3
@@ -385,14 +385,14 @@ describe('rational bezier', () => {
       Vector2.makeWeighted(0, 1, 1),
     ).pipe(RationalBezier2d.toPath)
 
-    // Every sampled point lies on the unit circle (radius² = 1).
+    // Every sampled point lies on the unit circle (radius^2 = 1).
     for (let i = 0; i <= 20; i++) {
       const t = i / 20
       const p = RationalCubicPath2d.solve(arc, t)
       expect(p.x * p.x + p.y * p.y).toBeCloseTo(1, 10)
     }
 
-    // t = 0.5 is the angular midpoint by symmetry — must land at 45°.
+    // t = 0.5 is the angular midpoint by symmetry — must land at 45 degrees.
     expect(RationalCubicPath2d.solve(arc, 0.5)).toBeCloseToValue(Vector2.make(sqrt2 / 2, sqrt2 / 2))
   })
 

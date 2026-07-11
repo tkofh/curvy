@@ -10,7 +10,7 @@ import { CubicPolynomial } from 'curvy/polynomial'
 
 const m: Monotonicity = CubicPolynomial.monotonicity(p, Interval.unit)
 if (m === Monotonicity.Increasing) {
-  /* … */
+  /* ... */
 }
 if (Monotonicity.isStrict(m)) {
   /* m is Increasing | Decreasing */
@@ -19,12 +19,12 @@ if (Monotonicity.isStrict(m)) {
 
 The new encoding:
 
-| value | name         | derivative on the interval   |
-| ----- | ------------ | ---------------------------- |
-| `0`   | `Constant`   | ≡ 0                          |
-| `1`   | `Increasing` | ≥ 0, with at least one `> 0` |
-| `2`   | `Decreasing` | ≤ 0, with at least one `< 0` |
-| `3`   | `None`       | crosses zero                 |
+| value | name         | derivative on the interval    |
+| ----- | ------------ | ----------------------------- |
+| `0`   | `Constant`   | = 0 everywhere                |
+| `1`   | `Increasing` | >= 0, with at least one `> 0` |
+| `2`   | `Decreasing` | <= 0, with at least one `< 0` |
+| `3`   | `None`       | crosses zero                  |
 
 The numeric encoding is principled, not arbitrary: bit 0 is "derivative takes positive values", bit 1 is "derivative takes negative values". So the bitwise OR of two adjacent subintervals' classifications gives the classification of their union — `Increasing | Decreasing === None` is a literal algebraic identity, not a special case. That lets subdivision-based monotonicity checks combine sub-results with a single `|`, no custom merge logic.
 

@@ -141,9 +141,9 @@
   `coincident` is deliberately not transitive — chains of pairwise-coincident values can drift beyond the band. Pairwise semantics are intentional: path continuity checks each junction locally.
 
 - dadacd7: **Curve endpoint primitives.** Each `Curve2d` module gains closed-form geometry primitives that lift the per-degree formulas previously inlined in path code onto the curve modules themselves:
-  - `startPoint(c)` and `endPoint(c)` — exact-at-`t=0` and exact-at-`t=1` evaluations. Added to `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`, and `RationalCubicCurve2d`. For the rational case the projection is `(Σxᵢ / Σwᵢ, Σyᵢ / Σwᵢ)`; for the polynomial cases it's just `c.x.c0` and a sum of coefficients.
+  - `startPoint(c)` and `endPoint(c)` — exact-at-`t=0` and exact-at-`t=1` evaluations. Added to `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`, and `RationalCubicCurve2d`. For the rational case the projection is `(sum(x_i) / sum(w_i), sum(y_i) / sum(w_i))`; for the polynomial cases it's just `c.x.c0` and a sum of coefficients.
   - `xRange(c)` and `yRange(c)` — the tight `[min, max]` of each axis over the unit interval, derived from the polynomial-level `unitRange`. Added to `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`. The rational case is intentionally deferred because a tight rational projection requires a tolerance.
-  - `toPathDataSegment(c)` — emits a single SVG path-data drawing command (`L …`, `Q …`, `C …`) for one segment, without a leading `M`. Added to `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`. Path-level `toPathData` continues to handle move-insertion based on continuity.
+  - `toPathDataSegment(c)` — emits a single SVG path-data drawing command (`L ...`, `Q ...`, `C ...`) for one segment, without a leading `M`. Added to `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`. Path-level `toPathData` continues to handle move-insertion based on continuity.
 
   These are pure additions — no existing API changed.
 
@@ -178,7 +178,7 @@
   const methods = Path2d.makeMethods(LinearPath2dTypeId, LinearCurve2d.Ops)
   export const make = methods.make as (...curves) => LinearPath2d
   export const length = methods.length as (p: LinearPath2d) => number
-  // …
+  // ...
   ```
 
   What's new:
@@ -202,8 +202,8 @@
     Vector2.makeWeighted(0.58, 1, 1),
   )
 
-  RationalCubicCurve2d.solve(ease, 0) // → (0, 0)
-  RationalCubicCurve2d.solve(ease, 1) // → (1, 1)
+  RationalCubicCurve2d.solve(ease, 0) // -> (0, 0)
+  RationalCubicCurve2d.solve(ease, 1) // -> (1, 1)
   ```
 
   The four-arg form is unchanged; the runtime dispatches on `arguments.length`.
@@ -223,9 +223,9 @@
   const ease = RationalCubicCurve2d.fromSlopesAndCurvatures(0, 2, 2, 0.18)
   ```
 
-  Curvature inputs are the signed differential-geometric curvatures `κ = y''(x) / (1 + y'(x)²)^(3/2)` — the parameterization-invariant "bend" of the easing graph. Positive κ is concave-up. Because `x(t) = t` is pinned, parametric and Cartesian second derivatives agree, so the conversion at endpoints is simply `y''(0) = κ₀ · (1 + m₀²)^(3/2)` and `y''(1) = κ₁ · (1 + m₁²)^(3/2)`.
+  Curvature inputs are the signed differential-geometric curvatures `k = y''(x) / (1 + y'(x)^2)^(3/2)` — the parameterization-invariant "bend" of the easing graph. Positive k is concave-up. Because `x(t) = t` is pinned, parametric and Cartesian second derivatives agree, so the conversion at endpoints is simply `y''(0) = k0 * (1 + m0^2)^(3/2)` and `y''(1) = k1 * (1 + m1^2)^(3/2)`.
 
-  Under the hood the denominator polynomial is now quadratic (was linear under Gregory-Delbourgo), giving the six free parameters needed to exactly match six endpoint constraints. Solving for the denominator's Bernstein control values is a closed-form 2×2 linear system — no iteration or root finding.
+  Under the hood the denominator polynomial is now quadratic (was linear under Gregory-Delbourgo), giving the six free parameters needed to exactly match six endpoint constraints. Solving for the denominator's Bernstein control values is a closed-form 2x2 linear system — no iteration or root finding.
 
   **Monotonicity is no longer enforced at construction.** The previous `makeMonotonicEasing` returned `RationalCubicCurve2d<Increasing, Increasing>` so that `solveAtX` would narrow to `Solution.AtMostOne<number>`. `fromSlopesAndCurvatures` returns the unbranded `RationalCubicCurve2d` — callers who need the brand for narrowed inverse-solve returns should follow construction with `asIncreasing` / `asDecreasing` / `asMonotonic`, which run a rigorous Bernstein sign convexity check:
 
@@ -233,7 +233,7 @@
   const ease = RationalCubicCurve2d.asIncreasing(
     RationalCubicCurve2d.fromSlopesAndCurvatures(0.5, 1.5, 1, -1),
   )
-  RationalCubicCurve2d.solveAtX(ease, 0.7) // → Solution.AtMostOne<number>
+  RationalCubicCurve2d.solveAtX(ease, 0.7) // -> Solution.AtMostOne<number>
   ```
 
   Construction throws when inputs are non-finite, when the constraint system is singular (other than the canonical linear-easing case), or when the resulting denominator vanishes on `[0, 1]`.
@@ -251,8 +251,8 @@
   )
   ```
 
-  `RationalBezier2d.mapPoints` takes a `Vector2.Weighted → Vector2.Weighted` mapper, matching its storage form. Two related conveniences:
-  - `Vector2.liftWithWeight(fn)` bridges a position-only `Vector2 → Vector2` function up to a weighted mapper, **preserving the input weight by default** — translating, rotating, or scaling a conic arc no longer risks silently collapsing its geometry-defining weights to 1.
+  `RationalBezier2d.mapPoints` takes a `Vector2.Weighted -> Vector2.Weighted` mapper, matching its storage form. Two related conveniences:
+  - `Vector2.liftWithWeight(fn)` bridges a position-only `Vector2 -> Vector2` function up to a weighted mapper, **preserving the input weight by default** — translating, rotating, or scaling a conic arc no longer risks silently collapsing its geometry-defining weights to 1.
   - `Vector2.liftWithWeight(fn, weight)` overrides the weight when you want to reset it explicitly.
   - Dual: `Vector2.liftWithWeight(weighted, fn)` and `Vector2.liftWithWeight(weighted, fn, weight)` apply directly to a single point.
 
@@ -272,13 +272,13 @@
 
 - 6571593: **The uniform B-spline characteristic matrix uses the exact `1/6`.**
 
-  One entry of `Characteristic.cubicBasisSpline`'s first row was `roundDown(1/6)` — a relic of the v1 precision model, where every value was snapped to 8 decimals on construction and the truncation compensated for it. Under the v2 exact-IEEE model it did the opposite: the c₀ row's partition-of-unity error was `6.7e-9` instead of one ulp (`1.1e-16`), shifting every basis-spline segment's constant term by up to `6.7e-9` × the third control point's magnitude. The row is now `1/6, 4/6, 1/6, 0` exactly as computed, and coincident control points reproduce their point to within an ulp.
+  One entry of `Characteristic.cubicBasisSpline`'s first row was `roundDown(1/6)` — a relic of the v1 precision model, where every value was snapped to 8 decimals on construction and the truncation compensated for it. Under the v2 exact-IEEE model it did the opposite: the c0 row's partition-of-unity error was `6.7e-9` instead of one ulp (`1.1e-16`), shifting every basis-spline segment's constant term by up to `6.7e-9` times the third control point's magnitude. The row is now `1/6, 4/6, 1/6, 0` exactly as computed, and coincident control points reproduce their point to within an ulp.
 
 - efbba37: **Cubic root finder is now Newton-refined; `Solution.clipApprox` added for tolerant solver-output clipping.**
 
-  `CubicPolynomial.solveInverse` now follows its closed-form (Cardano/trig) step with up to four Newton iterations on each root. The closed-form path can lose ~3 digits of precision when two roots cluster (the trig branch's `acos` argument approaches `±1`, where its derivative is unbounded); Newton converges quadratically away from multiple roots, so a few-ULP-off seed reaches machine epsilon in 2–3 steps. The iteration bails on a float fixed point or on a vanishing slope (true multiple-root case where Newton degrades to linear convergence and further steps don't help).
+  `CubicPolynomial.solveInverse` now follows its closed-form (Cardano/trig) step with up to four Newton iterations on each root. The closed-form path can lose ~3 digits of precision when two roots cluster (the trig branch's `acos` argument approaches `+/-1`, where its derivative is unbounded); Newton converges quadratically away from multiple roots, so a few-ULP-off seed reaches machine epsilon in 2-3 steps. The iteration bails on a float fixed point or on a vanishing slope (true multiple-root case where Newton degrades to linear convergence and further steps don't help).
 
-  This fixes a class of `solveAtX` / `solveAtY` failures on rational cubics with small denominator weights — previously, a cubic of the form `(t − 1)·W(t)` with `W` having a root near `1` would have its `t = 1` root drift far enough that the strict `[0, 1]` clip dropped it. With Newton refinement that root lands at `1 + O(ULP)` instead of, say, `1 + 0.03`.
+  This fixes a class of `solveAtX` / `solveAtY` failures on rational cubics with small denominator weights — previously, a cubic of the form `(t - 1)*W(t)` with `W` having a root near `1` would have its `t = 1` root drift far enough that the strict `[0, 1]` clip dropped it. With Newton refinement that root lands at `1 + O(ULP)` instead of, say, `1 + 0.03`.
 
   The remaining ULP-level overshoot is now handled by a second change:
 
@@ -297,26 +297,26 @@
 
 - 6571593: **Matrix singularity checks are now relative to the matrix's own scale.**
 
-  `Matrix3x3` and `Matrix4x4` `isInvertible` / `asInvertible` / `inverse` / `inverseUnsafe` (and `Affine2d`'s, which delegate) previously compared the determinant against the absolute `EPSILON`. Determinants scale with the matrix — a 3×3 scaled uniformly by `s` has its determinant scaled by `s³` — so an absolute threshold misjudges in both directions: `diag(1e-8, 1e-8, 1)` was called singular despite being perfectly conditioned (its inverse is exactly `diag(1e8, 1e8, 1)`), while a large matrix with nearly dependent rows could pass with a determinant that is pure rounding noise.
+  `Matrix3x3` and `Matrix4x4` `isInvertible` / `asInvertible` / `inverse` / `inverseUnsafe` (and `Affine2d`'s, which delegate) previously compared the determinant against the absolute `EPSILON`. Determinants scale with the matrix — a 3x3 scaled uniformly by `s` has its determinant scaled by `s^3` — so an absolute threshold misjudges in both directions: `diag(1e-8, 1e-8, 1)` was called singular despite being perfectly conditioned (its inverse is exactly `diag(1e8, 1e8, 1)`), while a large matrix with nearly dependent rows could pass with a determinant that is pure rounding noise.
 
-  The determinant is now compared against `RELATIVE_TOLERANCE` × Hadamard's bound (the product of the row norms, which the absolute determinant can never exceed). The ratio of determinant to Hadamard bound is a scale-free measure of row independence — 1 for orthogonal rows, 0 for parallel ones — so classification is invariant under uniform scaling of the matrix.
+  The determinant is now compared against `RELATIVE_TOLERANCE` times Hadamard's bound (the product of the row norms, which the absolute determinant can never exceed). The ratio of determinant to Hadamard bound is a scale-free measure of row independence — 1 for orthogonal rows, 0 for parallel ones — so classification is invariant under uniform scaling of the matrix.
 
   Behavioral changes: uniformly scaled matrices of any magnitude now correctly classify as invertible; near-singular matrices with large entries now correctly classify as singular. `Matrix2x2.solveSystem`'s division guard is unchanged — it is a construction guard against exact division by zero, not a semantic predicate.
 
 - 6e18275: **Monotonicity classification is now tolerant of rounding noise in the derivative; `Monotonicity.fromDerivativeRange` and `RELATIVE_TOLERANCE` added.**
 
-  `CubicPolynomial.monotonicity` and `QuadraticPolynomial.monotonicity` previously classified by _root location_: any derivative root strictly inside the open interval meant `None`. Root locations are ill-conditioned exactly where this matters — a root computed from rounded coefficients can land an ulp to either side of an interval boundary. Cardinal paths built with `withInterpolatedEndpoints` hit this systematically: the pinned endpoint constructs a zero end-tangent, the Hermite→monomial collection cancels `x'(1)` to `0 ± 2` ulps, and the derivative root lands at `1 ∓ ulp`. Whether `asMonotonicX` passed or threw was decided by the inputs' last bits.
+  `CubicPolynomial.monotonicity` and `QuadraticPolynomial.monotonicity` previously classified by _root location_: any derivative root strictly inside the open interval meant `None`. Root locations are ill-conditioned exactly where this matters — a root computed from rounded coefficients can land an ulp to either side of an interval boundary. Cardinal paths built with `withInterpolatedEndpoints` hit this systematically: the pinned endpoint constructs a zero end-tangent, the Hermite->monomial collection cancels `x'(1)` to `0 +/- 2` ulps, and the derivative root lands at `1 -/+ ulp`. Whether `asMonotonicX` passed or threw was decided by the inputs' last bits.
 
   Both classifiers now judge the derivative's _values_, which are well-conditioned where its roots are not. The derivative's exact range over the interval (endpoint values, plus the vertex value for the cubic's quadratic derivative when the vertex lies inside) feeds `Monotonicity.fromDerivativeRange(min, max, tolerance?)`: each range bound sets its sign-coverage bit only when it exceeds the tolerance, which defaults to the new `RELATIVE_TOLERANCE` (`1e-12`, exported from `curvy/number`) scaled by the larger bound magnitude. Classification is therefore invariant under scaling of the input data, and values indistinguishable from accumulated rounding noise can no longer decide a sign question.
 
   Behavioral changes, all in the direction of the mathematically correct answer:
   - Strictly-x-monotonic pinned-endpoint Cardinal paths (e.g. `[[0,10],[1,0.02],[2,0.02]]` via `withInterpolatedEndpoints`) no longer fail `asMonotonicX` on float-ulp parity.
-  - A derivative that touches zero at an interior double root without crossing — `t³` on `[-1, 1]` — now correctly classifies `Increasing` (previously `None`).
+  - A derivative that touches zero at an interior double root without crossing — `t^3` on `[-1, 1]` — now correctly classifies `Increasing` (previously `None`).
   - A derivative excursion past zero at ulp scale classifies by the dominant sign instead of `None`.
 
-  Genuine reversals are unaffected: a real crossing exceeds the tolerance band by many orders of magnitude (the band sits ~4,500× above per-operation IEEE rounding noise and far below any geometrically meaningful feature).
+  Genuine reversals are unaffected: a real crossing exceeds the tolerance band by many orders of magnitude (the band sits ~4,500x above per-operation IEEE rounding noise and far below any geometrically meaningful feature).
 
-  The refined trait brands (`Monotonic`, `Increasing`, `Decreasing`) accordingly carry an honest numerical contract: the derivative takes no opposite-sign values exceeding `RELATIVE_TOLERANCE × max|derivative|` on the interval, so `solveInverse` is unique to within matching precision.
+  The refined trait brands (`Monotonic`, `Increasing`, `Decreasing`) accordingly carry an honest numerical contract: the derivative takes no opposite-sign values exceeding `RELATIVE_TOLERANCE * max|derivative|` on the interval, so `solveInverse` is unique to within matching precision.
 
 - 1aad61a: **Path code now delegates segment geometry to the curve modules.** `LinearPath2d`, `QuadraticPath2d`, and `CubicPath2d` internal implementations (`toPathData`, `isContinuous`, monotonicity refiners, `solveAtX`/`solveAtY`) used to inline per-degree formulas like `c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3` to recover segment endpoints and SVG control points. They now call `startPoint`/`endPoint`/`toPathDataSegment` on the curve module instead.
 
@@ -324,9 +324,9 @@
 
 - 6571593: **Quadratic root finding is cancellation-stable; discriminant sign tests are now relative.**
 
-  `QuadraticPolynomial.solveInverse` previously used the textbook formula `(-c1 ± √disc) / (2·c2)` for both roots. When `c1² ≫ |c2·c|`, one of the two numerators subtracts nearly equal quantities and cancels catastrophically — for `t² + 1e8·t + 1` the small root came out as `-7.45e-9` instead of `-1e-8`, a 25% error. The solver now computes the larger-magnitude root with matching signs (no cancellation) and recovers the other from the root product `c/c2` (Vieta), which only multiplies and divides. Residual on that example drops from `0.25` to one ulp.
+  `QuadraticPolynomial.solveInverse` previously used the textbook formula `(-c1 +/- sqrt(disc)) / (2*c2)` for both roots. When `c1^2 >> |c2*c|`, one of the two numerators subtracts nearly equal quantities and cancels catastrophically — for `t^2 + 1e8*t + 1` the small root came out as `-7.45e-9` instead of `-1e-8`, a 25% error. The solver now computes the larger-magnitude root with matching signs (no cancellation) and recovers the other from the root product `c/c2` (Vieta), which only multiplies and divides. Residual on that example drops from `0.25` to one ulp.
 
-  Both discriminant sign tests also move from absolute to relative thresholds. The quadratic discriminant `c1² - 4·c2·c` and the depressed cubic's `-(4p³ + 27q²)` are each a cancellation between two computed terms, so their sign near zero is noise; each is now clamped to zero within `RELATIVE_TOLERANCE` × the larger term's magnitude (the cubic previously used an absolute `1e-12` clamp). Root-count dispatch is therefore invariant under scaling of the coefficients, and a tangency query that under- or overshoots the touch point by an ulp reports the double root instead of no solution — `solveInverse((t-1)², -Number.EPSILON)` now returns `t = 1`.
+  Both discriminant sign tests also move from absolute to relative thresholds. The quadratic discriminant `c1^2 - 4*c2*c` and the depressed cubic's `-(4p^3 + 27q^2)` are each a cancellation between two computed terms, so their sign near zero is noise; each is now clamped to zero within `RELATIVE_TOLERANCE` times the larger term's magnitude (the cubic previously used an absolute `1e-12` clamp). Root-count dispatch is therefore invariant under scaling of the coefficients, and a tangency query that under- or overshoots the touch point by an ulp reports the double root instead of no solution — `solveInverse((t-1)^2, -Number.EPSILON)` now returns `t = 1`.
 
 ## 2.0.0-alpha.13
 
@@ -342,7 +342,7 @@
   RationalCubicCurve2d.yMonotonicity(c)
   ```
 
-  The classification is decided via **Bernstein sign convexity** on the derivative-numerator polynomial `q(t) = X'·W − X·W'`. Since `W² > 0` wherever the curve is well-defined, the sign of `dx/dt` equals the sign of `q`. Although `q` is a difference of degree-5 products, the leading terms cancel and `q` is in fact a quartic — its 5 Bernstein coefficients on `[0, 1]` are evaluated for uniform sign, with de Casteljau subdivision to resolve mixed-sign cases. The procedure is exact except at tangential zeros, where it conservatively reports `None`. No quintic solver involved.
+  The classification is decided via **Bernstein sign convexity** on the derivative-numerator polynomial `q(t) = X'*W - X*W'`. Since `W^2 > 0` wherever the curve is well-defined, the sign of `dx/dt` equals the sign of `q`. Although `q` is a difference of degree-5 products, the leading terms cancel and `q` is in fact a quartic — its 5 Bernstein coefficients on `[0, 1]` are evaluated for uniform sign, with de Casteljau subdivision to resolve mixed-sign cases. The procedure is exact except at tangential zeros, where it conservatively reports `None`. No quintic solver involved.
 
   **Trait refiners and asserters, both combined and per-axis.** All twelve forms attach the `Monotonic` / `Increasing` / `Decreasing` brand from `curvy/polynomial`:
 
@@ -358,7 +358,7 @@
   RationalCubicCurve2d.isIncreasingX(c)
   RationalCubicCurve2d.isDecreasingX(c)
   RationalCubicCurve2d.asMonotonicX(c)
-  // (and the corresponding `…Y` variants)
+  // (and the corresponding `...Y` variants)
   ```
 
   Per-axis matters because `solveAtX`'s `XT extends Monotonic` overload (returning `Solution.AtMostOne<number>`) only needs x monotonicity — not y. The combined refiners compose internally from `isXxx(c) && isYyy(c)`, with TypeScript's `&&` narrowing accumulating both brands.
@@ -388,7 +388,7 @@
 
   const m: Monotonicity = CubicPolynomial.monotonicity(p, Interval.unit)
   if (m === Monotonicity.Increasing) {
-    /* … */
+    /* ... */
   }
   if (Monotonicity.isStrict(m)) {
     /* m is Increasing | Decreasing */
@@ -397,12 +397,12 @@
 
   The new encoding:
 
-  | value | name         | derivative on the interval   |
-  | ----- | ------------ | ---------------------------- |
-  | `0`   | `Constant`   | ≡ 0                          |
-  | `1`   | `Increasing` | ≥ 0, with at least one `> 0` |
-  | `2`   | `Decreasing` | ≤ 0, with at least one `< 0` |
-  | `3`   | `None`       | crosses zero                 |
+  | value | name         | derivative on the interval    |
+  | ----- | ------------ | ----------------------------- |
+  | `0`   | `Constant`   | = 0 everywhere                |
+  | `1`   | `Increasing` | >= 0, with at least one `> 0` |
+  | `2`   | `Decreasing` | <= 0, with at least one `< 0` |
+  | `3`   | `None`       | crosses zero                  |
 
   The numeric encoding is principled, not arbitrary: bit 0 is "derivative takes positive values", bit 1 is "derivative takes negative values". So the bitwise OR of two adjacent subintervals' classifications gives the classification of their union — `Increasing | Decreasing === None` is a literal algebraic identity, not a special case. That lets subdivision-based monotonicity checks combine sub-results with a single `|`, no custom merge logic.
 
@@ -501,10 +501,10 @@
 ### Patch Changes
 
 - Fixed `Vector3.setTheta` and `Vector3.setPhi`, which weren't holding their documented invariants.
-  - `setTheta(v, theta)` was using `v.y` directly in place of the azimuthal angle, so it didn't actually preserve `φ` and produced garbage for any vector with `v.y` not coincidentally equal to its azimuthal angle in radians.
+  - `setTheta(v, theta)` was using `v.y` directly in place of the azimuthal angle, so it didn't actually preserve `phi` and produced garbage for any vector with `v.y` not coincidentally equal to its azimuthal angle in radians.
   - `setPhi(v, phi)` was rotating around the origin using `magnitude(v)` as the xy-projection length, so the result didn't lie on the original sphere — magnitude wasn't preserved.
 
-  Both now correctly hold "change one spherical component, preserve the other two" — `setTheta` keeps `r` and `φ`, `setPhi` keeps `r` and `θ`. The fix also corrects the internal parameter names (`setTheta`'s arg was named `phi` and vice versa). Public TypeScript types are unchanged.
+  Both now correctly hold "change one spherical component, preserve the other two" — `setTheta` keeps `r` and `phi`, `setPhi` keeps `r` and `theta`. The fix also corrects the internal parameter names (`setTheta`'s arg was named `phi` and vice versa). Public TypeScript types are unchanged.
 
   `mapTheta` / `mapPhi` (added in the same release) are unaffected — they compose on top of these setters and now produce correct results automatically.
 
@@ -514,7 +514,7 @@
 
 - 1f81e51: Added per-axis monotonicity traits and `solveAt{X,Y}` to non-rational path modules (`LinearPath2d`, `QuadraticPath2d`, `CubicPath2d`).
 
-  **New trait brands** (in `path/traits.ts`): `MonotonicX`, `IncreasingX extends MonotonicX`, `DecreasingX extends MonotonicX`, and the y-axis counterparts. A path is `IncreasingX` when every segment's x-polynomial is strictly increasing on `[0, 1]` _and_ adjacent segments' x-ranges don't overlap (modulo `EPSILON` for float drift at joins) — together those guarantee the path's `u → x` mapping is monotonic across the whole parameter domain.
+  **New trait brands** (in `path/traits.ts`): `MonotonicX`, `IncreasingX extends MonotonicX`, `DecreasingX extends MonotonicX`, and the y-axis counterparts. A path is `IncreasingX` when every segment's x-polynomial is strictly increasing on `[0, 1]` _and_ adjacent segments' x-ranges don't overlap (modulo `EPSILON` for float drift at joins) — together those guarantee the path's `u -> x` mapping is monotonic across the whole parameter domain.
 
   **New refiners and assertions** on each non-rational path: `isMonotonicX`, `isIncreasingX`, `isDecreasingX`, `isMonotonicY`, `isIncreasingY`, `isDecreasingY`, plus the `as*` throwing variants. Following the existing pattern, `IncreasingX` and `DecreasingX` both narrow to `MonotonicX` via brand intersection — so a path refined by `isIncreasingX` is accepted anywhere `MonotonicX` is required, no extra `asMonotonicX` step needed.
 
@@ -525,7 +525,7 @@
   const yAt = CubicPath2d.solveAtX(path, 0.3) // Solution.AtMostOne<number>
   ```
 
-  A general (non-monotonic) `solveAtX` would have unbounded cardinality (segments × per-curve roots), so it's deferred until there's a use case.
+  A general (non-monotonic) `solveAtX` would have unbounded cardinality (segments times per-curve roots), so it's deferred until there's a use case.
 
 - 1f81e51: Added `fromTuple` to each vector module: `Vector2.fromTuple([x, y])`, `Vector3.fromTuple([x, y, z])`, `Vector4.fromTuple([x, y, z, w])`. The inverse of `components`, useful when interop with array-shaped data (JSON, SVG path commands, libraries that hand back tuples) would otherwise force a spread into `make`.
 
@@ -644,7 +644,7 @@
   const [c0, c1, c2, c3] = CubicPolynomial.coefficients(p)
   ```
 
-  Tuple arity matches the polynomial's degree (`Linear` → `[number, number]`, etc.).
+  Tuple arity matches the polynomial's degree (`Linear` -> `[number, number]`, etc.).
 
 ## 2.0.0-alpha.3
 
@@ -851,13 +851,13 @@
   )
   ```
 
-  The polynomial pipeline (`CubicCurve2d.fromBezierPoints`, `splines/util.ts → toCurves`) and the rational pipeline (`RationalCubicCurve2d.fromBezierPoints`) both flow through `apply` now — the unified entry point makes the spline-family-as-matrix story visible at the type level.
+  The polynomial pipeline (`CubicCurve2d.fromBezierPoints`, `splines/util.ts -> toCurves`) and the rational pipeline (`RationalCubicCurve2d.fromBezierPoints`) both flow through `apply` now — the unified entry point makes the spline-family-as-matrix story visible at the type level.
 
   **Cardinal cache moved.** The per-tension memoization that used to live in `Cardinal2d` now lives inside `Characteristic.cubicCardinal`. Behavior unchanged.
 
 - b99c3bf: Sweep the `from*` constructor surface for naming coherence. The library accumulated several inconsistencies organically; v2 lands one rule per verb: `make` is the primary variadic constructor, `fromArray` is its array form, `fromXxx` is for genuinely-from-X semantic constructors named for what their inputs represent.
 
-  **Renames (curve modules):** `LinearCurve2d.fromPoints`, `QuadraticCurve2d.fromPoints`, `CubicCurve2d.fromPoints` → `fromCoefficients`. The old name was a misnomer — the function takes `Vector2`s but stores them as polynomial coefficient bundles, not as points on the curve. The new name is honest about that.
+  **Renames (curve modules):** `LinearCurve2d.fromPoints`, `QuadraticCurve2d.fromPoints`, `CubicCurve2d.fromPoints` -> `fromCoefficients`. The old name was a misnomer — the function takes `Vector2`s but stores them as polynomial coefficient bundles, not as points on the curve. The new name is honest about that.
 
   ```ts
   // before
@@ -893,7 +893,7 @@
   **New (polynomial modules):** `QuadraticPolynomial.fromPoints` and `CubicPolynomial.fromPoints` — Lagrange interpolation through 3 and 4 `(x, y)` points, completing the symmetry with `LinearPolynomial.fromPoints` (which already existed). Implementation uses Newton's divided differences collected to monomial form. The input `x` values must be distinct.
 
   ```ts
-  // y = x² + 2x + 3
+  // y = x^2 + 2x + 3
   const p = QuadraticPolynomial.fromPoints(
     Vector2.make(-1, 2),
     Vector2.make(0, 3),
@@ -901,7 +901,7 @@
   )
   ```
 
-  **Renamed (matrix module):** `Matrix3x3.matrix3x3` → `Matrix3x3.make`. The `Matrix2x2` and `Matrix4x4` modules already used `make`; only `Matrix3x3` had the type-name-as-constructor variant, breaking symmetry across the matrix family.
+  **Renamed (matrix module):** `Matrix3x3.matrix3x3` -> `Matrix3x3.make`. The `Matrix2x2` and `Matrix4x4` modules already used `make`; only `Matrix3x3` had the type-name-as-constructor variant, breaking symmetry across the matrix family.
 
 - 68026f7: **Endpoint inclusivity is now part of the `Interval` value, not a per-call option.** The `Interval` type is now a discriminated union of four variants — `Closed` (`[a, b]`), `OpenStart` (`(a, b]`), `OpenEnd` (`[a, b)`), and `Open` (`(a, b)`) — each carrying a literal `kind` discriminant. Operations that depend on inclusivity (`contains`, `filter`, `equals`) dispatch on `kind`; operations that don't (`lerp`, `normalize`, `remap`, `size`, `clamp`, `scaleShift`) accept the broader `Bounds` type so the signature itself documents what each operation reads.
 
@@ -920,7 +920,7 @@
   | `toOpen`        | Force both endpoints open         |
   | `toClosed`      | Force both endpoints closed       |
 
-  The four per-edge modifiers narrow the result type via overloads (e.g. `toStartOpen(Closed) → OpenStart`, `toStartOpen(OpenEnd) → Open`).
+  The four per-edge modifiers narrow the result type via overloads (e.g. `toStartOpen(Closed) -> OpenStart`, `toStartOpen(OpenEnd) -> Open`).
 
   **Predicates.** Four variant-narrowing (`isClosed`, `isOpen`, `isOpenStart`, `isOpenEnd`) plus four edge-narrowing (`isOpenAtStart`, `isOpenAtEnd`, `isClosedAtStart`, `isClosedAtEnd`).
 
@@ -1054,7 +1054,7 @@
 
   `round()` itself remains exported from `curvy/number` for explicit egress snapping (e.g. for SVG output, where you want a fixed display precision).
 
-  Performance: removing constructor-level rounding makes a realistic workflow (build a 4-segment Bezier path, sample 1000 points) about **2× faster**; `Matrix4x4.make` is **~17× faster**; `CubicCurve2d.length` is **~1.8× faster**.
+  Performance: removing constructor-level rounding makes a realistic workflow (build a 4-segment Bezier path, sample 1000 points) about **2x faster**; `Matrix4x4.make` is **~17x faster**; `CubicCurve2d.length` is **~1.8x faster**.
 
 - 6e3087e: Rename `Bezier2d.appendCurvatureMirrored` to `Bezier2d.appendCurvatureAligned` for consistency with the rest of the `*Aligned` family (`appendTangentAligned`, `appendVelocityAligned`, `appendAccelerationAligned`). The internal binding was already named `appendCurvatureAligned`; this aligns the public surface.
 - eb48939: Replace the bare `ZeroOrOne<T>` / `ZeroToOne<T>` / `ZeroToTwo<T>` / `ZeroToThree<T>` return shapes with a single `Solution<T>` type and namespace, exposed at `curvy/solution`.
@@ -1164,7 +1164,7 @@
   - `isMonotonic`, `isIncreasing`, `isDecreasing` — type-narrowing predicates
   - `asMonotonic`, `asIncreasing`, `asDecreasing` — runtime-checked assertions that throw on failure
 
-  For quadratic and cubic polynomials, all of the above accept an optional `Interval` argument (a quadratic with c2 ≠ 0 isn't globally monotonic, but it can be on an interval that avoids its extremum).
+  For quadratic and cubic polynomials, all of the above accept an optional `Interval` argument (a quadratic with c2 != 0 isn't globally monotonic, but it can be on an interval that avoids its extremum).
 
   `solveInverse` is overloaded so that a `Monotonic`-branded polynomial returns a tighter shape:
 
@@ -1188,7 +1188,7 @@
   Per-axis refiners (`isMonotonicX`, `isMonotonicY`, `isIncreasingX`, `isIncreasingY`, `isDecreasingX`, `isDecreasingY`) and a combined `isMonotonic` that requires both axes monotonic. All check over the curve's natural parameter domain `[0, 1]`. Assertions follow the same `as*` naming.
 
   **Paths.** `LinearPath2d`, `QuadraticPath2d`, and `CubicPath2d` are now generic: `<out Trait = unknown>`. One brand is shipped:
-  - `Continuous` — adjacent curves connect at their join points (G⁰)
+  - `Continuous` — adjacent curves connect at their join points (G^0)
 
   Each path module exposes `isContinuous` and `asContinuous`. Splines emit continuous paths by construction, so `Bezier2d.toPath`, `Cardinal2d.toPath`, etc. all produce paths that pass `isContinuous`.
 
@@ -1198,13 +1198,13 @@
 
 ### Minor Changes
 
-- 55714cf: Added **`CubicPath2d.solveByDistance(path, s): Vector2`** for sampling a path by normalized arc length (`s ∈ [0, 1]`).
+- 55714cf: Added **`CubicPath2d.solveByDistance(path, s): Vector2`** for sampling a path by normalized arc length (`s in [0, 1]`).
 
   Unlike `solve`, which is parameterized by curve `u`, `solveByDistance` returns points at constant speed along the path — `s = 0.5` is the actual arc-length midpoint regardless of how the underlying parameterization stretches. This is the primitive most motion-design and animation use cases actually want from a curve library.
 
   Available in both data-first and data-last forms. Internally caches cumulative segment lengths by path identity (paths are immutable), so repeated calls on the same path skip the length-table rebuild. Within each segment, the local parameter is found via Newton's method on the curve's analytic derivative, with bracket-clamped fallback to bisection for cusps and pathological convergence.
 
-- 55714cf: Added **`Bezier2d.subdivide(b, u): [Bezier2d, Bezier2d]`** for splitting a multi-segment cubic Bezier at a global parameter `u ∈ (0, 1)` via de Casteljau's algorithm. The two halves together trace the same curve as the input — the left covers `[0, u]`, the right covers `[u, 1]`.
+- 55714cf: Added **`Bezier2d.subdivide(b, u): [Bezier2d, Bezier2d]`** for splitting a multi-segment cubic Bezier at a global parameter `u in (0, 1)` via de Casteljau's algorithm. The two halves together trace the same curve as the input — the left covers `[0, u]`, the right covers `[u, 1]`.
 
   Available in both data-first and data-last forms. Useful for adaptive flattening, intersection testing, trimming, and chunking a curve across discrete buckets (responsive viewport breakpoints, animation segments, etc.). Splits at exact segment boundaries are detected and handled by slicing rather than running de Casteljau.
 
@@ -1237,11 +1237,11 @@
   **Bug fixes shipped alongside:** `QuadraticPolynomial.solveInverse` now correctly handles the `c2 = 0` case (degenerate quadratic — defers to linear) instead of dividing by zero. `CubicPolynomial.solveInverse` had a similar fallback that was forwarding `0` as the y-value instead of the actual argument; now forwards correctly. Both bugs were latent because `solveInverse` was rarely exercised on degenerate-degree polynomials before `solveAt{X,Y}` started routing through them.
 
 - 55714cf: Added three new `Matrix4x4` primitives:
-  - **`Matrix4x4.identity`** — the 4×4 identity matrix as a constant.
+  - **`Matrix4x4.identity`** — the 4x4 identity matrix as a constant.
   - **`Matrix4x4.multiply(a, b)`** — matrix-matrix multiplication, in both data-first and data-last forms.
   - **`Matrix4x4.inverse(m)`** — matrix inverse via the adjugate / determinant formula. Throws on singular input (determinant zero).
 
-  These are useful both as general-purpose 4×4 transform primitives and as the foundation for the new spline-conversion caching that ships in this release.
+  These are useful both as general-purpose 4x4 transform primitives and as the foundation for the new spline-conversion caching that ships in this release.
 
 - **Approximate rational cubic curves as polynomial cubic paths.** Rational curves can't be converted exactly to polynomial Béziers — that's the entire reason rational forms exist (true circles, conic sections, etc.). But they _can_ be approximated to arbitrary tolerance via recursive subdivision, which is what PDF and SVG renderers do internally.
 
@@ -1277,7 +1277,7 @@
   import { Vector2 } from 'curvy/vector'
 
   // Four weighted Bézier control points; the matrix-based constructor
-  // lifts them to homogeneous (w·x, w·y, w) and runs the same characteristic
+  // lifts them to homogeneous (w*x, w*y, w) and runs the same characteristic
   // matrix the polynomial pipeline uses, just on three channels.
   const c = RationalCubicCurve2d.fromBezierPoints(
     Vector2.makeWeighted(0, 0, 1),
@@ -1285,7 +1285,7 @@
     Vector2.makeWeighted(2, 2, 5),
     Vector2.makeWeighted(3, 0, 1),
   )
-  RationalCubicCurve2d.solve(c, 0.5) // → Vector2
+  RationalCubicCurve2d.solve(c, 0.5) // -> Vector2
   ```
 
   A matching path type (`RationalCubicPath2d` in `curvy/path`) and spline type (`RationalBezier2d` in `curvy/splines`) follow the same shape as their polynomial counterparts, with `solve`, `solveAtX`, `solveAtY`, and the standard pipeable API.
@@ -1300,7 +1300,7 @@
   // result: Solution.AtMostOne<number> — narrowed by the Increasing brand
   ```
 
-  Monotonicity is verified rigorously at construction by computing the derivative numerator as a cubic in `t` and checking it doesn't change sign on `(0, 1)`. Construction throws when the slope pair can't be made monotonic under the default `α = m₀ + 1`, `β = m₁ + 1` heuristic — useful operating range is roughly `m₀, m₁ ∈ [0, 2]` with `m₀ + m₁ ≲ 3`.
+  Monotonicity is verified rigorously at construction by computing the derivative numerator as a cubic in `t` and checking it doesn't change sign on `(0, 1)`. Construction throws when the slope pair can't be made monotonic under the default `alpha = m0 + 1`, `beta = m1 + 1` heuristic — useful operating range is roughly `m0, m1 in [0, 2]` with `m0 + m1` below about `3`.
 
 ### Patch Changes
 
@@ -1316,9 +1316,9 @@
 
   No API change; `dual()`'s signatures and overload semantics are unchanged. Realistic-workflow benchmark (build a 4-segment Bezier path + 1000 samples) is **~43% faster**, and `CubicCurve2d.solve` is **~18% faster**, both because they go through `dual` repeatedly in their hot loops. Operations that don't use `dual` (like `Matrix4x4.make`) are unaffected, as expected.
 
-- 55714cf: The Bézier basis-conversion routine that backs `Cardinal2d.toBezier`, `Hermite2d.toBezier`, and `Basis2d.toBezier` now caches the combined conversion matrix (`M_bezier⁻¹ · M_source`) per source-matrix instance via a `WeakMap`, replacing a per-call run of Cramer's rule with a single matrix-vector product per axis per quad. `Cardinal2d.characteristic(scale)` also memoizes its result by scale value, so repeated `Cardinal2d.toBezier(p, customScale)` calls hit the cache instead of constructing a fresh matrix each time.
+- 55714cf: The Bézier basis-conversion routine that backs `Cardinal2d.toBezier`, `Hermite2d.toBezier`, and `Basis2d.toBezier` now caches the combined conversion matrix (`M_bezier^-1 * M_source`) per source-matrix instance via a `WeakMap`, replacing a per-call run of Cramer's rule with a single matrix-vector product per axis per quad. `Cardinal2d.characteristic(scale)` also memoizes its result by scale value, so repeated `Cardinal2d.toBezier(p, customScale)` calls hit the cache instead of constructing a fresh matrix each time.
 
-  No API change. **`Cardinal2d.toBezier` is ~85× faster** (~9k → ~800k ops/sec for both default and custom scales). The same caching applies to every other non-Bézier spline type's `toBezier` path.
+  No API change. **`Cardinal2d.toBezier` is ~85x faster** (~9k -> ~800k ops/sec for both default and custom scales). The same caching applies to every other non-Bézier spline type's `toBezier` path.
 
 ## 1.0.9
 

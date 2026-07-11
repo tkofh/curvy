@@ -16,7 +16,7 @@ export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
 /**
  * A quadratic curve in 2D space.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly. No operation mutates a curve.
  *
  * The two type parameters carry the trait sets of the curve's per-axis
  * polynomials. Refiners check monotonicity over the unit interval `[0, 1]` —
@@ -45,13 +45,13 @@ export const fromPolynomials: (
 /**
  * Creates a new `QuadraticCurve2d` instance from monomial coefficient vectors.
  *
- * Each argument bundles the per-axis coefficient at the given power: `c0`
- * holds the x⁰ term, `c1` holds the x¹ term, and so on. The resulting curve
- * evaluates to `c0 + c1·t + c2·t²` per axis.
+ * Each argument bundles the per-axis coefficient at the given power. `c0`
+ * holds the x^0 term, `c1` holds the x^1 term, and so on. The resulting curve
+ * evaluates to `c0 + c1*t + c2*t^2` per axis.
  *
- * @param c0 - The x⁰ coefficients (x and y).
- * @param c1 - The x¹ coefficients (x and y).
- * @param c2 - The x² coefficients (x and y).
+ * @param c0 - The x^0 coefficients (x and y).
+ * @param c1 - The x^1 coefficients (x and y).
+ * @param c2 - The x^2 coefficients (x and y).
  * @returns A new `QuadraticCurve2d` instance.
  * @since 2.0.0
  */
@@ -62,7 +62,7 @@ export const fromCoefficients: (c0: Vector2, c1: Vector2, c2: Vector2) => Quadra
  * Creates a new `QuadraticCurve2d` instance from quadratic Bézier control
  * points.
  *
- * The three arguments are the Bernstein-basis control points: `p0` and `p2`
+ * The three arguments are the Bernstein-basis control points. `p0` and `p2`
  * are the curve's endpoints and `p1` is the off-curve control handle. The
  * implementation converts to the curve's internal monomial form in closed
  * form.
@@ -87,19 +87,22 @@ export const isQuadraticCurve2d: (c: unknown) => c is QuadraticCurve2d = interna
 
 export const solve: {
   /**
-   * Solves the quadratic curve for a given parameter t.
+   * Evaluates the curve at parameter `t`.
    *
-   * @param t - The parameter value.
-   * @returns A function that takes a quadratic curve and returns the point on the curve at parameter t.
+   * @param t - The curve parameter, conventionally in `[0, 1]`.
+   * @returns A function that takes a quadratic curve and returns the point at `t`.
    * @since 1.0.0
    */
   (t: number): (c: QuadraticCurve2d) => Vector2
   /**
-   * Solves the quadratic curve for a given parameter t.
+   * Evaluates the curve at parameter `t`.
    *
-   * @param c - The quadratic curve to solve.
-   * @param t - The parameter value.
-   * @returns The point on the curve at parameter t.
+   * `t` is not clamped. Values outside `[0, 1]` extrapolate the curve's
+   * polynomials.
+   *
+   * @param c - The quadratic curve to evaluate.
+   * @param t - The curve parameter, conventionally in `[0, 1]`.
+   * @returns The point on the curve at parameter `t`.
    * @since 1.0.0
    */
   (c: QuadraticCurve2d, t: number): Vector2
@@ -128,7 +131,7 @@ export const length: {
 export const solveAtX: {
   /**
    * Evaluates the curve's y values at a given x. Because the x polynomial is
-   * `Monotonic`, the inverse has at most one solution — at most one y value.
+   * `Monotonic`, the inverse has at most one solution, at most one y value.
    *
    * @param c - The quadratic curve.
    * @param x - The x coordinate.
@@ -138,7 +141,7 @@ export const solveAtX: {
   <XT extends Monotonic, YT>(c: QuadraticCurve2d<XT, YT>, x: number): Solution.AtMostOne<number>
   /**
    * Evaluates the curve's y values at a given x. The result is the y values
-   * the curve passes through where x(t) = the given x — up to two solutions
+   * the curve passes through where x(t) = the given x, up to two solutions
    * for a quadratic curve.
    *
    * @param c - The quadratic curve.
@@ -147,7 +150,13 @@ export const solveAtX: {
    * @since 2.0.0
    */
   <XT, YT>(c: QuadraticCurve2d<XT, YT>, x: number): Solution.AtMostTwo<number>
-  /** @since 2.0.0 */
+  /**
+   * Evaluates the curve's y values at a given x.
+   *
+   * @param x - The x coordinate.
+   * @returns A function that takes a quadratic curve and returns the y values at `x`.
+   * @since 2.0.0
+   */
   (x: number): {
     <XT extends Monotonic, YT>(c: QuadraticCurve2d<XT, YT>): Solution.AtMostOne<number>
     <XT, YT>(c: QuadraticCurve2d<XT, YT>): Solution.AtMostTwo<number>
@@ -167,7 +176,7 @@ export const solveAtY: {
   <XT, YT extends Monotonic>(c: QuadraticCurve2d<XT, YT>, y: number): Solution.AtMostOne<number>
   /**
    * Evaluates the curve's x values at a given y. The result is the x values
-   * the curve passes through where y(t) = the given y — up to two solutions
+   * the curve passes through where y(t) = the given y, up to two solutions
    * for a quadratic curve.
    *
    * @param c - The quadratic curve.
@@ -176,7 +185,13 @@ export const solveAtY: {
    * @since 2.0.0
    */
   <XT, YT>(c: QuadraticCurve2d<XT, YT>, y: number): Solution.AtMostTwo<number>
-  /** @since 2.0.0 */
+  /**
+   * Evaluates the curve's x values at a given y.
+   *
+   * @param y - The y coordinate.
+   * @returns A function that takes a quadratic curve and returns the x values at `y`.
+   * @since 2.0.0
+   */
   (y: number): {
     <XT, YT extends Monotonic>(c: QuadraticCurve2d<XT, YT>): Solution.AtMostOne<number>
     <XT, YT>(c: QuadraticCurve2d<XT, YT>): Solution.AtMostTwo<number>
@@ -218,13 +233,13 @@ export const curvature: {
  * the curve and not just the control polygon.
  *
  * @param c - The quadratic curve.
- * @returns A closed `Box2d` enclosing the curve.
+ * @returns A closed `Interval2d` enclosing the curve.
  * @since 2.0.0
  */
 export const boundingBox: (c: QuadraticCurve2d) => Interval2d<Closed, Closed> = internal.boundingBox
 
 /**
- * Evaluates the curve at `t = 0` in closed form — `(c.x.c0, c.y.c0)`.
+ * Evaluates the curve at `t = 0` in closed form: `(c.x.c0, c.y.c0)`.
  *
  * @param c - The quadratic curve.
  * @returns The point at the start of the curve's parameter domain.
@@ -233,7 +248,7 @@ export const boundingBox: (c: QuadraticCurve2d) => Interval2d<Closed, Closed> = 
 export const startPoint: (c: QuadraticCurve2d) => Vector2 = internal.startPoint
 
 /**
- * Evaluates the curve at `t = 1` in closed form — the sum of the per-axis
+ * Evaluates the curve at `t = 1` in closed form, the sum of the per-axis
  * monomial coefficients.
  *
  * @param c - The quadratic curve.
@@ -263,7 +278,7 @@ export const xRange: (c: QuadraticCurve2d) => Closed = internal.xRange
 export const yRange: (c: QuadraticCurve2d) => Closed = internal.yRange
 
 /**
- * Renders the curve as a single SVG path-data drawing command — for a
+ * Renders the curve as a single SVG path-data drawing command. For a
  * quadratic curve, `Q ctrlX,ctrlY endX,endY`, where the control point is
  * recovered from the monomial coefficients via the inverse Bernstein
  * expansion. Does not include a leading `M`.
@@ -275,77 +290,154 @@ export const yRange: (c: QuadraticCurve2d) => Closed = internal.yRange
 export const toPathDataSegment: (c: QuadraticCurve2d) => string = internal.toPathDataSegment
 
 /**
- * Type-narrowing predicate: refines the curve's x-axis trait to include
- * `Monotonic` when the x polynomial is strictly monotonic on the unit
- * interval `[0, 1]`. The y-axis trait is unchanged.
+ * Checks if the curve's x polynomial is strictly monotonic on the unit
+ * interval `[0, 1]`, adding `Monotonic` to the x-axis trait. The y-axis
+ * trait is unchanged.
  *
+ * @param c - The quadratic curve to check.
+ * @returns `true` when x is strictly monotonic on `[0, 1]`, narrowing the x-axis trait.
  * @since 2.0.0
  */
 export const isMonotonicX: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => c is QuadraticCurve2d<XT & Monotonic, YT> = internal.isMonotonicX
 
-/** @since 2.0.0 */
+/**
+ * Checks if the curve's x polynomial is strictly increasing on the
+ * unit interval `[0, 1]`, adding `Increasing` to the x-axis trait.
+ * The y-axis trait is unchanged.
+ *
+ * @param c - The quadratic curve to check.
+ * @returns `true` when x is strictly increasing on `[0, 1]`, narrowing the x-axis trait.
+ * @since 2.0.0
+ */
 export const isIncreasingX: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => c is QuadraticCurve2d<XT & Increasing, YT> = internal.isIncreasingX
 
-/** @since 2.0.0 */
+/**
+ * Checks if the curve's x polynomial is strictly decreasing on the
+ * unit interval `[0, 1]`, adding `Decreasing` to the x-axis trait.
+ * The y-axis trait is unchanged.
+ *
+ * @param c - The quadratic curve to check.
+ * @returns `true` when x is strictly decreasing on `[0, 1]`, narrowing the x-axis trait.
+ * @since 2.0.0
+ */
 export const isDecreasingX: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => c is QuadraticCurve2d<XT & Decreasing, YT> = internal.isDecreasingX
 
 /**
- * Type-narrowing predicate: refines the curve's y-axis trait to include
- * `Monotonic`. The x-axis trait is unchanged.
+ * Checks if the curve's y polynomial is strictly monotonic on the unit
+ * interval `[0, 1]`, adding `Monotonic` to the y-axis trait. The x-axis
+ * trait is unchanged.
  *
+ * @param c - The quadratic curve to check.
+ * @returns `true` when y is strictly monotonic on `[0, 1]`, narrowing the y-axis trait.
  * @since 2.0.0
  */
 export const isMonotonicY: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => c is QuadraticCurve2d<XT, YT & Monotonic> = internal.isMonotonicY
 
-/** @since 2.0.0 */
+/**
+ * Checks if the curve's y polynomial is strictly increasing on the
+ * unit interval `[0, 1]`, adding `Increasing` to the y-axis trait.
+ * The x-axis trait is unchanged.
+ *
+ * @param c - The quadratic curve to check.
+ * @returns `true` when y is strictly increasing on `[0, 1]`, narrowing the y-axis trait.
+ * @since 2.0.0
+ */
 export const isIncreasingY: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => c is QuadraticCurve2d<XT, YT & Increasing> = internal.isIncreasingY
 
-/** @since 2.0.0 */
+/**
+ * Checks if the curve's y polynomial is strictly decreasing on the
+ * unit interval `[0, 1]`, adding `Decreasing` to the y-axis trait.
+ * The x-axis trait is unchanged.
+ *
+ * @param c - The quadratic curve to check.
+ * @returns `true` when y is strictly decreasing on `[0, 1]`, narrowing the y-axis trait.
+ * @since 2.0.0
+ */
 export const isDecreasingY: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => c is QuadraticCurve2d<XT, YT & Decreasing> = internal.isDecreasingY
 
 /**
- * Type-narrowing predicate: refines both axes' traits to include `Monotonic`
- * when both x and y polynomials are monotonic over the unit interval `[0, 1]`.
+ * Checks if both the x and y polynomials are strictly monotonic on the
+ * unit interval `[0, 1]`, adding `Monotonic` to both axes' traits.
  *
+ * @param c - The quadratic curve to check.
+ * @returns `true` when both axes are strictly monotonic on `[0, 1]`, narrowing both traits.
  * @since 2.0.0
  */
 export const isMonotonic: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => c is QuadraticCurve2d<XT & Monotonic, YT & Monotonic> = internal.isMonotonic
 
-/** @since 2.0.0 */
+/**
+ * Checks if both the x and y polynomials are strictly increasing on
+ * the unit interval `[0, 1]`, adding `Increasing` to both axes' traits.
+ *
+ * @param c - The quadratic curve to check.
+ * @returns `true` when both axes are strictly increasing on `[0, 1]`, narrowing both traits.
+ * @since 2.0.0
+ */
 export const isIncreasing: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => c is QuadraticCurve2d<XT & Increasing, YT & Increasing> = internal.isIncreasing
 
-/** @since 2.0.0 */
+/**
+ * Checks if both the x and y polynomials are strictly decreasing on
+ * the unit interval `[0, 1]`, adding `Decreasing` to both axes' traits.
+ *
+ * @param c - The quadratic curve to check.
+ * @returns `true` when both axes are strictly decreasing on `[0, 1]`, narrowing both traits.
+ * @since 2.0.0
+ */
 export const isDecreasing: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => c is QuadraticCurve2d<XT & Decreasing, YT & Decreasing> = internal.isDecreasing
 
-/** @since 2.0.0 */
+/**
+ * Asserts that both axes are strictly monotonic on the unit interval
+ * `[0, 1]`, throwing on failure.
+ *
+ * @param c - The quadratic curve to assert against.
+ * @returns The same curve, with `Monotonic` on both axes' traits.
+ * @throws `Error` when either axis fails the check.
+ * @since 2.0.0
+ */
 export const asMonotonic: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => QuadraticCurve2d<XT & Monotonic, YT & Monotonic> = internal.asMonotonic
 
-/** @since 2.0.0 */
+/**
+ * Asserts that both axes are strictly increasing on the unit interval
+ * `[0, 1]`, throwing on failure.
+ *
+ * @param c - The quadratic curve to assert against.
+ * @returns The same curve, with `Increasing` on both axes' traits.
+ * @throws `Error` when either axis fails the check.
+ * @since 2.0.0
+ */
 export const asIncreasing: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => QuadraticCurve2d<XT & Increasing, YT & Increasing> = internal.asIncreasing
 
-/** @since 2.0.0 */
+/**
+ * Asserts that both axes are strictly decreasing on the unit interval
+ * `[0, 1]`, throwing on failure.
+ *
+ * @param c - The quadratic curve to assert against.
+ * @returns The same curve, with `Decreasing` on both axes' traits.
+ * @throws `Error` when either axis fails the check.
+ * @since 2.0.0
+ */
 export const asDecreasing: <XT, YT>(
   c: QuadraticCurve2d<XT, YT>,
 ) => QuadraticCurve2d<XT & Decreasing, YT & Decreasing> = internal.asDecreasing

@@ -15,4 +15,4 @@ The cubic root finder still clamps its discriminant to zero internally to keep d
 
 `round()` itself remains exported from `curvy/number` for explicit egress snapping (e.g. for SVG output, where you want a fixed display precision).
 
-Performance: removing constructor-level rounding makes a realistic workflow (build a 4-segment Bezier path, sample 1000 points) about **2× faster**; `Matrix4x4.make` is **~17× faster**; `CubicCurve2d.length` is **~1.8× faster**.
+Performance: removing constructor-level rounding makes a realistic workflow (build a 4-segment Bezier path, sample 1000 points) about **2x faster**; `Matrix4x4.make` is **~17x faster**; `CubicCurve2d.length` is **~1.8x faster**.

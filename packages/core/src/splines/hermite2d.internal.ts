@@ -85,7 +85,7 @@ export const flatMap = dual<
 )
 
 // Hermite control data alternates positions (even indices) with tangent
-// vectors (odd indices). Under an affine map `f(p) = A·p + t`, positions get
+// vectors (odd indices). Under an affine map `f(p) = A*p + t`, positions get
 // the full affine while tangents get only the linear part `A` — they're
 // derivatives, and the translation washes out of any derivative. Calling
 // mapPoints with the full affine would silently bend the curve under any

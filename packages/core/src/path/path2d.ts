@@ -1,10 +1,10 @@
 import type { Curve2dOps } from '../curve/curve2d.ts'
 import * as Interval from '../interval/interval.ts'
 import * as Interval2d from '../interval/interval2d.ts'
-import { coincident } from '../number.ts'
+import { coincident, EPSILON } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import { dual, Pipeable } from '../utils.ts'
+import { dual, invariant, Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import {
   PathTraits,
@@ -18,15 +18,14 @@ import {
 } from './traits.ts'
 
 /**
- * Generic 2D path — a sequence of curves of a single kind `C` plus optional
+ * Generic 2D path, a sequence of curves of a single kind `C` plus optional
  * trait brands (`Continuous`, `MonotonicX`, etc.) tracking properties of the
  * path as a whole.
  *
  * Each concrete path kind (`LinearPath2d`, `QuadraticPath2d`, `CubicPath2d`)
  * is a `Path2d<TheirCurveKind, Trait>` plus a per-kind `TypeId` slot for
  * cheap runtime identification. The per-kind modules re-export an operation
- * surface derived from {@link makeMethods} over their curve's
- * {@link Curve2dOps}.
+ * surface derived from `makeMethods` over their curve's `Curve2dOps`.
  *
  * @since 2.0.0
  */
@@ -59,13 +58,16 @@ export class Path2dImpl<C> extends Pipeable implements Path2d<C, unknown> {
 
 /**
  * Builds the bundle of generic path operations for a curve kind `C`, given
- * that curve's {@link Curve2dOps} and the per-kind `TypeId` symbol. Each
+ * that curve's `Curve2dOps` and the per-kind `TypeId` symbol. Each
  * polynomial-degree path module calls this once and re-exports the returned
  * functions with curve-narrowed signatures.
  *
  * `ops` and `typeId` are captured by closure, so the returned operations
  * incur no per-call lookup overhead.
  *
+ * @param typeId - The per-kind brand symbol stamped onto each path instance.
+ * @param ops - The curve kind's operation bundle.
+ * @returns The generic path operations, specialized to `C`.
  * @since 2.0.0
  */
 export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
@@ -90,9 +92,15 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
     (u: number) => (p: Path2d<C>) => Vector2,
     (p: Path2d<C>, u: number) => Vector2
   >(2, (p: Path2d<C>, u: number) => {
+    // Parameter space is normalized, so a fixed absolute EPSILON is the
+    // grazing band (PRECISION.md, regime 1); beyond it is misuse.
+    invariant(u >= -EPSILON && u <= 1 + EPSILON, 'path parameter must be within [0, 1]')
     const curves = p instanceof Path2dImpl ? (p.curves as ReadonlyArray<C>) : [...p]
-    if (u === 1) {
+    if (u >= 1) {
       return ops.solve(curves.at(-1) as C, 1)
+    }
+    if (u <= 0) {
+      return ops.solve(curves[0] as C, 0)
     }
     const t = u * curves.length
     const i = Math.floor(t)
@@ -273,7 +281,7 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
   // coefficient-vs-position split for its degree, so the path-level call is
   // just a map. Trait brands are dropped — affine maps preserve continuity
   // (since image of a connected set is connected) but can flip monotonicity
-  // sense (a reflection inverts increasing → decreasing) so the brands must
+  // sense (a reflection inverts increasing -> decreasing) so the brands must
   // be reasserted on the result if the caller still wants them.
   const transform = dual<
     (a: Affine2d) => (p: Path2d<C>) => Path2d<C>,

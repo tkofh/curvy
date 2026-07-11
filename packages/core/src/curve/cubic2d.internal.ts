@@ -93,7 +93,7 @@ export const fromCoefficients: (
 
 // Applies the cubic Bézier characteristic matrix to the per-axis control
 // vectors, producing monomial polynomials. The matrix encodes the cubic
-// Bernstein → monomial expansion `(c₀, c₁, c₂, c₃) = M · (p₀, p₁, p₂, p₃)`
+// Bernstein -> monomial expansion `(c0, c1, c2, c3) = M * (p0, p1, p2, p3)`
 // for each axis independently.
 /** @internal */
 export const fromBezierPoints: (
@@ -236,7 +236,7 @@ export const xRange = (c: CubicCurve2d): Interval.Closed => CubicPolynomial.unit
 /** @internal */
 export const yRange = (c: CubicCurve2d): Interval.Closed => CubicPolynomial.unitRange(c.y)
 
-// Cubic Bernstein basis: P(t) = (1-t)³·p0 + 3(1-t)²t·p1 + 3(1-t)t²·p2 + t³·p3
+// Cubic Bernstein basis: P(t) = (1-t)^3*p0 + 3(1-t)^2t*p1 + 3(1-t)t^2*p2 + t^3*p3
 // expanded gives c0 = p0, c1 = -3p0 + 3p1, c2 = 3p0 - 6p1 + 3p2,
 // c3 = -p0 + 3p1 - 3p2 + p3, so the inverse is
 //   p0 = c0, p1 = c0 + c1/3, p2 = c0 + 2c1/3 + c2/3, p3 = c0 + c1 + c2 + c3.
@@ -329,8 +329,8 @@ export const asDecreasing = <XT, YT>(
 ): CubicCurve2d<XT & Decreasing, YT & Decreasing> =>
   isDecreasing(c) ? c : fail('cubic curve is not decreasing in both axes')
 
-// Affine transform on coefficient form. p(t) = c0 + c1·t + c2·t² + c3·t³, so
-// f(p(t)) = (A·c0 + b) + (A·c1)·t + (A·c2)·t² + (A·c3)·t³. Only the constant
+// Affine transform on coefficient form. p(t) = c0 + c1*t + c2*t^2 + c3*t^3, so
+// f(p(t)) = (A*c0 + b) + (A*c1)*t + (A*c2)*t^2 + (A*c3)*t^3. Only the constant
 // coefficient sees the translation; higher coefficients see only the linear
 // part. This is exact in monomial form — no Bernstein round-trip.
 /** @internal */

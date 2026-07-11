@@ -19,7 +19,7 @@
 | `toOpen`        | Force both endpoints open         |
 | `toClosed`      | Force both endpoints closed       |
 
-The four per-edge modifiers narrow the result type via overloads (e.g. `toStartOpen(Closed) → OpenStart`, `toStartOpen(OpenEnd) → Open`).
+The four per-edge modifiers narrow the result type via overloads (e.g. `toStartOpen(Closed) -> OpenStart`, `toStartOpen(OpenEnd) -> Open`).
 
 **Predicates.** Four variant-narrowing (`isClosed`, `isOpen`, `isOpenStart`, `isOpenEnd`) plus four edge-narrowing (`isOpenAtStart`, `isOpenAtEnd`, `isClosedAtStart`, `isClosedAtEnd`).
 
