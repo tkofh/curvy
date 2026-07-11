@@ -42,6 +42,9 @@ never inlined into them.
   lint-enforces it). Obvious parameters may keep brief conventional text;
   non-obvious parameters must carry the real content — geometric meaning,
   units, range, default. Placeholder text is banned.
+- `@throws` on every function with a verified consumer-reachable throw,
+  in the form ``@throws `Error` when …``. The documented condition
+  matches the real guard, not the intended one.
 - `@since` on every public doc block, using the behavior clock: the
   earliest release in which a consumer could obtain the behavior from the
   public API, under any name. Renames don't reset it. Code that predates
@@ -59,7 +62,9 @@ never inlined into them.
   doc link, and the package publishes without declaration maps, so a
   link at best jumps a consumer into a `.d.ts`. Convert old links when
   touching their block; never add an import to feed a link; when you
-  touch a cross-reference, verify the claim around it.
+  touch a cross-reference, verify the claim around it. In a dedicated
+  pass every block counts as touched, and a link-only conversion doesn't
+  demote a block from "no change needed".
 - Examples: `@example` with a fenced `ts` code block, call sites written
   in the consumer's namespaced vocabulary, no import boilerplate. Add one
   where the signature alone would let a first-time caller hold the API
