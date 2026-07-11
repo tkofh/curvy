@@ -10,7 +10,7 @@ import type { AffineTraits, Invertible } from './traits.ts'
 export type { Invertible } from './traits.ts'
 
 /**
- * A 2D affine transformation — the most general map of the form
+ * A 2D affine transformation: the most general map of the form
  *
  * ```
  * x' = a · x + b · y + tx
@@ -29,8 +29,8 @@ export type { Invertible } from './traits.ts'
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
  * brands as the transform is refined via `isInvertible` / `asInvertible`. The
- * runtime value carries no trait data — `Traits` only flows through the type
- * system to enable tighter return types on operations like {@link inverse}.
+ * runtime value carries no trait data; `Traits` only flows through the type
+ * system to enable tighter return types on operations like `inverse`.
  *
  * @since 2.0.0
  */
@@ -54,18 +54,19 @@ export const isAffine2d: (a: unknown) => a is Affine2d = internal.isAffine2d
 
 /**
  * Lifts a `Matrix3x3` into an `Affine2d` after asserting its last row is
- * `[0, 0, 1]`. Use this when constructing affine transforms from an already-
- * built matrix; prefer the named constructors below for ordinary usage.
+ * `[0, 0, 1]`. Use this when constructing affine transforms from an
+ * already-built matrix; prefer the named constructors (`translate`,
+ * `scale`, `rotate`, …) for ordinary usage.
  *
  * @param matrix - The matrix to lift. Must have a last row of `[0, 0, 1]`.
  * @returns A new `Affine2d` wrapping the matrix.
- * @throws If the matrix's last row is not `[0, 0, 1]` within tolerance.
+ * @throws `Error` when the last row is not `[0, 0, 1]` within a tolerance scaled by the magnitude of the matrix's other entries (see `PRECISION.md`).
  * @since 2.0.0
  */
 export const fromMatrix: (matrix: Matrix3x3) => Affine2d = internal.fromMatrix
 
 /**
- * The identity transform — leaves every point fixed.
+ * The identity transform: leaves every point fixed.
  *
  * @since 2.0.0
  */
@@ -169,7 +170,7 @@ export const reflectY: Affine2d = internal.reflectY
  * @param origin - A point on the mirror line.
  * @param direction - A non-zero vector parallel to the mirror line.
  * @returns A new reflecting `Affine2d`.
- * @throws If `direction` is the zero vector.
+ * @throws `Error` when `direction` has exactly zero magnitude.
  * @since 2.0.0
  */
 export const reflectAcrossLine: (origin: Vector2, direction: Vector2) => Affine2d =
@@ -189,17 +190,6 @@ export const shear: (kx: number, ky: number) => Affine2d = internal.shear
 export const andThen: {
   /**
    * Sequences two `Affine2d` transforms, applying `a` first and then `b`.
-   * Designed for pipe chains:
-   *
-   * ```ts
-   * import * as Affine2d from 'curvy/transform'
-   *
-   * const t = Affine2d.identity.pipe(
-   *   Affine2d.andThen(Affine2d.translate(1, 0)),
-   *   Affine2d.andThen(Affine2d.rotate(Math.PI / 2)),
-   * )
-   * // applying t = translate first, then rotate
-   * ```
    *
    * In matrix terms this returns `b · a`, the matrix that yields the same
    * result as applying `a` then `b` to a column-vector point.
@@ -207,11 +197,19 @@ export const andThen: {
    * @param a - The transform applied first.
    * @param b - The transform applied second.
    * @returns A new combined `Affine2d`.
+   * @example
+   * ```ts
+   * const t = Affine2d.identity.pipe(
+   *   Affine2d.andThen(Affine2d.translate(1, 0)),
+   *   Affine2d.andThen(Affine2d.rotate(Math.PI / 2)),
+   * )
+   * // t translates first, then rotates
+   * ```
    * @since 2.0.0
    */
   (a: Affine2d, b: Affine2d): Affine2d
   /**
-   * Pipe-friendly form of {@link andThen}. `andThen(b)(a)` applies `a` then
+   * Sequences two `Affine2d` transforms: `andThen(b)(a)` applies `a` then
    * `b`.
    *
    * @param b - The transform applied after the piped-in transform.
@@ -228,44 +226,47 @@ export const andThen: {
 export const inverse: {
   /**
    * Inverts an `Invertible`-branded `Affine2d`. Because the brand guarantees
-   * non-singularity, the result is always a single transform — wrapped in
+   * non-singularity, the result is always a single transform, wrapped in
    * `Solution.One`.
    *
    * @param a - The transform to invert.
+   * @returns The inverse, wrapped in `Solution.One`.
    * @since 2.0.0
    */
   <T extends Invertible>(a: Affine2d<T>): Solution.One<Affine2d<T>>
   /**
    * Inverts an `Affine2d`. Returns `Solution.none` if the transform is
-   * singular (e.g. a scale with a zero factor). Use {@link asInvertible} or
-   * {@link isInvertible} to refine the type and tighten the return to
-   * `Solution.One`, or use {@link inverseUnsafe} if you want the throwing form.
+   * singular (e.g. a scale with a zero factor). Use `asInvertible` or
+   * `isInvertible` to refine the type and tighten the return to
+   * `Solution.One`, or `inverseUnsafe` for the throwing form.
    *
    * @param a - The transform to invert.
+   * @returns The inverse in `Solution.One`, or `Solution.none` when singular.
    * @since 2.0.0
    */
   <T>(a: Affine2d<T>): Solution.AtMostOne<Affine2d<T>>
 } = internal.inverse as never
 
 /**
- * Inverts an `Affine2d`. Throws when the transform is singular (e.g. a scale
- * with a zero factor). Useful when invertibility has already been validated
- * out-of-band; otherwise prefer {@link inverse}.
+ * Inverts an `Affine2d`, throwing when the transform is singular (e.g. a
+ * scale with a zero factor). Useful when invertibility has already been
+ * validated out-of-band; otherwise prefer `inverse`.
  *
  * @param a - The transform to invert.
  * @returns The inverse transform.
- * @throws If `a` is singular.
+ * @throws `Error` when `a` is singular.
  * @since 2.0.0
  */
 export const inverseUnsafe: (a: Affine2d) => Affine2d = internal.inverseUnsafe
 
 /**
- * Type-narrowing predicate: refines an `Affine2d<T>` to
- * `Affine2d<T & Invertible>` when the underlying matrix is invertible
- * (determinant non-zero within the default absolute tolerance).
+ * Checks if a transform is invertible: its underlying matrix's determinant
+ * exceeds `RELATIVE_TOLERANCE` times the Hadamard bound, the scale-free
+ * singularity test of `Matrix3x3.isInvertible`. See `PRECISION.md` for the
+ * mechanics.
  *
  * @param a - The transform to check.
- * @returns `true` when `a` is invertible.
+ * @returns `true` when `a` is invertible, narrowing to `Affine2d<T & Invertible>`.
  * @since 2.0.0
  */
 export const isInvertible: <T>(a: Affine2d<T>) => a is Affine2d<T & Invertible> =
@@ -276,7 +277,7 @@ export const isInvertible: <T>(a: Affine2d<T>) => a is Affine2d<T & Invertible> 
  *
  * @param a - The transform to assert against.
  * @returns The same transform, typed with the `Invertible` brand.
- * @throws When `a` is singular.
+ * @throws `Error` when `a` is singular.
  * @since 2.0.0
  */
 export const asInvertible: <T>(a: Affine2d<T>) => Affine2d<T & Invertible> = internal.asInvertible
@@ -316,7 +317,7 @@ export const apply: {
 export const applyTo: (a: Affine2d) => (p: Vector2) => Vector2 = internal.applyTo
 
 /**
- * Extracts the 2×2 linear part of an `Affine2d` — the upper-left block of
+ * Extracts the 2×2 linear part of an `Affine2d`: the upper-left block of
  * its homogeneous matrix, ignoring translation. Maps direction vectors
  * (tangents, differences of points) under the transform.
  *
@@ -327,8 +328,8 @@ export const applyTo: (a: Affine2d) => (p: Vector2) => Vector2 = internal.applyT
 export const linear: (a: Affine2d) => Matrix2x2 = internal.linear
 
 /**
- * Extracts the translation vector of an `Affine2d` — the third column of its
- * homogeneous matrix, ignoring the linear part.
+ * Extracts the translation vector of an `Affine2d`: the third column of
+ * its homogeneous matrix, ignoring the linear part.
  *
  * @param a - The transform.
  * @returns The translation vector.
@@ -338,10 +339,10 @@ export const translation: (a: Affine2d) => Vector2 = internal.translation
 
 /**
  * Returns the `Affine2d` corresponding to `a`'s linear part with translation
- * zeroed. Equivalent to building an affine from {@link linear} but stays in
- * the `Affine2d` type so it can be applied via {@link apply} or {@link applyTo}.
+ * zeroed. Equivalent to building an affine from `linear` but stays in the
+ * `Affine2d` type so it can be applied via `apply` or `applyTo`.
  *
- * Use this to transform anything that is *not* a position — tangent vectors
+ * Use this to transform anything that is *not* a position: tangent vectors
  * in Hermite control data, or the higher-degree coefficients of a polynomial
  * curve, both of which see only the linear part of an affine map.
  *
@@ -353,8 +354,11 @@ export const linearPart: (a: Affine2d) => Affine2d = internal.linearPart
 
 export const equals: {
   /**
-   * Checks if two `Affine2d` instances are approximately equal within the
-   * default absolute tolerance.
+   * Checks if two `Affine2d` instances are approximately equal.
+   *
+   * Each matrix entry is compared with `coincident` from `curvy/number`,
+   * an absolute-plus-relative tolerance band. See `PRECISION.md` for the
+   * mechanics.
    *
    * @param a - The first transform.
    * @param b - The second transform.
