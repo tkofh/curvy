@@ -43,7 +43,7 @@ never inlined into them.
   non-obvious parameters must carry the real content — geometric meaning,
   units, range, default. Placeholder text is banned.
 - `@throws` on every function with a verified consumer-reachable throw,
-  in the form ``@throws `Error` when …``. The documented condition
+  in the form ``@throws `Error` when ...``. The documented condition
   matches the real guard, not the intended one.
 - `@since` on every public doc block, using the behavior clock: the
   earliest release in which a consumer could obtain the behavior from the
@@ -72,11 +72,12 @@ never inlined into them.
   input beats a paragraph; skip it where the first guess is right. An
   example ships only verified — run it, or check every name against the
   real API.
-- Comments stay in the keyboard character set: formulas written as code
-  (`t^2`, `k0`, `w*x`, `<=`, `sqrt(x^2 + y^2)`, `sum(w_i * P_i)`,
-  `t in [0, 1]`, `pi`), never math glyphs — no sub/superscripts, Greek
-  letters, `·`, `∈`, `≤`, `√`, `Σ`. Em dashes and accented proper names
-  (Bézier, Holmér) stay.
+- Comments and repo docs stay in the keyboard character set: formulas
+  written as code (`t^2`, `k0`, `w*x`, `<=`, `sqrt(x^2 + y^2)`,
+  `sum(w_i * P_i)`, `t in [0, 1]`, `pi`), never math glyphs — no
+  sub/superscripts, Greek letters, `·`, `∈`, `≤`, `√`, `Σ`. Em dashes
+  and accented proper names (Bézier, Holmér) stay, and naming a glyph
+  to describe one, as the run notes do, is fine.
 - Exemplars of the standard: `coincident` and `RELATIVE_TOLERANCE` in
   `packages/core/src/number.ts`; `solve` and `boundingBox` in
   `packages/core/src/path/rationalCubic2d.ts`; `transform` in

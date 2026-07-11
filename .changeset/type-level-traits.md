@@ -15,7 +15,7 @@ Each polynomial module exposes:
 - `isMonotonic`, `isIncreasing`, `isDecreasing` — type-narrowing predicates
 - `asMonotonic`, `asIncreasing`, `asDecreasing` — runtime-checked assertions that throw on failure
 
-For quadratic and cubic polynomials, all of the above accept an optional `Interval` argument (a quadratic with c2 ≠ 0 isn't globally monotonic, but it can be on an interval that avoids its extremum).
+For quadratic and cubic polynomials, all of the above accept an optional `Interval` argument (a quadratic with c2 != 0 isn't globally monotonic, but it can be on an interval that avoids its extremum).
 
 `solveInverse` is overloaded so that a `Monotonic`-branded polynomial returns a tighter shape:
 
@@ -40,7 +40,7 @@ Combined refiners — `isMonotonic`, `isIncreasing`, `isDecreasing` — require 
 
 **Paths.** `LinearPath2d`, `QuadraticPath2d`, and `CubicPath2d` are now generic: `<out Trait = unknown>`. One brand is shipped:
 
-- `Continuous` — adjacent curves connect at their join points (G⁰)
+- `Continuous` — adjacent curves connect at their join points (G^0)
 
 Each path module exposes `isContinuous` and `asContinuous`. Splines emit continuous paths by construction, so `Bezier2d.toPath`, `Cardinal2d.toPath`, etc. all produce paths that pass `isContinuous`.
 

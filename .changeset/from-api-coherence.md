@@ -4,7 +4,7 @@
 
 Sweep the `from*` constructor surface for naming coherence. The library accumulated several inconsistencies organically; v2 lands one rule per verb: `make` is the primary variadic constructor, `fromArray` is its array form, `fromXxx` is for genuinely-from-X semantic constructors named for what their inputs represent.
 
-**Renames (curve modules):** `LinearCurve2d.fromPoints`, `QuadraticCurve2d.fromPoints`, `CubicCurve2d.fromPoints` → `fromCoefficients`. The old name was a misnomer — the function takes `Vector2`s but stores them as polynomial coefficient bundles, not as points on the curve. The new name is honest about that.
+**Renames (curve modules):** `LinearCurve2d.fromPoints`, `QuadraticCurve2d.fromPoints`, `CubicCurve2d.fromPoints` -> `fromCoefficients`. The old name was a misnomer — the function takes `Vector2`s but stores them as polynomial coefficient bundles, not as points on the curve. The new name is honest about that.
 
 ```ts
 // before
@@ -40,7 +40,7 @@ const c = CubicCurve2d.fromBezierPoints(
 **New (polynomial modules):** `QuadraticPolynomial.fromPoints` and `CubicPolynomial.fromPoints` — Lagrange interpolation through 3 and 4 `(x, y)` points, completing the symmetry with `LinearPolynomial.fromPoints` (which already existed). Implementation uses Newton's divided differences collected to monomial form. The input `x` values must be distinct.
 
 ```ts
-// y = x² + 2x + 3
+// y = x^2 + 2x + 3
 const p = QuadraticPolynomial.fromPoints(
   Vector2.make(-1, 2),
   Vector2.make(0, 3),
@@ -48,4 +48,4 @@ const p = QuadraticPolynomial.fromPoints(
 )
 ```
 
-**Renamed (matrix module):** `Matrix3x3.matrix3x3` → `Matrix3x3.make`. The `Matrix2x2` and `Matrix4x4` modules already used `make`; only `Matrix3x3` had the type-name-as-constructor variant, breaking symmetry across the matrix family.
+**Renamed (matrix module):** `Matrix3x3.matrix3x3` -> `Matrix3x3.make`. The `Matrix2x2` and `Matrix4x4` modules already used `make`; only `Matrix3x3` had the type-name-as-constructor variant, breaking symmetry across the matrix family.

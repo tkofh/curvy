@@ -12,7 +12,7 @@ RationalCubicCurve2d.xMonotonicity(c) // Monotonicity (Constant | Increasing | D
 RationalCubicCurve2d.yMonotonicity(c)
 ```
 
-The classification is decided via **Bernstein sign convexity** on the derivative-numerator polynomial `q(t) = X'·W − X·W'`. Since `W² > 0` wherever the curve is well-defined, the sign of `dx/dt` equals the sign of `q`. Although `q` is a difference of degree-5 products, the leading terms cancel and `q` is in fact a quartic — its 5 Bernstein coefficients on `[0, 1]` are evaluated for uniform sign, with de Casteljau subdivision to resolve mixed-sign cases. The procedure is exact except at tangential zeros, where it conservatively reports `None`. No quintic solver involved.
+The classification is decided via **Bernstein sign convexity** on the derivative-numerator polynomial `q(t) = X'*W - X*W'`. Since `W^2 > 0` wherever the curve is well-defined, the sign of `dx/dt` equals the sign of `q`. Although `q` is a difference of degree-5 products, the leading terms cancel and `q` is in fact a quartic — its 5 Bernstein coefficients on `[0, 1]` are evaluated for uniform sign, with de Casteljau subdivision to resolve mixed-sign cases. The procedure is exact except at tangential zeros, where it conservatively reports `None`. No quintic solver involved.
 
 **Trait refiners and asserters, both combined and per-axis.** All twelve forms attach the `Monotonic` / `Increasing` / `Decreasing` brand from `curvy/polynomial`:
 
@@ -28,7 +28,7 @@ RationalCubicCurve2d.isMonotonicX(c) // c is RationalCubicCurve2d<XT & Monotonic
 RationalCubicCurve2d.isIncreasingX(c)
 RationalCubicCurve2d.isDecreasingX(c)
 RationalCubicCurve2d.asMonotonicX(c)
-// (and the corresponding `…Y` variants)
+// (and the corresponding `...Y` variants)
 ```
 
 Per-axis matters because `solveAtX`'s `XT extends Monotonic` overload (returning `Solution.AtMostOne<number>`) only needs x monotonicity — not y. The combined refiners compose internally from `isXxx(c) && isYyy(c)`, with TypeScript's `&&` narrowing accumulating both brands.
