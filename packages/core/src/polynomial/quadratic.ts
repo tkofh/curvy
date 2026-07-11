@@ -13,13 +13,14 @@ import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './trai
 export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 
 /**
- * A quadratic polynomial.
+ * A quadratic polynomial `c0 + c1·x + c2·x²`, stored by coefficient.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly; no operation mutates a polynomial. Construct
+ * via `make`, `fromVector`, or `fromPoints`.
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
  * brands as the polynomial is refined via `isMonotonic` / `asMonotonic` and
- * friends. Refinements may be parameterized by an `Interval` — a quadratic is
+ * friends. Refinements may be parameterized by an `Interval`: a quadratic is
  * monotonic on an interval that avoids its extremum, even though it is not
  * monotonic globally.
  *
@@ -46,6 +47,9 @@ export interface QuadraticPolynomial<out Traits = unknown> extends Pipeable {
 /**
  * Checks if a value is a `QuadraticPolynomial`.
  *
+ * True only for values built by this module's constructors, which carry
+ * the brand; a structural `{ c0, c1, c2 }` object does not match.
+ *
  * @param v - The value to check.
  * @returns `true` if the value is a `QuadraticPolynomial`, `false` otherwise.
  * @since 1.0.0
@@ -64,7 +68,7 @@ export const equals: {
    * @param a - The first polynomial.
    * @param b - The second polynomial.
    * @returns `true` when each pair of coefficients is within tolerance.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (a: QuadraticPolynomial, b: QuadraticPolynomial): boolean
   /**
@@ -72,7 +76,7 @@ export const equals: {
    *
    * @param b - The second polynomial.
    * @returns A function that takes the first polynomial and returns the comparison result.
-   * @since 1.1.0
+   * @since 2.0.0
    */
   (b: QuadraticPolynomial): (a: QuadraticPolynomial) => boolean
 } = internal.equals
@@ -89,9 +93,10 @@ export const equals: {
 export const make: (c0?: number, c1?: number, c2?: number) => QuadraticPolynomial = internal.make
 
 /**
- * Creates a new `QuadraticPolynomial` instance from a vector.
+ * Creates a new `QuadraticPolynomial` instance from a vector: `v.x`
+ * becomes `c0`, `v.y` becomes `c1`, and `v.z` becomes `c2`.
  *
- * @param v - The vector to create the polynomial from.
+ * @param v - The coefficients as a vector, in monomial order.
  * @returns A new `QuadraticPolynomial` instance.
  * @since 1.0.0
  */
@@ -113,58 +118,65 @@ export const fromPoints: (p0: Vector2, p1: Vector2, p2: Vector2) => QuadraticPol
 
 export const solve: {
   /**
-   * Solves the quadratic polynomial for a given x value.
+   * Evaluates the polynomial at `x`.
    *
-   * @param p - The quadratic polynomial.
-   * @param x - The x value to solve for.
-   * @returns The result of the polynomial at the given x value.
+   * @param p - The quadratic polynomial to evaluate.
+   * @param x - The input value.
+   * @returns The value `c0 + c1 * x + c2 * x²`.
    * @since 1.0.0
    */
   (p: QuadraticPolynomial, x: number): number
   /**
-   * Solves the quadratic polynomial for a given x value.
+   * Evaluates the polynomial at `x`.
    *
-   * @param x - The x value to solve for.
-   * @returns A function that takes a quadratic polynomial and returns the result of the polynomial at the given x value.
+   * @param x - The input value.
+   * @returns A function that takes a `QuadraticPolynomial` and returns its value at `x`.
    * @since 1.0.0
    */
   (x: number): (p: QuadraticPolynomial) => number
 } = internal.solve
 
 /**
- * Creates a solver function for the quadratic polynomial.
+ * Converts a quadratic polynomial to an evaluation function: the
+ * single-argument form of `solve`, shaped for `pipe` and `map`.
  *
- * @param p - The quadratic polynomial.
- * @returns A function that takes an x value and returns the result of the polynomial at that x value.
+ * @param p - The quadratic polynomial to convert.
+ * @returns A function that takes `x` and returns the polynomial's value there.
+ * @since 1.0.0
  */
 export const toSolver: (p: QuadraticPolynomial) => (x: number) => number = internal.toSolver
 
 export const solveInverse: {
   /**
-   * Solves a monotonic quadratic polynomial for a given y value. Because the
-   * polynomial is strictly monotonic (either globally, or over the interval
-   * the `Monotonic` brand was attached for), the inverse has at most one
-   * solution.
+   * Finds the inputs at which a monotonic quadratic polynomial attains
+   * `y`. Because the polynomial is strictly monotonic (either globally, or
+   * over the interval the `Monotonic` brand was attached for), the inverse
+   * has at most one solution.
    *
-   * @param p - The monotonic quadratic polynomial.
-   * @param y - The y value to solve for.
-   * @returns Zero or one solutions.
+   * @param p - The monotonic quadratic polynomial to invert.
+   * @param y - The output value to find inputs for.
+   * @returns Zero or one solving inputs.
    * @since 2.0.0
    */
   <T extends Monotonic>(p: QuadraticPolynomial<T>, y: number): Solution.AtMostOne<number>
   /**
-   * Solves the quadratic polynomial for a given y value.
+   * Finds the inputs at which the polynomial attains `y`, in ascending
+   * order.
    *
-   * @param p - The quadratic polynomial.
-   * @param y - The y value to solve for.
-   * @returns The solutions to the polynomial at the given y value.
+   * The root count is tolerance-aware: a discriminant within rounding
+   * distance of zero, relative to its own terms, counts as a double root
+   * and yields one solution. See `PRECISION.md` for the mechanics.
+   *
+   * @param p - The quadratic polynomial to invert.
+   * @param y - The output value to find inputs for.
+   * @returns Zero, one, or two solving inputs, ascending.
    * @since 1.0.0
    */
   <T>(p: QuadraticPolynomial<T>, y: number): Solution.AtMostTwo<number>
   /**
-   * Solves the quadratic polynomial for a given y value.
+   * Finds the inputs at which a quadratic polynomial attains `y`.
    *
-   * @param y - The y value to solve for.
+   * @param y - The output value to find inputs for.
    * @returns A function that takes a quadratic polynomial and returns the
    *   solutions. Tightens to `Solution.AtMostOne<number>` for monotonic inputs.
    * @since 1.0.0
@@ -176,10 +188,12 @@ export const solveInverse: {
 } = internal.solveInverse as never
 
 /**
- * Creates an inverse solver function for the quadratic polynomial.
+ * Converts a quadratic polynomial to an inverse-solving function: the
+ * single-argument form of `solveInverse`, shaped for `pipe` and `map`.
  *
- * @param p - The quadratic polynomial.
- * @returns A function that takes a y value and returns the solutions to the polynomial at that y value.
+ * @param p - The quadratic polynomial to convert.
+ * @returns A function that takes `y` and returns the inverse solutions.
+ * @since 1.0.0
  */
 export const toInverseSolver: (
   p: QuadraticPolynomial,
@@ -205,19 +219,24 @@ export const coefficients: (p: QuadraticPolynomial) => readonly [number, number,
 export const derivative: (p: QuadraticPolynomial) => LinearPolynomial = internal.derivative
 
 /**
- * Finds the roots of the quadratic polynomial.
+ * Finds the roots of the quadratic polynomial: the inputs where
+ * `p(x) = 0`, in ascending order.
+ *
+ * Root count follows the tolerance-aware discriminant test of
+ * `solveInverse`.
  *
  * @param p - The quadratic polynomial.
- * @returns The roots of the polynomial as a tuple of solutions.
+ * @returns Zero, one, or two roots, ascending.
  * @since 1.0.0
  */
 export const roots: (p: QuadraticPolynomial) => Solution.AtMostTwo<number> = internal.roots
 
 /**
- * Finds the extreme point of the quadratic polynomial.
+ * Finds the vertex of the quadratic polynomial: the point `(x, p(x))`
+ * where the derivative is zero.
  *
  * @param p - The quadratic polynomial.
- * @returns The extreme point of the polynomial as a solution.
+ * @returns The vertex as a `Vector2`, or `null` when the polynomial is degenerate (`c2` exactly `0`) and has none.
  * @since 1.0.0
  */
 export const extreme: (p: QuadraticPolynomial) => Vector2 | null = internal.extreme
@@ -225,8 +244,8 @@ export const extreme: (p: QuadraticPolynomial) => Vector2 | null = internal.extr
 export const monotonicity: {
   /**
    * Computes the monotonicity of the quadratic polynomial over a given
-   * interval. Throws when the interval has zero width — the question is
-   * undefined at a single point.
+   * interval, or globally when `i` is omitted. Throws when the interval
+   * has zero width: the question is undefined at a single point.
    *
    * @param p - The quadratic polynomial.
    * @param i - The interval to compute the monotonicity over.
@@ -247,13 +266,13 @@ export const monotonicity: {
 } = internal.monotonicity
 
 /**
- * Type-narrowing predicate: refines a `QuadraticPolynomial<T>` to
- * `QuadraticPolynomial<T & Monotonic>` when the polynomial is strictly
- * monotonic over the given interval (or globally, when no interval is given).
+ * Checks if the polynomial is strictly monotonic over the given interval
+ * (or globally, when no interval is given) — the condition under which
+ * `solveInverse` has at most one solution.
  *
  * @param p - The quadratic polynomial to check.
  * @param i - Optional interval over which to check monotonicity.
- * @returns `true` when monotonicity is `Increasing` or `Decreasing`.
+ * @returns `true` when monotonicity is `Increasing` or `Decreasing`, narrowing to `QuadraticPolynomial<T & Monotonic>`.
  * @since 2.0.0
  */
 export const isMonotonic: {
@@ -262,8 +281,12 @@ export const isMonotonic: {
 } = internal.isMonotonic
 
 /**
- * Type-narrowing predicate: refines to `QuadraticPolynomial<T & Increasing>`.
+ * Checks if the polynomial is strictly increasing over the given interval
+ * (or globally, when no interval is given).
  *
+ * @param p - The quadratic polynomial to check.
+ * @param i - Optional interval over which to check.
+ * @returns `true` when monotonicity is `Increasing`, narrowing to `QuadraticPolynomial<T & Increasing>`.
  * @since 2.0.0
  */
 export const isIncreasing: {
@@ -272,8 +295,12 @@ export const isIncreasing: {
 } = internal.isIncreasing
 
 /**
- * Type-narrowing predicate: refines to `QuadraticPolynomial<T & Decreasing>`.
+ * Checks if the polynomial is strictly decreasing over the given interval
+ * (or globally, when no interval is given).
  *
+ * @param p - The quadratic polynomial to check.
+ * @param i - Optional interval over which to check.
+ * @returns `true` when monotonicity is `Decreasing`, narrowing to `QuadraticPolynomial<T & Decreasing>`.
  * @since 2.0.0
  */
 export const isDecreasing: {
@@ -298,6 +325,10 @@ export const asMonotonic: <T>(
 /**
  * Asserts that the quadratic polynomial is increasing, throwing on failure.
  *
+ * @param p - The quadratic polynomial to assert against.
+ * @param i - Optional interval over which to check.
+ * @returns The same polynomial, typed with the `Increasing` brand.
+ * @throws `Error` when the polynomial is not increasing over the given (or global) interval.
  * @since 2.0.0
  */
 export const asIncreasing: <T>(
@@ -308,6 +339,10 @@ export const asIncreasing: <T>(
 /**
  * Asserts that the quadratic polynomial is decreasing, throwing on failure.
  *
+ * @param p - The quadratic polynomial to assert against.
+ * @param i - Optional interval over which to check.
+ * @returns The same polynomial, typed with the `Decreasing` brand.
+ * @throws `Error` when the polynomial is not decreasing over the given (or global) interval.
  * @since 2.0.0
  */
 export const asDecreasing: <T>(
@@ -337,19 +372,37 @@ export const antiderivative: {
 
 export const domain: {
   /**
-   * Computes the domain of the quadratic polynomial over a given range.
+   * Computes the interval of inputs over which `p` attains the values in
+   * `range`: the hull of every solution of `p(x) = range.start` and
+   * `p(x) = range.end`.
    *
-   * @param p - The quadratic polynomial.
-   * @param range - The range to compute the domain over.
-   * @returns The domain of the polynomial over the range.
+   * The result is the exact preimage when `p` is monotonic over it. When
+   * it is not, the true preimage may be disjoint, and the hull encloses
+   * it — possibly including inputs whose values fall outside `range`.
+   * When neither boundary value is attained the result is
+   * `Solution.none`; when only one is, the hull covers that side's
+   * solutions.
+   *
+   * `range` is the forward query.
+   *
+   * @param p - The quadratic polynomial to invert.
+   * @param range - The output values to find inputs for.
+   * @returns The enclosing preimage interval, or `Solution.none` when neither boundary value is attained.
+   * @example
+   * ```ts
+   * // x² attains 1 at ±1 and 4 at ±2; the hull is [-2, 2]
+   * QuadraticPolynomial.domain(QuadraticPolynomial.make(0, 0, 1), Interval.make(1, 4))
+   * // Solution.one of [-2, 2]
+   * ```
    * @since 1.0.0
    */
   (p: QuadraticPolynomial, range: Interval): Solution.AtMostOne<Interval>
   /**
-   * Computes the domain of the quadratic polynomial over a given range.
+   * Computes the interval of inputs over which a quadratic polynomial
+   * attains the values in `range`.
    *
-   * @param range - The range to compute the domain over.
-   * @returns A function that takes a quadratic polynomial and returns the domain of the polynomial over the range.
+   * @param range - The output values to find inputs for.
+   * @returns A function that takes a quadratic polynomial and returns the enclosing preimage interval.
    * @since 1.0.0
    */
   (range: Interval): (p: QuadraticPolynomial) => Solution.AtMostOne<Interval>
@@ -357,19 +410,23 @@ export const domain: {
 
 export const range: {
   /**
-   * Computes the range of the quadratic polynomial over a given domain.
+   * Computes the exact values `p` attains over `domain`: the closed
+   * interval covering both endpoint values and the vertex value when the
+   * vertex lies inside `domain`.
    *
-   * @param p - The quadratic polynomial.
-   * @param domain - The domain to compute the range over.
-   * @returns The range of the polynomial over the domain.
+   * `domain` is the inverse query.
+   *
+   * @param p - The quadratic polynomial to evaluate.
+   * @param domain - The inputs to evaluate over.
+   * @returns The closed interval of attained values.
    * @since 1.0.0
    */
   (p: QuadraticPolynomial, domain: Interval): Closed
   /**
-   * Computes the range of the quadratic polynomial over a given domain.
+   * Computes the values a quadratic polynomial attains over `domain`.
    *
-   * @param domain - The domain to compute the range over.
-   * @returns A function that takes a quadratic polynomial and returns the range of the polynomial over the domain.
+   * @param domain - The inputs to evaluate over.
+   * @returns A function that takes a quadratic polynomial and returns its range over `domain`.
    * @since 1.0.0
    */
   (domain: Interval): (p: QuadraticPolynomial) => Closed
@@ -377,8 +434,8 @@ export const range: {
 
 /**
  * Computes the range of the quadratic polynomial over the unit interval
- * `[0, 1]`. Equivalent to `range(p, Interval.unit)` — accounts for any
- * interior extremum in `[0, 1]`.
+ * `[0, 1]`. Equivalent to `range(p, Interval.unit)`, accounting for any
+ * interior vertex in `[0, 1]`.
  *
  * @param p - The quadratic polynomial.
  * @returns The closed range of the polynomial over `[0, 1]`.
@@ -388,19 +445,22 @@ export const unitRange: (p: QuadraticPolynomial) => Closed = internal.unitRange
 
 export const length: {
   /**
-   * Computes the length of the quadratic polynomial over a given interval.
+   * Computes the arc length of the graph `y = p(x)` over `i`.
    *
-   * @param p - The quadratic polynomial.
-   * @param i - The interval to compute the length over.
-   * @returns The length of the polynomial over the interval.
+   * Uses the parabola's closed-form arc length (no numerical
+   * integration); exact up to rounding. `0` for a zero-size interval.
+   *
+   * @param p - The quadratic polynomial to measure.
+   * @param i - The inputs to measure over.
+   * @returns The arc length of the graph over `i`.
    * @since 1.0.0
    */
   (p: QuadraticPolynomial, i: Interval): number
   /**
-   * Computes the length of the quadratic polynomial over a given interval.
+   * Computes the arc length of a quadratic polynomial's graph over `i`.
    *
-   * @param i - The interval to compute the length over.
-   * @returns A function that takes a quadratic polynomial and returns the length of the polynomial over the interval.
+   * @param i - The inputs to measure over.
+   * @returns A function that takes a quadratic polynomial and returns the arc length.
    * @since 1.0.0
    */
   (i: Interval): (p: QuadraticPolynomial) => number
@@ -408,19 +468,25 @@ export const length: {
 
 export const curvature: {
   /**
-   * Computes the curvature of the quadratic polynomial at a given x value.
+   * Computes the unsigned curvature of the graph `y = p(x)` at `x`.
+   *
+   * Unsigned: bending direction is not reported. Known deviation: the
+   * implementation currently evaluates `|p''| / (1 + |p'(x)|³)` instead
+   * of the standard `|p''| / (1 + p'(x)²)^(3/2)`; the two agree at the
+   * vertex (`p'(x) = 0`) and drift apart away from it.
    *
    * @param p - The quadratic polynomial.
-   * @param x - The x value to compute the curvature at.
-   * @returns The curvature of the polynomial at the given x value.
+   * @param x - The input at which to measure curvature.
+   * @returns The unsigned curvature at `x`.
    * @since 1.0.0
    */
   (p: QuadraticPolynomial, x: number): number
   /**
-   * Computes the curvature of the quadratic polynomial at a given x value.
+   * Computes the unsigned curvature of a quadratic polynomial's graph at
+   * `x`.
    *
-   * @param x - The x value to compute the curvature at.
-   * @returns A function that takes a quadratic polynomial and returns the curvature of the polynomial at the given x value.
+   * @param x - The input at which to measure curvature.
+   * @returns A function that takes a quadratic polynomial and returns the curvature at `x`.
    * @since 1.0.0
    */
   (x: number): (p: QuadraticPolynomial) => number
