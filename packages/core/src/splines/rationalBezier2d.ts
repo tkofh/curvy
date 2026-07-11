@@ -13,16 +13,16 @@ import * as internal from './rationalBezier2d.internal.ts'
  * weight; the curve evaluates to `Σ w_i · N_i(t) · P_i / Σ w_i · N_i(t)`,
  * where `N_i` are the cubic Bernstein basis functions. With all weights
  * equal, the curve coincides with a non-rational `Bezier2d`. With unequal
- * weights, the curve can exactly represent conic sections — circles,
- * ellipses, parabolas, and hyperbolas — that polynomial Béziers can only
+ * weights, the curve can exactly represent conic sections (circles,
+ * ellipses, parabolas, and hyperbolas) that polynomial Béziers can only
  * approximate.
  *
  * Internally each control point is stored in homogeneous form `(w·x, w·y, w)`,
  * so de Casteljau evaluation is three independent linear interpolations
- * followed by a single division. Iteration projects back to `Vector2.Weighted`
- * — the same shape accepted by {@link make}.
+ * followed by a single division. Iteration projects back to
+ * `Vector2.Weighted`, the same shape accepted by `make`.
  *
- * All fields are readonly and immutable, and all operations create new instances.
+ * All fields are readonly; no operation mutates a spline.
  *
  * @since 2.0.0
  */
@@ -71,7 +71,7 @@ export const fromArray: (points: ReadonlyArray<Weighted>) => RationalBezier2d = 
 
 /**
  * Creates a new `RationalBezier2d` from an array of `[x, y, weight]` tuples.
- * Weight is the projective denominator at each control point — `1` everywhere
+ * Weight is the projective denominator at each control point: `1` everywhere
  * yields the polynomial Bézier; varying weights bend the curve toward the
  * heavier control points.
  *
@@ -88,7 +88,7 @@ export const fromTuples: (
  * weights equal to one.
  *
  * Convenience constructor for callers who want the rational evaluator but
- * don't yet have non-unit weights — the resulting curve is mathematically
+ * don't yet have non-unit weights; the resulting curve is mathematically
  * equivalent to the corresponding `Bezier2d.make(p0, p1, p2, p3)` and can
  * later be subdivided or recombined using the rational machinery without
  * conversion overhead.
@@ -117,8 +117,8 @@ export const fromBezier: (b: Bezier2d) => RationalBezier2d = internal.fromBezier
  * Converts a `RationalBezier2d` to a `RationalCubicPath2d`.
  *
  * Each segment's four homogeneous control points are expanded into three
- * per-segment monomial cubic polynomials — `x`, `y`, and the shared
- * denominator `w` — yielding a path whose evaluator is three Horner passes
+ * per-segment monomial cubic polynomials (`x`, `y`, and the shared
+ * denominator `w`), yielding a path whose evaluator is three Horner passes
  * plus two divisions per call.
  *
  * Mirrors `Bezier2d.toPath`: spline construction is converted to path
@@ -139,7 +139,7 @@ export const mapPoints: {
    * The transform sees each control point as a `Vector2.Weighted` —
    * matching the type's storage form. To lift a position-only function into
    * a weighted mapper while preserving weights, use
-   * {@link Vector2.liftWithWeight}.
+   * `Vector2.liftWithWeight`.
    *
    * @param f - The weighted-point transform.
    * @returns A function that takes a `RationalBezier2d` and returns the mapped spline.
@@ -215,7 +215,7 @@ export const subdivide: {
   /**
    * Splits a `RationalBezier2d` at the given global parameter `u ∈ (0, 1)`
    * using de Casteljau's algorithm in homogeneous coordinates. The two
-   * returned beziers together trace the same curve as the input — the left
+   * returned beziers together trace the same curve as the input: the left
    * covers `[0, u]`, the right covers `[u, 1]`.
    *
    * The subdivided halves' control-point weights generally differ from the
