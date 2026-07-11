@@ -14,7 +14,7 @@ export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 /**
  * A cubic polynomial `c0 + c1·x + c2·x² + c3·x³`, stored by coefficient.
  *
- * All fields are readonly; no operation mutates a polynomial. Construct
+ * All fields are readonly. No operation mutates a polynomial. Construct
  * via `make`, `fromVector`, or `fromPoints`.
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
@@ -50,7 +50,7 @@ export interface CubicPolynomial<out Traits = unknown> extends Pipeable {
  * Checks if a value is a `CubicPolynomial`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural `{ c0, c1, c2, c3 }` object does not match.
+ * the brand. A structural `{ c0, c1, c2, c3 }` object does not match.
  *
  * @param value - The value to check.
  * @returns `true` if the value is a `CubicPolynomial`, `false` otherwise.
@@ -173,7 +173,7 @@ export const solveInverse: {
    *
    * @param p - The cubic polynomial to invert.
    * @param y - The output value to find inputs for.
-   * @returns Up to three solving inputs, ascending. A true cubic (`c3 ≠ 0`) always yields at least one; none can arise only for degenerate, lower-degree coefficients.
+   * @returns Up to three solving inputs, ascending. A true cubic (`c3 ≠ 0`) always yields at least one. None can arise only for degenerate, lower-degree coefficients.
    * @since 1.0.0
    */
   <T>(p: CubicPolynomial<T>, y: number): Solution.AtMostThree<number>
@@ -225,12 +225,12 @@ export const subdivide: {
   /**
    * Subdivides a cubic polynomial at parameter `t ∈ (0, 1)` into two new
    * cubic polynomials. The first polynomial's evaluation on `[0, 1]` matches
-   * the original's on `[0, t]`; the second matches the original's on
+   * the original's on `[0, t]`. The second matches the original's on
    * `[t, 1]`. Equivalent to de Casteljau subdivision in Bernstein form,
    * performed directly in monomial form.
    *
    * @param p - The cubic polynomial to subdivide.
-   * @param t - The split parameter; must be in the open interval `(0, 1)`.
+   * @param t - The split parameter. Must be in the open interval `(0, 1)`.
    * @returns A `[left, right]` tuple of cubic polynomials.
    * @throws `Error` when `t` is outside the open interval `(0, 1)`.
    * @since 2.0.0
@@ -239,7 +239,7 @@ export const subdivide: {
   /**
    * Subdivides a cubic polynomial at parameter `t ∈ (0, 1)`.
    *
-   * @param t - The split parameter; must be in the open interval `(0, 1)`.
+   * @param t - The split parameter. Must be in the open interval `(0, 1)`.
    * @returns A function that takes a polynomial and returns its `[left, right]` halves.
    * @throws `Error` when `t` is outside the open interval `(0, 1)`.
    * @since 2.0.0
@@ -389,7 +389,7 @@ export const domain: {
    * it is not, the true preimage may be disjoint, and the hull encloses
    * it — possibly including inputs whose values fall outside `range`.
    * When neither boundary value is attained the result is
-   * `Solution.none`; when only one is, the hull covers that side's
+   * `Solution.none`. When only one is, the hull covers that side's
    * solutions.
    *
    * `range` is the forward query.
@@ -450,7 +450,7 @@ export const length: {
   /**
    * Calculates the arc length of the graph `y = p(x)` over `domain`.
    *
-   * A cubic's arc length has no closed form; the value is computed by
+   * A cubic's arc length has no closed form. The value is computed by
    * numerical quadrature and is accurate to the quadrature, not exact.
    * `0` for a zero-size domain. Degenerate (lower-degree) coefficients
    * fall through to the exact lower-degree formulas.

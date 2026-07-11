@@ -46,7 +46,7 @@ export interface Bounds2d {
  * Checks if a value is an `Interval2d`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural pair of bounds is `Bounds2d`, not an
+ * the brand. A structural pair of bounds is `Bounds2d`, not an
  * `Interval2d`.
  *
  * @param v - The value to check.
@@ -140,7 +140,7 @@ export const containsInterval2d: {
  * `Bounds2d` type because size does not depend on endpoint inclusivity.
  *
  * @param box - The 2D interval (or bounds-shaped value) to measure.
- * @returns The per-axis absolute sizes as a `Vector2`; never negative, even for reversed structural bounds.
+ * @returns The per-axis absolute sizes as a `Vector2`. Never negative, even for reversed structural bounds.
  * @since 2.0.0
  */
 export const size: (box: Bounds2d) => Vector2 = internal.size
@@ -247,7 +247,7 @@ export const maxDistance: {
    * point of `b`.
    *
    * The bound is the exact farthest-pair distance unless, on some axis,
-   * one interval's endpoints lie strictly inside the other's; there the
+   * one interval's endpoints lie strictly inside the other's. There the
    * union span exceeds the farthest-pair separation. Accepts the broader
    * `Bounds2d` type: endpoint inclusivity is not consulted, and reversed
    * structural bounds are normalized with min/max.

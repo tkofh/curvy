@@ -15,7 +15,7 @@ export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
 /**
  * A cubic curve in 2D space.
  *
- * All fields are readonly; no operation mutates a curve.
+ * All fields are readonly. No operation mutates a curve.
  *
  * The two type parameters carry the trait sets of the curve's per-axis
  * polynomials. Refiners check monotonicity over the unit interval `[0, 1]` —
@@ -103,7 +103,7 @@ export const solve: {
   /**
    * Evaluates the curve at parameter `t`.
    *
-   * `t` is not clamped; values outside `[0, 1]` extrapolate the curve's
+   * `t` is not clamped. Values outside `[0, 1]` extrapolate the curve's
    * polynomials.
    *
    * @param c - The cubic curve to evaluate.

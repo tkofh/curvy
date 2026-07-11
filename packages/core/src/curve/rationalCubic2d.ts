@@ -33,7 +33,7 @@ export { RationalCurveTraits } from './rationalCubic2d.internal.ts'
  * `asDecreasing` families, which verify the property rigorously
  * (Bernstein sign convexity on the derivative-numerator quartic).
  *
- * All fields are readonly; no operation mutates a curve.
+ * All fields are readonly. No operation mutates a curve.
  *
  * @since 2.0.0
  */
@@ -120,14 +120,14 @@ export const fromBezierPoints: {
 /**
  * Creates a rational cubic easing curve from endpoint slopes and signed
  * curvatures. The result interpolates `(0, 0)` and `(1, 1)` with `x(t) = t`
- * pinned linearly; the y-axis projection `y(t) = Y(t)/W(t)` uses a cubic
+ * pinned linearly. The y-axis projection `y(t) = Y(t)/W(t)` uses a cubic
  * numerator over a quadratic denominator, giving six free parameters that
  * exactly match the six endpoint constraints (two values, two slopes, two
  * curvatures).
  *
  * Curvatures are the signed differential-geometric curvatures `κ = y''(x) /
  * (1 + y'(x)²)^(3/2)`: the parameterization-invariant "bend" of the easing
- * graph. Positive κ is concave-up. Smoothstep is `(0, 0, 6, -6)`; linear is
+ * graph. Positive κ is concave-up. Smoothstep is `(0, 0, 6, -6)`. Linear is
  * `(1, 1, 0, 0)` (taken as a redundant-system special case).
  *
  * Monotonicity is not enforced. Callers needing the `Increasing` brand for
@@ -262,12 +262,12 @@ export const subdivide: {
   /**
    * Subdivides a rational cubic curve at parameter `t ∈ (0, 1)` into two new
    * rational cubic curves. The first curve's evaluation on `[0, 1]` matches
-   * the original's on `[0, t]`; the second matches the original's on `[t, 1]`.
+   * the original's on `[0, t]`. The second matches the original's on `[t, 1]`.
    * Equivalent to de Casteljau subdivision on the homogeneous control polygon,
    * but performed directly on the per-axis monomial polynomials.
    *
    * @param c - The rational cubic curve to subdivide.
-   * @param t - The split parameter; must be in the open interval `(0, 1)`.
+   * @param t - The split parameter. Must be in the open interval `(0, 1)`.
    * @returns A `[left, right]` tuple of rational cubic curves.
    * @since 2.0.0
    */
@@ -275,7 +275,7 @@ export const subdivide: {
   /**
    * Subdivides a rational cubic curve at parameter `t ∈ (0, 1)`.
    *
-   * @param t - The split parameter; must be in the open interval `(0, 1)`.
+   * @param t - The split parameter. Must be in the open interval `(0, 1)`.
    * @returns A function that takes a curve and returns its `[left, right]` halves.
    * @since 2.0.0
    */
@@ -290,7 +290,7 @@ export const boundingBox: {
    * Implemented as recursive subdivision: at each leaf the curve segment's
    * loose hull AABB (cheap, always valid) is compared against the segment's
    * endpoint AABB (which the curve provably visits). When the per-side gap
-   * between them is ≤ `tolerance`, the leaf returns its hull; otherwise the
+   * between them is ≤ `tolerance`, the leaf returns its hull. Otherwise the
    * segment is split at `t = 0.5` and the procedure recurses, unioning the
    * halves.
    *
@@ -300,7 +300,7 @@ export const boundingBox: {
    * computes the exact box from per-axis cubic extrema, with no subdivision.
    *
    * @param c - The rational cubic curve.
-   * @param tolerance - Maximum allowed slack per side; must be positive.
+   * @param tolerance - Maximum allowed slack per side. Must be positive.
    * @returns A closed `Interval2d` enclosing the curve, tight to within `tolerance`.
    * @since 2.0.0
    */
@@ -308,7 +308,7 @@ export const boundingBox: {
   /**
    * Computes a closed axis-aligned bounding box for a rational cubic curve.
    *
-   * @param tolerance - Maximum allowed slack per side; must be positive.
+   * @param tolerance - Maximum allowed slack per side. Must be positive.
    * @returns A function that takes a curve and returns its bounding box.
    * @since 2.0.0
    */
@@ -556,7 +556,7 @@ export const transform: {
   /**
    * Applies an `Affine2d` transform to a `RationalCubicCurve2d`, returning a
    * new curve whose image is the affine image of the original. The denominator
-   * polynomial is preserved; each numerator pulls in a translation term
+   * polynomial is preserved. Each numerator pulls in a translation term
    * weighted by the denominator so the projected curve matches `A · R(s) + t`
    * pointwise.
    *
@@ -581,10 +581,10 @@ export const approximateAsCubicCurves: {
    * Approximates the rational cubic as a sequence of polynomial cubic curves
    * via recursive subdivision. At each level a candidate polynomial cubic is
    * built by projecting the segment's homogeneous Bézier control points to
-   * 2D; if the symmetric Hausdorff distance between the rational segment and
+   * 2D. If the symmetric Hausdorff distance between the rational segment and
    * its candidate exceeds `tolerance` (verified via a certified subdivision
    * bound, not a single-point sample), the segment is split at `t = 0.5` and
-   * the procedure recurses on each half. Returns a non-empty array; for a
+   * the procedure recurses on each half. Returns a non-empty array. For a
    * curve that is already polynomial (uniform weights) the result is a
    * single exact segment.
    *
@@ -594,7 +594,7 @@ export const approximateAsCubicCurves: {
    * deviation, not just a parametric error at one sample.
    *
    * @param c - The rational cubic curve to approximate.
-   * @param tolerance - Maximum allowed Hausdorff distance; must be positive.
+   * @param tolerance - Maximum allowed Hausdorff distance. Must be positive.
    * @returns A sequence of polynomial cubic curves covering the input.
    * @since 2.0.0
    */
@@ -602,7 +602,7 @@ export const approximateAsCubicCurves: {
   /**
    * Approximates the rational cubic as a sequence of polynomial cubic curves.
    *
-   * @param tolerance - Maximum allowed Hausdorff distance; must be positive.
+   * @param tolerance - Maximum allowed Hausdorff distance. Must be positive.
    * @returns A function that takes a curve and returns its polynomial approximation.
    * @since 2.0.0
    */

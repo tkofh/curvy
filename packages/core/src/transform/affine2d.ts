@@ -29,7 +29,7 @@ export type { Invertible } from './traits.ts'
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
  * brands as the transform is refined via `isInvertible` / `asInvertible`. The
- * runtime value carries no trait data; `Traits` only flows through the type
+ * runtime value carries no trait data. `Traits` only flows through the type
  * system to enable tighter return types on operations like `inverse`.
  *
  * @since 2.0.0
@@ -55,7 +55,7 @@ export const isAffine2d: (a: unknown) => a is Affine2d = internal.isAffine2d
 /**
  * Lifts a `Matrix3x3` into an `Affine2d` after asserting its last row is
  * `[0, 0, 1]`. Use this when constructing affine transforms from an
- * already-built matrix; prefer the named constructors (`translate`,
+ * already-built matrix. Prefer the named constructors (`translate`,
  * `scale`, `rotate`, …) for ordinary usage.
  *
  * @param matrix - The matrix to lift. Must have a last row of `[0, 0, 1]`.
@@ -115,7 +115,7 @@ export const scale: {
 
 /**
  * Creates an `Affine2d` that scales by `(sx, sy)` about `origin`. Points at
- * `origin` are left fixed; every other point moves toward or away from
+ * `origin` are left fixed. Every other point moves toward or away from
  * `origin` along the corresponding axis.
  *
  * @param sx - The x scale factor.
@@ -129,7 +129,7 @@ export const scaleAround: (sx: number, sy: number, origin: Vector2) => Affine2d 
 
 /**
  * Creates an `Affine2d` that rotates by `theta` radians around the origin.
- * Counter-clockwise in the standard mathematical orientation (with y up); if
+ * Counter-clockwise in the standard mathematical orientation (with y up). If
  * your coordinate system has y down, rotation is clockwise.
  *
  * @param theta - The rotation angle in radians.
@@ -164,8 +164,8 @@ export const reflectY: Affine2d = internal.reflectY
 
 /**
  * Creates an `Affine2d` that reflects across the line passing through
- * `origin` in the direction `direction`. `direction` need not be unit length;
- * it is normalized internally.
+ * `origin` in the direction `direction`. `direction` need not be unit length.
+ * It is normalized internally.
  *
  * @param origin - A point on the mirror line.
  * @param direction - A non-zero vector parallel to the mirror line.
@@ -250,7 +250,7 @@ export const inverse: {
 /**
  * Inverts an `Affine2d`, throwing when the transform is singular (e.g. a
  * scale with a zero factor). Useful when invertibility has already been
- * validated out-of-band; otherwise prefer `inverse`.
+ * validated out-of-band. Otherwise prefer `inverse`.
  *
  * @param a - The transform to invert.
  * @returns The inverse transform.

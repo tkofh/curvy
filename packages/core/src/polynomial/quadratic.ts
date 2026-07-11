@@ -15,7 +15,7 @@ export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 /**
  * A quadratic polynomial `c0 + c1·x + c2·x²`, stored by coefficient.
  *
- * All fields are readonly; no operation mutates a polynomial. Construct
+ * All fields are readonly. No operation mutates a polynomial. Construct
  * via `make`, `fromVector`, or `fromPoints`.
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
@@ -48,7 +48,7 @@ export interface QuadraticPolynomial<out Traits = unknown> extends Pipeable {
  * Checks if a value is a `QuadraticPolynomial`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural `{ c0, c1, c2 }` object does not match.
+ * the brand. A structural `{ c0, c1, c2 }` object does not match.
  *
  * @param v - The value to check.
  * @returns `true` if the value is a `QuadraticPolynomial`, `false` otherwise.
@@ -380,7 +380,7 @@ export const domain: {
    * it is not, the true preimage may be disjoint, and the hull encloses
    * it — possibly including inputs whose values fall outside `range`.
    * When neither boundary value is attained the result is
-   * `Solution.none`; when only one is, the hull covers that side's
+   * `Solution.none`. When only one is, the hull covers that side's
    * solutions.
    *
    * `range` is the forward query.
@@ -448,7 +448,7 @@ export const length: {
    * Computes the arc length of the graph `y = p(x)` over `i`.
    *
    * Uses the parabola's closed-form arc length (no numerical
-   * integration); exact up to rounding. `0` for a zero-size interval.
+   * integration). Exact up to rounding. `0` for a zero-size interval.
    *
    * @param p - The quadratic polynomial to measure.
    * @param i - The inputs to measure over.
@@ -472,7 +472,7 @@ export const curvature: {
    *
    * Unsigned: bending direction is not reported. Known deviation: the
    * implementation currently evaluates `|p''| / (1 + |p'(x)|³)` instead
-   * of the standard `|p''| / (1 + p'(x)²)^(3/2)`; the two agree at the
+   * of the standard `|p''| / (1 + p'(x)²)^(3/2)`. The two agree at the
    * vertex (`p'(x) = 0`) and drift apart away from it.
    *
    * @param p - The quadratic polynomial.

@@ -59,13 +59,13 @@ export function epsEquals(a: number, b: number, eps: number = EPSILON): boolean 
  * `|a - b| <= absolute + relative * max(|a|, |b|)`.
  *
  * The relative term covers rounding noise accumulated by arithmetic, which
- * grows with the magnitude of the values; the absolute term covers the
+ * grows with the magnitude of the values. The absolute term covers the
  * neighborhood of zero, where relative comparison degenerates (no nonzero
  * value is relatively close to `0`). The band is strictly wider than the
  * plain absolute comparison, never narrower.
  *
  * Defaults: `absolute = EPSILON`, `relative = RELATIVE_TOLERANCE`. The
- * absolute floor assumes coordinates of order ~1; pass an explicit
+ * absolute floor assumes coordinates of order ~1. Pass an explicit
  * `absolute` when your data has a different natural resolution. Both
  * parameters are positional, mirroring `epsEquals`.
  *
@@ -113,7 +113,7 @@ export function clampToZero(value: number, eps: number): number {
  *
  * @param value - The number to round.
  * @param precision - Decimal places to keep. Defaults to `8`.
- * @returns `value` rounded to `precision` decimal places; never `-0`.
+ * @returns `value` rounded to `precision` decimal places, never `-0`.
  * @example
  * ```ts
  * round(1.23456789, 4) // 1.2346
@@ -139,7 +139,7 @@ export function round(value: number, precision = PRECISION): number {
  *
  * @param value - The number to round down.
  * @param precision - Decimal places to keep. Defaults to `8`.
- * @returns `value` rounded down to `precision` decimal places; never `-0`.
+ * @returns `value` rounded down to `precision` decimal places, never `-0`.
  * @example
  * ```ts
  * roundDown(1.23456789, 4) // 1.2345
@@ -165,7 +165,7 @@ export function roundDown(value: number, precision = PRECISION): number {
  *
  * @param value - The number to round up.
  * @param precision - Decimal places to keep. Defaults to `8`.
- * @returns `value` rounded up to `precision` decimal places; never `-0`.
+ * @returns `value` rounded up to `precision` decimal places, never `-0`.
  * @example
  * ```ts
  * roundUp(1.23456789, 4) // 1.2346
@@ -187,7 +187,7 @@ export const lerp: {
    * Linearly interpolates between `a` (at `t = 0`) and `b` (at `t = 1`).
    *
    * Exact at the endpoints: `t = 0` returns exactly `a`, and `t = 1` exactly
-   * `b`. `t` is not clamped; values outside `[0, 1]` extrapolate along the
+   * `b`. `t` is not clamped. Values outside `[0, 1]` extrapolate along the
    * same line.
    *
    * @param t - The interpolation factor. Not restricted to `[0, 1]`.
@@ -229,8 +229,8 @@ export const normalize: {
    * `normalize(lerp(t, a, b), a, b)` recovers `t` up to rounding.
    *
    * @param x - The value to normalize.
-   * @param a - Range start; maps to `0`.
-   * @param b - Range end; maps to `1`.
+   * @param a - Range start. Maps to `0`.
+   * @param b - Range end. Maps to `1`.
    * @returns `(x - a) / (b - a)`.
    * @example
    * ```ts
@@ -243,8 +243,8 @@ export const normalize: {
   /**
    * Normalizes a value from the given range to the unit interval.
    *
-   * @param a - Range start; maps to `0`.
-   * @param b - Range end; maps to `1`.
+   * @param a - Range start. Maps to `0`.
+   * @param b - Range end. Maps to `1`.
    * @returns A function that takes a value and returns the normalized value.
    * @example
    * ```ts
@@ -265,8 +265,8 @@ export const remap: {
    * zero, producing `NaN` or `±Infinity`.
    *
    * @param x - The value to remap.
-   * @param x1 - Source range start; maps to `y1`.
-   * @param x2 - Source range end; maps to `y2`.
+   * @param x1 - Source range start. Maps to `y1`.
+   * @param x2 - Source range end. Maps to `y2`.
    * @param y1 - Target range start.
    * @param y2 - Target range end.
    * @returns `y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)`.
@@ -280,8 +280,8 @@ export const remap: {
   /**
    * Remaps a value from a source range to a target range.
    *
-   * @param x1 - Source range start; maps to `y1`.
-   * @param x2 - Source range end; maps to `y2`.
+   * @param x1 - Source range start. Maps to `y1`.
+   * @param x2 - Source range end. Maps to `y2`.
    * @param y1 - Target range start.
    * @param y2 - Target range end.
    * @returns A function that takes a value and returns the remapped value.
@@ -340,7 +340,7 @@ export const clip: {
    *
    * Bounds are inclusive: `value === min` and `value === max` both count as
    * inside. `NaN` also passes through, because it compares false against
-   * both bounds; it is never replaced by `onClip`. Where `clamp` moves an
+   * both bounds. It is never replaced by `onClip`. Where `clamp` moves an
    * out-of-range value to the nearer bound, `clip` replaces it wholesale.
    *
    * @param value - The value to test against the range.

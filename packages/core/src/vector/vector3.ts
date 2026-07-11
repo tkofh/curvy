@@ -6,7 +6,7 @@ import * as internal from './vector3.internal.ts'
 /**
  * A 3D vector.
  *
- * All fields are readonly; no operation mutates a vector. Operations
+ * All fields are readonly. No operation mutates a vector. Operations
  * return new instances, except that identity operations (like scaling by
  * exactly `1`) may return the input itself.
  *
@@ -22,7 +22,7 @@ export interface Vector3 extends Pipeable, ThreeDimensional<number> {
  * Checks if a value is a `Vector3`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural `{ x, y, z }` object is not a `Vector3`.
+ * the brand. A structural `{ x, y, z }` object is not a `Vector3`.
  *
  * @param v - The value to check.
  * @returns `true` if the value is a `Vector3`, `false` otherwise.
@@ -124,11 +124,11 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
  * Creates a new `Vector3` instance from spherical coordinates
  * (physics convention: `theta` is inclination, `phi` is azimuth).
  *
- * No range is enforced; the formula is total. Values outside the
+ * No range is enforced. The formula is total. Values outside the
  * conventional ranges land where the trigonometry sends them.
  *
  * @param r - The radius. A negative radius reflects through the origin.
- * @param theta - The inclination from the positive z-axis, in radians; conventionally `[0, π]`.
+ * @param theta - The inclination from the positive z-axis, in radians. Conventionally `[0, π]`.
  * @param phi - The azimuth from the positive x-axis in the xy-plane, in radians.
  * @returns The vector `(r·sin(theta)·cos(phi), r·sin(theta)·sin(phi), r·cos(theta))`.
  * @since 1.0.0
@@ -226,7 +226,7 @@ export const components: (v: Vector3) => [number, number, number] = internal.com
  * Applies the softmax function to a `Vector3`: `(eˣ, eʸ, eᶻ)` scaled to
  * sum to `1`.
  *
- * All result components are positive and sum to `1`; equal inputs produce
+ * All result components are positive and sum to `1`. Equal inputs produce
  * `(⅓, ⅓, ⅓)`. Large components do not overflow.
  *
  * @param v - The vector to transform.
@@ -348,7 +348,7 @@ export const scale: {
    *
    * @param v - The vector to scale.
    * @param s - The scalar value to scale by.
-   * @returns A new `Vector3` scaled by `s`; the input instance itself when `s` is exactly `1`.
+   * @returns A new `Vector3` scaled by `s`, or the input instance itself when `s` is exactly `1`.
    * @since 1.0.0
    */
   (v: Vector3, s: number): Vector3
@@ -563,10 +563,10 @@ export const mapR: {
  * positive z-axis.
  *
  * Unlike `Vector2.getTheta` (an azimuth), this is the physics-convention
- * inclination; the in-plane angle here is `getPhi`.
+ * inclination. The in-plane angle here is `getPhi`.
  *
  * @param v - The vector of which to get the polar angle.
- * @returns The inclination `acos(z / magnitude(v))`, in radians, in `[0, π]`; `NaN` for the zero vector.
+ * @returns The inclination `acos(z / magnitude(v))`, in radians, in `[0, π]`. `NaN` for the zero vector.
  * @since 1.0.0
  */
 export const getTheta: (v: Vector3) => number = internal.getTheta
@@ -621,7 +621,7 @@ export const mapTheta: {
  * positive x-axis within the xy-plane.
  *
  * @param v - The vector of which to get the azimuthal angle.
- * @returns The azimuth `atan2(y, x)`, in radians, in `[-π, π]`; `0` for any vector on the z-axis.
+ * @returns The azimuth `atan2(y, x)`, in radians, in `[-π, π]`. `0` for any vector on the z-axis.
  * @since 1.0.0
  */
 export const getPhi: (v: Vector3) => number = internal.getPhi

@@ -6,7 +6,7 @@ import * as internal from './vector2.internal.ts'
 /**
  * A 2D vector.
  *
- * All fields are readonly; no operation mutates a vector. Operations
+ * All fields are readonly. No operation mutates a vector. Operations
  * return new instances, except that identity operations (like scaling by
  * exactly `1`) may return the input itself.
  *
@@ -53,7 +53,7 @@ export interface Weighted extends Pipeable {
  * Checks if a value is a `Vector2`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural `{ x, y }` object is not a `Vector2`.
+ * the brand. A structural `{ x, y }` object is not a `Vector2`.
  *
  * @param v - The value to check.
  * @returns `true` if the value is a `Vector2`, `false` otherwise.
@@ -65,7 +65,7 @@ export const isVector2: (v: unknown) => v is Vector2 = internal.isVector2
  * Checks if a value is a `Vector2.Weighted`.
  *
  * True only for values built by `makeWeighted` or `withWeight`, which
- * carry the brand; a structural `{ x, y, weight }` object is not a
+ * carry the brand. A structural `{ x, y, weight }` object is not a
  * `Vector2.Weighted`.
  *
  * @param v - The value to check.
@@ -79,7 +79,7 @@ export const isWeighted: (v: unknown) => v is Weighted = internal.isWeighted
  *
  * @param x - The x component.
  * @param y - The y component.
- * @param weight - The scalar weight; must be finite and positive.
+ * @param weight - The scalar weight. Must be finite and positive.
  * @returns A new `Vector2.Weighted` instance.
  * @throws `Error` when `weight` is not finite and positive.
  * @since 2.0.0
@@ -93,7 +93,7 @@ export const withWeight: {
    * weight.
    *
    * @param v - The point to weight.
-   * @param weight - The scalar weight; must be finite and positive.
+   * @param weight - The scalar weight. Must be finite and positive.
    * @returns A new `Vector2.Weighted` instance.
    * @throws `Error` when `weight` is not finite and positive.
    * @since 2.0.0
@@ -103,7 +103,7 @@ export const withWeight: {
    * Promotes a `Vector2` to a `Vector2.Weighted` by attaching the given
    * weight.
    *
-   * @param weight - The scalar weight; must be finite and positive.
+   * @param weight - The scalar weight. Must be finite and positive.
    * @returns A function that takes a `Vector2` and returns a weighted point.
    * @throws `Error` when `weight` is not finite and positive.
    * @since 2.0.0
@@ -371,7 +371,7 @@ export const components: (v: Vector2) => [number, number] = internal.components
  * Applies the softmax function to a `Vector2`: `(eˣ, eʸ)` scaled to sum
  * to `1`.
  *
- * Both result components are positive and sum to `1`; equal inputs
+ * Both result components are positive and sum to `1`. Equal inputs
  * produce `(0.5, 0.5)`. Large components do not overflow:
  * `softmax(make(1000, 0))` is `(1, 0)`.
  *
@@ -471,7 +471,7 @@ export const scale: {
    *
    * @param v - The vector to scale.
    * @param s - The scalar value to scale by.
-   * @returns A new `Vector2` scaled by `s`; the input instance itself when `s` is exactly `1`.
+   * @returns A new `Vector2` scaled by `s`, or the input instance itself when `s` is exactly `1`.
    * @since 1.0.0
    */
   (v: Vector2, s: number): Vector2

@@ -15,7 +15,7 @@ export type Matrix2x2Coordinate = TwoDimensionalIndex | TwoDimensionalComponent
 /**
  * A 2×2 matrix, stored as four `m<row><column>` fields.
  *
- * All fields are readonly; no operation mutates a matrix. Construct via
+ * All fields are readonly. No operation mutates a matrix. Construct via
  * `make`, `fromRows`, or `fromColumns`.
  *
  * @since 1.0.0
@@ -45,7 +45,7 @@ export interface Matrix2x2 extends Pipeable {
  * Checks if a value is a `Matrix2x2`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural object with `m00`…`m11` fields does not match.
+ * the brand. A structural object with `m00`…`m11` fields does not match.
  *
  * @param m - The value to check.
  * @returns `true` if the value is a `Matrix2x2`, `false` otherwise.

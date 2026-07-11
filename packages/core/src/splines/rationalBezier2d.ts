@@ -10,7 +10,7 @@ import * as internal from './rationalBezier2d.internal.ts'
  * A piecewise rational cubic Bézier curve in 2D space.
  *
  * Each control point is a `Vector2.Weighted` carrying a positive scalar
- * weight; the curve evaluates to `Σ w_i · N_i(t) · P_i / Σ w_i · N_i(t)`,
+ * weight. The curve evaluates to `Σ w_i · N_i(t) · P_i / Σ w_i · N_i(t)`,
  * where `N_i` are the cubic Bernstein basis functions. With all weights
  * equal, the curve coincides with a non-rational `Bezier2d`. With unequal
  * weights, the curve can exactly represent conic sections (circles,
@@ -22,7 +22,7 @@ import * as internal from './rationalBezier2d.internal.ts'
  * followed by a single division. Iteration projects back to
  * `Vector2.Weighted`, the same shape accepted by `make`.
  *
- * All fields are readonly; no operation mutates a spline.
+ * All fields are readonly. No operation mutates a spline.
  *
  * @since 2.0.0
  */
@@ -44,7 +44,7 @@ export const isRationalBezier2d: (p: unknown) => p is RationalBezier2d = interna
  * Creates a new single-segment `RationalBezier2d` from four weighted control points.
  *
  * Equal weights produce a curve coincident with the corresponding polynomial
- * cubic Bézier; unequal weights produce a true rational curve capable of
+ * cubic Bézier. Unequal weights produce a true rational curve capable of
  * representing conics exactly.
  *
  * @param p0 - The first weighted control point (curve start).
@@ -72,7 +72,7 @@ export const fromArray: (points: ReadonlyArray<Weighted>) => RationalBezier2d = 
 /**
  * Creates a new `RationalBezier2d` from an array of `[x, y, weight]` tuples.
  * Weight is the projective denominator at each control point: `1` everywhere
- * yields the polynomial Bézier; varying weights bend the curve toward the
+ * yields the polynomial Bézier. Varying weights bend the curve toward the
  * heavier control points.
  *
  * @param tuples - The weighted control points as `[x, y, weight]` tuples.
@@ -88,7 +88,7 @@ export const fromTuples: (
  * weights equal to one.
  *
  * Convenience constructor for callers who want the rational evaluator but
- * don't yet have non-unit weights; the resulting curve is mathematically
+ * don't yet have non-unit weights. The resulting curve is mathematically
  * equivalent to the corresponding `Bezier2d.make(p0, p1, p2, p3)` and can
  * later be subdivided or recombined using the rational machinery without
  * conversion overhead.
@@ -188,7 +188,7 @@ export const transform: {
   /**
    * Applies an `Affine2d` transform to every control-point position of a
    * `RationalBezier2d`, preserving each point's weight. Rational Bézier
-   * evaluation is `Σ w_i N_i(t) P_i / Σ w_i N_i(t)`; affine maps commute with
+   * evaluation is `Σ w_i N_i(t) P_i / Σ w_i N_i(t)`. Affine maps commute with
    * the numerator's barycentric combination, so transforming positions while
    * holding weights fixed exactly parameterizes the affine image of the
    * original curve.
@@ -219,7 +219,7 @@ export const subdivide: {
    * covers `[0, u]`, the right covers `[u, 1]`.
    *
    * The subdivided halves' control-point weights generally differ from the
-   * original's even at unit input weights; this is expected and preserves
+   * original's even at unit input weights. This is expected and preserves
    * the curve shape exactly.
    *
    * @param r - The rational bezier to split.

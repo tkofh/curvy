@@ -170,7 +170,7 @@ export const transform: {
 
 /**
  * Converts a `Linear2d` to a `LinearPath2d` by joining consecutive points
- * with straight segments. The result is unbranded; assert
+ * with straight segments. The result is unbranded. Assert
  * `LinearPath2d.asMonotonicX` / `asMonotonicY` afterward if the underlying
  * points warrant it.
  *

@@ -9,7 +9,7 @@ import type { Hermite2dTypeId } from './hermite2d.internal.ts'
 /**
  * A Hermite spline in 2D space.
  *
- * All fields are readonly; no operation mutates a spline.
+ * All fields are readonly. No operation mutates a spline.
  *
  * The characteristic matrix that identifies this spline family lives in the
  * `characteristic` module as `Characteristic.cubicHermite`.
@@ -116,7 +116,7 @@ export const mapPoints: {
    * `Vector2`s: Hermite splines store them in interleaved slots without a
    * structural distinction. Linear transforms (rotation, scaling) act
    * correctly on both slot kinds, but a uniform translation will offset the
-   * velocity slots as well as the positions; to translate positions only,
+   * velocity slots as well as the positions. To translate positions only,
    * reach for `flatMap` and split the array yourself.
    *
    * @param f - The point transform.
@@ -163,7 +163,7 @@ export const transform: {
   /**
    * Applies an `Affine2d` transform to a `Hermite2d`, treating the entries
    * correctly by kind: positions (even indices) receive the full affine, and
-   * tangent vectors (odd indices) receive only the linear part; translation
+   * tangent vectors (odd indices) receive only the linear part. Translation
    * doesn't move tangents, only the linear map does.
    *
    * The result exactly parameterizes the affine image of the original curve.

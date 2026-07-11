@@ -64,7 +64,7 @@ export const cubicHermite: Matrix4x4.Matrix4x4 = Matrix4x4.make(
  *
  * Maps a window of four control points to the monomial cubic coefficients
  * of one segment of the corresponding uniform cubic B-spline. Stride-1
- * application produces a C² piecewise spline; the curve does not generally
+ * application produces a C² piecewise spline. The curve does not generally
  * pass through the control points.
  *
  * @since 2.0.0
@@ -102,7 +102,7 @@ const cardinalCache = new Map<number, Matrix4x4.Matrix4x4>()
  * Cached per tension value: repeated calls with the same tension return
  * the same matrix instance.
  *
- * @param tension - How tightly the curve hugs the control points; `0` gives straight segments, `0.5` Catmull-Rom.
+ * @param tension - How tightly the curve hugs the control points. `0` gives straight segments, `0.5` Catmull-Rom.
  * @returns The characteristic matrix for that tension.
  * @since 2.0.0
  */
@@ -148,8 +148,8 @@ export const cubicCatmullRom: Matrix4x4.Matrix4x4 = cubicCardinal(0.5)
  * control points: `(v₀, v₁, v₂, v₃)`. The result tuple has the same arity
  * as the input.
  *
- * The polynomial 2D spline pipeline applies this with two channels (x, y);
- * the rational 2D pipeline uses three (x, y, w) where `w` is the projective
+ * The polynomial 2D spline pipeline applies this with two channels (x, y).
+ * The rational 2D pipeline uses three (x, y, w) where `w` is the projective
  * denominator. Higher channel counts generalize to 3D, rational 3D, and
  * beyond: the characteristic matrix reads nothing about the geometric
  * domain, only how to combine four samples per channel.

@@ -21,12 +21,12 @@ export type Matrix4x4Coordinate = FourDimensionalIndex | FourDimensionalComponen
 /**
  * A 4×4 matrix, stored as sixteen `m<row><column>` fields.
  *
- * All fields are readonly; no operation mutates a matrix. Construct via
+ * All fields are readonly. No operation mutates a matrix. Construct via
  * `make`, `fromRows`, or `fromColumns`.
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
  * brands as the matrix is refined via `isInvertible` / `asInvertible`. The
- * runtime value carries no trait data; `Traits` only flows through the type
+ * runtime value carries no trait data. `Traits` only flows through the type
  * system to enable tighter return types on operations like `inverse`.
  *
  * @since 1.0.0
@@ -105,7 +105,7 @@ export interface Matrix4x4<out Traits = unknown> extends Pipeable {
  * Checks if a value is a `Matrix4x4`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural object with `m00`…`m33` fields does not match.
+ * the brand. A structural object with `m00`…`m33` fields does not match.
  *
  * @param m - The value to check.
  * @returns `true` if the value is a `Matrix4x4`, `false` otherwise.
@@ -147,8 +147,8 @@ export const equals: {
 /**
  * Creates a new `Matrix4x4` instance, in row-major argument order.
  *
- * Within the first row, each omitted value copies the previous argument;
- * each later row defaults to the first row's values. So `make(1, 2, 3, 4)`
+ * Within the first row, each omitted value copies the previous argument.
+ * Each later row defaults to the first row's values. So `make(1, 2, 3, 4)`
  * repeats that row four times, `make(5)` fills the matrix with `5`, and
  * `make()` is the zero matrix.
  *
@@ -397,7 +397,7 @@ export const inverse: {
 /**
  * Returns the inverse of a `Matrix4x4`, throwing when the matrix is
  * singular. Useful when you've already validated invertibility out-of-band
- * and want the unwrapped matrix directly; otherwise prefer `inverse`.
+ * and want the unwrapped matrix directly. Otherwise prefer `inverse`.
  *
  * @param m - The matrix to invert.
  * @returns The inverse matrix.

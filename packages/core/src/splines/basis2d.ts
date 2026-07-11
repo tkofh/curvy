@@ -9,7 +9,7 @@ import type { Bezier2d } from './bezier2d.ts'
 /**
  * A Basis Spline (uniform cubic B-spline) in 2D space.
  *
- * All fields are readonly; no operation mutates a spline.
+ * All fields are readonly. No operation mutates a spline.
  *
  * The characteristic matrix that identifies this spline family lives in the
  * `characteristic` module as `Characteristic.cubicBasisSpline`.

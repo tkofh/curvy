@@ -6,7 +6,7 @@ import * as internal from './vector4.internal.ts'
 /**
  * A 4D vector.
  *
- * All fields are readonly; no operation mutates a vector. Operations
+ * All fields are readonly. No operation mutates a vector. Operations
  * return new instances, except that identity operations (like scaling by
  * exactly `1`) may return the input itself.
  *
@@ -22,7 +22,7 @@ export interface Vector4 extends Pipeable, FourDimensional<number> {
  * Checks if a value is a `Vector4`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural `{ x, y, z, w }` object is not a `Vector4`.
+ * the brand. A structural `{ x, y, z, w }` object is not a `Vector4`.
  *
  * @param v - The value to check.
  * @returns `true` if the value is a `Vector4`, `false` otherwise.
@@ -192,7 +192,7 @@ export const components: (v: Vector4) => [number, number, number, number] = inte
  * Applies the softmax function to a `Vector4`: `(eˣ, eʸ, eᶻ, eʷ)` scaled
  * to sum to `1`.
  *
- * All result components are positive and sum to `1`; equal inputs produce
+ * All result components are positive and sum to `1`. Equal inputs produce
  * `(¼, ¼, ¼, ¼)`. Large components do not overflow.
  *
  * @param v - The vector to transform.
@@ -290,7 +290,7 @@ export const scale: {
    *
    * @param v - The vector to scale.
    * @param s - The scalar to scale the vector by.
-   * @returns A new `Vector4` scaled by `s`; the input instance itself when `s` is exactly `1`.
+   * @returns A new `Vector4` scaled by `s`, or the input instance itself when `s` is exactly `1`.
    * @since 1.0.0
    */
   (v: Vector4, s: number): Vector4

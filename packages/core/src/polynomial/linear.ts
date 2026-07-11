@@ -13,12 +13,12 @@ export type { Monotonic, Increasing, Decreasing } from './traits.ts'
 /**
  * A linear polynomial `c0 + c1·x`, stored by coefficient.
  *
- * All fields are readonly; no operation mutates a polynomial. Construct
+ * All fields are readonly. No operation mutates a polynomial. Construct
  * via `make`, `fromVector`, `fromPointSlope`, or `fromPoints`.
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
  * brands as the polynomial is refined via `isMonotonic` / `asMonotonic` and
- * friends. The runtime value carries no trait data; `Traits` only flows
+ * friends. The runtime value carries no trait data. `Traits` only flows
  * through the type system to enable tighter return types on operations like
  * `solveInverse`.
  *
@@ -43,7 +43,7 @@ export interface LinearPolynomial<out Traits = unknown> extends Pipeable {
  * Checks if a value is a `LinearPolynomial`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural `{ c0, c1 }` object does not match.
+ * the brand. A structural `{ c0, c1 }` object does not match.
  *
  * @param v - The value to check.
  * @returns `true` if the value is a `LinearPolynomial`, `false` otherwise.
@@ -214,7 +214,7 @@ export const root: (p: LinearPolynomial) => Solution.AtMostOne<number> = (p) =>
  * `c1`.
  *
  * The test is exact: any nonzero `c1`, however small, classifies as
- * increasing or decreasing; only `c1 === 0` is `Constant`.
+ * increasing or decreasing. Only `c1 === 0` is `Constant`.
  *
  * @param p - The linear polynomial to check.
  * @returns `Increasing`, `Decreasing`, or `Constant` (never `None`: a line cannot change direction).
@@ -332,7 +332,7 @@ export const domain: {
    * `[x(range.start), x(range.end)]`.
    *
    * A constant polynomial yields the full line `[-Infinity, Infinity]`
-   * only when `range` is exactly the degenerate interval `[c0, c0]`; any
+   * only when `range` is exactly the degenerate interval `[c0, c0]`. Any
    * other range yields `Solution.none`, including ranges that contain
    * `c0`.
    *
@@ -400,7 +400,7 @@ export const length: {
    *
    * @param p - The linear polynomial to measure.
    * @param domain - The inputs to measure over.
-   * @returns The arc length; `0` for a zero-size domain.
+   * @returns The arc length. `0` for a zero-size domain.
    * @since 1.0.0
    */
   (p: LinearPolynomial, domain: Interval): number

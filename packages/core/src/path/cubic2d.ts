@@ -31,7 +31,7 @@ export type {
 /**
  * A cubic path in 2D space.
  *
- * All fields are readonly; no operation mutates a path.
+ * All fields are readonly. No operation mutates a path.
  *
  * The `Trait` type parameter accumulates trait brands as the path is refined
  * via `isContinuous` / `asContinuous`.
@@ -46,7 +46,7 @@ export interface CubicPath2d<out Trait = unknown> extends Pipeable, Iterable<Cub
 /**
  * Creates a new `CubicPath2d` instance from a sequence of curves.
  *
- * @param curves - The curves to create the path from; at least one is required.
+ * @param curves - The curves to create the path from. At least one is required.
  * @returns A new `CubicPath2d` instance.
  * @throws `Error` when called with no curves.
  * @since 2.0.0
@@ -56,7 +56,7 @@ export const make: (...curves: ReadonlyArray<CubicCurve2d>) => CubicPath2d = int
 /**
  * Creates a new `CubicPath2d` instance from an array of curves.
  *
- * @param curves - The curves to create the path from; at least one is required.
+ * @param curves - The curves to create the path from. At least one is required.
  * @returns A new `CubicPath2d` instance.
  * @throws `Error` when the array is empty.
  * @since 2.0.0
@@ -120,7 +120,7 @@ export const solve: {
    * curve is evaluated at the corresponding local parameter.
    *
    * `u` may graze the domain by up to `EPSILON` (values in the band clamp
-   * to the nearest endpoint); beyond that the call throws.
+   * to the nearest endpoint). Beyond that the call throws.
    *
    * @param p - The cubic path to evaluate.
    * @param u - The path parameter in `[0, 1]`.

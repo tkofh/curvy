@@ -17,7 +17,7 @@
 declare const MonotonicId: unique symbol
 /**
  * Brand for *strictly* monotonic polynomials: `monotonicity()` returns
- * `Increasing` or `Decreasing`. The constant case is excluded; constants
+ * `Increasing` or `Decreasing`. The constant case is excluded. Constants
  * have no useful inverse refinement.
  *
  * @since 2.0.0

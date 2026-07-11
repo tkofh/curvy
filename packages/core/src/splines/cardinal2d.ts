@@ -220,7 +220,7 @@ export const withReflectedEndpoints: {
 
 export const withTension: {
   /**
-   * Returns a new `Cardinal2d` with the given tension; control points and
+   * Returns a new `Cardinal2d` with the given tension. Control points and
    * alpha are preserved.
    *
    * @param tension - The new tension value.
@@ -229,7 +229,7 @@ export const withTension: {
    */
   (tension: number): (c: Cardinal2d) => Cardinal2d
   /**
-   * Returns a new `Cardinal2d` with the given tension; control points and
+   * Returns a new `Cardinal2d` with the given tension. Control points and
    * alpha are preserved.
    *
    * @param c - The `Cardinal2d` to update.
@@ -242,7 +242,7 @@ export const withTension: {
 
 export const withAlpha: {
   /**
-   * Returns a new `Cardinal2d` with the given alpha; control points and
+   * Returns a new `Cardinal2d` with the given alpha. Control points and
    * tension are preserved.
    *
    * @param alpha - The new alpha value.
@@ -251,7 +251,7 @@ export const withAlpha: {
    */
   (alpha: number): (c: Cardinal2d) => Cardinal2d
   /**
-   * Returns a new `Cardinal2d` with the given alpha; control points and
+   * Returns a new `Cardinal2d` with the given alpha. Control points and
    * tension are preserved.
    *
    * @param c - The `Cardinal2d` to update.
@@ -308,7 +308,7 @@ export const flatMap: {
   /**
    * Hands the spline's full control-point array to `f` and uses its returned
    * `Cardinal2d` as the result. The returned spline's tension and alpha come
-   * from the mapper's output, not the input; to preserve the input's
+   * from the mapper's output, not the input. To preserve the input's
    * parameterization, the mapper should re-supply it (e.g. by reading the
    * original spline in the data-first form, or chaining `withOptions`
    * afterward).

@@ -20,12 +20,12 @@ export type Matrix3x3Coordinate = ThreeDimensionalIndex | ThreeDimensionalCompon
 /**
  * A 3×3 matrix, stored as nine `m<row><column>` fields.
  *
- * All fields are readonly; no operation mutates a matrix. Construct via
+ * All fields are readonly. No operation mutates a matrix. Construct via
  * `make`, `fromRows`, or `fromColumns`.
  *
  * The `Traits` type parameter is a phantom marker that accumulates trait
  * brands as the matrix is refined via `isInvertible` / `asInvertible`. The
- * runtime value carries no trait data; `Traits` only flows through the type
+ * runtime value carries no trait data. `Traits` only flows through the type
  * system to enable tighter return types on operations like `inverse`.
  *
  * @since 1.0.0
@@ -75,7 +75,7 @@ export interface Matrix3x3<out Traits = unknown> extends Pipeable {
  * Checks if a value is a `Matrix3x3`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural object with `m00`…`m22` fields does not match.
+ * the brand. A structural object with `m00`…`m22` fields does not match.
  *
  * @param m - The value to check.
  * @returns `true` if the value is a `Matrix3x3`, `false` otherwise.
@@ -476,7 +476,7 @@ export const inverse: {
 /**
  * Returns the inverse of a `Matrix3x3`, throwing when the matrix is
  * singular. Useful when you've already validated invertibility out-of-band
- * and want the unwrapped matrix directly; otherwise prefer `inverse`.
+ * and want the unwrapped matrix directly. Otherwise prefer `inverse`.
  *
  * @param m - The matrix to invert.
  * @returns The inverse matrix.

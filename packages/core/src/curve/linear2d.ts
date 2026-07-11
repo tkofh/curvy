@@ -16,7 +16,7 @@ export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
  * A linear curve in 2D space: a straight segment parameterized over
  * `t ∈ [0, 1]` by one `LinearPolynomial` per axis.
  *
- * All fields are readonly; no operation mutates a curve. Construct via
+ * All fields are readonly. No operation mutates a curve. Construct via
  * `fromPolynomials`, `fromCoefficients`, or `fromEndpoints`.
  *
  * The two type parameters carry the trait sets of the curve's per-axis
@@ -100,7 +100,7 @@ export const solve: {
   /**
    * Evaluates the curve at parameter `t`.
    *
-   * `t` is not clamped; values outside `[0, 1]` extrapolate along the same
+   * `t` is not clamped. Values outside `[0, 1]` extrapolate along the same
    * line.
    *
    * @param c - The linear curve to evaluate.
@@ -189,7 +189,7 @@ export const yRange: (c: LinearCurve2d) => Closed = internal.yRange
 
 /**
  * Renders the curve as a single SVG path-data drawing command: for a linear
- * curve, `L endX,endY`. Does not include a leading `M`; callers (typically a
+ * curve, `L endX,endY`. Does not include a leading `M`. Callers (typically a
  * path-level `toPathData`) decide whether to emit a move based on continuity
  * with the previous segment.
  *

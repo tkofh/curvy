@@ -31,10 +31,11 @@ export interface Bounds {
  * A mathematical interval. Discriminated union of four variants by endpoint
  * inclusivity: `Closed`, `OpenStart`, `OpenEnd`, `Open`. Operations that
  * depend on inclusivity (e.g. `contains`, `filter`, `equals`) dispatch on
- * the `kind` field; operations that don't accept the broader `Bounds` type.
+ * the `kind` field. Operations that don't read inclusivity accept the
+ * broader `Bounds` type.
  *
- * `start <= end` always holds; the constructors enforce it. All fields are
- * readonly; no operation mutates an interval. Operations return new
+ * `start <= end` always holds. The constructors enforce it. All fields are
+ * readonly. No operation mutates an interval. Operations return new
  * instances, except that a conversion to a kind the input already has may
  * return the input itself.
  *
@@ -82,7 +83,7 @@ export interface Open extends Pipeable, Bounds {
  * Checks if a value is an `Interval`.
  *
  * True only for values built by this module's constructors, which carry
- * the brand; a structural `{ start, end }` object is `Bounds`, not an
+ * the brand. A structural `{ start, end }` object is `Bounds`, not an
  * `Interval`.
  *
  * @param v - The value to check.
@@ -158,7 +159,7 @@ export const make: {
    * Creates a new closed `Interval` instance.
    *
    * @param start - The start of the interval.
-   * @param end - The end of the interval; must be at least `start`.
+   * @param end - The end of the interval. Must be at least `start`.
    * @returns A new `Closed` interval `[start, end]`.
    * @throws `Error` when `end < start`.
    * @since 1.0.0
@@ -179,7 +180,7 @@ export const makeOpenStart: {
    * Creates a new left-open `Interval` instance.
    *
    * @param start - The start of the interval (excluded).
-   * @param end - The end of the interval (included); must be at least `start`.
+   * @param end - The end of the interval (included). Must be at least `start`.
    * @returns A new `OpenStart` interval `(start, end]`.
    * @throws `Error` when `end < start`.
    * @since 2.0.0
@@ -200,7 +201,7 @@ export const makeOpenEnd: {
    * Creates a new right-open `Interval` instance.
    *
    * @param start - The start of the interval (included).
-   * @param end - The end of the interval (excluded); must be at least `start`.
+   * @param end - The end of the interval (excluded). Must be at least `start`.
    * @returns A new `OpenEnd` interval `[start, end)`.
    * @throws `Error` when `end < start`.
    * @since 2.0.0
@@ -221,7 +222,7 @@ export const makeOpen: {
    * Creates a new fully open `Interval` instance.
    *
    * @param start - The start of the interval (excluded).
-   * @param end - The end of the interval (excluded); must be at least `start`.
+   * @param end - The end of the interval (excluded). Must be at least `start`.
    * @returns A new `Open` interval `(start, end)`.
    * @throws `Error` when `end < start`.
    * @since 2.0.0
@@ -233,7 +234,7 @@ export const fromSize: {
   /**
    * Creates a new closed `Interval` instance from a size.
    *
-   * @param size - The size of the interval; must be non-negative.
+   * @param size - The size of the interval. Must be non-negative.
    * @returns A new `Closed` interval `[0, size]`.
    * @throws `Error` when `size` is negative.
    * @since 1.0.0
@@ -243,7 +244,7 @@ export const fromSize: {
    * Creates a new closed `Interval` instance from a size.
    *
    * @param start - The start of the interval.
-   * @param size - The size of the interval; must be non-negative.
+   * @param size - The size of the interval. Must be non-negative.
    * @returns A new `Closed` interval `[start, start + size]`.
    * @throws `Error` when `size` is negative.
    * @since 1.0.0
@@ -254,7 +255,7 @@ export const fromSize: {
 /**
  * Creates a new closed `Interval` from a minimum and maximum value, in any order.
  *
- * @param values - The values to take the min and max of; at least one is required.
+ * @param values - The values to take the min and max of. At least one is required.
  * @returns A new `Closed` interval `[min(values), max(values)]`.
  * @throws `Error` when called with no values.
  * @since 1.0.0
@@ -267,7 +268,7 @@ export const fromMinMax: (...values: ReadonlyArray<number>) => Closed = internal
  * Kind-agnostic: `size` of `[0, 1]` and `(0, 1)` are both `1`.
  *
  * @param i - The bounds to calculate the size of.
- * @returns The absolute difference `|end - start|`; never negative, even for reversed structural `Bounds`.
+ * @returns The absolute difference `|end - start|`. Never negative, even for reversed structural `Bounds`.
  * @since 1.0.0
  */
 export const size: (i: Bounds) => number = internal.size
@@ -316,7 +317,7 @@ export const containsInterval: {
    * also in `outer`.
    *
    * Respects endpoint inclusivity on both sides. A closed inner endpoint
-   * must lie inside the outer or on one of its closed boundaries; an open
+   * must lie inside the outer or on one of its closed boundaries. An open
    * inner endpoint may also sit exactly on an open outer boundary.
    * Endpoint comparisons are exact — no tolerance is applied.
    *
@@ -339,7 +340,7 @@ export const containsInterval: {
 export const union: {
   /**
    * Returns the smallest interval enclosing both inputs. Each endpoint's
-   * inclusivity follows the input that contributed it; when both endpoints
+   * inclusivity follows the input that contributed it. When both endpoints
    * tie, the result is closed at that point if either input includes it.
    *
    * The enclosing hull, not a set union: disjoint inputs are bridged, gap
@@ -368,7 +369,7 @@ export const filter: {
    *
    * @param interval - The interval to filter the values to.
    * @param value - The values to filter.
-   * @returns The values inside the interval. The static type mirrors the input array; the runtime array may be shorter.
+   * @returns The values inside the interval. The static type mirrors the input array. The runtime array may be shorter.
    * @since 1.0.0
    */
   <V extends ReadonlyArray<number>>(interval: Interval, value: V): V
@@ -519,7 +520,7 @@ export const isOpen: (i: Interval) => i is Open = internal.isOpen
 
 /**
  * Checks if an interval is exactly kind `open-start`: start excluded, end
- * included. A fully `open` interval does not match; for any open start,
+ * included. A fully `open` interval does not match. For any open start,
  * use `isOpenAtStart`.
  *
  * @param i - The interval to test.
@@ -530,7 +531,7 @@ export const isOpenStart: (i: Interval) => i is OpenStart = internal.isOpenStart
 
 /**
  * Checks if an interval is exactly kind `open-end`: start included, end
- * excluded. A fully `open` interval does not match; for any open end, use
+ * excluded. A fully `open` interval does not match. For any open end, use
  * `isOpenAtEnd`.
  *
  * @param i - The interval to test.
@@ -587,8 +588,8 @@ export const isClosedAtEnd: (i: Interval) => i is Closed | OpenStart = internal.
 export const unit: Closed = internal.unit
 
 /**
- * The open unit interval, `(0, 1)`. The symmetric open analog of `unit`;
- * convenient for "strict interior" use cases such as filtering roots that
+ * The open unit interval, `(0, 1)`. The symmetric open analog of `unit`.
+ * Convenient for "strict interior" use cases such as filtering roots that
  * must lie strictly inside the unit parameter range.
  *
  * @since 2.0.0
@@ -606,7 +607,7 @@ export const biunit: Closed = internal.biunit
  * Linearly interpolates a value within bounds: `t = 0` returns exactly
  * `start`, `t = 1` exactly `end`.
  *
- * `t` is not clamped; values outside `[0, 1]` extrapolate along the same
+ * `t` is not clamped. Values outside `[0, 1]` extrapolate along the same
  * line.
  *
  * @param interval - The bounds to interpolate within.
@@ -629,7 +630,7 @@ export const toLerpFn: (interval: Bounds) => (t: number) => number = internal.to
 /**
  * Normalizes a value within bounds: `start` maps to `0` and `end` to `1`.
  *
- * Not clamped; values outside the bounds map outside `[0, 1]`. Zero-size
+ * Not clamped. Values outside the bounds map outside `[0, 1]`. Zero-size
  * bounds divide by zero, producing `NaN` or `±Infinity`.
  *
  * @param interval - The bounds to normalize within.
@@ -653,7 +654,7 @@ export const toNormalizeFn: (interval: Bounds) => (x: number) => number = intern
  * Remaps a value from one bounds to another, preserving its relative
  * position.
  *
- * Not clamped; values outside the source map proportionally outside the
+ * Not clamped. Values outside the source map proportionally outside the
  * target. A zero-size source divides by zero, producing `NaN` or
  * `±Infinity`.
  *

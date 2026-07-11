@@ -12,7 +12,7 @@ import type { RationalBezier2d } from './rationalBezier2d.ts'
  * endpoints, stored as `3n + 1` control points. Iteration yields the
  * control points in order.
  *
- * All fields are readonly; no operation mutates a spline. Construct via
+ * All fields are readonly. No operation mutates a spline. Construct via
  * `make`, `fromArray`, or `fromTuples`.
  *
  * The characteristic matrix that identifies this spline family lives in the
@@ -40,7 +40,7 @@ export const make: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => Bezie
 /**
  * Creates a new `Bezier2d` instance from an array of control points.
  *
- * @param points - The control points; the count must be `3n + 1` (4, 7, 10, …).
+ * @param points - The control points. The count must be `3n + 1` (4, 7, 10, …).
  * @returns A new `Bezier2d` instance.
  * @throws `Error` when the count is less than 4 or not `3n + 1`.
  * @since 1.0.0
@@ -51,7 +51,7 @@ export const fromArray: (points: ReadonlyArray<Vector2>) => Bezier2d = internal.
  * Creates a new `Bezier2d` from an array of `[x, y]` tuples. Convenient for
  * data sourced from JSON, CSV, or other tuple-shaped formats.
  *
- * @param tuples - The control points as `[x, y]` tuples; the count must be `3n + 1` (4, 7, 10, …).
+ * @param tuples - The control points as `[x, y]` tuples. The count must be `3n + 1` (4, 7, 10, …).
  * @returns A new `Bezier2d` instance.
  * @throws `Error` when the count is less than 4 or not `3n + 1`.
  * @since 2.0.0
@@ -82,7 +82,7 @@ export const append: {
   /**
    * Appends one cubic segment to a `Bezier2d`.
    *
-   * The segment starts at the spline's current end point; beyond that
+   * The segment starts at the spline's current end point. Beyond that
    * shared point, no continuity is imposed. For tangent- or
    * curvature-matched joins, use the `append*Aligned` variants.
    *
@@ -101,7 +101,7 @@ export const appendTangentAligned: {
    * Appends one cubic segment whose start tangent lies along the spline's
    * end tangent.
    *
-   * @param ratio - Length of the derived first handle relative to the incoming handle. `1` matches lengths (C¹); other positive values preserve direction only (G¹).
+   * @param ratio - Length of the derived first handle relative to the incoming handle. `1` matches lengths (C¹). Other positive values preserve direction only (G¹).
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
    * @returns A function that takes a `Bezier2d` and returns a new spline with the segment appended.
@@ -115,13 +115,13 @@ export const appendTangentAligned: {
    * The segment's first handle is derived, not passed: the spline's last
    * handle is reflected across the shared end point and scaled by `ratio`.
    * `ratio = 1` reproduces the incoming handle length, matching velocity
-   * across the join (C¹, what `appendVelocityAligned` does); other
+   * across the join (C¹, what `appendVelocityAligned` does). Other
    * positive values keep only the tangent direction (G¹). `0` collapses
-   * the handle onto the join; negative values reverse the tangent and
+   * the handle onto the join. Negative values reverse the tangent and
    * produce a cusp.
    *
    * @param p - The `Bezier2d` to append to.
-   * @param ratio - Length of the derived first handle relative to the incoming handle. `1` matches lengths (C¹); other positive values preserve direction only (G¹).
+   * @param ratio - Length of the derived first handle relative to the incoming handle. `1` matches lengths (C¹). Other positive values preserve direction only (G¹).
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
    * @returns A new `Bezier2d` with the segment appended.
@@ -135,8 +135,8 @@ export const appendCurvatureAligned: {
    * Appends one cubic segment joined with matching curvature (G²) at the
    * shared end point.
    *
-   * @param a - Length of the derived first handle relative to the incoming handle, along the shared tangent; `1` matches lengths. Must be positive for a direction-preserving join.
-   * @param b - Slides the derived second handle along the shared tangent, selecting among the curvature-matching placements; `0` takes the default member of the family.
+   * @param a - Length of the derived first handle relative to the incoming handle, along the shared tangent. `1` matches lengths. Must be positive for a direction-preserving join.
+   * @param b - Slides the derived second handle along the shared tangent, selecting among the curvature-matching placements. `0` takes the default member of the family.
    * @param p6 - The appended segment's end point.
    * @returns A function that takes a `Bezier2d` and returns a new spline with the segment appended.
    * @since 1.0.1
@@ -148,14 +148,14 @@ export const appendCurvatureAligned: {
    *
    * Both handles are derived, not passed. The first is the spline's last
    * handle reflected across the join and scaled by `a` (as in
-   * `appendTangentAligned`); the second is placed from the previous
+   * `appendTangentAligned`). The second is placed from the previous
    * segment's last three points so the curvature matches across the join,
    * with `b` sliding it along the shared tangent among the
    * curvature-matching placements. Only the end point is free.
    *
    * @param p - The `Bezier2d` to append to.
-   * @param a - Length of the derived first handle relative to the incoming handle, along the shared tangent; `1` matches lengths. Must be positive for a direction-preserving join.
-   * @param b - Slides the derived second handle along the shared tangent, selecting among the curvature-matching placements; `0` takes the default member of the family.
+   * @param a - Length of the derived first handle relative to the incoming handle, along the shared tangent. `1` matches lengths. Must be positive for a direction-preserving join.
+   * @param b - Slides the derived second handle along the shared tangent, selecting among the curvature-matching placements. `0` takes the default member of the family.
    * @param p6 - The appended segment's end point.
    * @returns A new `Bezier2d` with the segment appended.
    * @since 1.0.1
@@ -206,7 +206,7 @@ export const appendAccelerationAligned: {
    * the join (C²).
    *
    * Both handles are derived from the previous segment's last three
-   * control points; only the end point is free.
+   * control points. Only the end point is free.
    *
    * @param p - The `Bezier2d` to append to.
    * @param p3 - The appended segment's end point, the only free input.
@@ -224,7 +224,7 @@ export const mapPoints: {
    * Note that the transform is applied uniformly to all control points,
    * including off-curve handles. Affine maps (translate, rotate, scale, shear)
    * commute with cubic Bézier evaluation and preserve curve identity up to
-   * the affine map; nonlinear maps produce a geometrically reasonable result
+   * the affine map. Nonlinear maps produce a geometrically reasonable result
    * but no longer parameterize the affine image of the original curve.
    *
    * @param f - The point transform.

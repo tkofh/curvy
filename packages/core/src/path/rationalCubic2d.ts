@@ -11,7 +11,7 @@ import * as internal from './rationalCubic2d.internal.ts'
 /**
  * A rational cubic path in 2D space.
  *
- * Holds a non-empty sequence of `RationalCubicCurve2d` segments; iteration
+ * Holds a non-empty sequence of `RationalCubicCurve2d` segments. Iteration
  * yields the segments in order. The path parameter `u ∈ [0, 1]` is mapped
  * uniformly across segments: `u = 0` is the start of the first segment,
  * `u = 1` is the end of the last segment, and intermediate values pick a
@@ -20,7 +20,7 @@ import * as internal from './rationalCubic2d.internal.ts'
  * Counterpart to `CubicPath2d` for curves whose evaluation includes the
  * homogeneous-to-plane projection.
  *
- * All fields are readonly; no operation mutates a path.
+ * All fields are readonly. No operation mutates a path.
  *
  * @since 2.0.0
  */
@@ -41,7 +41,7 @@ export const isRationalCubicPath2d: (p: unknown) => p is RationalCubicPath2d =
 /**
  * Creates a new `RationalCubicPath2d` from a sequence of curves.
  *
- * @param curves - The curves to create the path from; at least one is required.
+ * @param curves - The curves to create the path from. At least one is required.
  * @returns A new `RationalCubicPath2d` instance.
  * @throws `Error` when called with no curves.
  * @since 2.0.0
@@ -52,7 +52,7 @@ export const make: (...curves: ReadonlyArray<RationalCubicCurve2d>) => RationalC
 /**
  * Creates a new `RationalCubicPath2d` from an array of curves.
  *
- * @param curves - The curves to create the path from; at least one is required.
+ * @param curves - The curves to create the path from. At least one is required.
  * @returns A new `RationalCubicPath2d` instance.
  * @throws `Error` when the array is empty.
  * @since 2.0.0
@@ -88,7 +88,7 @@ export const solve: {
    * parameter range, regardless of its arc length. The selected segment's
    * curve is evaluated at the corresponding local parameter.
    *
-   * `u` is not range-checked; values outside `[0, 1]` index past the
+   * `u` is not range-checked. Values outside `[0, 1]` index past the
    * segment array and fail.
    *
    * @param p - The path to evaluate.
@@ -114,11 +114,11 @@ export const boundingBox: {
    *
    * Each segment's box is `RationalCubicCurve2d.boundingBox` at the same
    * `tolerance`: recursive subdivision producing a hull-AABB union. The
-   * path box is the union of segment boxes; since each segment box has
+   * path box is the union of segment boxes. Since each segment box has
    * slack ≤ `tolerance` per side, so does the union.
    *
    * @param p - The rational cubic path.
-   * @param tolerance - Maximum allowed slack per side; must be positive.
+   * @param tolerance - Maximum allowed slack per side. Must be positive.
    * @returns A closed `Interval2d` enclosing the path, tight to within `tolerance`.
    * @since 2.0.0
    */
@@ -126,7 +126,7 @@ export const boundingBox: {
   /**
    * Computes a closed axis-aligned bounding box for a rational cubic path.
    *
-   * @param tolerance - Maximum allowed slack per side; must be positive.
+   * @param tolerance - Maximum allowed slack per side. Must be positive.
    * @returns A function that takes a path and returns its bounding box.
    * @since 2.0.0
    */
@@ -137,7 +137,7 @@ export const approximateAsCubicPath: {
   /**
    * Approximates the rational cubic path as a `CubicPath2d` via per-segment
    * recursive subdivision. Each input segment is split until its midpoint
-   * deviates from a polynomial-cubic candidate by at most `tolerance`; the
+   * deviates from a polynomial-cubic candidate by at most `tolerance`. The
    * surviving candidates are concatenated into a new path.
    *
    * Lossy in general: only exact when every input segment has uniform
@@ -145,7 +145,7 @@ export const approximateAsCubicPath: {
    * produces more segments.
    *
    * @param p - The rational cubic path to approximate.
-   * @param tolerance - Maximum allowed midpoint deviation per segment; must be positive.
+   * @param tolerance - Maximum allowed midpoint deviation per segment. Must be positive.
    * @returns A new `CubicPath2d` approximating the input.
    * @since 2.0.0
    */
@@ -153,7 +153,7 @@ export const approximateAsCubicPath: {
   /**
    * Approximates the rational cubic path as a `CubicPath2d`.
    *
-   * @param tolerance - Maximum allowed midpoint deviation per segment; must be positive.
+   * @param tolerance - Maximum allowed midpoint deviation per segment. Must be positive.
    * @returns A function that takes a rational path and returns its approximation.
    * @since 2.0.0
    */

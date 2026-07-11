@@ -87,7 +87,7 @@ export interface Three<T> extends Pipeable, Iterable<T> {
 
 /**
  * Any non-empty solution. All `Some<T>` values expose `.value: T`
- * directly; no narrowing is required to read the primary value.
+ * directly. No narrowing is required to read the primary value.
  *
  * @since 2.0.0
  */
@@ -117,7 +117,7 @@ export type AtMostTwo<T> = None | One<T> | Two<T>
 export type AtMostThree<T> = Solution<T>
 
 /**
- * The empty solution. A single shared instance; never reallocated.
+ * The empty solution. A single shared instance, never reallocated.
  *
  * @since 2.0.0
  */
@@ -157,7 +157,7 @@ export const three: <T>(a: T, b: T, c: T) => Three<T> = internal.three
  * Constructs a `Solution<T>` from a runtime array, preserving order.
  *
  * @param arr - Up to three values.
- * @returns The variant matching `arr.length`; `none` for an empty array.
+ * @returns The variant matching `arr.length`. `none` for an empty array.
  * @throws `Error` when the array has more than three elements.
  * @since 2.0.0
  */
@@ -324,7 +324,7 @@ export const clip: {
   (i: Interval): (s: Solution<number>) => Solution<number>
   /**
    * Restricts the solution to values contained within an interval.
-   * Endpoint inclusivity follows the interval's `kind`; pass an open
+   * Endpoint inclusivity follows the interval's `kind`. Pass an open
    * variant (e.g. `Interval.makeOpen(0, 1)` or `Interval.unitOpen`) for
    * strict containment.
    *

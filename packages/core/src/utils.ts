@@ -21,14 +21,14 @@ export const dual: {
    * Builds a dual-signature function from a data-first implementation.
    *
    * The result dispatches on argument count. A call with at least `arity`
-   * arguments runs `body` directly; a call with fewer returns
+   * arguments runs `body` directly. A call with fewer returns
    * `(self) => body(self, ...args)`, the data-last form.
    *
    * Count dispatch cannot see types, so a data-first call that elides an
    * optional trailing argument is routed data-last. For signatures with
    * optional or rest parameters, use the predicate overload.
    *
-   * The type parameters declare the two public signatures; `dual` returns
+   * The type parameters declare the two public signatures. `dual` returns
    * their intersection without checking `body` against `DataLast`.
    *
    * @param arity - Parameter count of the data-first signature. Must be at least 2.
@@ -56,7 +56,7 @@ export const dual: {
    * each call. Use it for signatures where argument count is ambiguous:
    * optional trailing parameters or rest parameters.
    *
-   * @param isDataFirst - Receives each call's `arguments` object; `true` routes the call data-first.
+   * @param isDataFirst - Receives each call's `arguments` object. `true` routes the call data-first.
    * @param body - The data-first implementation.
    * @returns A function callable in both shapes.
    * @since 1.0.4
@@ -140,13 +140,13 @@ export const dual: {
  * Composes functions left to right: `flow(f, g)(x)` is `g(f(x))`.
  *
  * The first function sets the composite's parameters and may take any
- * number of them; each later function is unary, receiving the previous
+ * number of them. Each later function is unary, receiving the previous
  * result. Overloads accept up to nine functions.
  *
  * Where `pipe` applies a value immediately, `flow` builds the composite
  * for later use.
  *
- * @param ab - The first function; its parameters become the composite's.
+ * @param ab - The first function. Its parameters become the composite's.
  * @returns The left-to-right composite of the given functions.
  * @example
  * ```ts
@@ -820,7 +820,7 @@ export class Pipeable {
   /**
    * Pipes this value through a sequence of unary functions, left to right.
    *
-   * @returns The result of applying every function, in order, to this value; with no arguments, this value.
+   * @returns The result of applying every function, in order, to this value. With no arguments, this value.
    * @example
    * ```ts
    * Vector2.make(3, 4).pipe(Vector2.scale(2), Vector2.magnitude) // 10
