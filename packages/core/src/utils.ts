@@ -1,5 +1,5 @@
 /**
- * pipe() and dual() are slightly modified versions of Effect-TS's pipe() and dual() functions.
+ * dual(), flow(), and pipe() are slightly modified versions of Effect-TS's dual(), flow(), and pipe() functions.
  * https://github.com/effect-ts/core/blob/main/src/function.ts
  *
  * The original versions are licensed under the MIT license.
