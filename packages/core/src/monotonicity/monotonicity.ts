@@ -9,7 +9,7 @@ import { RELATIVE_TOLERANCE } from '../number.ts'
  *
  * The four states fall out of the encoding:
  *
- *   - `0` (`Constant`): derivative = 0 everywhere on the interval
+ *   - `0` (`Constant`): derivative = 0 everywhere in the interval
  *   - `1` (`Increasing`): >= 0, with at least one value > 0
  *   - `2` (`Decreasing`): <= 0, with at least one value < 0
  *   - `3` (`None`): crosses zero
@@ -25,7 +25,7 @@ export type Monotonicity = 0 | 1 | 2 | 3
 /**
  * Subset of `Monotonicity` excluding the indeterminate `None` state.
  * Returned by classifiers operating on functions whose derivative cannot
- * change sign on the interval (e.g. linear polynomials, whose derivative is
+ * change sign on the interval (e.g., linear polynomials, whose derivative is
  * constant).
  *
  * @since 2.0.0
@@ -40,7 +40,7 @@ export type GuaranteedMonotonicity = 0 | 1 | 2
 export const Constant = 0 as const
 
 /**
- * Derivative is non-negative on the interval with at least one strictly
+ * Derivative is non-negative in the interval with at least one strictly
  * positive sample. The function is strictly increasing.
  *
  * @since 2.0.0
@@ -48,7 +48,7 @@ export const Constant = 0 as const
 export const Increasing = 1 as const
 
 /**
- * Derivative is non-positive on the interval with at least one strictly
+ * Derivative is non-positive in the interval with at least one strictly
  * negative sample. The function is strictly decreasing.
  *
  * @since 2.0.0
@@ -65,7 +65,7 @@ export const None = 3 as const
 
 /**
  * Checks if a classification is strictly directional: `Increasing` or
- * `Decreasing`, the cases that admit a unique inverse.
+ * `Decreasing`, the cases that admit unique inverse.
  *
  * @param m - The monotonicity classification.
  * @returns `true` when `m` is `Increasing` or `Decreasing`, narrowing to `1 | 2`.
@@ -76,7 +76,7 @@ export const isStrict = (m: Monotonicity): m is 1 | 2 => m === Increasing || m =
 /**
  * Classifies the monotonicity of a function given its values at two interval
  * endpoints, when the function is known a priori to be monotonic on the
- * spanning interval (e.g. a linear polynomial).
+ * spanning interval (e.g., a linear polynomial).
  *
  * The comparison is exact. Endpoint values one ulp apart classify as
  * increasing or decreasing, never `Constant`. Use `fromDerivativeRange`
@@ -108,8 +108,8 @@ export const fromComparison = (s0: number, s1: number): GuaranteedMonotonicity =
  * computed from rounded coefficients can land on either side of an interval
  * boundary, while the value it corresponds to stays pinned near zero.
  *
- * @param min - The smallest derivative value attained on the interval.
- * @param max - The largest derivative value attained on the interval.
+ * @param min - The smallest derivative value reached on the interval.
+ * @param max - The largest derivative value reached on the interval.
  * @param tolerance - Absolute threshold below which a derivative value is treated as zero. Defaults to `RELATIVE_TOLERANCE * max(|min|, |max|)`.
  * @returns The sign-coverage classification.
  * @example
