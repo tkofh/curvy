@@ -10,11 +10,13 @@
     "bezier-subdivide",
     "cardinal-options",
     "characteristic-module",
+    "cubic-domain-solution",
     "curve-endpoint-primitives",
     "curve-solve-at",
     "dts-mts-extension",
     "dual-perf",
     "fine-foxes-pay",
+    "flow-composition",
     "from-api-coherence",
     "generic-path2d",
     "interval-inclusivity",
@@ -25,6 +27,7 @@
     "module-restructure",
     "numerical-robustness",
     "path-axis-monotonicity",
+    "path-solve-parameter-contract",
     "path-solveAt-knot-fix",
     "polynomial-unit-range-interval-approx",
     "precision-model",
@@ -41,6 +44,7 @@
     "type-level-traits",
     "vector-from-tuple",
     "vector-map-coord",
+    "vector-unit-to-one",
     "vector3-spherical-fix"
   ]
 }

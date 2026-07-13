@@ -1,5 +1,35 @@
 # Change Log
 
+## 2.0.0-alpha.16
+
+### Major Changes
+
+- 8ab3d1e: The cubic polynomial's `domain` now returns `Solution.AtMostOne<Interval>`, matching its linear and quadratic siblings. A range whose endpoint values the polynomial never attains (reachable only when the coefficients collapse the degree) returns `Solution.none` instead of throwing an incidental interval-construction error.
+- 8ab3d1e: Rename `Vector2.unit`, `Vector3.unit`, and `Vector4.unit` to `one`. These are the all-ones constants (magnitude `sqrt(2)`/`sqrt(3)`/`2`), not unit-length vectors, and the old name promised normalization it never had. `Vector3.unitX`/`unitY`/`unitZ` keep their names: those are genuine unit vectors.
+
+### Minor Changes
+
+- 8ab3d1e: **`flow` — left-to-right function composition, the point-free companion to `pipe`.** Exported from `curvy/utils`.
+
+  Where `pipe(x, f, g)` threads a starting value through functions immediately (`g(f(x))`), `flow(f, g)` composes the functions into a new one and waits for the value (`x => g(f(x))`). That lets you name a reusable pipeline and apply it later — or hand it straight to `.map`. It carries the same 1-through-9 overload ladder as `pipe`, fully typed so each step's input is checked against the previous step's output.
+
+  It fits curvy's data-last overloads, whose partially-applied forms are exactly the unary functions `flow` composes:
+
+  ```ts
+  import { flow } from 'curvy/utils'
+  import { Vector2 } from 'curvy/vector'
+
+  // Build the transform once, apply it many times.
+  const nudge = flow(Vector2.scale(2), Vector2.add(Vector2.make(1, 0)))
+
+  nudge(Vector2.make(3, 4)) // Vector2 { x: 7, y: 8 }
+  points.map(nudge) // reuse across a collection
+  ```
+
+  curvy does not use `flow` internally; it ships alongside `pipe` for consumers assembling their own operation pipelines.
+
+- 8ab3d1e: Path `solve` (all path types) now has a defined out-of-range contract: parameters within `EPSILON` outside `[0, 1]` snap to the boundary, forgiving accumulated float error, and anything beyond throws an invariant with a clear message. Previously an out-of-range parameter indexed a nonexistent segment and failed with an incidental `TypeError`.
+
 ## 2.0.0-alpha.15
 
 ### Minor Changes
