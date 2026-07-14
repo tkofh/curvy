@@ -29,6 +29,7 @@
     "path-axis-monotonicity",
     "path-solve-parameter-contract",
     "path-solveAt-knot-fix",
+    "piecewise-functions",
     "polynomial-unit-range-interval-approx",
     "precision-model",
     "punch-list",
