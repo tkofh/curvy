@@ -82,7 +82,8 @@ export const isPiecewise: (u: unknown) => u is Piecewise<unknown> = internal.isP
 export const make: <P>(...pieces: ReadonlyArray<Piece<P>>) => Piecewise<P> = internal.make
 
 /**
- * Creates a `Piecewise` from an array of `[interval, polynomial]` pieces.
+ * Creates a `Piecewise` from an array of `[interval, polynomial]` pieces. All
+ * pieces must share a polynomial degree.
  *
  * @param pieces - The pieces, in ascending x order. At least one is required.
  * @returns A new `Piecewise`.
@@ -314,7 +315,7 @@ export const appendContiguous: {
    * vouches for the rest. The result carries `Contiguous` and drops any other
    * traits, since appending can still break them.
    *
-   * @param pp - A contiguous piecewise function.
+   * @param piecewise - A contiguous piecewise function.
    * @param piece - The piece to append.
    * @returns A new `Contiguous` piecewise function with the piece appended.
    * @throws `Error` when the piece leaves a gap after the current last piece.
@@ -340,7 +341,7 @@ export const appendContinuous: {
    *
    * The result carries `Continuous` and drops any other traits.
    *
-   * @param pp - A continuous piecewise function.
+   * @param piecewise - A continuous piecewise function.
    * @param piece - The piece to append.
    * @returns A new `Continuous` piecewise function with the piece appended.
    * @throws `Error` when the piece leaves a gap or its value jumps at the join.
