@@ -1,10 +1,15 @@
 import { describe, expect, expectTypeOf, test } from 'vitest'
 import * as cubicCurve2d from '../src/curve/cubic2d.ts'
+import * as linearCurve2d from '../src/curve/linear2d.ts'
+import * as quadraticCurve2d from '../src/curve/quadratic2d.ts'
 import * as interval from '../src/interval/interval.ts'
 import * as cubicPath2d from '../src/path/cubic2d.ts'
+import * as linearPath2d from '../src/path/linear2d.ts'
+import * as quadraticPath2d from '../src/path/quadratic2d.ts'
 import * as Piecewise from '../src/piecewise/piecewise.ts'
 import * as cubicPolynomial from '../src/polynomial/cubic.ts'
 import * as linearPolynomial from '../src/polynomial/linear.ts'
+import * as quadraticPolynomial from '../src/polynomial/quadratic.ts'
 import * as Solution from '../src/solution/solution.ts'
 import * as Cardinal2d from '../src/splines/cardinal2d.ts'
 import * as vector2 from '../src/vector/vector2.ts'
@@ -155,6 +160,65 @@ describe('Piecewise trait-preserving append', () => {
   })
 })
 
+describe('Piecewise.derivative', () => {
+  test('cubic differentiates to quadratic, carrying the chain-rule scale', () => {
+    // y(u) = u^3 over [0, 2]; with u = x / 2, y(x) = (x / 2)^3, so dy/dx = 3x^2/8.
+    const pp = Piecewise.make(piece(0, 2, 0, 0, 0, 1))
+    const d = Piecewise.derivative(pp)
+    expectTypeOf(d).toEqualTypeOf<Piecewise.Piecewise<quadraticPolynomial.QuadraticPolynomial>>()
+    for (const x of [0.25, 0.5, 1, 1.5, 1.9]) {
+      expect(Solution.valueOrUndefined(Piecewise.solve(d, x))).toBeCloseTo((3 * x * x) / 8, 10)
+    }
+  })
+
+  test('matches a central finite difference across a two-piece function', () => {
+    // A: y = 14 + 4u over [0, 10];  B: y = 18 + 2u^2 over [10, 30].
+    const pp = Piecewise.make(piece(0, 10, 14, 4), piece(10, 30, 18, 0, 2))
+    const d = Piecewise.derivative(pp)
+    const h = 1e-6
+    for (const x of [2, 5, 8, 15, 22, 28]) {
+      const fd =
+        ((Solution.valueOrUndefined(Piecewise.solve(pp, x + h)) as number) -
+          (Solution.valueOrUndefined(Piecewise.solve(pp, x - h)) as number)) /
+        (2 * h)
+      expect(Solution.valueOrUndefined(Piecewise.solve(d, x))).toBeCloseTo(fd, 5)
+    }
+  })
+
+  test('keeps the pieces and their intervals', () => {
+    const pp = Piecewise.make(piece(0, 10, 14, 4), piece(10, 30, 18, 0, 2))
+    const d = Piecewise.derivative(pp)
+    expect([...d].length).toBe(2)
+    expect(interval.aligned(Piecewise.domain(d), interval.make(0, 30))).toBe(true)
+  })
+
+  test('quadratic differentiates to linear', () => {
+    // y(u) = u^2 over [0, 4]; with u = x / 4, y(x) = (x / 4)^2, so dy/dx = x/8.
+    const pp = Piecewise.make<quadraticPolynomial.QuadraticPolynomial>([
+      interval.make(0, 4),
+      quadraticPolynomial.make(0, 0, 1),
+    ])
+    const d = Piecewise.derivative(pp)
+    expectTypeOf(d).toEqualTypeOf<Piecewise.Piecewise<linearPolynomial.LinearPolynomial>>()
+    for (const x of [0.5, 1, 2, 3.5]) {
+      expect(Solution.valueOrUndefined(Piecewise.solve(d, x))).toBeCloseTo(x / 8, 10)
+    }
+  })
+
+  test('linear differentiates to a piecewise constant', () => {
+    // y(u) = 1 + 2u over [0, 4]; with u = x / 4, y(x) = 1 + x/2, so dy/dx = 1/2.
+    const pp = Piecewise.make<linearPolynomial.LinearPolynomial>([
+      interval.make(0, 4),
+      linearPolynomial.make(1, 2),
+    ])
+    const d = Piecewise.derivative(pp)
+    expectTypeOf(d).toEqualTypeOf<Piecewise.Piecewise<linearPolynomial.LinearPolynomial>>()
+    for (const x of [0, 1, 2, 3.9]) {
+      expect(Solution.valueOrUndefined(Piecewise.solve(d, x))).toBeCloseTo(0.5, 12)
+    }
+  })
+})
+
 describe('Piecewise is generic over polynomial degree', () => {
   test('linear pieces evaluate through the linear ops', () => {
     const pp = Piecewise.make<linearPolynomial.LinearPolynomial>([
@@ -221,6 +285,82 @@ describe('Piecewise.fromPath', () => {
       [1280, 20],
     ]).pipe(Cardinal2d.withInterpolatedEndpoints, Cardinal2d.toPath, cubicPath2d.asIncreasingX)
 
+    const coarse = [...Piecewise.fromPath(path, { tolerance: 1e-2 })].length
+    const fine = [...Piecewise.fromPath(path, { tolerance: 1e-5 })].length
+    expect(coarse).toBeLessThan(fine)
+  })
+})
+
+describe('Piecewise.fromPath over linear and quadratic paths', () => {
+  test('linear path transcribes exactly, one piece per segment', () => {
+    const segA = linearCurve2d.fromCoefficients(vector2.make(0, 0), vector2.make(2, 4)) // x=2t, y=4t
+    const segB = linearCurve2d.fromCoefficients(vector2.make(2, 4), vector2.make(3, 1)) // x=2+3t, y=4+t
+    const path = linearPath2d.make(segA, segB).pipe(linearPath2d.asIncreasingX)
+    const pp = Piecewise.fromPath(path)
+
+    expectTypeOf(pp).toEqualTypeOf<
+      Piecewise.Piecewise<linearPolynomial.LinearPolynomial, Piecewise.Contiguous>
+    >()
+    expect([...pp].length).toBe(2) // no subdivision
+    for (const x of [0, 0.5, 1, 2, 3.5, 5]) {
+      const exact = Solution.valueOrUndefined(linearPath2d.solveAtX(path, x))
+      expect(Solution.valueOrUndefined(Piecewise.solve(pp, x))).toBeCloseTo(exact as number, 10)
+    }
+  })
+
+  test('quadratic path with affine x transcribes exactly', () => {
+    // x = 4t (affine, x.c2 === 0), y = 3t^2: t === u, so the piece is seg.y verbatim.
+    const seg = quadraticCurve2d.fromCoefficients(
+      vector2.make(0, 0),
+      vector2.make(4, 0),
+      vector2.make(0, 3),
+    )
+    const path = quadraticPath2d.make(seg).pipe(quadraticPath2d.asIncreasingX)
+    const pp = Piecewise.fromPath(path)
+
+    expectTypeOf(pp).toEqualTypeOf<
+      Piecewise.Piecewise<quadraticPolynomial.QuadraticPolynomial, Piecewise.Contiguous>
+    >()
+    expect([...pp].length).toBe(1) // no subdivision
+    for (const x of [0.4, 1.3, 2.0, 3.1, 3.9]) {
+      const exact = Solution.valueOrUndefined(quadraticPath2d.solveAtX(path, x))
+      expect(Solution.valueOrUndefined(Piecewise.solve(pp, x))).toBeCloseTo(exact as number, 10)
+    }
+  })
+
+  test('quadratic path with genuine curvature in x refits within tolerance', () => {
+    // x = 2t + t^2 (monotone up, x.c2 !== 0), y = 4t^2: y(x) is algebraic, must refit.
+    const seg = quadraticCurve2d.fromCoefficients(
+      vector2.make(0, 0),
+      vector2.make(2, 0),
+      vector2.make(1, 4),
+    )
+    const path = quadraticPath2d.make(seg).pipe(quadraticPath2d.asIncreasingX)
+    const pp = Piecewise.fromPath(path, { tolerance: 1e-5 })
+
+    const yScale = interval.size(quadraticPath2d.boundingBox(path).y)
+    let maxDev = 0
+    for (let i = 0; i <= 200; i++) {
+      const x = 3 * (i / 200)
+      const exact = Solution.valueOrUndefined(quadraticPath2d.solveAtX(path, x))
+      const fit = Solution.valueOrUndefined(Piecewise.solve(pp, x))
+      if (exact !== undefined && fit !== undefined) {
+        maxDev = Math.max(maxDev, Math.abs(fit - exact))
+      }
+    }
+    expect([...pp].length).toBeGreaterThan(1) // needed subdivision
+    expect(maxDev / yScale).toBeLessThan(1e-3)
+    expect(Piecewise.isContiguous(pp)).toBe(true)
+    expect(Piecewise.isContinuous(pp)).toBe(true)
+  })
+
+  test('a looser tolerance yields fewer quadratic pieces', () => {
+    const seg = quadraticCurve2d.fromCoefficients(
+      vector2.make(0, 0),
+      vector2.make(2, 0),
+      vector2.make(1, 4),
+    )
+    const path = quadraticPath2d.make(seg).pipe(quadraticPath2d.asIncreasingX)
     const coarse = [...Piecewise.fromPath(path, { tolerance: 1e-2 })].length
     const fine = [...Piecewise.fromPath(path, { tolerance: 1e-5 })].length
     expect(coarse).toBeLessThan(fine)

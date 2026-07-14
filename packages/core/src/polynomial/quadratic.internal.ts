@@ -7,8 +7,10 @@ import * as Vector2 from '../vector/vector2.ts'
 import type { Vector3 } from '../vector/vector3.ts'
 import type { CubicPolynomial } from './cubic.ts'
 import { CubicPolynomialImpl } from './cubic.internal.circular.ts'
+import type { LinearPolynomial } from './linear.ts'
 import * as Linear from './linear.internal.ts'
 import * as Monotonicity from '../monotonicity/monotonicity.ts'
+import type { PolynomialOps } from './polynomial.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
 import {
   QuadraticPolynomialImpl,
@@ -314,3 +316,16 @@ export const curvature = dual<
   (p: QuadraticPolynomial, x: number) =>
     Math.abs(2 * p.c2) / (1 + (Linear.solve(derivative(p), x) ** 2) ** 1.5),
 )
+
+/**
+ * The `PolynomialOps` bundle consumed by the generic `Piecewise` implementation.
+ *
+ * @internal
+ */
+export const Ops: PolynomialOps<QuadraticPolynomial, LinearPolynomial> = {
+  solve,
+  unitRange,
+  isIncreasing: (p) => isIncreasing(p, Interval.unit),
+  isDecreasing: (p) => isDecreasing(p, Interval.unit),
+  derivative: (p, dudx) => Linear.make(p.c1 * dudx, 2 * p.c2 * dudx),
+}

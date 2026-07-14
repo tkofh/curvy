@@ -20,15 +20,18 @@ const pp = Piecewise.make(
 Piecewise.solve(pp, 900) // y at x = 900, or Solution.none outside every piece
 Piecewise.domain(pp) // [320, 1280]
 Piecewise.boundingBox(pp) // the y-image, interior extrema included
+Piecewise.derivative(pp) // f'(x), as a Piecewise one degree lower
 ```
 
-**Construction from a path — `Piecewise.fromPath`.** Refits a strictly-increasing-x `CubicPath2d` into a piecewise function of x, approximating `y = f(x)` to a `tolerance` (a fraction of the path's y-range, default `1e-4`). A path's y is generally not a polynomial in x — inverting a nonlinear `x(t)` leaves an algebraic function — so each segment is subdivided in x and fitted with a cubic matching value and slope (`dy/dx`) at the cell endpoints, bisecting until the fit tracks the curve. A segment whose x is already affine (`x.c2` and `x.c3` both zero) is transcribed exactly, with no subdivision.
+**Calculus — `Piecewise.derivative`.** Differentiates the function with respect to x, lowering each piece's degree by one (cubics to quadratics, quadratics to linears, linears to piecewise constants). Because each piece is read in its local coordinate `u = (x - start) / size(domain)`, the result carries the per-piece chain-rule factor, so it evaluates to `df/dx` directly rather than `df/du`. The intervals are untouched, so a `Contiguous` result stays gapless — differentiating can still break `Continuous` and `Monotonic`, so those brands drop.
+
+**Construction from a path — `Piecewise.fromPath`.** Refits a strictly-increasing-x path into a piecewise function of x at the source path's polynomial degree — `LinearPath2d` to linear, `QuadraticPath2d` to quadratic, `CubicPath2d` to cubic. A segment whose x is affine in its parameter is transcribed exactly (a linear path is entirely this case, so linear input is exact and `tolerance` is ignored). A segment with genuine curvature in x has a non-polynomial `y(x)` — inverting a nonlinear `x(t)` leaves an algebraic function — so it is subdivided in x and fitted per cell, bisecting until the fit tracks the curve within `tolerance` (a fraction of the path's y-range, default `1e-4`). The cubic fit matches value and slope at both cell endpoints; the quadratic fit matches both endpoint values and the left-endpoint slope.
 
 ```ts
 const fn = Piecewise.fromPath(path, { tolerance: 1e-4 })
 ```
 
-**Traits.** The base value is a *partial* function: its pieces are ordered and non-overlapping in x but may leave gaps. Refiners narrow that — `isContiguous` (no gaps), `isContinuous` (no gaps and no value jumps across the joins), `isMonotonic` (y monotonic across the whole domain) — each with an `as*` asserting variant. `Continuous` implies `Contiguous`.
+**Traits.** The base value is a _partial_ function: its pieces are ordered and non-overlapping in x but may leave gaps. Refiners narrow that — `isContiguous` (no gaps), `isContinuous` (no gaps and no value jumps across the joins), `isMonotonic` (y monotonic across the whole domain) — each with an `as*` asserting variant. `Continuous` implies `Contiguous`.
 
 **Builders.** `append` adds a piece and drops trait brands. `appendContiguous` and `appendContinuous` preserve the corresponding brand by checking only the new join — the input brand already vouches for the rest — and drop any other brands, since an append can still break them. `mapPolynomials` transforms each piece's polynomial over the same intervals.
 

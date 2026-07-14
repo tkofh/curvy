@@ -1,10 +1,18 @@
 import * as CubicCurve2d from '../curve/cubic2d.ts'
+import * as LinearCurve2d from '../curve/linear2d.ts'
+import * as QuadraticCurve2d from '../curve/quadratic2d.ts'
 import * as Interval from '../interval/interval.ts'
 import { coincident } from '../number.ts'
 import * as CubicPath2d from '../path/cubic2d.ts'
+import * as LinearPath2d from '../path/linear2d.ts'
+import * as QuadraticPath2d from '../path/quadratic2d.ts'
 import type { IncreasingX } from '../path/traits.ts'
+import { Ops as cubicOps } from '../polynomial/cubic.internal.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
+import { Ops as linearOps } from '../polynomial/linear.internal.ts'
 import * as LinearPolynomial from '../polynomial/linear.ts'
+import type { PolynomialOps } from '../polynomial/polynomial.ts'
+import { Ops as quadraticOps } from '../polynomial/quadratic.internal.ts'
 import * as QuadraticPolynomial from '../polynomial/quadratic.ts'
 import * as Solution from '../solution/solution.ts'
 import { dual, invariant, Pipeable } from '../utils.ts'
@@ -14,44 +22,11 @@ import { type Contiguous, type Continuous, type Monotonic, PiecewiseTraits } fro
 export const PiecewiseTypeId: unique symbol = Symbol('curvy/piecewise')
 export type PiecewiseTypeId = typeof PiecewiseTypeId
 
-// The per-degree operation bundle the generic `Piecewise` needs — the
-// polynomial-degree analog of `Curve2dOps` in `curve/curve2d.ts`. Held once per
-// `Piecewise` instance, resolved at construction from the pieces' runtime kind,
-// so evaluation carries no per-call dispatch. The classifiers run over the unit
-// interval, since every piece's polynomial lives in local `[0, 1]`.
-//
-// `derivative` is the one operation still outside the bundle: it lowers the
-// degree (cubic -> quadratic -> linear), so it needs a pointer to the
-// lower-degree bundle to type its result — added when `Piecewise.derivative`
-// lands.
-/** @internal */
-export interface PolynomialOps<P> {
-  solve(p: P, u: number): number
-  unitRange(p: P): Interval.Closed
-  isIncreasing(p: P): boolean
-  isDecreasing(p: P): boolean
-}
-
-const linearOps: PolynomialOps<LinearPolynomial.LinearPolynomial> = {
-  solve: LinearPolynomial.solve,
-  unitRange: LinearPolynomial.unitRange,
-  isIncreasing: (p) => LinearPolynomial.isIncreasing(p),
-  isDecreasing: (p) => LinearPolynomial.isDecreasing(p),
-}
-
-const quadraticOps: PolynomialOps<QuadraticPolynomial.QuadraticPolynomial> = {
-  solve: QuadraticPolynomial.solve,
-  unitRange: QuadraticPolynomial.unitRange,
-  isIncreasing: (p) => QuadraticPolynomial.isIncreasing(p, Interval.unit),
-  isDecreasing: (p) => QuadraticPolynomial.isDecreasing(p, Interval.unit),
-}
-
-const cubicOps: PolynomialOps<CubicPolynomial.CubicPolynomial> = {
-  solve: CubicPolynomial.solve,
-  unitRange: CubicPolynomial.unitRange,
-  isIncreasing: (p) => CubicPolynomial.isIncreasing(p, Interval.unit),
-  isDecreasing: (p) => CubicPolynomial.isDecreasing(p, Interval.unit),
-}
+// The generic `Piecewise` evaluates its pieces through a `PolynomialOps` bundle
+// (defined in `polynomial/polynomial.ts`, the analog of `curve/curve2d.ts`).
+// Each polynomial module exports its own `Ops`; the container holds the one
+// matching its pieces' degree, resolved once at construction from the pieces'
+// runtime kind, so evaluation carries no per-call dispatch.
 
 // Resolve the operation bundle from a polynomial's runtime kind. The three
 // degrees share a call shape but not a `solve` — evaluating a cubic piece with
@@ -116,7 +91,15 @@ export const fromArray = <P>(pieces: ReadonlyArray<Piece<P>>): Piecewise<P> => {
 /** @internal */
 export const make = <P>(...pieces: ReadonlyArray<Piece<P>>): Piecewise<P> => fromArray(pieces)
 
-// --- fromPath: refit a monotonic-x cubic path into a function of x ----------
+// --- fromPath: refit a monotonic-x path into a function of x ----------------
+//
+// A segment whose x is affine in t maps t === u, so its y-polynomial already is
+// the piece's y(u) — transcribed exactly, no inversion or subdivision (a linear
+// path is entirely this case). A segment with genuine curvature in x has an
+// algebraic, non-polynomial y(x); it is subdivided in x and each cell fitted in
+// the piece-local u, bisecting until the fit tracks the curve within tolerance.
+// Output degree matches the source path: linear -> linear, quadratic ->
+// quadratic, cubic -> cubic.
 
 const DEFAULT_TOLERANCE = 1e-4
 const MAX_DEPTH = 16
@@ -124,33 +107,55 @@ const ERROR_SAMPLES = [0.25, 0.5, 0.75] as const
 
 type Probe = { readonly y: number; readonly slope: number }
 
-// Slope of a cubic's value with respect to its own parameter t.
-const slopeInT = (p: CubicPolynomial.CubicPolynomial, t: number): number =>
-  p.c1 + t * (2 * p.c2 + 3 * t * p.c3)
-
-// Invert the segment's (monotonic) x-polynomial to the parameter t at which
-// x(t) = x. `clipApprox` keeps the single in-[0, 1] root, tolerating one that
-// lands a few ulps outside the unit interval from solver roundoff.
-const invertX = (seg: CubicCurve2d.CubicCurve2d, x: number): number => {
-  const clipped = CubicPolynomial.solveInverse(seg.x, x).pipe(Solution.clipApprox(Interval.unit))
-  const t = Solution.valueOrUndefined(clipped)
-  invariant(t !== undefined, 'piecewise fromPath: x is not on the segment (non-monotonic source?)')
-  return t
+// The per-segment operations the adaptive refiner drives, independent of the
+// segment's polynomial degree. `probeAtT` samples an endpoint (t known, no
+// inversion); `probeAtX`/`trueYAtX` sample an interior x, inverting the
+// monotonic x(t); `fit` builds a piece over [xLo, xHi] in local u and
+// `evalPiece` samples it for the error test.
+interface SegmentRefit<P> {
+  probeAtT(t: number): Probe
+  probeAtX(x: number): Probe
+  trueYAtX(x: number): number
+  fit(xLo: number, xHi: number, lo: Probe, hi: Probe): P
+  evalPiece(p: P, u: number): number
 }
 
-// Value and slope dy/dx at parameter t. dy/dx = y'(t) / x'(t) by the chain
-// rule. x'(t) is zero only at a vertical tangent, impossible in the interior of
-// a monotonic-x segment; the guard covers a grazing endpoint tangent.
-const probeAtT = (seg: CubicCurve2d.CubicCurve2d, t: number): Probe => {
-  const dx = slopeInT(seg.x, t)
-  const dy = slopeInT(seg.y, t)
-  return { y: CubicPolynomial.solve(seg.y, t), slope: dx === 0 ? 0 : dy / dx }
+// Bisect one segment in x until the fitted piece tracks the true curve within
+// `threshold`. Endpoint probes thread through the recursion, so each interior x
+// is inverted exactly once.
+const refineCell = <P>(
+  refit: SegmentRefit<P>,
+  xLo: number,
+  probeLo: Probe,
+  xHi: number,
+  probeHi: Probe,
+  threshold: number,
+  depth: number,
+  out: Array<Piece<P>>,
+): void => {
+  const cell = refit.fit(xLo, xHi, probeLo, probeHi)
+
+  if (depth < MAX_DEPTH) {
+    const h = xHi - xLo
+    for (const u of ERROR_SAMPLES) {
+      const trueY = refit.trueYAtX(xLo + h * u)
+      if (Math.abs(refit.evalPiece(cell, u) - trueY) > threshold) {
+        const xMid = xLo + h / 2
+        const probeMid = refit.probeAtX(xMid)
+        refineCell(refit, xLo, probeLo, xMid, probeMid, threshold, depth + 1, out)
+        refineCell(refit, xMid, probeMid, xHi, probeHi, threshold, depth + 1, out)
+        return
+      }
+    }
+  }
+
+  out.push([Interval.make(xLo, xHi), cell])
 }
 
-// Fit the cubic in the cell-local u = (x - xLo) / (xHi - xLo) matching value
-// and slope at both ends. x is affine in u with dx/du = h, so the u-space
-// endpoint velocities are h * mLo and h * mHi. Hermite -> monomial.
-const fitCell = (
+// Fit a cubic in the cell-local u = (x - xLo) / (xHi - xLo) matching value and
+// slope at both ends. x is affine in u with dx/du = h, so the u-space endpoint
+// velocities are h * mLo and h * mHi. Hermite -> monomial.
+const fitCubicCell = (
   xLo: number,
   xHi: number,
   lo: Probe,
@@ -166,66 +171,136 @@ const fitCell = (
   )
 }
 
-// Emit cells for one source segment, bisecting in x until the fitted cubic
-// tracks the true curve within `threshold`. Endpoint probes thread through the
-// recursion so each interior x is inverted exactly once.
-const refineCell = (
-  seg: CubicCurve2d.CubicCurve2d,
+// A quadratic cell has room for both endpoint values and the left-endpoint slope
+// (3 coefficients); the right slope falls out. Bisection drives the fit to
+// tolerance regardless of which slope is pinned.
+const fitQuadraticCell = (
   xLo: number,
-  probeLo: Probe,
   xHi: number,
-  probeHi: Probe,
-  threshold: number,
-  depth: number,
-  out: Array<Piece<CubicPolynomial.CubicPolynomial>>,
-): void => {
-  const cell = fitCell(xLo, xHi, probeLo, probeHi)
-
-  if (depth < MAX_DEPTH) {
-    const h = xHi - xLo
-    for (const u of ERROR_SAMPLES) {
-      const trueY = CubicPolynomial.solve(seg.y, invertX(seg, xLo + h * u))
-      if (Math.abs(CubicPolynomial.solve(cell, u) - trueY) > threshold) {
-        const xMid = xLo + h / 2
-        const probeMid = probeAtT(seg, invertX(seg, xMid))
-        refineCell(seg, xLo, probeLo, xMid, probeMid, threshold, depth + 1, out)
-        refineCell(seg, xMid, probeMid, xHi, probeHi, threshold, depth + 1, out)
-        return
-      }
-    }
-  }
-
-  out.push([Interval.make(xLo, xHi), cell])
+  lo: Probe,
+  hi: Probe,
+): QuadraticPolynomial.QuadraticPolynomial => {
+  const c1 = (xHi - xLo) * lo.slope
+  return QuadraticPolynomial.make(lo.y, c1, hi.y - lo.y - c1)
 }
 
-/** @internal */
-export const fromPath = (
+// Invert a segment's (monotonic) x-polynomial to the parameter t at which
+// x(t) = x. `clipApprox` keeps the single in-[0, 1] root, tolerating one that
+// lands a few ulps outside the unit interval from solver roundoff.
+const clipToParam = (roots: Solution.Solution<number>): number => {
+  const t = Solution.valueOrUndefined(roots.pipe(Solution.clipApprox(Interval.unit)))
+  invariant(t !== undefined, 'piecewise fromPath: x is not on the segment (non-monotonic source?)')
+  return t
+}
+
+// dy/dx = y'(t) / x'(t) by the chain rule. x'(t) is zero only at a vertical
+// tangent, impossible in the interior of a monotonic-x segment; the guard covers
+// a grazing endpoint tangent.
+const cubicRefit = (
+  seg: CubicCurve2d.CubicCurve2d,
+): SegmentRefit<CubicPolynomial.CubicPolynomial> => {
+  const invertX = (x: number) => clipToParam(CubicPolynomial.solveInverse(seg.x, x))
+  const probeAtT = (t: number): Probe => {
+    const dx = seg.x.c1 + t * (2 * seg.x.c2 + 3 * t * seg.x.c3)
+    const dy = seg.y.c1 + t * (2 * seg.y.c2 + 3 * t * seg.y.c3)
+    return { y: CubicPolynomial.solve(seg.y, t), slope: dx === 0 ? 0 : dy / dx }
+  }
+  return {
+    probeAtT,
+    probeAtX: (x) => probeAtT(invertX(x)),
+    trueYAtX: (x) => CubicPolynomial.solve(seg.y, invertX(x)),
+    fit: fitCubicCell,
+    evalPiece: CubicPolynomial.solve,
+  }
+}
+
+const quadraticRefit = (
+  seg: QuadraticCurve2d.QuadraticCurve2d,
+): SegmentRefit<QuadraticPolynomial.QuadraticPolynomial> => {
+  const invertX = (x: number) => clipToParam(QuadraticPolynomial.solveInverse(seg.x, x))
+  const probeAtT = (t: number): Probe => {
+    const dx = seg.x.c1 + 2 * seg.x.c2 * t
+    const dy = seg.y.c1 + 2 * seg.y.c2 * t
+    return { y: QuadraticPolynomial.solve(seg.y, t), slope: dx === 0 ? 0 : dy / dx }
+  }
+  return {
+    probeAtT,
+    probeAtX: (x) => probeAtT(invertX(x)),
+    trueYAtX: (x) => QuadraticPolynomial.solve(seg.y, invertX(x)),
+    fit: fitQuadraticCell,
+    evalPiece: QuadraticPolynomial.solve,
+  }
+}
+
+// The error budget is a fraction of the curve's y-range — the metric the source
+// problem measures deviation in. A flat curve falls back to an absolute band.
+const errorThreshold = (yScale: number, options?: { readonly tolerance?: number }): number =>
+  (options?.tolerance ?? DEFAULT_TOLERANCE) * (yScale === 0 ? 1 : yScale)
+
+const fromLinearPath = (
+  path: LinearPath2d.LinearPath2d<IncreasingX>,
+): Piecewise<LinearPolynomial.LinearPolynomial, Contiguous> => {
+  // Linear x is always affine, so t === u and each seg.y already is y(u), exact.
+  const out: Array<Piece<LinearPolynomial.LinearPolynomial>> = []
+  for (const seg of path) {
+    out.push([Interval.make(LinearCurve2d.startPoint(seg).x, LinearCurve2d.endPoint(seg).x), seg.y])
+  }
+  return asContiguous(fromArray(out))
+}
+
+const fromQuadraticPath = (
+  path: QuadraticPath2d.QuadraticPath2d<IncreasingX>,
+  options?: { readonly tolerance?: number },
+): Piecewise<QuadraticPolynomial.QuadraticPolynomial, Contiguous> => {
+  const threshold = errorThreshold(Interval.size(QuadraticPath2d.boundingBox(path).y), options)
+  const out: Array<Piece<QuadraticPolynomial.QuadraticPolynomial>> = []
+  for (const seg of path) {
+    const xLo = QuadraticCurve2d.startPoint(seg).x
+    const xHi = QuadraticCurve2d.endPoint(seg).x
+    if (seg.x.c2 === 0) {
+      out.push([Interval.make(xLo, xHi), seg.y]) // affine x: t === u, exact
+      continue
+    }
+    const refit = quadraticRefit(seg)
+    refineCell(refit, xLo, refit.probeAtT(0), xHi, refit.probeAtT(1), threshold, 0, out)
+  }
+  return asContiguous(fromArray(out))
+}
+
+const fromCubicPath = (
   path: CubicPath2d.CubicPath2d<IncreasingX>,
   options?: { readonly tolerance?: number },
 ): Piecewise<CubicPolynomial.CubicPolynomial, Contiguous> => {
-  const tolerance = options?.tolerance ?? DEFAULT_TOLERANCE
-  // The error budget is a fraction of the curve's y-range — the metric the
-  // source problem measures deviation in. A flat curve falls to an absolute band.
-  const yScale = Interval.size(CubicPath2d.boundingBox(path).y)
-  const threshold = tolerance * (yScale === 0 ? 1 : yScale)
-
+  const threshold = errorThreshold(Interval.size(CubicPath2d.boundingBox(path).y), options)
   const out: Array<Piece<CubicPolynomial.CubicPolynomial>> = []
   for (const seg of path) {
     const xLo = CubicCurve2d.startPoint(seg).x
     const xHi = CubicCurve2d.endPoint(seg).x
-
-    // Affine x (x.c2 = x.c3 = 0): t === u, so the segment's y-polynomial already
-    // is the piece's y(u), exactly. No inversion, no subdivision — the fast path
-    // a linear or graph-form source takes.
     if (seg.x.c2 === 0 && seg.x.c3 === 0) {
-      out.push([Interval.make(xLo, xHi), seg.y])
+      out.push([Interval.make(xLo, xHi), seg.y]) // affine x: t === u, exact
       continue
     }
-
-    refineCell(seg, xLo, probeAtT(seg, 0), xHi, probeAtT(seg, 1), threshold, 0, out)
+    const refit = cubicRefit(seg)
+    refineCell(refit, xLo, refit.probeAtT(0), xHi, refit.probeAtT(1), threshold, 0, out)
   }
-
   return asContiguous(fromArray(out))
+}
+
+/** @internal */
+export const fromPath = (
+  path:
+    | LinearPath2d.LinearPath2d<IncreasingX>
+    | QuadraticPath2d.QuadraticPath2d<IncreasingX>
+    | CubicPath2d.CubicPath2d<IncreasingX>,
+  options?: { readonly tolerance?: number },
+): Piecewise<unknown, Contiguous> => {
+  if (LinearPath2d.isLinearPath2d(path)) {
+    return fromLinearPath(path)
+  }
+  if (QuadraticPath2d.isQuadraticPath2d(path)) {
+    return fromQuadraticPath(path, options)
+  }
+  return fromCubicPath(path, options)
 }
 
 // Find the piece bracketing `x` and evaluate its polynomial at the piece-local
@@ -398,3 +473,19 @@ export const mapPolynomials = dual(
     )
   },
 )
+
+// Differentiate with respect to x. Each piece polynomial is a function of the
+// local u = (x - start) / width, so its x-derivative carries a chain-rule factor
+// du/dx = 1 / width, folded in per piece by the ops. The intervals are kept; the
+// degree drops by one (a linear piece's derivative is a constant, carried as a
+// zero-slope linear). `fromArray` re-resolves the ops bundle for the lowered
+// degree from the new pieces' runtime kind.
+/** @internal */
+export const derivative = (pp: Piecewise<unknown>): Piecewise<unknown> => {
+  const impl = pp as PiecewiseImpl<unknown>
+  return fromArray(
+    impl.pieces.map(
+      ([dom, poly]) => [dom, impl.ops.derivative(poly, 1 / Interval.size(dom))] as Piece<unknown>,
+    ),
+  )
+}

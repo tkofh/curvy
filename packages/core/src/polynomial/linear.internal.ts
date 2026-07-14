@@ -6,6 +6,7 @@ import { invariant } from '../utils.ts'
 import { coincident } from '../number.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearPolynomial } from './linear.ts'
+import type { PolynomialOps } from './polynomial.ts'
 import type { Decreasing, Increasing, Monotonic } from './traits.ts'
 import { PolynomialTraits } from './traits.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
@@ -175,3 +176,18 @@ export const length = dual<
 
   return Math.sqrt(1 + p.c1 ** 2) * Interval.size(d)
 })
+
+/**
+ * The `PolynomialOps` bundle consumed by the generic `Piecewise` implementation.
+ * A linear polynomial's derivative is a constant, carried as a zero-slope
+ * linear so the piecewise stays closed under differentiation.
+ *
+ * @internal
+ */
+export const Ops: PolynomialOps<LinearPolynomial, LinearPolynomial> = {
+  solve,
+  unitRange,
+  isIncreasing: (p) => isIncreasing(p),
+  isDecreasing: (p) => isDecreasing(p),
+  derivative: (p, dudx) => make(p.c1 * dudx, 0),
+}

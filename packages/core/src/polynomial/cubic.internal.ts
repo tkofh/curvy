@@ -44,6 +44,8 @@ import type { CubicPolynomial } from './cubic.ts'
 import { CubicPolynomialImpl, CubicPolynomialTypeId } from './cubic.internal.circular.ts'
 import type { Decreasing, Increasing, Monotonic } from './traits.ts'
 import * as Linear from './linear.internal.ts'
+import type { PolynomialOps } from './polynomial.ts'
+import type { QuadraticPolynomial } from './quadratic.ts'
 import * as Quadratic from './quadratic.internal.ts'
 
 /** @internal */
@@ -439,3 +441,16 @@ export const curvature = dual(2, (p: CubicPolynomial, x: number) => {
 
   return Math.abs(Linear.solve(dd, x)) / (1 + Quadratic.solve(d, x) ** 2) ** 1.5
 })
+
+/**
+ * The `PolynomialOps` bundle consumed by the generic `Piecewise` implementation.
+ *
+ * @internal
+ */
+export const Ops: PolynomialOps<CubicPolynomial, QuadraticPolynomial> = {
+  solve,
+  unitRange,
+  isIncreasing: (p) => isIncreasing(p, Interval.unit),
+  isDecreasing: (p) => isDecreasing(p, Interval.unit),
+  derivative: (p, dudx) => Quadratic.make(p.c1 * dudx, 2 * p.c2 * dudx, 3 * p.c3 * dudx),
+}

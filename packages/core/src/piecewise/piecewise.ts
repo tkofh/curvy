@@ -1,7 +1,11 @@
 import type { Closed } from '../interval/interval.ts'
 import type { CubicPath2d } from '../path/cubic2d.ts'
+import type { LinearPath2d } from '../path/linear2d.ts'
+import type { QuadraticPath2d } from '../path/quadratic2d.ts'
 import type { IncreasingX } from '../path/traits.ts'
 import type { CubicPolynomial } from '../polynomial/cubic.ts'
+import type { LinearPolynomial } from '../polynomial/linear.ts'
+import type { QuadraticPolynomial } from '../polynomial/quadratic.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Pipeable } from '../utils.ts'
 import * as internal from './piecewise.internal.ts'
@@ -87,27 +91,68 @@ export const make: <P>(...pieces: ReadonlyArray<Piece<P>>) => Piecewise<P> = int
  */
 export const fromArray: <P>(pieces: ReadonlyArray<Piece<P>>) => Piecewise<P> = internal.fromArray
 
-/**
- * Refits a strictly-increasing-x cubic path into a piecewise function of x,
- * approximating `y = f(x)` to within `tolerance`.
- *
- * A path's y is generally not a polynomial in x — inverting a nonlinear segment
- * `x(t)` leaves an algebraic function — so each source segment is subdivided in
- * x and fitted with a cubic matching value and slope (`dy/dx`) at the cell
- * endpoints, bisecting until the fit tracks the curve within tolerance. A
- * segment whose x is already affine (`x.c2` and `x.c3` both zero, as a linear
- * or graph-form source produces) is transcribed exactly, with no subdivision.
- *
- * @param path - A cubic path, branded strictly increasing in x.
- * @param options - `tolerance` bounds the deviation as a fraction of the path's
- *   y-range. Defaults to `1e-4`.
- * @returns A contiguous piecewise function whose pieces tile the path's x-range.
- * @since 2.0.0
- */
-export const fromPath: (
-  path: CubicPath2d<IncreasingX>,
-  options?: { readonly tolerance?: number },
-) => Piecewise<CubicPolynomial, Contiguous> = internal.fromPath
+export const fromPath: {
+  /**
+   * Converts a strictly-increasing-x path into a piecewise function `y = f(x)`,
+   * one piece per source cell, over the same x-range. The output pieces share
+   * the source path's polynomial degree.
+   *
+   * A segment whose x is affine in its parameter (`t === u` on the piece)
+   * carries its y-polynomial over exactly, with no subdivision. A segment with
+   * genuine curvature in x has a non-polynomial `y(x)` — inverting a nonlinear
+   * `x(t)` leaves an algebraic function — so it is subdivided in x and each cell
+   * fitted, bisecting until the fit tracks the curve within `tolerance`.
+   *
+   * This linear overload is exact: a linear segment's x is always affine, so
+   * every segment becomes one piece verbatim. `tolerance` is accepted for
+   * signature symmetry with the higher-degree overloads but has no effect here.
+   *
+   * @param path - A linear path, branded strictly increasing in x.
+   * @param options - Accepted for symmetry; `tolerance` is ignored (the fit is exact).
+   * @returns A contiguous piecewise-linear function tiling the path's x-range.
+   * @since 2.0.0
+   */
+  (
+    path: LinearPath2d<IncreasingX>,
+    options?: { readonly tolerance?: number },
+  ): Piecewise<LinearPolynomial, Contiguous>
+  /**
+   * Refits a strictly-increasing-x quadratic path into a piecewise-quadratic
+   * function of x. Affine-x segments transcribe exactly; a segment with genuine
+   * curvature in x is subdivided and fitted per cell to `tolerance`, each cell
+   * matching both endpoint values and the left-endpoint slope.
+   *
+   * @param path - A quadratic path, branded strictly increasing in x.
+   * @param options - `tolerance` bounds the deviation as a fraction of the path's
+   *   y-range. Defaults to `1e-4`.
+   * @returns A contiguous piecewise-quadratic function tiling the path's x-range.
+   * @since 2.0.0
+   */
+  (
+    path: QuadraticPath2d<IncreasingX>,
+    options?: { readonly tolerance?: number },
+  ): Piecewise<QuadraticPolynomial, Contiguous>
+  /**
+   * Refits a strictly-increasing-x cubic path into a piecewise-cubic function of
+   * x, approximating `y = f(x)` to within `tolerance`.
+   *
+   * A segment is subdivided in x and fitted with a cubic matching value and
+   * slope (`dy/dx`) at the cell endpoints, bisecting until the fit tracks the
+   * curve within tolerance. A segment whose x is already affine (`x.c2` and
+   * `x.c3` both zero, as a linear or graph-form source produces) is transcribed
+   * exactly, with no subdivision.
+   *
+   * @param path - A cubic path, branded strictly increasing in x.
+   * @param options - `tolerance` bounds the deviation as a fraction of the path's
+   *   y-range. Defaults to `1e-4`.
+   * @returns A contiguous piecewise-cubic function tiling the path's x-range.
+   * @since 2.0.0
+   */
+  (
+    path: CubicPath2d<IncreasingX>,
+    options?: { readonly tolerance?: number },
+  ): Piecewise<CubicPolynomial, Contiguous>
+} = internal.fromPath as never
 
 export const solve: {
   /**
@@ -327,3 +372,44 @@ export const mapPolynomials: {
    */
   <P>(f: (p: P) => P): (piecewise: Piecewise<P>) => Piecewise<P>
 } = internal.mapPolynomials as never
+
+export const derivative: {
+  /**
+   * Differentiates the function with respect to x, returning `f'`.
+   *
+   * Each piece keeps its x-interval; its polynomial drops one degree, so a
+   * piecewise of cubics differentiates to one of quadratics, quadratics to
+   * linears, and linears to piecewise constants (each carried as a zero-slope
+   * `LinearPolynomial`). Because a piece is read in its local coordinate `u = (x
+   * - start) / size(domain)` (see `Piece`), the result already carries the
+   * chain-rule factor per piece — `solve` on it returns `df/dx`, not `df/du`.
+   *
+   * Traits are dropped: differentiating can break `Continuous` (the slope may
+   * jump across a join) and `Monotonic`. The x-tiling is untouched, so a
+   * `Contiguous` input stays gapless in x — re-assert it with `isContiguous` if
+   * you need the brand back.
+   *
+   * @param piecewise - The piecewise function to differentiate.
+   * @returns A new piecewise-quadratic function holding `f'`.
+   * @since 2.0.0
+   */
+  (piecewise: Piecewise<CubicPolynomial>): Piecewise<QuadraticPolynomial>
+  /**
+   * Differentiates a piecewise-quadratic function, returning a piecewise-linear
+   * `f'`.
+   *
+   * @param piecewise - The piecewise function to differentiate.
+   * @returns A new piecewise-linear function holding `f'`.
+   * @since 2.0.0
+   */
+  (piecewise: Piecewise<QuadraticPolynomial>): Piecewise<LinearPolynomial>
+  /**
+   * Differentiates a piecewise-linear function, returning its piecewise-constant
+   * `f'` — each piece a zero-slope `LinearPolynomial`.
+   *
+   * @param piecewise - The piecewise function to differentiate.
+   * @returns A new piecewise-constant function holding `f'`.
+   * @since 2.0.0
+   */
+  (piecewise: Piecewise<LinearPolynomial>): Piecewise<LinearPolynomial>
+} = internal.derivative as never
