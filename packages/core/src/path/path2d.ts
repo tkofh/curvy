@@ -312,6 +312,20 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
     return fromArray(curves)
   })
 
+  // Reverse the path: reverse each segment's parameter direction and the order
+  // of the segments, so it is traced end-to-start over the same image.
+  // Continuity is preserved — a shared join stays shared, only reflected — but
+  // the axis-direction brands drop, since reversal flips increasing <->
+  // decreasing on both axes. Reassert them on the result if still wanted.
+  const reverse = (p: Path2d<C>): Path2d<C> => {
+    const curves: Array<C> = []
+    for (const c of p) {
+      curves.push(ops.reverse(c))
+    }
+    curves.reverse()
+    return fromArray(curves)
+  }
+
   return {
     fromArray,
     make,
@@ -331,5 +345,6 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
     solveAtY,
     boundingBox,
     transform,
+    reverse,
   }
 }

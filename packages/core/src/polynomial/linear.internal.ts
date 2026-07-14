@@ -7,7 +7,7 @@ import { coincident } from '../number.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearPolynomial } from './linear.ts'
 import type { PolynomialOps } from './polynomial.ts'
-import type { Decreasing, Increasing, Monotonic } from './traits.ts'
+import type { Decreasing, Increasing, Monotonic, Reflected } from './traits.ts'
 import { PolynomialTraits } from './traits.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
 import { QuadraticPolynomialImpl } from './quadratic.internal.circular.ts'
@@ -116,6 +116,13 @@ export const coefficients = (p: LinearPolynomial): readonly [number, number] => 
 
 /** @internal */
 export const derivative = (p: LinearPolynomial) => p.c1
+
+// Reflect about the midpoint of the [0, 1] domain: q(u) = p(1 - u). Reads the
+// polynomial right-to-left; the new c0 is the coefficient sum (= p(1)). The
+// monotonicity brand flips direction (`Reflected`).
+/** @internal */
+export const reflectDomain = <T>(p: LinearPolynomial<T>): LinearPolynomial<Reflected<T>> =>
+  make(p.c0 + p.c1, -p.c1) as LinearPolynomial<Reflected<T>>
 
 /** @internal */
 export const antiderivative = dual<

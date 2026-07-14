@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 import * as interval from '../src/interval/interval.ts'
 import * as Monotonicity from '../src/monotonicity/monotonicity.ts'
 import * as cubic from '../src/polynomial/cubic.ts'
@@ -452,5 +452,55 @@ describe('cubic', () => {
   })
   test('coefficients', () => {
     expect(cubic.coefficients(cubic.make(2, 3, 5, 7))).toEqual([2, 3, 5, 7])
+  })
+})
+
+describe('reflectDomain', () => {
+  test('linear: q(u) = p(1 - u), endpoints swap', () => {
+    const p = linear.make(2, 3) // p(0)=2, p(1)=5
+    const q = linear.reflectDomain(p)
+    expect(q).toMatchObject({ c0: 5, c1: -3 }) // (c0+c1, -c1)
+    expect(linear.solve(q, 0)).toBeCloseTo(linear.solve(p, 1))
+    expect(linear.solve(q, 1)).toBeCloseTo(linear.solve(p, 0))
+    expect(linear.solve(q, 0.25)).toBeCloseTo(linear.solve(p, 0.75))
+  })
+
+  test('flips the direction brand: Increasing <-> Decreasing, Monotonic preserved', () => {
+    const inc = linear.asIncreasing(linear.make(0, 2)) // p(u) = 2u, increasing
+    const dec = linear.reflectDomain(inc)
+    expectTypeOf(dec).toEqualTypeOf<linear.LinearPolynomial<linear.Decreasing>>()
+    expect(linear.isDecreasing(dec)).toBe(true) // q(u) = 2 - 2u
+
+    const back = linear.reflectDomain(linear.asDecreasing(linear.make(2, -2)))
+    expectTypeOf(back).toEqualTypeOf<linear.LinearPolynomial<linear.Increasing>>()
+    expect(linear.isIncreasing(back)).toBe(true)
+
+    // bare Monotonic stays Monotonic; unbranded stays unbranded
+    const mono = linear.make(0, 1) as linear.LinearPolynomial<linear.Monotonic>
+    expectTypeOf(linear.reflectDomain(mono)).toEqualTypeOf<
+      linear.LinearPolynomial<linear.Monotonic>
+    >()
+    expectTypeOf(linear.reflectDomain(linear.make(0, 1))).toEqualTypeOf<linear.LinearPolynomial>()
+  })
+
+  test('quadratic: matches p(1 - u) pointwise', () => {
+    const p = quadratic.make(1, -2, 5)
+    const q = quadratic.reflectDomain(p)
+    expect(q).toMatchObject({ c0: 4, c1: -8, c2: 5 }) // (1-2+5, 2-10, 5)
+    for (const u of [0, 0.2, 0.5, 0.8, 1]) {
+      expect(quadratic.solve(q, u)).toBeCloseTo(quadratic.solve(p, 1 - u))
+    }
+  })
+
+  test('cubic: matches p(1 - u) pointwise, and reflecting twice is the identity', () => {
+    const p = cubic.make(2, -1, 4, -3)
+    const q = cubic.reflectDomain(p)
+    for (const u of [0, 0.1, 0.37, 0.6, 1]) {
+      expect(cubic.solve(q, u)).toBeCloseTo(cubic.solve(p, 1 - u))
+    }
+    const back = cubic.reflectDomain(q)
+    for (const u of [0, 0.3, 0.7, 1]) {
+      expect(cubic.solve(back, u)).toBeCloseTo(cubic.solve(p, u))
+    }
   })
 })

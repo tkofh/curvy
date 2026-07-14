@@ -1,7 +1,7 @@
 import * as Interval2d from '../interval/interval2d.ts'
 import * as Interval from '../interval/interval.ts'
 import type * as Affine2d from '../transform/affine2d.ts'
-import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
+import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/traits.ts'
 import {
   GL32_W0,
   GL32_W1,
@@ -343,6 +343,17 @@ export const transform = dual<
   )
 })
 
+// Reverse the parameter direction: reflect each component polynomial about its
+// domain midpoint (p(1 - u)). The geometric image is unchanged; start/end swap.
+/** @internal */
+export const reverse = <XT, YT>(
+  c: QuadraticCurve2d<XT, YT>,
+): QuadraticCurve2d<Reflected<XT>, Reflected<YT>> =>
+  new QuadraticCurve2dImpl(
+    QuadraticPolynomial.reflectDomain(c.x),
+    QuadraticPolynomial.reflectDomain(c.y),
+  ) as QuadraticCurve2d<Reflected<XT>, Reflected<YT>>
+
 /**
  * The `Curve2dOps` bundle consumed by the generic `Path2d` implementation.
  * `solveAtX` / `solveAtY` narrow the curve's potentially-2-element result to
@@ -365,4 +376,5 @@ export const Ops: Curve2dOps<QuadraticCurve2d> = {
   isIncreasingY,
   isDecreasingY,
   transform,
+  reverse,
 }

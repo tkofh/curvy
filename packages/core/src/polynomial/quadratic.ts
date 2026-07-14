@@ -8,9 +8,9 @@ import type { LinearPolynomial } from './linear.ts'
 import type { Monotonicity } from '../monotonicity/monotonicity.ts'
 import * as internal from './quadratic.internal.ts'
 import type { QuadraticPolynomialTypeId } from './quadratic.internal.circular.ts'
-import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits.ts'
+import type { Decreasing, Increasing, Monotonic, PolynomialTraits, Reflected } from './traits.ts'
 
-export type { Monotonic, Increasing, Decreasing } from './traits.ts'
+export type { Monotonic, Increasing, Decreasing, Reflected } from './traits.ts'
 
 /**
  * A quadratic polynomial `c0 + c1*x + c2*x^2`, stored by coefficient.
@@ -217,6 +217,20 @@ export const coefficients: (p: QuadraticPolynomial) => readonly [number, number,
  * @since 1.0.0
  */
 export const derivative: (p: QuadraticPolynomial) => LinearPolynomial = internal.derivative
+
+/**
+ * Reflects the polynomial about the midpoint of its `[0, 1]` domain, returning
+ * `q(u) = p(1 - u)` — the polynomial read right-to-left. The endpoint values
+ * swap (`q(0) = p(1)`, `q(1) = p(0)`), and the monotonicity brand reverses with
+ * the sense: `Increasing` becomes `Decreasing` and vice versa, while a bare
+ * `Monotonic` is preserved (`Reflected`).
+ *
+ * @param p - The quadratic polynomial to reflect.
+ * @returns The reflected polynomial `p(1 - u)`, its direction brand flipped.
+ * @since 2.0.0
+ */
+export const reflectDomain: <T>(p: QuadraticPolynomial<T>) => QuadraticPolynomial<Reflected<T>> =
+  internal.reflectDomain
 
 /**
  * Finds the roots of the quadratic polynomial.

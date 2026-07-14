@@ -6,7 +6,7 @@ import { coincident } from '../number.ts'
 import * as CubicPath2d from '../path/cubic2d.ts'
 import * as LinearPath2d from '../path/linear2d.ts'
 import * as QuadraticPath2d from '../path/quadratic2d.ts'
-import type { IncreasingX } from '../path/traits.ts'
+import type { IncreasingX, MonotonicX } from '../path/traits.ts'
 import { Ops as cubicOps } from '../polynomial/cubic.internal.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
 import { Ops as linearOps } from '../polynomial/linear.internal.ts'
@@ -286,21 +286,39 @@ const fromCubicPath = (
   return asContiguous(fromArray(out))
 }
 
+// A decreasing-x path traces the same y = f(x) right-to-left; `reverse` flips it
+// to increasing-x (same image, ascending pieces) before the degree-specific
+// refit runs. Direction is detected at runtime — the `MonotonicX` brand alone
+// doesn't say which way — and re-asserted after `reverse`, which drops brands.
 /** @internal */
 export const fromPath = (
   path:
-    | LinearPath2d.LinearPath2d<IncreasingX>
-    | QuadraticPath2d.QuadraticPath2d<IncreasingX>
-    | CubicPath2d.CubicPath2d<IncreasingX>,
+    | LinearPath2d.LinearPath2d<MonotonicX>
+    | QuadraticPath2d.QuadraticPath2d<MonotonicX>
+    | CubicPath2d.CubicPath2d<MonotonicX>,
   options?: { readonly tolerance?: number },
 ): Piecewise<unknown, Contiguous> => {
   if (LinearPath2d.isLinearPath2d(path)) {
-    return fromLinearPath(path)
+    return fromLinearPath(
+      LinearPath2d.isIncreasingX(path)
+        ? path
+        : LinearPath2d.asIncreasingX(LinearPath2d.reverse(path)),
+    )
   }
   if (QuadraticPath2d.isQuadraticPath2d(path)) {
-    return fromQuadraticPath(path, options)
+    return fromQuadraticPath(
+      QuadraticPath2d.isIncreasingX(path)
+        ? path
+        : QuadraticPath2d.asIncreasingX(QuadraticPath2d.reverse(path)),
+      options,
+    )
   }
-  return fromCubicPath(path, options)
+  return fromCubicPath(
+    CubicPath2d.isIncreasingX(path)
+      ? path
+      : CubicPath2d.asIncreasingX(CubicPath2d.reverse(path)),
+    options,
+  )
 }
 
 // Find the piece bracketing `x` and evaluate its polynomial at the piece-local

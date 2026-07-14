@@ -437,3 +437,18 @@ export const transform: {
    */
   (a: Affine2d): (p: CubicPath2d) => CubicPath2d
 } = internal.transform
+
+/**
+ * Reverses the path, returning it traced end-to-start: the segment order is
+ * reversed and each segment's parameter direction flipped. The geometric image
+ * is identical. `Continuous` survives the reversal in substance but, like every
+ * brand, is dropped from the type — reversal turns `IncreasingX` into
+ * `DecreasingX` (and likewise on the y axis), so the direction brands cannot
+ * carry through. Reassert what still holds with `isContinuous`, `isIncreasingX`,
+ * and their siblings.
+ *
+ * @param p - The path to reverse.
+ * @returns The reversed path, with all trait brands dropped.
+ * @since 2.0.0
+ */
+export const reverse: (p: CubicPath2d) => CubicPath2d = internal.reverse

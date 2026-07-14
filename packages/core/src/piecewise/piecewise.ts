@@ -2,7 +2,7 @@ import type { Closed } from '../interval/interval.ts'
 import type { CubicPath2d } from '../path/cubic2d.ts'
 import type { LinearPath2d } from '../path/linear2d.ts'
 import type { QuadraticPath2d } from '../path/quadratic2d.ts'
-import type { IncreasingX } from '../path/traits.ts'
+import type { MonotonicX } from '../path/traits.ts'
 import type { CubicPolynomial } from '../polynomial/cubic.ts'
 import type { LinearPolynomial } from '../polynomial/linear.ts'
 import type { QuadraticPolynomial } from '../polynomial/quadratic.ts'
@@ -93,9 +93,9 @@ export const fromArray: <P>(pieces: ReadonlyArray<Piece<P>>) => Piecewise<P> = i
 
 export const fromPath: {
   /**
-   * Converts a strictly-increasing-x path into a piecewise function `y = f(x)`,
-   * one piece per source cell, over the same x-range. The output pieces share
-   * the source path's polynomial degree.
+   * Converts a monotonic-x path into a piecewise function `y = f(x)`, one piece
+   * per source cell, over the same x-range. The output pieces share the source
+   * path's polynomial degree.
    *
    * A segment whose x is affine in its parameter (`t === u` on the piece)
    * carries its y-polynomial over exactly, with no subdivision. A segment with
@@ -103,53 +103,59 @@ export const fromPath: {
    * `x(t)` leaves an algebraic function — so it is subdivided in x and each cell
    * fitted, bisecting until the fit tracks the curve within `tolerance`.
    *
+   * The path may run either direction in x: a decreasing-x path is reversed to
+   * ascending first (`Path2d.reverse`), so the pieces always tile x left to
+   * right regardless of the source's parameter direction.
+   *
    * This linear overload is exact: a linear segment's x is always affine, so
    * every segment becomes one piece verbatim. `tolerance` is accepted for
    * signature symmetry with the higher-degree overloads but has no effect here.
    *
-   * @param path - A linear path, branded strictly increasing in x.
+   * @param path - A linear path, branded monotonic in x (either direction).
    * @param options - Accepted for symmetry; `tolerance` is ignored (the fit is exact).
-   * @returns A contiguous piecewise-linear function tiling the path's x-range.
+   * @returns A contiguous piecewise-linear function tiling the path's x-range, ascending.
    * @since 2.0.0
    */
   (
-    path: LinearPath2d<IncreasingX>,
+    path: LinearPath2d<MonotonicX>,
     options?: { readonly tolerance?: number },
   ): Piecewise<LinearPolynomial, Contiguous>
   /**
-   * Refits a strictly-increasing-x quadratic path into a piecewise-quadratic
-   * function of x. Affine-x segments transcribe exactly; a segment with genuine
-   * curvature in x is subdivided and fitted per cell to `tolerance`, each cell
-   * matching both endpoint values and the left-endpoint slope.
+   * Refits a monotonic-x quadratic path into a piecewise-quadratic function of
+   * x. Affine-x segments transcribe exactly; a segment with genuine curvature in
+   * x is subdivided and fitted per cell to `tolerance`, each cell matching both
+   * endpoint values and the left-endpoint slope. A decreasing-x path is reversed
+   * to ascending first.
    *
-   * @param path - A quadratic path, branded strictly increasing in x.
+   * @param path - A quadratic path, branded monotonic in x (either direction).
    * @param options - `tolerance` bounds the deviation as a fraction of the path's
    *   y-range. Defaults to `1e-4`.
-   * @returns A contiguous piecewise-quadratic function tiling the path's x-range.
+   * @returns A contiguous piecewise-quadratic function tiling the path's x-range, ascending.
    * @since 2.0.0
    */
   (
-    path: QuadraticPath2d<IncreasingX>,
+    path: QuadraticPath2d<MonotonicX>,
     options?: { readonly tolerance?: number },
   ): Piecewise<QuadraticPolynomial, Contiguous>
   /**
-   * Refits a strictly-increasing-x cubic path into a piecewise-cubic function of
-   * x, approximating `y = f(x)` to within `tolerance`.
+   * Refits a monotonic-x cubic path into a piecewise-cubic function of x,
+   * approximating `y = f(x)` to within `tolerance`.
    *
    * A segment is subdivided in x and fitted with a cubic matching value and
    * slope (`dy/dx`) at the cell endpoints, bisecting until the fit tracks the
    * curve within tolerance. A segment whose x is already affine (`x.c2` and
    * `x.c3` both zero, as a linear or graph-form source produces) is transcribed
-   * exactly, with no subdivision.
+   * exactly, with no subdivision. A decreasing-x path is reversed to ascending
+   * first.
    *
-   * @param path - A cubic path, branded strictly increasing in x.
+   * @param path - A cubic path, branded monotonic in x (either direction).
    * @param options - `tolerance` bounds the deviation as a fraction of the path's
    *   y-range. Defaults to `1e-4`.
-   * @returns A contiguous piecewise-cubic function tiling the path's x-range.
+   * @returns A contiguous piecewise-cubic function tiling the path's x-range, ascending.
    * @since 2.0.0
    */
   (
-    path: CubicPath2d<IncreasingX>,
+    path: CubicPath2d<MonotonicX>,
     options?: { readonly tolerance?: number },
   ): Piecewise<CubicPolynomial, Contiguous>
 } = internal.fromPath as never

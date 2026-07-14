@@ -42,7 +42,7 @@ import type * as Vector2 from '../vector/vector2.ts'
 import type { Vector4 } from '../vector/vector4.ts'
 import type { CubicPolynomial } from './cubic.ts'
 import { CubicPolynomialImpl, CubicPolynomialTypeId } from './cubic.internal.circular.ts'
-import type { Decreasing, Increasing, Monotonic } from './traits.ts'
+import type { Decreasing, Increasing, Monotonic, Reflected } from './traits.ts'
 import * as Linear from './linear.internal.ts'
 import type { PolynomialOps } from './polynomial.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
@@ -201,6 +201,13 @@ export const coefficients = (p: CubicPolynomial): readonly [number, number, numb
 
 /** @internal */
 export const derivative = (p: CubicPolynomial) => Quadratic.make(p.c1, p.c2 * 2, p.c3 * 3)
+
+// Reflect about the midpoint of the [0, 1] domain: q(u) = p(1 - u). The new c0
+// is the coefficient sum (= p(1)); the leading coefficient only flips sign. The
+// monotonicity brand flips direction (`Reflected`).
+/** @internal */
+export const reflectDomain = <T>(p: CubicPolynomial<T>): CubicPolynomial<Reflected<T>> =>
+  make(p.c0 + p.c1 + p.c2 + p.c3, -p.c1 - 2 * p.c2 - 3 * p.c3, p.c2 + 3 * p.c3, -p.c3) as CubicPolynomial<Reflected<T>>
 
 // Subdivides a cubic polynomial at parameter `t in (0, 1)` into two new cubic
 // polynomials. The first polynomial's evaluation on `[0, 1]` matches the

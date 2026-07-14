@@ -16,7 +16,7 @@ import {
   QuadraticPolynomialImpl,
   QuadraticPolynomialTypeId,
 } from './quadratic.internal.circular.ts'
-import type { Decreasing, Increasing, Monotonic } from './traits.ts'
+import type { Decreasing, Increasing, Monotonic, Reflected } from './traits.ts'
 
 /** @internal */
 export const fromPoints = (
@@ -124,6 +124,13 @@ export const coefficients = (p: QuadraticPolynomial): readonly [number, number, 
 
 /** @internal */
 export const derivative = (p: QuadraticPolynomial) => Linear.make(p.c1, p.c2 * 2)
+
+// Reflect about the midpoint of the [0, 1] domain: q(u) = p(1 - u). The new c0
+// is the coefficient sum (= p(1)); the leading coefficient is unchanged. The
+// monotonicity brand flips direction (`Reflected`).
+/** @internal */
+export const reflectDomain = <T>(p: QuadraticPolynomial<T>): QuadraticPolynomial<Reflected<T>> =>
+  make(p.c0 + p.c1 + p.c2, -p.c1 - 2 * p.c2, p.c2) as QuadraticPolynomial<Reflected<T>>
 
 /** @internal */
 export const roots = (p: QuadraticPolynomial) => solveInverse(p, 0)

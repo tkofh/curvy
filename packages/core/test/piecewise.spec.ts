@@ -366,3 +366,48 @@ describe('Piecewise.fromPath over linear and quadratic paths', () => {
     expect(coarse).toBeLessThan(fine)
   })
 })
+
+describe('Piecewise.fromPath over a decreasing-x path', () => {
+  test('linear decreasing-x source is exact and ascending', () => {
+    const segA = linearCurve2d.fromCoefficients(vector2.make(0, 0), vector2.make(2, 4)) // x:0->2
+    const segB = linearCurve2d.fromCoefficients(vector2.make(2, 4), vector2.make(3, 1)) // x:2->5
+    const inc = linearPath2d.make(segA, segB).pipe(linearPath2d.asIncreasingX)
+    const dec = linearPath2d.reverse(inc).pipe(linearPath2d.asMonotonicX) // same f(x), decreasing x
+
+    const pp = Piecewise.fromPath(dec)
+    const dom = Piecewise.domain(pp)
+    expect(dom.start).toBeCloseTo(0) // pieces tile x ascending, despite the source direction
+    expect(dom.end).toBeCloseTo(5)
+    for (const x of [0, 1, 2, 3.5, 5]) {
+      const exact = Solution.valueOrUndefined(linearPath2d.solveAtX(inc, x))
+      expect(Solution.valueOrUndefined(Piecewise.solve(pp, x))).toBeCloseTo(exact as number, 10)
+    }
+  })
+
+  test('cubic decreasing-x source refits to the same ascending function', () => {
+    const inc = Cardinal2d.fromTuples([
+      [320, 14],
+      [400, 18],
+      [1280, 20],
+    ]).pipe(Cardinal2d.withInterpolatedEndpoints, Cardinal2d.toPath, cubicPath2d.asIncreasingX)
+    const dec = cubicPath2d.reverse(inc).pipe(cubicPath2d.asMonotonicX)
+
+    const pp = Piecewise.fromPath(dec, { tolerance: 1e-5 })
+    const dom = Piecewise.domain(pp)
+    expect(dom.start).toBeCloseTo(320)
+    expect(dom.end).toBeCloseTo(1280)
+
+    const yScale = interval.size(cubicPath2d.boundingBox(inc).y)
+    let maxDev = 0
+    for (let i = 0; i <= 400; i++) {
+      const x = 320 + (1280 - 320) * (i / 400)
+      const exact = Solution.valueOrUndefined(cubicPath2d.solveAtX(inc, x))
+      const fit = Solution.valueOrUndefined(Piecewise.solve(pp, x))
+      if (exact !== undefined && fit !== undefined) {
+        maxDev = Math.max(maxDev, Math.abs(fit - exact))
+      }
+    }
+    expect(maxDev / yScale).toBeLessThan(1e-3)
+    expect(Piecewise.isContiguous(pp)).toBe(true)
+  })
+})

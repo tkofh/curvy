@@ -148,6 +148,9 @@ export const boundingBox = methods.boundingBox as (p: CubicPath2d) => Interval2d
 /** @internal */
 export const transform = methods.transform as never
 
+/** @internal */
+export const reverse = methods.reverse as never
+
 // Cubic-specific arc-length sampling. Cached by path identity since paths are
 // immutable. Lives here rather than in the generic Path2d because the inner
 // Newton iteration uses the cubic-curve derivative directly.

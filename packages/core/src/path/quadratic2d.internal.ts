@@ -138,3 +138,6 @@ export const boundingBox = methods.boundingBox as (p: QuadraticPath2d) => Interv
 
 /** @internal */
 export const transform = methods.transform as never
+
+/** @internal */
+export const reverse = methods.reverse as never
