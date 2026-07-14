@@ -80,6 +80,24 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
     (p: Path2d<C>, c: C) => fromArray([...p, c]),
   )
 
+  // Trait-preserving append. The input's `Continuous` brand vouches for every
+  // existing join, so only the new curve's connection to the current path end
+  // is checked (G^0, within `coincident`). Other brands drop — a new curve can
+  // still reverse an axis and break monotonicity.
+  const appendContinuous = dual<
+    (c: C) => (p: Path2d<C, Continuous>) => Path2d<C, Continuous>,
+    (p: Path2d<C, Continuous>, c: C) => Path2d<C, Continuous>
+  >(2, (p: Path2d<C, Continuous>, c: C) => {
+    const curves = p instanceof Path2dImpl ? (p.curves as ReadonlyArray<C>) : [...p]
+    const end = ops.endPoint(curves[curves.length - 1] as C)
+    const start = ops.startPoint(c)
+    invariant(
+      coincident(start.x, end.x) && coincident(start.y, end.y),
+      'appendContinuous: the curve does not connect to the path end',
+    )
+    return fromArray([...curves, c]) as Path2d<C, Continuous>
+  })
+
   const length = (p: Path2d<C>): number => {
     let total = 0
     for (const curve of p) {
@@ -298,6 +316,7 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
     fromArray,
     make,
     append,
+    appendContinuous,
     length,
     solve,
     toPathData,

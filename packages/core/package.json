@@ -42,6 +42,10 @@
       "types": "./dist/splines/index.d.ts",
       "import": "./dist/splines/index.mjs"
     },
+    "./piecewise": {
+      "types": "./dist/piecewise/index.d.ts",
+      "import": "./dist/piecewise/index.mjs"
+    },
     "./interval": {
       "types": "./dist/interval/index.d.ts",
       "import": "./dist/interval/index.mjs"

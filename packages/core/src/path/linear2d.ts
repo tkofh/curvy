@@ -93,6 +93,34 @@ export const append: {
   (p: LinearPath2d, c: LinearCurve2d): LinearPath2d
 } = internal.append
 
+export const appendContinuous: {
+  /**
+   * Appends a linear curve to a `Continuous` path, preserving the brand.
+   *
+   * @param c - The linear curve to append.
+   * @returns A function that takes a `Continuous` linear path and returns a new one with the curve appended.
+   * @since 2.0.0
+   */
+  (c: LinearCurve2d): (p: LinearPath2d<Continuous>) => LinearPath2d<Continuous>
+  /**
+   * Appends a linear curve to a `Continuous` linear path, preserving the brand.
+   * The curve's start point must coincide with the path's current end point
+   * (G^0 continuity), compared with `coincident` tolerance (see `PRECISION.md`).
+   *
+   * Only the new join is checked — the input's `Continuous` brand already
+   * vouches for the rest. Other trait brands are dropped, since a new curve can
+   * still reverse an axis and break monotonicity; reassert them with the
+   * relevant refiner if needed.
+   *
+   * @param p - A continuous linear path.
+   * @param c - The linear curve to append.
+   * @returns A new `Continuous` linear path with the curve appended.
+   * @throws `Error` when the curve does not connect to the path's end point.
+   * @since 2.0.0
+   */
+  (p: LinearPath2d<Continuous>, c: LinearCurve2d): LinearPath2d<Continuous>
+} = internal.appendContinuous as never
+
 /**
  * Calculates the total arc length of a linear path.
  *

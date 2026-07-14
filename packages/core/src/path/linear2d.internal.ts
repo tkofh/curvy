@@ -39,6 +39,9 @@ export const fromArray = methods.fromArray as (
 export const append = methods.append as never
 
 /** @internal */
+export const appendContinuous = methods.appendContinuous as never
+
+/** @internal */
 export const length = methods.length as (p: LinearPath2d) => number
 
 /** @internal */

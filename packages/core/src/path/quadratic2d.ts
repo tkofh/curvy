@@ -93,6 +93,35 @@ export const append: {
   (p: QuadraticPath2d, c: QuadraticCurve2d): QuadraticPath2d
 } = internal.append
 
+export const appendContinuous: {
+  /**
+   * Appends a quadratic curve to a `Continuous` path, preserving the brand.
+   *
+   * @param c - The quadratic curve to append.
+   * @returns A function that takes a `Continuous` quadratic path and returns a new one with the curve appended.
+   * @since 2.0.0
+   */
+  (c: QuadraticCurve2d): (p: QuadraticPath2d<Continuous>) => QuadraticPath2d<Continuous>
+  /**
+   * Appends a quadratic curve to a `Continuous` quadratic path, preserving the
+   * brand. The curve's start point must coincide with the path's current end
+   * point (G^0 continuity), compared with `coincident` tolerance (see
+   * `PRECISION.md`).
+   *
+   * Only the new join is checked — the input's `Continuous` brand already
+   * vouches for the rest. Other trait brands are dropped, since a new curve can
+   * still reverse an axis and break monotonicity; reassert them with the
+   * relevant refiner if needed.
+   *
+   * @param p - A continuous quadratic path.
+   * @param c - The quadratic curve to append.
+   * @returns A new `Continuous` quadratic path with the curve appended.
+   * @throws `Error` when the curve does not connect to the path's end point.
+   * @since 2.0.0
+   */
+  (p: QuadraticPath2d<Continuous>, c: QuadraticCurve2d): QuadraticPath2d<Continuous>
+} = internal.appendContinuous as never
+
 /**
  * Calculates the total arc length of a quadratic path.
  *

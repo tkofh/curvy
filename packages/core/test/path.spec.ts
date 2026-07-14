@@ -551,3 +551,40 @@ describe('rationalCubicPath2d.boundingBox', () => {
     expect(pathBox.y.end).toBeCloseTo(Math.max(box0.y.end, box1.y.end), 12)
   })
 })
+
+describe('Path2d.appendContinuous', () => {
+  // (0,0) -> (1,1)
+  const a = cubicCurve2d.fromCoefficients(
+    vector2.make(0, 0),
+    vector2.make(1, 1),
+    vector2.make(0, 0),
+    vector2.make(0, 0),
+  )
+  // (1,1) -> (2,0): connects to a's end
+  const b = cubicCurve2d.fromCoefficients(
+    vector2.make(1, 1),
+    vector2.make(1, -1),
+    vector2.make(0, 0),
+    vector2.make(0, 0),
+  )
+  // starts at (5,5): does not connect
+  const disjoint = cubicCurve2d.fromCoefficients(
+    vector2.make(5, 5),
+    vector2.make(1, 1),
+    vector2.make(0, 0),
+    vector2.make(0, 0),
+  )
+  const cont = cubicPath2d.asContinuous(cubicPath2d.make(a))
+
+  test('preserves Continuous on a connecting curve', () => {
+    const p = cubicPath2d.appendContinuous(cont, b)
+    expect([...p].length).toBe(2)
+    expect(cubicPath2d.isContinuous(p)).toBe(true)
+  })
+  test('throws when the curve does not connect to the path end', () => {
+    expect(() => cubicPath2d.appendContinuous(cont, disjoint)).toThrow()
+  })
+  test('data-last form composes under pipe', () => {
+    expect([...cont.pipe(cubicPath2d.appendContinuous(b))].length).toBe(2)
+  })
+})

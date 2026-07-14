@@ -48,6 +48,9 @@ export const fromArray = (curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): Cub
 export const append = methods.append as never
 
 /** @internal */
+export const appendContinuous = methods.appendContinuous as never
+
+/** @internal */
 export const length = methods.length as (p: CubicPath2d) => number
 
 /** @internal */
