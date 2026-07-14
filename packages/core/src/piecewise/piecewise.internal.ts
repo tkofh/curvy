@@ -314,9 +314,7 @@ export const fromPath = (
     )
   }
   return fromCubicPath(
-    CubicPath2d.isIncreasingX(path)
-      ? path
-      : CubicPath2d.asIncreasingX(CubicPath2d.reverse(path)),
+    CubicPath2d.isIncreasingX(path) ? path : CubicPath2d.asIncreasingX(CubicPath2d.reverse(path)),
     options,
   )
 }

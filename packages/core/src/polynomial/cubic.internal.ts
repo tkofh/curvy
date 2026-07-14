@@ -207,7 +207,12 @@ export const derivative = (p: CubicPolynomial) => Quadratic.make(p.c1, p.c2 * 2,
 // monotonicity brand flips direction (`Reflected`).
 /** @internal */
 export const reflectDomain = <T>(p: CubicPolynomial<T>): CubicPolynomial<Reflected<T>> =>
-  make(p.c0 + p.c1 + p.c2 + p.c3, -p.c1 - 2 * p.c2 - 3 * p.c3, p.c2 + 3 * p.c3, -p.c3) as CubicPolynomial<Reflected<T>>
+  make(
+    p.c0 + p.c1 + p.c2 + p.c3,
+    -p.c1 - 2 * p.c2 - 3 * p.c3,
+    p.c2 + 3 * p.c3,
+    -p.c3,
+  ) as CubicPolynomial<Reflected<T>>
 
 // Subdivides a cubic polynomial at parameter `t in (0, 1)` into two new cubic
 // polynomials. The first polynomial's evaluation on `[0, 1]` matches the
