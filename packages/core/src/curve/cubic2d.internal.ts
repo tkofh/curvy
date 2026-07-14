@@ -39,7 +39,7 @@ import {
 import { dual, Pipeable } from '../utils.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
 import * as QuadraticPolynomial from '../polynomial/quadratic.ts'
-import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
+import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/traits.ts'
 import * as Solution from '../solution/solution.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Vector4 from '../vector/vector4.ts'
@@ -355,6 +355,17 @@ export const transform = dual<
   )
 })
 
+// Reverse the parameter direction: reflect each component polynomial about its
+// domain midpoint (p(1 - u)). The geometric image is unchanged; start/end swap.
+/** @internal */
+export const reverse = <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+): CubicCurve2d<Reflected<XT>, Reflected<YT>> =>
+  new CubicCurve2dImpl(
+    CubicPolynomial.reflectDomain(c.x),
+    CubicPolynomial.reflectDomain(c.y),
+  ) as CubicCurve2d<Reflected<XT>, Reflected<YT>>
+
 /**
  * The `Curve2dOps` bundle consumed by the generic `Path2d` implementation.
  * `solveAtX` / `solveAtY` narrow the curve's potentially-3-element result to
@@ -377,4 +388,5 @@ export const Ops: Curve2dOps<CubicCurve2d> = {
   isIncreasingY,
   isDecreasingY,
   transform,
+  reverse,
 }

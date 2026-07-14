@@ -7,9 +7,9 @@ import * as internal from './cubic.internal.ts'
 import type { CubicPolynomialTypeId } from './cubic.internal.circular.ts'
 import type { Monotonicity } from '../monotonicity/monotonicity.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
-import type { Decreasing, Increasing, Monotonic, PolynomialTraits } from './traits.ts'
+import type { Decreasing, Increasing, Monotonic, PolynomialTraits, Reflected } from './traits.ts'
 
-export type { Monotonic, Increasing, Decreasing } from './traits.ts'
+export type { Monotonic, Increasing, Decreasing, Reflected } from './traits.ts'
 
 /**
  * A cubic polynomial `c0 + c1*x + c2*x^2 + c3*x^3`, stored by coefficient.
@@ -220,6 +220,20 @@ export const coefficients: (p: CubicPolynomial) => readonly [number, number, num
  * @since 1.0.0
  */
 export const derivative: (p: CubicPolynomial) => QuadraticPolynomial = internal.derivative
+
+/**
+ * Reflects the polynomial about the midpoint of its `[0, 1]` domain, returning
+ * `q(u) = p(1 - u)` — the polynomial read right-to-left. The endpoint values
+ * swap (`q(0) = p(1)`, `q(1) = p(0)`), and the monotonicity brand reverses with
+ * the sense: `Increasing` becomes `Decreasing` and vice versa, while a bare
+ * `Monotonic` is preserved (`Reflected`).
+ *
+ * @param p - The cubic polynomial to reflect.
+ * @returns The reflected polynomial `p(1 - u)`, its direction brand flipped.
+ * @since 2.0.0
+ */
+export const reflectDomain: <T>(p: CubicPolynomial<T>) => CubicPolynomial<Reflected<T>> =
+  internal.reflectDomain
 
 export const subdivide: {
   /**

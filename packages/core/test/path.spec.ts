@@ -551,3 +551,69 @@ describe('rationalCubicPath2d.boundingBox', () => {
     expect(pathBox.y.end).toBeCloseTo(Math.max(box0.y.end, box1.y.end), 12)
   })
 })
+
+describe('Path2d.appendContinuous', () => {
+  // (0,0) -> (1,1)
+  const a = cubicCurve2d.fromCoefficients(
+    vector2.make(0, 0),
+    vector2.make(1, 1),
+    vector2.make(0, 0),
+    vector2.make(0, 0),
+  )
+  // (1,1) -> (2,0): connects to a's end
+  const b = cubicCurve2d.fromCoefficients(
+    vector2.make(1, 1),
+    vector2.make(1, -1),
+    vector2.make(0, 0),
+    vector2.make(0, 0),
+  )
+  // starts at (5,5): does not connect
+  const disjoint = cubicCurve2d.fromCoefficients(
+    vector2.make(5, 5),
+    vector2.make(1, 1),
+    vector2.make(0, 0),
+    vector2.make(0, 0),
+  )
+  const cont = cubicPath2d.asContinuous(cubicPath2d.make(a))
+
+  test('preserves Continuous on a connecting curve', () => {
+    const p = cubicPath2d.appendContinuous(cont, b)
+    expect([...p].length).toBe(2)
+    expect(cubicPath2d.isContinuous(p)).toBe(true)
+  })
+  test('throws when the curve does not connect to the path end', () => {
+    expect(() => cubicPath2d.appendContinuous(cont, disjoint)).toThrow()
+  })
+  test('data-last form composes under pipe', () => {
+    expect([...cont.pipe(cubicPath2d.appendContinuous(b))].length).toBe(2)
+  })
+})
+
+describe('reverse', () => {
+  // (0,0) -> (2,4) -> (5,5): connected, increasing in x.
+  const segA = linearCurve2d.fromCoefficients(vector2.make(0, 0), vector2.make(2, 4))
+  const segB = linearCurve2d.fromCoefficients(vector2.make(2, 4), vector2.make(3, 1))
+  const path = linearPath2d.make(segA, segB)
+
+  test('whole-path reversal: solve(rev, u) === solve(orig, 1 - u)', () => {
+    const rev = linearPath2d.reverse(path)
+    expect([...rev].length).toBe(2)
+    for (const u of [0, 0.25, 0.5, 0.75, 1]) {
+      const a = linearPath2d.solve(rev, u)
+      const b = linearPath2d.solve(path, 1 - u)
+      expect(a.x).toBeCloseTo(b.x)
+      expect(a.y).toBeCloseTo(b.y)
+    }
+  })
+
+  test('continuity is preserved through reversal', () => {
+    expect(linearPath2d.isContinuous(linearPath2d.reverse(path))).toBe(true)
+  })
+
+  test('reversal flips the x-direction sense', () => {
+    expect(linearPath2d.isIncreasingX(path)).toBe(true)
+    const rev = linearPath2d.reverse(path)
+    expect(linearPath2d.isIncreasingX(rev)).toBe(false)
+    expect(linearPath2d.isDecreasingX(rev)).toBe(true)
+  })
+})

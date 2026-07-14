@@ -6,7 +6,8 @@ import { invariant } from '../utils.ts'
 import { coincident } from '../number.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearPolynomial } from './linear.ts'
-import type { Decreasing, Increasing, Monotonic } from './traits.ts'
+import type { PolynomialOps } from './polynomial.ts'
+import type { Decreasing, Increasing, Monotonic, Reflected } from './traits.ts'
 import { PolynomialTraits } from './traits.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
 import { QuadraticPolynomialImpl } from './quadratic.internal.circular.ts'
@@ -116,6 +117,13 @@ export const coefficients = (p: LinearPolynomial): readonly [number, number] => 
 /** @internal */
 export const derivative = (p: LinearPolynomial) => p.c1
 
+// Reflect about the midpoint of the [0, 1] domain: q(u) = p(1 - u). Reads the
+// polynomial right-to-left; the new c0 is the coefficient sum (= p(1)). The
+// monotonicity brand flips direction (`Reflected`).
+/** @internal */
+export const reflectDomain = <T>(p: LinearPolynomial<T>): LinearPolynomial<Reflected<T>> =>
+  make(p.c0 + p.c1, -p.c1) as LinearPolynomial<Reflected<T>>
+
 /** @internal */
 export const antiderivative = dual<
   (integrationConstant: number) => (p: LinearPolynomial) => QuadraticPolynomial,
@@ -175,3 +183,18 @@ export const length = dual<
 
   return Math.sqrt(1 + p.c1 ** 2) * Interval.size(d)
 })
+
+/**
+ * The `PolynomialOps` bundle consumed by the generic `Piecewise` implementation.
+ * A linear polynomial's derivative is a constant, carried as a zero-slope
+ * linear so the piecewise stays closed under differentiation.
+ *
+ * @internal
+ */
+export const Ops: PolynomialOps<LinearPolynomial, LinearPolynomial> = {
+  solve,
+  unitRange,
+  isIncreasing: (p) => isIncreasing(p),
+  isDecreasing: (p) => isDecreasing(p),
+  derivative: (p, dudx) => make(p.c1 * dudx, 0),
+}

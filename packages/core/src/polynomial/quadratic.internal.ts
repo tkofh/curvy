@@ -7,14 +7,16 @@ import * as Vector2 from '../vector/vector2.ts'
 import type { Vector3 } from '../vector/vector3.ts'
 import type { CubicPolynomial } from './cubic.ts'
 import { CubicPolynomialImpl } from './cubic.internal.circular.ts'
+import type { LinearPolynomial } from './linear.ts'
 import * as Linear from './linear.internal.ts'
 import * as Monotonicity from '../monotonicity/monotonicity.ts'
+import type { PolynomialOps } from './polynomial.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
 import {
   QuadraticPolynomialImpl,
   QuadraticPolynomialTypeId,
 } from './quadratic.internal.circular.ts'
-import type { Decreasing, Increasing, Monotonic } from './traits.ts'
+import type { Decreasing, Increasing, Monotonic, Reflected } from './traits.ts'
 
 /** @internal */
 export const fromPoints = (
@@ -122,6 +124,13 @@ export const coefficients = (p: QuadraticPolynomial): readonly [number, number, 
 
 /** @internal */
 export const derivative = (p: QuadraticPolynomial) => Linear.make(p.c1, p.c2 * 2)
+
+// Reflect about the midpoint of the [0, 1] domain: q(u) = p(1 - u). The new c0
+// is the coefficient sum (= p(1)); the leading coefficient is unchanged. The
+// monotonicity brand flips direction (`Reflected`).
+/** @internal */
+export const reflectDomain = <T>(p: QuadraticPolynomial<T>): QuadraticPolynomial<Reflected<T>> =>
+  make(p.c0 + p.c1 + p.c2, -p.c1 - 2 * p.c2, p.c2) as QuadraticPolynomial<Reflected<T>>
 
 /** @internal */
 export const roots = (p: QuadraticPolynomial) => solveInverse(p, 0)
@@ -314,3 +323,16 @@ export const curvature = dual<
   (p: QuadraticPolynomial, x: number) =>
     Math.abs(2 * p.c2) / (1 + (Linear.solve(derivative(p), x) ** 2) ** 1.5),
 )
+
+/**
+ * The `PolynomialOps` bundle consumed by the generic `Piecewise` implementation.
+ *
+ * @internal
+ */
+export const Ops: PolynomialOps<QuadraticPolynomial, LinearPolynomial> = {
+  solve,
+  unitRange,
+  isIncreasing: (p) => isIncreasing(p, Interval.unit),
+  isDecreasing: (p) => isDecreasing(p, Interval.unit),
+  derivative: (p, dudx) => Linear.make(p.c1 * dudx, 2 * p.c2 * dudx),
+}

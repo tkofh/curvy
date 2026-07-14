@@ -92,6 +92,34 @@ export const append: {
   (p: CubicPath2d, c: CubicCurve2d): CubicPath2d
 } = internal.append
 
+export const appendContinuous: {
+  /**
+   * Appends a cubic curve to a `Continuous` path, preserving the brand.
+   *
+   * @param c - The cubic curve to append.
+   * @returns A function that takes a `Continuous` cubic path and returns a new one with the curve appended.
+   * @since 2.0.0
+   */
+  (c: CubicCurve2d): (p: CubicPath2d<Continuous>) => CubicPath2d<Continuous>
+  /**
+   * Appends a cubic curve to a `Continuous` cubic path, preserving the brand.
+   * The curve's start point must coincide with the path's current end point
+   * (G^0 continuity), compared with `coincident` tolerance (see `PRECISION.md`).
+   *
+   * Only the new join is checked — the input's `Continuous` brand already
+   * vouches for the rest. Other trait brands are dropped, since a new curve can
+   * still reverse an axis and break monotonicity; reassert them with the
+   * relevant refiner if needed.
+   *
+   * @param p - A continuous cubic path.
+   * @param c - The cubic curve to append.
+   * @returns A new `Continuous` cubic path with the curve appended.
+   * @throws `Error` when the curve does not connect to the path's end point.
+   * @since 2.0.0
+   */
+  (p: CubicPath2d<Continuous>, c: CubicCurve2d): CubicPath2d<Continuous>
+} = internal.appendContinuous as never
+
 /**
  * Calculates the total arc length of a cubic path.
  *
@@ -409,3 +437,18 @@ export const transform: {
    */
   (a: Affine2d): (p: CubicPath2d) => CubicPath2d
 } = internal.transform
+
+/**
+ * Reverses the path, returning it traced end-to-start: the segment order is
+ * reversed and each segment's parameter direction flipped. The geometric image
+ * is identical. `Continuous` survives the reversal in substance but, like every
+ * brand, is dropped from the type — reversal turns `IncreasingX` into
+ * `DecreasingX` (and likewise on the y axis), so the direction brands cannot
+ * carry through. Reassert what still holds with `isContinuous`, `isIncreasingX`,
+ * and their siblings.
+ *
+ * @param p - The path to reverse.
+ * @returns The reversed path, with all trait brands dropped.
+ * @since 2.0.0
+ */
+export const reverse: (p: CubicPath2d) => CubicPath2d = internal.reverse

@@ -41,6 +41,24 @@ declare const DecreasingId: unique symbol
 export type Decreasing = Monotonic & { readonly [DecreasingId]: 'decreasing' }
 
 /**
+ * The monotonicity brand a domain reflection (`reflectDomain`, `q(u) = p(1 - u)`)
+ * carries over from `T`. Reading a polynomial right-to-left reverses its sense,
+ * so `Increasing` becomes `Decreasing` and vice versa; a bare `Monotonic` stays
+ * `Monotonic` (still monotone, opposite direction), and an unbranded polynomial
+ * stays unbranded. Unlike an affine transform — whose effect on direction is not
+ * known from its type — reflection's is fixed, so it is expressible here.
+ *
+ * @since 2.0.0
+ */
+export type Reflected<T> = T extends Increasing
+  ? Decreasing
+  : T extends Decreasing
+    ? Increasing
+    : T extends Monotonic
+      ? Monotonic
+      : unknown
+
+/**
  * Phantom property key used by polynomial interfaces to hold their `Traits`
  * type parameter. The runtime object never has a value at this key — the
  * `declare` modifier on the impl class makes the property type-visible only.

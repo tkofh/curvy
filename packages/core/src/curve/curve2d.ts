@@ -91,4 +91,13 @@ export interface Curve2dOps<C> {
    * denominator. Path-level callers route through this op per curve.
    */
   transform(c: C, a: Affine2d): C
+
+  /**
+   * Reverse the curve's parameter direction, returning the curve traced from
+   * t = 1 to t = 0. The geometric image is unchanged — start and end swap and
+   * any monotonic axis inverts — since per component this reflects each
+   * coordinate polynomial about its domain midpoint (`p(1 - u)`). Path-level
+   * `reverse` routes through this op per curve.
+   */
+  reverse(c: C): C
 }

@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 import * as cubic2d from '../src/curve/cubic2d.ts'
 import * as linear2d from '../src/curve/linear2d.ts'
 import * as quadratic2d from '../src/curve/quadratic2d.ts'
@@ -823,5 +823,65 @@ describe('rationalCubic2d monotonicity refiners', () => {
     expect(rationalCubic2d.isMonotonic(xNotMono)).toBe(
       rationalCubic2d.isMonotonicX(xNotMono) && rationalCubic2d.isMonotonicY(xNotMono),
     )
+  })
+})
+
+describe('reverse', () => {
+  test('linear2d: image fixed, endpoints swapped', () => {
+    const c = linear2d.fromCoefficients(vector2.make(0, 1), vector2.make(2, 4)) // (0,1) -> (2,5)
+    const r = linear2d.reverse(c)
+    const rs = linear2d.startPoint(r)
+    const ce = linear2d.endPoint(c)
+    expect(rs.x).toBeCloseTo(ce.x)
+    expect(rs.y).toBeCloseTo(ce.y)
+    for (const u of [0, 0.3, 0.5, 1]) {
+      const a = linear2d.solve(r, u)
+      const b = linear2d.solve(c, 1 - u)
+      expect(a.x).toBeCloseTo(b.x)
+      expect(a.y).toBeCloseTo(b.y)
+    }
+  })
+
+  test('flips the per-axis direction brand at the type level', () => {
+    const c = linear2d.fromCoefficients(vector2.make(0, 0), vector2.make(2, 1)) // x, y increasing
+    if (linear2d.isIncreasingX(c) && linear2d.isIncreasingY(c)) {
+      const r = linear2d.reverse(c)
+      expectTypeOf(r).toEqualTypeOf<
+        linear2d.LinearCurve2d<linearPolynomial.Decreasing, linearPolynomial.Decreasing>
+      >()
+      expect(linear2d.isDecreasingX(r)).toBe(true)
+      expect(linear2d.isDecreasingY(r)).toBe(true)
+    }
+  })
+
+  test('quadratic2d: solve(r, u) === solve(c, 1 - u)', () => {
+    const c = quadratic2d.fromCoefficients(
+      vector2.make(0, 0),
+      vector2.make(2, 1),
+      vector2.make(1, 3),
+    )
+    const r = quadratic2d.reverse(c)
+    for (const u of [0, 0.25, 0.5, 0.75, 1]) {
+      const a = quadratic2d.solve(r, u)
+      const b = quadratic2d.solve(c, 1 - u)
+      expect(a.x).toBeCloseTo(b.x)
+      expect(a.y).toBeCloseTo(b.y)
+    }
+  })
+
+  test('cubic2d: solve(r, u) === solve(c, 1 - u)', () => {
+    const c = cubic2d.fromCoefficients(
+      vector2.make(0, 0),
+      vector2.make(3, 1),
+      vector2.make(0, 2),
+      vector2.make(1, -1),
+    )
+    const r = cubic2d.reverse(c)
+    for (const u of [0, 0.2, 0.5, 0.8, 1]) {
+      const a = cubic2d.solve(r, u)
+      const b = cubic2d.solve(c, 1 - u)
+      expect(a.x).toBeCloseTo(b.x)
+      expect(a.y).toBeCloseTo(b.y)
+    }
   })
 })

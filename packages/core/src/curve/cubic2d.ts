@@ -3,7 +3,7 @@ import type { TwoDimensional } from '../dimensions.ts'
 import type { Closed, Interval } from '../interval/interval.ts'
 import type { Pipeable } from '../utils.ts'
 import type { CubicPolynomial } from '../polynomial/cubic.ts'
-import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
+import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
@@ -463,3 +463,20 @@ export const transform: {
    */
   (a: Affine2d): (c: CubicCurve2d) => CubicCurve2d
 } = internal.transform
+
+/**
+ * Reverses the curve's parameter direction, returning the curve traced from
+ * `t = 1` back to `t = 0`. The geometric image is identical — the same points
+ * in the same places — but the start and end swap and each axis's monotonic
+ * sense inverts: an `Increasing` axis becomes `Decreasing` and vice versa
+ * (`Reflected`), a bare `Monotonic` axis stays monotonic. Per component this
+ * reflects each coordinate polynomial about its domain midpoint
+ * (`CubicPolynomial.reflectDomain`).
+ *
+ * @param c - The cubic curve to reverse.
+ * @returns The reversed curve, its per-axis direction brands flipped.
+ * @since 2.0.0
+ */
+export const reverse: <XT, YT>(
+  c: CubicCurve2d<XT, YT>,
+) => CubicCurve2d<Reflected<XT>, Reflected<YT>> = internal.reverse
