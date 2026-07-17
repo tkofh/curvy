@@ -17,6 +17,7 @@ export default defineConfig({
     'src/characteristic/index.ts',
     'src/transform/index.ts',
     'src/coordinates/index.ts',
+    'src/arc/index.ts',
   ],
   format: 'esm',
   dts: false,

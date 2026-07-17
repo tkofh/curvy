@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import * as ArcIndex from '../src/arc/index.ts'
 import * as Curve from '../src/curve/index.ts'
 import * as Matrix from '../src/matrix/index.ts'
 import * as Path from '../src/path/index.ts'
@@ -11,6 +12,10 @@ describe('per-domain index re-exports', () => {
     expect(typeof Curve.LinearCurve2d.fromPolynomials).toBe('function')
     expect(typeof Curve.QuadraticCurve2d.fromPolynomials).toBe('function')
     expect(typeof Curve.CubicCurve2d.fromPolynomials).toBe('function')
+  })
+  test('arc index exposes the namespace', () => {
+    expect(typeof ArcIndex.Arc.circular).toBe('function')
+    expect(typeof ArcIndex.Arc.toPathData).toBe('function')
   })
   test('path index exposes namespaces by type name', () => {
     expect(typeof Path.LinearPath2d.make).toBe('function')
