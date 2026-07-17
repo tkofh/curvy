@@ -1,5 +1,81 @@
 # Change Log
 
+## 2.0.0-alpha.18
+
+### Major Changes
+
+- d2e4835: The polar and spherical vector constructors now take their angles first: `Vector2.fromPolar(theta, r)` instead of `fromPolar(r, theta)`, and `Vector3.fromSpherical(theta, phi, r)` instead of `fromSpherical(r, theta, phi)`. The new `curvy/coordinates` module reads chart points as `(theta, r)` and takes angular spans before radial ones everywhere, so the vector constructors follow the same angular-first rule rather than being the lone exceptions.
+
+  ```ts
+  // before
+  Vector2.fromPolar(2, Math.PI / 2)
+  Vector3.fromSpherical(2, Math.PI / 2, 0)
+  // after
+  Vector2.fromPolar(Math.PI / 2, 2)
+  Vector3.fromSpherical(Math.PI / 2, 0, 2)
+  ```
+
+### Minor Changes
+
+- d436420: **First-class circular arcs.** A new `curvy/arc` module makes arcs values rather than constructions: `Arc.circular({ center?, radius, startAngle?, sweep? })` describes a circular arc directly — no coordinate system required — and everything downstream reads from that description. Angles are radians from `+x`, positive rotating `+x` toward `+y`; direction and multiplicity live in the sweep's sign and magnitude, so a negative sweep runs the other way and a sweep past `2 * pi` keeps orbiting. Only `radius` is required — the defaults give a full circle around the origin.
+
+  The description keeps the closed-form answers that lowering destroys. `length` is `radius * abs(sweep)`, exact. `solve(arc, t)` is one `cos`/`sin` — and because a circle is traced at constant speed, the uniform parameter is also the arc-length parameter, a property no polynomial path has. `boundingBox` is exact with no tolerance parameter, since extremes only occur at endpoints or crossed axis directions. `startPoint`, `endPoint`, `reverse`, and a tolerance-aware `equals` round out the queries.
+
+  ```ts
+  import { Arc } from 'curvy/arc'
+
+  const tick = Arc.circular({
+    center: Vector2.make(200, 200),
+    radius: 120,
+    startAngle: -Math.PI / 2,
+    sweep: Math.PI / 6,
+  })
+
+  Arc.length(tick) // 20 * pi, in closed form
+  Arc.toPathData(tick) // 'M 200,80 A 120 120 0 0 1 ...'
+  ```
+
+  Lowering is exact and shared with the coordinates module — `CoordinateSystem.arc` and `Arc.toPath` now run the same machinery. `Arc.toPath` builds a `RationalCubicPath2d` of at-most-quarter-turn rational segments, exact up to IEEE 754 rounding, with multi-turn sweeps tracing the circle more than once; transform the lowered path with `RationalCubicPath2d.transform`, since circles are not closed under affine maps but rational cubics are. `Arc.toPathData` emits SVG `A` commands computed from the description, with the same degenerate contracts as `CoordinateSystem.arcPathData`: zero sweep or zero radius emit a bare `M`, full turns close on the exact starting coordinates, and sweeps past one turn clamp to a single circle, which is all path data can express.
+
+  `Arc.Circular` is the module's only member today. The kind-named type leaves room for an elliptical sibling and an `Arc` union later without renames, mirroring how `CoordinateSystem` holds `Cartesian` and `Polar`.
+
+- d2e4835: **Coordinate systems and axis dimensions.** A new `curvy/coordinates` module maps chart-space geometry onto the cartesian plane, built for layout engines that position rectangles in polar coordinates and render them as SVG.
+
+  **`Dimension`** describes the structure of a single chart axis: `linear(scale?, offset?)` for ordinary number lines and unit conversions, `cyclical(period)` for axes that wrap — angles, hue. The unit constants `radians`, `degrees`, and `turns` are just periods. Cyclical axes get the operations that make splining through angles work:
+
+  ```ts
+  import { Dimension } from 'curvy/coordinates'
+
+  Dimension.delta(Dimension.degrees, 350, 10) // 20 — the short way across the seam
+  Dimension.unwrap(Dimension.degrees, [350, 5, 20]) // [350, 365, 380] — lift, spline, then wrap samples
+  Dimension.lerp(Dimension.degrees, 350, 10, 0.5) // 0
+  Dimension.congruent(Dimension.radians, 2 * Math.PI - 1e-16, 0) // true
+  ```
+
+  `congruent` judges the shortest wrapped difference against a band of `EPSILON * period` — the normalized-domain regime generalized to a domain of size `period` (see `PRECISION.md`).
+
+  **`CoordinateSystem`** is a kind-discriminated union of `cartesian` (the identity) and `polar(config?)` — center, angular axis, winding, radial map, and a `thetaOrigin` that anchors chart zero on screen independent of winding (`thetaOrigin: -90` on a degrees axis starts a gauge at 12 o'clock either way it sweeps). Chart points pack as `(theta, r)` into `Vector2` `x`/`y`, angular-first like the rest of the surface. `toCartesian` / `fromCartesian` convert points exactly.
+
+  Because the polar map is nonlinear, it does not commute with control-point mapping — converting a curve's control points pointwise produces the wrong curve. Shapes therefore have their own constructors, and they are exact: `arc(s, theta, r)` builds a circular arc as quarter-turn rational cubic segments (the rational-quadratic circle representation, degree-elevated in homogeneous space), and `sector(s, theta, r)` builds the image of an axis-aligned chart rect — an annular sector — as one closed `RationalCubicPath2d`.
+
+  ```ts
+  import { CoordinateSystem, Dimension } from 'curvy/coordinates'
+
+  const system = CoordinateSystem.polar({ theta: Dimension.degrees })
+
+  // Exact geometry for hit-testing and bounds:
+  const ring = CoordinateSystem.sector(system, { start: 30, end: 90 }, { start: 80, end: 120 })
+
+  // Exact SVG, straight into <path d={...}>:
+  CoordinateSystem.sectorPathData(system, { start: 30, end: 90 }, { start: 80, end: 120 })
+  ```
+
+  `arcPathData` / `sectorPathData` emit SVG `A` commands computed from the chart description rather than recovered from curve coefficients, so circles stay circles all the way into the DOM. Degenerate inputs stay constructible (zero sweep, zero radial width, pie slices at inner radius 0), full-turn sectors emit a two-subpath annulus that fills correctly under both `nonzero` and `evenodd`, and sweeps past one period clamp.
+
+  **Approximate images of arbitrary chart paths.** The exact constructors cover axis-aligned chart shapes; everything else — a rounded rect in chart space, a diagonal line — has a transcendental polar image (Archimedean spirals) that no cubic can represent exactly. `CoordinateSystem.image(s, path, tolerance)` maps any chart-space `CubicPath2d` through the system and returns a `CubicPath2d` certified to a symmetric Hausdorff bound: every point of the true image lies within `tolerance` of the output and every point of the output within `tolerance` of the true image, verified by subdivision enclosures rather than point samples (see `PRECISION.md`, "Certified approximations"). Segment endpoints land exactly on the true image, negative mapped radii reflect through the center like `toCartesian`, and on `cartesian` the path comes back unchanged. The output is SVG's native kind — feed it straight to `CubicPath2d.toPathData`.
+
+  **Hit-testing.** `CoordinateSystem.containsPoint(s, theta, r, point)` answers whether a cartesian point lies inside a sector's chart rect, with edge verdicts that hold at any data magnitude. It builds on `Dimension.contains` / `containsApprox`, whose cyclical spans are directed sweeps with the same semantics as `arc` — seam crossings and all.
+
 ## 2.0.0-alpha.17
 
 ### Minor Changes
