@@ -74,6 +74,13 @@ export interface Polar extends Pipeable {
    * chart that starts at `r = 0`.
    */
   readonly radius: Linear
+  /**
+   * Where chart angle `0` points, as a rotation from the `+x` direction
+   * measured in the angular unit, positive rotating `+x` toward `+y`.
+   * Anchored on screen independent of `winding`, so `-90` on a degrees
+   * axis is 12 o'clock whichever way the system sweeps.
+   */
+  readonly thetaOrigin: number
 }
 
 /**
@@ -103,6 +110,12 @@ export interface PolarConfig {
    * `Dimension.identity`.
    */
   readonly radius?: Linear
+  /**
+   * Where chart angle `0` points, as a rotation from the `+x` direction
+   * measured in the angular unit, positive rotating `+x` toward `+y` and
+   * independent of `winding`. Defaults to `0` (3 o'clock on screen).
+   */
+  readonly thetaOrigin?: number
 }
 
 /**
@@ -142,16 +155,19 @@ export const cartesian: Cartesian = internal.cartesian
 /**
  * Creates a `Polar` system.
  *
- * @param config - Center, angular axis, winding, and radial map. All
- *   optional; see `PolarConfig` for the defaults.
+ * @param config - Center, angular axis, winding, radial map, and angular
+ *   origin. All optional; see `PolarConfig` for the defaults.
  * @returns A new `Polar` system.
+ * @throws `Error` when `thetaOrigin` is not finite.
  * @since 2.0.0
  * @example
  * ```ts
- * // Degrees around (200, 200), with a 40px hole under chart radius 0:
+ * // Degrees around (200, 200), chart zero at 12 o'clock, with a 40px
+ * // hole under chart radius 0:
  * const system = CoordinateSystem.polar({
  *   center: Vector2.make(200, 200),
  *   theta: Dimension.degrees,
+ *   thetaOrigin: -90,
  *   radius: Dimension.linear(1, 40),
  * })
  * ```
@@ -327,6 +343,53 @@ export const sector: {
    */
   (theta: Bounds, r: Bounds): (s: CoordinateSystem) => RationalCubicPath2d
 } = internal.sector
+
+export const containsPoint: {
+  /**
+   * Checks whether a cartesian point lies inside the image of the
+   * axis-aligned chart rectangle `theta x r` — the same region `sector`
+   * constructs. The point is converted with `fromCartesian` and tested
+   * per axis: the angular test follows `Dimension.containsApprox`
+   * (directed sweep, band `EPSILON * period`), and the radial and
+   * cartesian-rectangle tests treat a coordinate coincident with an edge
+   * as inside, so boundary verdicts hold at any data magnitude.
+   *
+   * At the exact center the angle is degenerate and the radial test alone
+   * decides: the center belongs to a sector exactly when the sector
+   * reaches mapped radius `0`.
+   *
+   * @param s - The coordinate system.
+   * @param theta - The angular span, directed like `sector`'s.
+   * @param r - The radial span, in either order.
+   * @param point - The cartesian point to test.
+   * @returns `true` if the point is inside the sector, `false` otherwise.
+   * @throws `Error` when a bound is not finite.
+   * @since 2.0.0
+   * @example
+   * ```ts
+   * // Pointer hit-testing a ring segment:
+   * CoordinateSystem.containsPoint(
+   *   system,
+   *   { start: 30, end: 90 },
+   *   { start: 80, end: 120 },
+   *   Vector2.make(pointerX, pointerY),
+   * )
+   * ```
+   */
+  (s: CoordinateSystem, theta: Bounds, r: Bounds, point: Vector2): boolean
+  /**
+   * Checks whether a cartesian point lies inside the image of an
+   * axis-aligned chart rectangle.
+   *
+   * @param theta - The angular span, directed like `sector`'s.
+   * @param r - The radial span, in either order.
+   * @param point - The cartesian point to test.
+   * @returns A function that takes a system and returns whether the point
+   *   is inside.
+   * @since 2.0.0
+   */
+  (theta: Bounds, r: Bounds, point: Vector2): (s: CoordinateSystem) => boolean
+} = internal.containsPoint
 
 export const arcPathData: {
   /**

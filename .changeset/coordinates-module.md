@@ -17,7 +17,7 @@ Dimension.congruent(Dimension.radians, 2 * Math.PI - 1e-16, 0) // true
 
 `congruent` judges the shortest wrapped difference against a band of `EPSILON * period` — the normalized-domain regime generalized to a domain of size `period` (see `PRECISION.md`).
 
-**`CoordinateSystem`** is a kind-discriminated union of `cartesian` (the identity) and `polar(config?)` — center, angular axis, winding, radial map. Chart points pack as `(theta, r)` into `Vector2` `x`/`y`, angular-first like the rest of the surface. `toCartesian` / `fromCartesian` convert points exactly.
+**`CoordinateSystem`** is a kind-discriminated union of `cartesian` (the identity) and `polar(config?)` — center, angular axis, winding, radial map, and a `thetaOrigin` that anchors chart zero on screen independent of winding (`thetaOrigin: -90` on a degrees axis starts a gauge at 12 o'clock either way it sweeps). Chart points pack as `(theta, r)` into `Vector2` `x`/`y`, angular-first like the rest of the surface. `toCartesian` / `fromCartesian` convert points exactly.
 
 Because the polar map is nonlinear, it does not commute with control-point mapping — converting a curve's control points pointwise produces the wrong curve. Shapes therefore have their own constructors, and they are exact: `arc(s, theta, r)` builds a circular arc as quarter-turn rational cubic segments (the rational-quadratic circle representation, degree-elevated in homogeneous space), and `sector(s, theta, r)` builds the image of an axis-aligned chart rect — an annular sector — as one closed `RationalCubicPath2d`.
 
@@ -34,3 +34,5 @@ CoordinateSystem.sectorPathData(system, { start: 30, end: 90 }, { start: 80, end
 ```
 
 `arcPathData` / `sectorPathData` emit SVG `A` commands computed from the chart description rather than recovered from curve coefficients, so circles stay circles all the way into the DOM. Degenerate inputs stay constructible (zero sweep, zero radial width, pie slices at inner radius 0), full-turn sectors emit a two-subpath annulus that fills correctly under both `nonzero` and `evenodd`, and sweeps past one period clamp.
+
+**Hit-testing.** `CoordinateSystem.containsPoint(s, theta, r, point)` answers whether a cartesian point lies inside a sector's chart rect, with edge verdicts that hold at any data magnitude. It builds on `Dimension.contains` / `containsApprox`, whose cyclical spans are directed sweeps with the same semantics as `arc` — seam crossings and all.

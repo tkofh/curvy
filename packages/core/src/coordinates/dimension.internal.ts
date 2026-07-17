@@ -1,4 +1,5 @@
-import { EPSILON, coincident, mod } from '../number.ts'
+import type { Bounds } from '../interval/interval.ts'
+import { EPSILON, coincident, minMax, mod } from '../number.ts'
 import { Pipeable, dual, invariant } from '../utils.ts'
 import type { Cyclical, Dimension, Linear } from './dimension.ts'
 
@@ -115,6 +116,42 @@ export const congruent = dual<
 >(3, (d: Dimension, a: number, b: number) =>
   d.kind === 'cyclical' ? Math.abs(delta(d, a, b)) <= EPSILON * d.period : coincident(a, b),
 )
+
+// Shared containment kernel. On a cyclical axis the bounds are a directed
+// sweep (the sign of end - start picks the direction, mirroring arc/sector),
+// a sweep of a whole period covers the axis, and both edges widen by eps.
+// The offset from the sweep's low endpoint is folded into [0, period), so
+// the seam-adjacent sliver (offset just under the period) is the eps
+// neighborhood behind the sweep's start.
+const containsWithin = (d: Dimension, bounds: Bounds, value: number, eps: number): boolean => {
+  if (d.kind === 'linear') {
+    const [min, max] = minMax(bounds.start, bounds.end)
+    return value >= min - eps && value <= max + eps
+  }
+
+  const sweep = bounds.end - bounds.start
+  if (Math.abs(sweep) >= d.period) {
+    return true
+  }
+  const offset =
+    sweep >= 0 ? mod(value - bounds.start, d.period) : mod(value - bounds.end, d.period)
+  return offset <= Math.abs(sweep) + eps || offset >= d.period - eps
+}
+
+/** @internal */
+export const contains = dual<
+  (bounds: Bounds, value: number) => (d: Dimension) => boolean,
+  (d: Dimension, bounds: Bounds, value: number) => boolean
+>(3, (d: Dimension, bounds: Bounds, value: number) => containsWithin(d, bounds, value, 0))
+
+/** @internal */
+export const containsApprox = (
+  d: Dimension,
+  bounds: Bounds,
+  value: number,
+  eps?: number,
+): boolean =>
+  containsWithin(d, bounds, value, eps ?? (d.kind === 'cyclical' ? EPSILON * d.period : EPSILON))
 
 /** @internal */
 export const unwrap = dual<

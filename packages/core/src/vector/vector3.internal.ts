@@ -76,7 +76,7 @@ export const transpose = <T, const Channels extends ReadonlyArray<number>>(
 }
 
 /** @internal */
-export const fromSpherical = (r: number, theta: number, phi: number) =>
+export const fromSpherical = (theta: number, phi: number, r: number) =>
   new Vector3Impl(
     r * Math.sin(theta) * Math.cos(phi),
     r * Math.sin(theta) * Math.sin(phi),

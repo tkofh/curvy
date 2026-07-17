@@ -1,3 +1,4 @@
+import type { Bounds } from '../interval/interval.ts'
 import type { Pipeable } from '../utils.ts'
 import * as internal from './dimension.internal.ts'
 
@@ -244,6 +245,59 @@ export const congruent: {
    */
   (a: number, b: number): (d: Dimension) => boolean
 } = internal.congruent
+
+export const contains: {
+  /**
+   * Checks whether a coordinate lies on the span `bounds`. On a cyclical
+   * axis the span is a directed sweep, exactly as `CoordinateSystem.arc`
+   * reads it: the sign of `end - start` picks the direction, a wrap
+   * crossing is written by going past the period (`{ start: 350, end:
+   * 370 }` covers the 20 degrees across the seam), and a sweep of a whole
+   * period or more covers the entire axis. On a linear axis the span is
+   * undirected and this is a plain min/max range check.
+   *
+   * Edges are exact. For tolerant edges use `containsApprox`.
+   *
+   * @param d - The axis the values live on.
+   * @param bounds - The span, directed on cyclical axes.
+   * @param value - The coordinate to test.
+   * @returns `true` if the coordinate lies on the span, `false` otherwise.
+   * @since 2.0.0
+   */
+  (d: Dimension, bounds: Bounds, value: number): boolean
+  /**
+   * Checks whether a coordinate lies on the span `bounds`.
+   *
+   * @param bounds - The span, directed on cyclical axes.
+   * @param value - The coordinate to test.
+   * @returns A function that takes a dimension and returns whether the
+   *   coordinate lies on the span.
+   * @since 2.0.0
+   */
+  (bounds: Bounds, value: number): (d: Dimension) => boolean
+} = internal.contains
+
+/**
+ * Checks whether a coordinate lies on the span `bounds`, widening both
+ * edges by `eps`. The span semantics are those of `contains`: directed
+ * sweeps on cyclical axes, min/max ranges on linear ones.
+ *
+ * @param d - The axis the values live on.
+ * @param bounds - The span, directed on cyclical axes.
+ * @param value - The coordinate to test.
+ * @param eps - The edge tolerance. Defaults to `EPSILON * period` on a
+ *   cyclical axis and plain `EPSILON` (from `curvy/number`) on a linear
+ *   one.
+ * @returns `true` if the coordinate lies within `eps` of the span,
+ *   `false` otherwise.
+ * @since 2.0.0
+ */
+export const containsApprox: (
+  d: Dimension,
+  bounds: Bounds,
+  value: number,
+  eps?: number,
+) => boolean = internal.containsApprox
 
 export const unwrap: {
   /**

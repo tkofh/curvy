@@ -122,18 +122,20 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
 
 /**
  * Creates a new `Vector3` instance from spherical coordinates
- * (physics convention: `theta` is inclination, `phi` is azimuth).
+ * (physics convention: `theta` is inclination, `phi` is azimuth). Angles
+ * first, matching the angular-first convention throughout the library
+ * (`Vector2.fromPolar`, `CoordinateSystem` chart points).
  *
  * No range is enforced. The formula is total. Values outside the
  * conventional ranges land where the trigonometry sends them.
  *
- * @param r - The radius. A negative radius reflects through the origin.
  * @param theta - The inclination from the positive z-axis, in radians. Conventionally `[0, pi]`.
  * @param phi - The azimuth from the positive x-axis in the xy-plane, in radians.
+ * @param r - The radius. A negative radius reflects through the origin.
  * @returns The vector `(r*sin(theta)*cos(phi), r*sin(theta)*sin(phi), r*cos(theta))`.
- * @since 1.0.0
+ * @since 2.0.0
  */
-export const fromSpherical: (r: number, theta: number, phi: number) => Vector3 =
+export const fromSpherical: (theta: number, phi: number, r: number) => Vector3 =
   internal.fromSpherical
 
 /**

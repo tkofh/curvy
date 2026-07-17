@@ -128,6 +128,33 @@ describe('dimension', () => {
     expect(Dimension.lerp(Dimension.linear(), 0, 10, 1.5)).toBe(15)
   })
 
+  test('contains follows directed sweeps', () => {
+    expect(Dimension.contains(Dimension.degrees, { start: 350, end: 370 }, 355)).toBe(true)
+    expect(Dimension.contains(Dimension.degrees, { start: 350, end: 370 }, 5)).toBe(true)
+    expect(Dimension.contains(Dimension.degrees, { start: 350, end: 370 }, 180)).toBe(false)
+    expect(Dimension.contains(Dimension.degrees, { start: 0, end: 90 }, 90)).toBe(true)
+
+    expect(Dimension.contains(Dimension.degrees, { start: 10, end: -20 }, 0)).toBe(true)
+    expect(Dimension.contains(Dimension.degrees, { start: 10, end: -20 }, 350)).toBe(true)
+    expect(Dimension.contains(Dimension.degrees, { start: 10, end: -20 }, 20)).toBe(false)
+
+    expect(Dimension.contains(Dimension.degrees, { start: 90, end: 450 }, 270)).toBe(true)
+
+    expect(Dimension.contains(Dimension.linear(), { start: 5, end: 1 }, 3)).toBe(true)
+    expect(Dimension.contains(Dimension.linear(), { start: 5, end: 1 }, 7)).toBe(false)
+  })
+
+  test('containsApprox widens the edges', () => {
+    expect(Dimension.contains(Dimension.degrees, { start: 0, end: 90 }, 90 + 1e-12)).toBe(false)
+    expect(Dimension.containsApprox(Dimension.degrees, { start: 0, end: 90 }, 90 + 1e-12)).toBe(
+      true,
+    )
+    expect(Dimension.containsApprox(Dimension.degrees, { start: 0, end: 90 }, -1e-9)).toBe(true)
+    expect(Dimension.containsApprox(Dimension.degrees, { start: 0, end: 90 }, -1e-6)).toBe(false)
+    expect(Dimension.containsApprox(Dimension.degrees, { start: 0, end: 90 }, 91, 2)).toBe(true)
+    expect(Dimension.containsApprox(Dimension.linear(), { start: 0, end: 1 }, 1 + 1e-11)).toBe(true)
+  })
+
   test('ops support data-last application', () => {
     expect(Dimension.degrees.pipe(Dimension.delta(350, 10))).toBe(20)
     expect(Dimension.degrees.pipe(Dimension.wrap(370))).toBe(10)
@@ -556,6 +583,121 @@ describe('coordinateSystem', () => {
         { start: 1, end: 2 },
       ),
     ).toBe('M 0,1 L 10,1 L 10,2 L 0,2 Z')
+  })
+
+  test('thetaOrigin anchors chart zero on screen', () => {
+    const gauge = CoordinateSystem.polar({ theta: Dimension.degrees, thetaOrigin: -90 })
+    const ccw = CoordinateSystem.polar({
+      theta: Dimension.degrees,
+      thetaOrigin: -90,
+      winding: 'counterclockwise',
+    })
+
+    expect(CoordinateSystem.toCartesian(gauge, Vector2.make(0, 5))).toBeCloseToValue(
+      Vector2.make(0, -5),
+    )
+    expect(CoordinateSystem.toCartesian(ccw, Vector2.make(0, 5))).toBeCloseToValue(
+      Vector2.make(0, -5),
+    )
+    expect(CoordinateSystem.toCartesian(gauge, Vector2.make(90, 5))).toBeCloseToValue(
+      Vector2.make(5, 0),
+    )
+    expect(CoordinateSystem.toCartesian(ccw, Vector2.make(90, 5))).toBeCloseToValue(
+      Vector2.make(-5, 0),
+    )
+
+    expect(
+      CoordinateSystem.equals(
+        gauge,
+        CoordinateSystem.polar({ theta: Dimension.degrees, thetaOrigin: -90 }),
+      ),
+    ).toBe(true)
+    expect(CoordinateSystem.equals(gauge, degreesPolar)).toBe(false)
+    expect(() => CoordinateSystem.polar({ thetaOrigin: Number.NaN })).toThrow()
+  })
+
+  test('thetaOrigin round-trips and rotates shapes rigidly', () => {
+    const gauge = CoordinateSystem.polar({ theta: Dimension.degrees, thetaOrigin: -90 })
+
+    const back = CoordinateSystem.fromCartesian(
+      gauge,
+      CoordinateSystem.toCartesian(gauge, Vector2.make(200, 7)),
+    )
+    expect(Dimension.congruent(Dimension.degrees, back.x, 200)).toBe(true)
+    expect(back.y).toBeCloseTo(7, 12)
+
+    const path = CoordinateSystem.arc(gauge, { start: 0, end: 90 }, 1)
+    expect([...path].length).toBe(1)
+    expect(RationalCubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, -1))
+    expect(RationalCubicPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(1, 0))
+
+    const start = CoordinateSystem.toCartesian(gauge, Vector2.make(0, 1))
+    const d = CoordinateSystem.arcPathData(gauge, { start: 0, end: 90 }, 1)
+    expect(d.startsWith(`M ${start.x},${start.y}`)).toBe(true)
+  })
+
+  test('containsPoint hit-tests sectors', () => {
+    const theta = { start: -60, end: 60 }
+    const r = { start: 90, end: 150 }
+
+    expect(CoordinateSystem.containsPoint(degreesPolar, theta, r, Vector2.make(120, 0))).toBe(true)
+    expect(CoordinateSystem.containsPoint(degreesPolar, theta, r, Vector2.make(160, 0))).toBe(false)
+    expect(CoordinateSystem.containsPoint(degreesPolar, theta, r, Vector2.make(50, 0))).toBe(false)
+    expect(CoordinateSystem.containsPoint(degreesPolar, theta, r, Vector2.make(-120, 0))).toBe(
+      false,
+    )
+    expect(
+      CoordinateSystem.containsPoint(
+        degreesPolar,
+        theta,
+        r,
+        CoordinateSystem.toCartesian(degreesPolar, Vector2.make(-30, 120)),
+      ),
+    ).toBe(true)
+    expect(
+      CoordinateSystem.containsPoint(
+        degreesPolar,
+        theta,
+        r,
+        CoordinateSystem.toCartesian(degreesPolar, Vector2.make(60, 150)),
+      ),
+    ).toBe(true)
+  })
+
+  test('containsPoint handles the center and cartesian rects', () => {
+    const pie = { start: 2, end: 3 }
+    expect(
+      CoordinateSystem.containsPoint(unitPolar, pie, { start: 0, end: 1 }, Vector2.make(0, 0)),
+    ).toBe(true)
+    expect(
+      CoordinateSystem.containsPoint(unitPolar, pie, { start: 0.5, end: 1 }, Vector2.make(0, 0)),
+    ).toBe(false)
+
+    const rect = CoordinateSystem.cartesian
+    expect(
+      CoordinateSystem.containsPoint(
+        rect,
+        { start: 0, end: 10 },
+        { start: 1, end: 2 },
+        Vector2.make(5, 1.5),
+      ),
+    ).toBe(true)
+    expect(
+      CoordinateSystem.containsPoint(
+        rect,
+        { start: 0, end: 10 },
+        { start: 1, end: 2 },
+        Vector2.make(5, 3),
+      ),
+    ).toBe(false)
+    expect(() =>
+      CoordinateSystem.containsPoint(
+        unitPolar,
+        { start: Number.NaN, end: 1 },
+        { start: 0, end: 1 },
+        Vector2.make(0, 0),
+      ),
+    ).toThrow()
   })
 
   test('shape ops support data-last application', () => {

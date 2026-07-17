@@ -113,6 +113,10 @@ describe('vector2', () => {
 })
 
 describe('vector3', () => {
+  test('fromSpherical takes angles first', () => {
+    expect(vector3.fromSpherical(Math.PI / 2, 0, 2)).toBeCloseToValue(vector3.make(2, 0, 0))
+    expect(vector3.fromSpherical(0, 0, 3)).toBeCloseToValue(vector3.make(0, 0, 3))
+  })
   test('make', () => {
     expect(vector3.make(1, 2, 3)).toMatchObject({
       x: 1,

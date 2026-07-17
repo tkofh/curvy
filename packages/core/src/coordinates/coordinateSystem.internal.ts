@@ -1,6 +1,6 @@
 import * as RationalCubicCurve2d from '../curve/rationalCubic2d.ts'
 import type { Bounds } from '../interval/interval.ts'
-import { EPSILON, minMax } from '../number.ts'
+import { EPSILON, coincident, minMax } from '../number.ts'
 import * as RationalCubicPath2d from '../path/rationalCubic2d.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
 import { Pipeable, dual, invariant } from '../utils.ts'
@@ -45,18 +45,28 @@ class PolarImpl extends CoordinateSystemImpl implements Polar {
   readonly theta: Cyclical
   readonly winding: Winding
   readonly radius: Linear
+  readonly thetaOrigin: number
 
-  constructor(center: Vector2.Vector2, theta: Cyclical, winding: Winding, radius: Linear) {
+  constructor(
+    center: Vector2.Vector2,
+    theta: Cyclical,
+    winding: Winding,
+    radius: Linear,
+    thetaOrigin: number,
+  ) {
     super()
+
+    invariant(Number.isFinite(thetaOrigin), 'Polar thetaOrigin must be finite')
 
     this.center = center
     this.theta = theta
     this.winding = winding
     this.radius = radius
+    this.thetaOrigin = thetaOrigin
   }
 
   get [Symbol.toStringTag]() {
-    return `CoordinateSystem.Polar(center (${this.center.x}, ${this.center.y}), period ${this.theta.period}, ${this.winding})`
+    return `CoordinateSystem.Polar(center (${this.center.x}, ${this.center.y}), period ${this.theta.period}, origin ${this.thetaOrigin}, ${this.winding})`
   }
 }
 
@@ -80,6 +90,7 @@ export const polar = (config?: PolarConfig): Polar =>
     config?.theta ?? dimension.radians,
     config?.winding ?? 'clockwise',
     config?.radius ?? dimension.identity,
+    config?.thetaOrigin ?? 0,
   )
 
 /** @internal */
@@ -92,6 +103,7 @@ export const equals = dual<
     : b.kind === 'polar' &&
       a.winding === b.winding &&
       Vector2.equals(a.center, b.center) &&
+      coincident(a.thetaOrigin, b.thetaOrigin) &&
       dimension.equals(a.theta, b.theta) &&
       dimension.equals(a.radius, b.radius),
 )
@@ -99,8 +111,15 @@ export const equals = dual<
 const windingSign = (w: Winding): 1 | -1 => (w === 'clockwise' ? 1 : -1)
 
 // Chart angle -> mapped angle in radians, positive rotating +x toward +y.
+// thetaOrigin anchors chart zero on screen independent of winding, so it
+// adds before the winding sign is applied to the chart angle.
 const mapTheta = (s: Polar, theta: number): number =>
-  windingSign(s.winding) * theta * ((2 * Math.PI) / s.theta.period)
+  (s.thetaOrigin + windingSign(s.winding) * theta) * ((2 * Math.PI) / s.theta.period)
+
+// Chart sweep -> mapped sweep in radians. Sweeps are differences of mapped
+// angles, so the origin cancels and only the winding sign applies.
+const mapSweep = (s: Polar, sweep: number): number =>
+  windingSign(s.winding) * sweep * ((2 * Math.PI) / s.theta.period)
 
 const mapRadius = (s: Polar, r: number): number => s.radius.scale * r + s.radius.offset
 
@@ -129,7 +148,8 @@ export const fromCartesian = dual<
   const dy = point.y - s.center.y
   const theta = dimension.wrap(
     s.theta,
-    windingSign(s.winding) * Math.atan2(dy, dx) * (s.theta.period / (2 * Math.PI)),
+    windingSign(s.winding) *
+      (Math.atan2(dy, dx) * (s.theta.period / (2 * Math.PI)) - s.thetaOrigin),
   )
   const r = (Math.hypot(dx, dy) - s.radius.offset) / s.radius.scale
   return Vector2.make(theta, r)
@@ -301,6 +321,39 @@ export const sector = dual<
   ])
 })
 
+// Closed-range check with coincident edges, so boundary verdicts stay
+// invariant under uniform scaling of the data (the relative term carries
+// large magnitudes; see PRECISION.md regime 2).
+const containsCoordinate = (min: number, max: number, value: number): boolean =>
+  (value >= min && value <= max) || coincident(value, min) || coincident(value, max)
+
+/** @internal */
+export const containsPoint = dual<
+  (theta: Bounds, r: Bounds, point: Vector2.Vector2) => (s: CoordinateSystem) => boolean,
+  (s: CoordinateSystem, theta: Bounds, r: Bounds, point: Vector2.Vector2) => boolean
+>(4, (s: CoordinateSystem, theta: Bounds, r: Bounds, point: Vector2.Vector2): boolean => {
+  assertFinite('containsPoint', theta.start, theta.end, r.start, r.end)
+
+  if (s.kind === 'cartesian') {
+    const [x0, x1] = minMax(theta.start, theta.end)
+    const [y0, y1] = minMax(r.start, r.end)
+    return containsCoordinate(x0, x1, point.x) && containsCoordinate(y0, y1, point.y)
+  }
+
+  const chart = fromCartesian(s, point)
+  const [rMin, rMax] = minMax(r.start, r.end)
+  if (!containsCoordinate(rMin, rMax, chart.y)) {
+    return false
+  }
+  // At the exact center the angle is degenerate (atan2(0, 0) = 0); the
+  // radial check alone decides, since the center belongs to a sector
+  // exactly when the sector reaches mapped radius 0.
+  if (point.x === s.center.x && point.y === s.center.y) {
+    return true
+  }
+  return dimension.containsApprox(s.theta, theta, chart.x)
+})
+
 const HALF_TURN = Math.PI
 
 // SVG A commands (no leading M) sweeping mappedSweep from mapped angle a0 at
@@ -358,7 +411,7 @@ export const arcPathData = dual<
     return `M ${start.x},${start.y}`
   }
 
-  const mappedSweep = mapTheta(s, sweep)
+  const mappedSweep = mapSweep(s, sweep)
   const closesExactly = isFullTurn(sweep, s.theta.period)
   return `M ${start.x},${start.y}${arcCommands(s.center, rho, a0, mappedSweep, closesExactly ? start : undefined)}`
 })
@@ -381,7 +434,7 @@ export const sectorPathData = dual<
   const sweep = clampSweep(theta.end - theta.start, s.theta.period)
   const a0 = mapTheta(s, theta.start)
   const a1 = mapTheta(s, theta.start + sweep)
-  const mappedSweep = mapTheta(s, sweep)
+  const mappedSweep = mapSweep(s, sweep)
 
   const outerStart = pointAt(s.center, rhoOuter, a0)
 
