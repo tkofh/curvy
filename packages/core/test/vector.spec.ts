@@ -19,6 +19,10 @@ describe('vector2', () => {
   test('magnitude', () => {
     expect(vector2.magnitude(vector2.make(2, 2))).toBeCloseTo(Math.hypot(2, 2), 12)
   })
+  test('fromPolar takes theta first', () => {
+    expect(vector2.fromPolar(Math.PI / 2, 2)).toBeCloseToValue(vector2.make(0, 2))
+    expect(vector2.fromPolar(0, 3)).toBeCloseToValue(vector2.make(3, 0))
+  })
   test('normalize', () => {
     expect(vector2.normalize(vector2.make(2, 2))).toBeCloseToValue(
       vector2.make(Math.SQRT1_2, Math.SQRT1_2),

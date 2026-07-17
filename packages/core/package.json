@@ -66,6 +66,10 @@
       "types": "./dist/transform/index.d.ts",
       "import": "./dist/transform/index.mjs"
     },
+    "./coordinates": {
+      "types": "./dist/coordinates/index.d.ts",
+      "import": "./dist/coordinates/index.mjs"
+    },
     "./number": {
       "types": "./dist/number.d.ts",
       "import": "./dist/number.mjs"

@@ -54,6 +54,18 @@ use plain absolute `EPSILON` (`1e-10`, from `curvy/number`) via `epsEquals`
 semantics. `epsEquals(a, b, eps?)` itself remains available as the raw
 absolute comparison for any caller who knows their domain's scale.
 
+The same reasoning extends to any domain whose size is fixed by
+construction rather than by the data: a band of `EPSILON * P` is to a
+domain of size `P` what plain `EPSILON` is to `[0, 1]`. Cyclical axes use
+exactly this generalization. `Dimension.congruent` compares the shortest
+wrapped difference `Dimension.delta(d, a, b)` against `EPSILON * period`,
+so `2*pi - 1e-16` and `0` are the same angle, and representatives whole
+periods apart agree whenever their wrapped positions do. Because the band
+scales with the period, the verdict is unchanged whether a hue axis is
+stated as `[0, 360)` or `[0, 1)`. Like `coincident`, the comparison is not
+transitive, and values stored millions of periods from zero lose angular
+resolution to representation error before the band enters the question.
+
 ### 2. Identity of values and points
 
 `coincident(a, b, absolute?, relative?)` answers "Are these the same value /

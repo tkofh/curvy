@@ -133,7 +133,7 @@ export const weightedEquals = dual<
 )
 
 /** @internal */
-export const fromPolar = (r: number, theta: number) =>
+export const fromPolar = (theta: number, r: number) =>
   make(r * Math.cos(theta), r * Math.sin(theta))
 
 /** @internal */

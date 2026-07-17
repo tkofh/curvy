@@ -19,11 +19,11 @@ For quadratic and cubic polynomials, all of the above accept an optional `Interv
 
 `solveInverse` is overloaded so that a `Monotonic`-branded polynomial returns a tighter shape:
 
-| Polynomial          | Plain return           | `Monotonic` return   |
-| ------------------- | ---------------------- | -------------------- |
-| `LinearPolynomial`  | `Solution.AtMostOne`   | `Solution.One`       |
-| `QuadraticPolynomial` | `Solution.AtMostTwo` | `Solution.AtMostOne` |
-| `CubicPolynomial`   | `Solution.AtMostThree` | `Solution.AtMostOne` |
+| Polynomial            | Plain return           | `Monotonic` return   |
+| --------------------- | ---------------------- | -------------------- |
+| `LinearPolynomial`    | `Solution.AtMostOne`   | `Solution.One`       |
+| `QuadraticPolynomial` | `Solution.AtMostTwo`   | `Solution.AtMostOne` |
+| `CubicPolynomial`     | `Solution.AtMostThree` | `Solution.AtMostOne` |
 
 ```ts
 const p = LinearPolynomial.make(0, 2) // LinearPolynomial<unknown>
@@ -56,11 +56,11 @@ Internally, the three polynomial path modules — previously ~300 lines each of 
 
 **Axis inversion — `solveAtX` / `solveAtY`.** Where `solve(c, t)` evaluates the curve at a parameter `t` and returns `(x, y)`, `solveAt{X,Y}(c, value)` looks at the curve as a relation between its two axes and asks "what's the orthogonal coordinate when this axis equals the given value?" Results are filtered to the parameter domain `[0, 1]` — only intersections with the actual drawn curve are returned, not roots of the underlying polynomial that lie outside the curve's range — and come back in t-ascending order. Added to `LinearCurve2d`, `QuadraticCurve2d`, and `CubicCurve2d`:
 
-| Curve              | Plain return           | `Monotonic` (`solveAtX` needs x, `solveAtY` needs y)                          |
-| ------------------ | ---------------------- | ---------------------------------------------------------------------------- |
-| `LinearCurve2d`    | `Solution.AtMostOne`   | `Solution.AtMostOne` (always — a line crosses any axis-line at most once)     |
-| `QuadraticCurve2d` | `Solution.AtMostTwo`   | `Solution.AtMostOne`                                                          |
-| `CubicCurve2d`     | `Solution.AtMostThree` | `Solution.AtMostOne`                                                          |
+| Curve              | Plain return           | `Monotonic` (`solveAtX` needs x, `solveAtY` needs y)                      |
+| ------------------ | ---------------------- | ------------------------------------------------------------------------- |
+| `LinearCurve2d`    | `Solution.AtMostOne`   | `Solution.AtMostOne` (always — a line crosses any axis-line at most once) |
+| `QuadraticCurve2d` | `Solution.AtMostTwo`   | `Solution.AtMostOne`                                                      |
+| `CubicCurve2d`     | `Solution.AtMostThree` | `Solution.AtMostOne`                                                      |
 
 ```ts
 const easing = CubicCurve2d.fromBezierPoints(

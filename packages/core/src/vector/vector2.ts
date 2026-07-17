@@ -276,19 +276,21 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
 ) => { readonly [K in keyof Channels]: Vector2 } = internal.transpose
 
 /**
- * Creates a new `Vector2` instance from polar coordinates.
+ * Creates a new `Vector2` instance from polar coordinates. Angle first,
+ * matching the angular-first convention throughout the library
+ * (`CoordinateSystem` chart points, `arc`, `sector`).
  *
  * The arithmetic is exact IEEE 754, so representation error shows up
- * unrounded. `fromPolar(2, Math.PI / 2)` has `x` near `1.2e-16`, not `0`,
+ * unrounded. `fromPolar(Math.PI / 2, 2)` has `x` near `1.2e-16`, not `0`,
  * because `Math.PI / 2` is not exactly pi/2. See `PRECISION.md` for the
  * model.
  *
- * @param r - The radius. A negative radius reflects through the origin.
  * @param theta - The angle, in radians.
+ * @param r - The radius. A negative radius reflects through the origin.
  * @returns The vector `(r * cos(theta), r * sin(theta))`.
- * @since 1.0.0
+ * @since 2.0.0
  */
-export const fromPolar: (r: number, theta: number) => Vector2 = internal.fromPolar
+export const fromPolar: (theta: number, r: number) => Vector2 = internal.fromPolar
 
 /**
  * Calculates the magnitude of a `Vector2`.
