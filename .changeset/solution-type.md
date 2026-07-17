@@ -46,6 +46,8 @@ Every `solveInverse` / `domain` / `roots` / `extrema` / `root` return type is re
 
 The one runtime behavior change: **`LinearPolynomial.solveInverse` now returns `Solution.AtMostOne<number>` instead of `number | null`**, so the constant-polynomial case yields `Solution.none` (`[]`) rather than `null`. The same goes for `LinearPolynomial.domain`, `LinearPolynomial.toInverseSolver`, `LinearPolynomial.root`, and `QuadraticPolynomial.domain`. Callers checking `result === null` should switch to `Solution.isNone(result)` (or `result.length === 0`); callers using `result` as a `number` should index it (`result[0]`) or use `Solution.first(result)`.
 
+`CubicPolynomial.domain` joins them, returning `Solution.AtMostOne<Interval>` in line with its linear and quadratic siblings. A range whose endpoint values the polynomial never attains (reachable only when the coefficients collapse its degree) now yields `Solution.none` instead of throwing an incidental interval-construction error.
+
 ```ts
 // before
 const t = LinearPolynomial.solveInverse(p, 5)

@@ -2,7 +2,9 @@
 'curvy': major
 ---
 
-Sweep the `from*` constructor surface for naming coherence. The library accumulated several inconsistencies organically; v2 lands one rule per verb: `make` is the primary variadic constructor, `fromArray` is its array form, `fromXxx` is for genuinely-from-X semantic constructors named for what their inputs represent.
+Sweep the public surface for naming coherence. The library accumulated several inconsistencies organically; v2 lands one rule per verb and cleans up the stragglers across the constructor surface, one spline method, and the vector constants.
+
+**Constructor rule.** `make` is the primary variadic constructor, `fromArray` is its array form, `fromXxx` is for genuinely-from-X semantic constructors named for what their inputs represent.
 
 **Renames (curve modules):** `LinearCurve2d.fromPoints`, `QuadraticCurve2d.fromPoints`, `CubicCurve2d.fromPoints` -> `fromCoefficients`. The old name was a misnomer — the function takes `Vector2`s but stores them as polynomial coefficient bundles, not as points on the curve. The new name is honest about that.
 
@@ -49,3 +51,7 @@ const p = QuadraticPolynomial.fromPoints(
 ```
 
 **Renamed (matrix module):** `Matrix3x3.matrix3x3` -> `Matrix3x3.make`. The `Matrix2x2` and `Matrix4x4` modules already used `make`; only `Matrix3x3` had the type-name-as-constructor variant, breaking symmetry across the matrix family.
+
+**Renamed (spline method):** `Bezier2d.appendCurvatureMirrored` -> `Bezier2d.appendCurvatureAligned`, for consistency with the rest of the `*Aligned` family (`appendTangentAligned`, `appendVelocityAligned`, `appendAccelerationAligned`). The internal binding was already named `appendCurvatureAligned`; this aligns the public surface.
+
+**Renamed (vector constants):** `Vector2.unit`, `Vector3.unit`, and `Vector4.unit` -> `one`. These are the all-ones constants (magnitude `sqrt(2)`/`sqrt(3)`/`2`), not unit-length vectors, and the old name promised normalization it never had. `Vector3.unitX`/`unitY`/`unitZ` keep their names: those are genuine unit vectors.

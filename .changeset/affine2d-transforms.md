@@ -19,7 +19,7 @@ Affine2d.reflectX // constants; or reflectAcrossLine(origin, direction)
 Affine2d.fromMatrix(m) // validates the bottom row is affine
 ```
 
-`andThen` composes transforms; `apply` / `applyTo` send a `Vector2` through one. Accessors `translation`, `linear`, and `linearPart` decompose a transform into its translation vector and linear part. `equals` compares component-wise. `inverse` / `inverseUnsafe` and the `Invertible` trait integration are described in the matrix `Invertible` changeset — an invertible `Affine2d` is one whose underlying matrix is invertible.
+`andThen` composes transforms; `apply` / `applyTo` send a `Vector2` through one. Accessors `translation`, `linear`, and `linearPart` decompose a transform into its translation vector and linear part. `equals` compares component-wise. `inverse` / `inverseUnsafe` and the `Invertible` trait integration are described in the matrix changeset — an invertible `Affine2d` is one whose underlying matrix is invertible.
 
 **`transform(x, t: Affine2d)` is available on every geometric carrier** — `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`, `RationalCubicCurve2d`, the four path types, and all six spline types — in both data-first and data-last forms. Each returns a new instance of the same kind with the transform applied to its geometry; `Cardinal2d.transform` preserves `tension` and `alpha`, and `RationalBezier2d.transform` preserves control-point weights.
 
@@ -31,5 +31,3 @@ import { CubicPath2d } from 'curvy/path'
 
 const flipped = path.pipe(CubicPath2d.transform(Affine2d.reflectY))
 ```
-
-**`Matrix3x3` gains `identity` and `multiply`** (matching `Matrix4x4`'s existing primitives), used by the transform composition but useful standalone.

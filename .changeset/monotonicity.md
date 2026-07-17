@@ -2,7 +2,7 @@
 'curvy': major
 ---
 
-**`Monotonicity` is now a top-level subpath, encoded as a bitmask.** The type moved out of `curvy/polynomial`'s internals into its own first-class module at `curvy/monotonicity`, and the values switched from a string union to a 2-bit sign-coverage bitmask of the function's derivative.
+**`Monotonicity` is now a top-level subpath, encoded as a bitmask.** The type moved out of `curvy/polynomial`'s internals into its own first-class module at `curvy/monotonicity`, and the values switched from a string union to a 2-bit sign-coverage bitmask of the function's derivative. This is the runtime classification that the type-level `Monotonic` / `Increasing` / `Decreasing` brands (see the trait-system changeset) refine into the type system, and that curves compute through `Monotonicity.fromDerivativeRange` (see the precision-model changeset).
 
 ```ts
 import { Monotonicity } from 'curvy/monotonicity'
