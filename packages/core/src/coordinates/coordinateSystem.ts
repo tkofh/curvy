@@ -1,21 +1,25 @@
 import type { Bounds } from '../interval/interval.ts'
+import type { CubicPath2d } from '../path/cubic2d.ts'
 import type { RationalCubicPath2d } from '../path/rationalCubic2d.ts'
 import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import * as internal from './coordinateSystem.internal.ts'
+import type { CoordinateSystemTypeId } from './coordinateSystem.internal.ts'
 import type { Cyclical, Linear } from './dimension.ts'
 
 /**
  * A chart map from a two-axis chart space onto the cartesian plane:
  * `Cartesian` is the identity, and `Polar` reads chart points as
  * `(theta, r)` around a center. Layout code positions rectangles in chart
- * space; the system converts points with `toCartesian` and constructs the
- * exact cartesian images of chart-aligned shapes with `arc` and `sector`.
+ * space; the system converts points with `toCartesian`, constructs the
+ * exact cartesian images of chart-aligned shapes with `arc` and `sector`,
+ * and constructs tolerance-bounded images of arbitrary chart paths with
+ * `image`.
  *
  * The polar map is nonlinear, so it does not commute with control-point
  * mapping: converting a curve's control points with `toCartesian` produces
- * the wrong curve. Convert points pointwise, and convert shapes with the
- * shape constructors.
+ * the wrong curve. Convert points pointwise, convert axis-aligned shapes
+ * with the exact constructors, and convert arbitrary paths with `image`.
  *
  * @since 2.0.0
  */
@@ -41,6 +45,7 @@ export type Winding = 'clockwise' | 'counterclockwise'
  * @since 2.0.0
  */
 export interface Cartesian extends Pipeable {
+  readonly [CoordinateSystemTypeId]: CoordinateSystemTypeId
   readonly kind: 'cartesian'
 }
 
@@ -53,6 +58,7 @@ export interface Cartesian extends Pipeable {
  * @since 2.0.0
  */
 export interface Polar extends Pipeable {
+  readonly [CoordinateSystemTypeId]: CoordinateSystemTypeId
   readonly kind: 'polar'
   /**
    * The cartesian point where mapped radius `0` sits.
@@ -390,6 +396,71 @@ export const containsPoint: {
    */
   (theta: Bounds, r: Bounds, point: Vector2): (s: CoordinateSystem) => boolean
 } = internal.containsPoint
+
+export const image: {
+  /**
+   * Constructs the cartesian image of an arbitrary chart-space path,
+   * accurate to within `tolerance`. On a polar system the map is nonlinear
+   * and the true image is transcendental — a straight chart segment images
+   * to an Archimedean spiral — so no cubic path equals it exactly. The
+   * result is certified to a symmetric Hausdorff bound: every point of the
+   * true image lies within `tolerance` of the output, and every point of
+   * the output lies within `tolerance` of the true image, verified by
+   * subdivision enclosures rather than point samples (see `PRECISION.md`).
+   * On a cartesian system the path is returned unchanged.
+   *
+   * The path is read pointwise like `toCartesian`: each point `(x, y)` as
+   * `(theta, r)`, a negative mapped radius reflecting through the center.
+   * A path crossing mapped radius `0` images straight through the center;
+   * the bound holds there at the cost of more segments nearby. Sweeps past
+   * one full period keep going around, like `arc`. Emitted segments start
+   * and end exactly on the true image, so a continuous input's output
+   * junctions close; reassert the brand with `CubicPath2d.asContinuous`
+   * where needed.
+   *
+   * For axis-aligned chart shapes prefer `arc` and `sector`, whose images
+   * are exact. For SVG output pass the result to `CubicPath2d.toPathData`.
+   * Certification cost grows roughly with the ratio of the image's size to
+   * `tolerance`, so pixel-scale tolerances for screen output are the
+   * intended regime; vanishingly small tolerances get expensive before
+   * they get wrong.
+   *
+   * @param s - The coordinate system.
+   * @param path - The chart-space path, each point read as `(theta, r)`.
+   * @param tolerance - Maximum allowed Hausdorff distance, in cartesian
+   *   output units. Must be positive.
+   * @returns The image as a `CubicPath2d` within `tolerance` of the true
+   *   image.
+   * @throws `Error` when `tolerance` is not a positive finite number.
+   * @since 2.0.0
+   * @example
+   * ```ts
+   * // The polar image of a rising chart-space line is an Archimedean
+   * // spiral; approximate to a quarter pixel and emit SVG:
+   * const system = CoordinateSystem.polar({ theta: Dimension.turns })
+   * const chartPath = Bezier2d.toPath(Bezier2d.make(
+   *   Vector2.make(0, 0),
+   *   Vector2.make(1, 40),
+   *   Vector2.make(2, 80),
+   *   Vector2.make(3, 120),
+   * ))
+   * const d = CubicPath2d.toPathData(
+   *   CoordinateSystem.image(system, chartPath, 0.25),
+   * )
+   * ```
+   */
+  (s: CoordinateSystem, path: CubicPath2d, tolerance: number): CubicPath2d
+  /**
+   * Constructs the cartesian image of an arbitrary chart-space path.
+   *
+   * @param path - The chart-space path, each point read as `(theta, r)`.
+   * @param tolerance - Maximum allowed Hausdorff distance, in cartesian
+   *   output units. Must be positive.
+   * @returns A function that takes a system and returns the image path.
+   * @since 2.0.0
+   */
+  (path: CubicPath2d, tolerance: number): (s: CoordinateSystem) => CubicPath2d
+} = internal.image
 
 export const arcPathData: {
   /**

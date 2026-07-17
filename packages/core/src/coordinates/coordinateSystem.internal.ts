@@ -1,10 +1,17 @@
+import * as Characteristic from '../characteristic/characteristic.ts'
+import * as CubicCurve2d from '../curve/cubic2d.ts'
+import * as certified from '../curve/rationalCubic2d.internal.ts'
 import * as RationalCubicCurve2d from '../curve/rationalCubic2d.ts'
 import type { Bounds } from '../interval/interval.ts'
+import * as Interval from '../interval/interval.ts'
+import * as Interval2d from '../interval/interval2d.ts'
 import { EPSILON, coincident, minMax } from '../number.ts'
+import * as CubicPath2d from '../path/cubic2d.ts'
 import * as RationalCubicPath2d from '../path/rationalCubic2d.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
 import { Pipeable, dual, invariant } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
+import * as Vector4 from '../vector/vector4.ts'
 import type {
   Cartesian,
   CoordinateSystem,
@@ -15,11 +22,13 @@ import type {
 import * as dimension from './dimension.internal.ts'
 import type { Cyclical, Linear } from './dimension.ts'
 
-const TypeId: unique symbol = Symbol.for('curvy/coordinates/coordinateSystem')
-type TypeId = typeof TypeId
+export const CoordinateSystemTypeId: unique symbol = Symbol.for(
+  'curvy/coordinates/coordinateSystem',
+)
+export type CoordinateSystemTypeId = typeof CoordinateSystemTypeId
 
 abstract class CoordinateSystemImpl extends Pipeable {
-  readonly [TypeId]: TypeId = TypeId
+  readonly [CoordinateSystemTypeId]: CoordinateSystemTypeId = CoordinateSystemTypeId
 
   abstract readonly kind: 'cartesian' | 'polar'
 
@@ -72,7 +81,7 @@ class PolarImpl extends CoordinateSystemImpl implements Polar {
 
 /** @internal */
 export const isCoordinateSystem = (v: unknown): v is CoordinateSystem =>
-  typeof v === 'object' && v !== null && TypeId in v
+  typeof v === 'object' && v !== null && CoordinateSystemTypeId in v
 
 /** @internal */
 export const isCartesian = (s: CoordinateSystem): s is Cartesian => s.kind === 'cartesian'
@@ -468,4 +477,300 @@ export const sectorPathData = dual<
 
   const innerEnd = pointAt(s.center, rhoInner, a1)
   return `M ${outerStart.x},${outerStart.y}${outerCommands} L ${innerEnd.x},${innerEnd.y}${arcCommands(s.center, rhoInner, a1, -mappedSweep)} Z`
+})
+
+// --- image: certified approximation of an arbitrary chart path's image ---
+
+const FULL_TURN = 2 * Math.PI
+
+// The polar map's constants folded once per call: a(t) = a0 + a1 * theta(t)
+// and rho(t) = m * r(t) + b. thetaOrigin contributes one constant rotation;
+// winding and the angular unit fold into a1's sign and magnitude.
+interface FoldedMap {
+  readonly a0: number
+  readonly a1: number
+  readonly m: number
+  readonly b: number
+  readonly cx: number
+  readonly cy: number
+}
+
+const foldMap = (s: Polar): FoldedMap => {
+  const k = FULL_TURN / s.theta.period
+  return {
+    a0: k * s.thetaOrigin,
+    a1: k * windingSign(s.winding),
+    m: s.radius.scale,
+    b: s.radius.offset,
+    cx: s.center.x,
+    cy: s.center.y,
+  }
+}
+
+// Point and tangent of the composed image curve at parameter t, exact per
+// sample: image(t) = center + rho(t) * (cos a(t), sin a(t)) and, by the
+// product and chain rules,
+// image'(t) = (rho'*cos a - rho*a'*sin a, rho'*sin a + rho*a'*cos a).
+// Nothing in the image machinery divides, so there is no 0/0 to guard —
+// a chart path crossing mapped radius 0 evaluates straight through the
+// center (an analytic pass, not a parametrization cusp).
+const imageEval = (f: FoldedMap, chart: CubicCurve2d.CubicCurve2d, t: number) => {
+  const theta = chart.x.c0 + t * (chart.x.c1 + t * (chart.x.c2 + t * chart.x.c3))
+  const r = chart.y.c0 + t * (chart.y.c1 + t * (chart.y.c2 + t * chart.y.c3))
+  const dTheta = chart.x.c1 + t * (2 * chart.x.c2 + t * 3 * chart.x.c3)
+  const dr = chart.y.c1 + t * (2 * chart.y.c2 + t * 3 * chart.y.c3)
+  const a = f.a0 + f.a1 * theta
+  const rho = f.m * r + f.b
+  const cosA = Math.cos(a)
+  const sinA = Math.sin(a)
+  const dRho = f.m * dr
+  const da = f.a1 * dTheta
+  return {
+    px: f.cx + rho * cosA,
+    py: f.cy + rho * sinA,
+    tx: dRho * cosA - rho * da * sinA,
+    ty: dRho * sinA + rho * da * cosA,
+  }
+}
+
+type ImageSample = ReturnType<typeof imageEval>
+
+// Two-point Hermite candidate through exact endpoint samples. Velocities are
+// used verbatim: recursion always operates on exactly-subdivided chart
+// polynomials, whose coefficients already carry the local-parameter
+// chain-rule factor (left'(u) = t * p'(t*u)), so no explicit width scaling
+// appears here.
+const hermiteCandidate = (start: ImageSample, end: ImageSample): CubicCurve2d.CubicCurve2d => {
+  const [x, y] = Characteristic.apply(
+    Characteristic.cubicHermite,
+    Vector4.make(start.px, start.tx, end.px, end.tx),
+    Vector4.make(start.py, start.ty, end.py, end.ty),
+  )
+  return CubicCurve2d.fromPolynomials(x, y)
+}
+
+const subdivideChart = (
+  chart: CubicCurve2d.CubicCurve2d,
+): [CubicCurve2d.CubicCurve2d, CubicCurve2d.CubicCurve2d] => {
+  const [leftX, rightX] = CubicPolynomial.subdivide(chart.x, 0.5)
+  const [leftY, rightY] = CubicPolynomial.subdivide(chart.y, 0.5)
+  return [CubicCurve2d.fromPolynomials(leftX, leftY), CubicCurve2d.fromPolynomials(rightX, rightY)]
+}
+
+// Rigorous range of a cubic on [0, 1] from its Bernstein control values
+// (convex-hull property). Deliberately looser than a root-based tight range:
+// unconditionally conservative, and the slack vanishes under subdivision.
+const bernsteinRange = (p: CubicPolynomial.CubicPolynomial): [number, number] => {
+  const b0 = p.c0
+  const b1 = p.c0 + p.c1 / 3
+  const b2 = p.c0 + (2 * p.c1) / 3 + p.c2 / 3
+  const b3 = p.c0 + p.c1 + p.c2 + p.c3
+  return [Math.min(b0, b1, b2, b3), Math.max(b0, b1, b2, b3)]
+}
+
+// Whether phi + 2*pi*k lies in [aLo, aHi] for some integer k.
+const containsAngleMultiple = (aLo: number, aHi: number, phi: number): boolean =>
+  Math.ceil((aLo - phi) / FULL_TURN) * FULL_TURN + phi <= aHi
+
+// Range of the product rho * u over rho in [rhoLo, rhoHi], u in [uLo, uHi]:
+// a bilinear function on a rectangle attains its extrema at corners. This is
+// what makes negative mapped radii free — corner products cover the
+// reflected lobe with no special case.
+const productRange = (rhoLo: number, rhoHi: number, uLo: number, uHi: number): [number, number] => {
+  const p1 = rhoLo * uLo
+  const p2 = rhoLo * uHi
+  const p3 = rhoHi * uLo
+  const p4 = rhoHi * uHi
+  return [Math.min(p1, p2, p3, p4), Math.max(p1, p2, p3, p4)]
+}
+
+// Rigorous cartesian AABB of a chart piece's image: Bernstein hulls bound the
+// chart coordinates, the affine maps carry those to sorted angle and radius
+// intervals, and the image then lies in the annular patch
+// { center + rho * (cos a, sin a) : a in aInterval, rho in rhoInterval }.
+// The trig ranges over the angle interval are exact (endpoint values, plus
+// saturation at any contained multiple of pi/2), so the returned box is the
+// exact AABB of the patch; the only conservatism is patch-over-curve, which
+// subdivision shrinks at O(piece width).
+const patchBox = (
+  f: FoldedMap,
+  chart: CubicCurve2d.CubicCurve2d,
+): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {
+  const [thetaLo, thetaHi] = bernsteinRange(chart.x)
+  const [rLo, rHi] = bernsteinRange(chart.y)
+
+  const aA = f.a0 + f.a1 * thetaLo
+  const aB = f.a0 + f.a1 * thetaHi
+  const aLo = Math.min(aA, aB)
+  const aHi = Math.max(aA, aB)
+  const rhoA = f.m * rLo + f.b
+  const rhoB = f.m * rHi + f.b
+  const rhoLo = Math.min(rhoA, rhoB)
+  const rhoHi = Math.max(rhoA, rhoB)
+
+  let cosLo: number
+  let cosHi: number
+  let sinLo: number
+  let sinHi: number
+  if (aHi - aLo >= FULL_TURN) {
+    cosLo = -1
+    cosHi = 1
+    sinLo = -1
+    sinHi = 1
+  } else {
+    const cosStart = Math.cos(aLo)
+    const cosEnd = Math.cos(aHi)
+    const sinStart = Math.sin(aLo)
+    const sinEnd = Math.sin(aHi)
+    cosLo = containsAngleMultiple(aLo, aHi, Math.PI) ? -1 : Math.min(cosStart, cosEnd)
+    cosHi = containsAngleMultiple(aLo, aHi, 0) ? 1 : Math.max(cosStart, cosEnd)
+    sinLo = containsAngleMultiple(aLo, aHi, -QUARTER_TURN) ? -1 : Math.min(sinStart, sinEnd)
+    sinHi = containsAngleMultiple(aLo, aHi, QUARTER_TURN) ? 1 : Math.max(sinStart, sinEnd)
+  }
+
+  const [xLo, xHi] = productRange(rhoLo, rhoHi, cosLo, cosHi)
+  const [yLo, yHi] = productRange(rhoLo, rhoHi, sinLo, sinHi)
+  return Interval2d.make(
+    Interval.fromMinMax(f.cx + xLo, f.cx + xHi),
+    Interval.fromMinMax(f.cy + yLo, f.cy + yHi),
+  )
+}
+
+// CertifiedPiece provider for the true image of a chart piece: patchBox is
+// the rigorous enclosure, the witness is the exact image of the chart
+// midpoint (a point ON the curve, which the one-sided walker's triangle
+// bound requires), and bisection is exact polynomial subdivision.
+const imagePiece = (
+  f: FoldedMap,
+  chart: CubicCurve2d.CubicCurve2d,
+  depth: number,
+): certified.CertifiedPiece => {
+  const witness = imageEval(f, chart, 0.5)
+  return {
+    box: patchBox(f, chart),
+    witnessX: witness.px,
+    witnessY: witness.py,
+    depth,
+    subdivide: () => {
+      const [left, right] = subdivideChart(chart)
+      return [imagePiece(f, left, depth + 1), imagePiece(f, right, depth + 1)]
+    },
+  }
+}
+
+// Certified symmetric Hausdorff check between the true image of a chart
+// piece and a polynomial cubic candidate — the same two one-sided walks the
+// rational approximation runs, with imagePiece supplying the enclosures.
+const imageWithinTolerance = (
+  f: FoldedMap,
+  chart: CubicCurve2d.CubicCurve2d,
+  candidate: CubicCurve2d.CubicCurve2d,
+  tolerance: number,
+): boolean => {
+  const candidateBox = CubicCurve2d.boundingBox(candidate)
+  if (
+    !certified.oneSidedWithinTolerance(
+      imagePiece(f, chart, 0),
+      candidateBox,
+      (qx, qy) =>
+        certified.closestSquaredDistance((s) => certified.polynomialEval(candidate, s), qx, qy),
+      tolerance,
+    )
+  ) {
+    return false
+  }
+  return certified.oneSidedWithinTolerance(
+    certified.polynomialPiece(candidate),
+    patchBox(f, chart),
+    (qx, qy) => certified.closestSquaredDistance((s) => imageEval(f, chart, s), qx, qy),
+    tolerance,
+  )
+}
+
+// A mapped sweep at or under a quarter turn keeps the annular enclosure
+// tight and the closest-point search unimodal enough for its fixed sampling;
+// the EPSILON guard keeps unit conversion from splitting an exact quarter
+// turn that lands an ulp high.
+const SWEEP_GATE = QUARTER_TURN * (1 + EPSILON)
+
+interface SharedPoint {
+  readonly px: number
+  readonly py: number
+}
+
+const imageSegment = (
+  f: FoldedMap,
+  segment: CubicCurve2d.CubicCurve2d,
+  tolerance: number,
+  out: Array<CubicCurve2d.CubicCurve2d>,
+): void => {
+  // Endpoint POSITIONS are shared down the recursion so the output closes
+  // bitwise at every breakpoint within a segment. Tangents are never shared:
+  // a tangent is only valid in its own piece's local parameterization (each
+  // halving halves the true local tangent), so every piece evaluates its own
+  // endpoint tangents on its exactly-subdivided polynomials, where the
+  // chain-rule factor is already baked into the coefficients.
+  const recurse = (
+    chart: CubicCurve2d.CubicCurve2d,
+    startPoint: SharedPoint,
+    endPoint: SharedPoint,
+    depth: number,
+  ): void => {
+    const split = (): void => {
+      const [left, right] = subdivideChart(chart)
+      const mid = imageEval(f, left, 1)
+      recurse(left, startPoint, mid, depth + 1)
+      recurse(right, mid, endPoint, depth + 1)
+    }
+
+    if (depth < certified.MAX_APPROX_DEPTH) {
+      // Adaptive conditioning gate: pre-split pieces whose mapped sweep can
+      // exceed a quarter turn (Bernstein bound), spending certification
+      // only where it can plausibly succeed.
+      const [thetaLo, thetaHi] = bernsteinRange(chart.x)
+      if (Math.abs(f.a1) * (thetaHi - thetaLo) > SWEEP_GATE) {
+        split()
+        return
+      }
+    }
+
+    const start = imageEval(f, chart, 0)
+    const end = imageEval(f, chart, 1)
+    const candidate = hermiteCandidate(
+      { px: startPoint.px, py: startPoint.py, tx: start.tx, ty: start.ty },
+      { px: endPoint.px, py: endPoint.py, tx: end.tx, ty: end.ty },
+    )
+    if (
+      depth >= certified.MAX_APPROX_DEPTH ||
+      imageWithinTolerance(f, chart, candidate, tolerance)
+    ) {
+      out.push(candidate)
+      return
+    }
+    split()
+  }
+
+  recurse(segment, imageEval(f, segment, 0), imageEval(f, segment, 1), 0)
+}
+
+/** @internal */
+export const image = dual<
+  (
+    path: CubicPath2d.CubicPath2d,
+    tolerance: number,
+  ) => (s: CoordinateSystem) => CubicPath2d.CubicPath2d,
+  (s: CoordinateSystem, path: CubicPath2d.CubicPath2d, tolerance: number) => CubicPath2d.CubicPath2d
+>(3, (s: CoordinateSystem, path: CubicPath2d.CubicPath2d, tolerance: number) => {
+  invariant(Number.isFinite(tolerance) && tolerance > 0, 'image: tolerance must be finite and > 0')
+
+  if (s.kind === 'cartesian') {
+    return path
+  }
+
+  const f = foldMap(s)
+  const out: Array<CubicCurve2d.CubicCurve2d> = []
+  for (const segment of path) {
+    imageSegment(f, segment, tolerance, out)
+  }
+  return CubicPath2d.fromArray(out)
 })

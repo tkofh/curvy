@@ -2,6 +2,7 @@
 const pages = [
   { to: '/', label: 'Home' },
   { to: '/easing', label: 'Easing' },
+  { to: '/coordinates', label: 'Coordinates' },
 ]
 </script>
 

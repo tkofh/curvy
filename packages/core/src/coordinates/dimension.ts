@@ -1,6 +1,7 @@
 import type { Bounds } from '../interval/interval.ts'
 import type { Pipeable } from '../utils.ts'
 import * as internal from './dimension.internal.ts'
+import type { DimensionTypeId } from './dimension.internal.ts'
 
 /**
  * Describes the structure of a single chart-space axis: `Linear` for an
@@ -23,6 +24,7 @@ export type Dimension = Linear | Cyclical
  * @since 2.0.0
  */
 export interface Linear extends Pipeable {
+  readonly [DimensionTypeId]: DimensionTypeId
   readonly kind: 'linear'
   /**
    * The multiplicative coefficient of the axis map. Never zero.
@@ -43,6 +45,7 @@ export interface Linear extends Pipeable {
  * @since 2.0.0
  */
 export interface Cyclical extends Pipeable {
+  readonly [DimensionTypeId]: DimensionTypeId
   readonly kind: 'cyclical'
   /**
    * The length of one full cycle. Always positive and finite.

@@ -135,25 +135,29 @@ export const boundingBox: {
 
 export const approximateAsCubicPath: {
   /**
-   * Approximates the rational cubic path as a `CubicPath2d` via per-segment
-   * recursive subdivision. Each input segment is split until its midpoint
-   * deviates from a polynomial-cubic candidate by at most `tolerance`. The
-   * surviving candidates are concatenated into a new path.
+   * Approximates the rational cubic path as a `CubicPath2d`. Each input
+   * segment is approximated with `RationalCubicCurve2d.approximateAsCubicCurves`
+   * at the same `tolerance` and the results concatenated, so the path
+   * inherits the certified symmetric Hausdorff bound: every point of the
+   * input lies within `tolerance` of the output and every point of the
+   * output within `tolerance` of the input. See `PRECISION.md`, "Certified
+   * approximations".
    *
    * Lossy in general. Exact only when every input segment has uniform
    * weights, in which case segment count is preserved. Tighter tolerance
    * produces more segments.
    *
    * @param p - The rational cubic path to approximate.
-   * @param tolerance - Maximum allowed midpoint deviation per segment. Must be positive.
+   * @param tolerance - Maximum allowed Hausdorff distance. Must be positive.
    * @returns A new `CubicPath2d` approximating the input.
+   * @throws `Error` when `tolerance` is not a positive finite number.
    * @since 2.0.0
    */
   (p: RationalCubicPath2d, tolerance: number): CubicPath2d
   /**
    * Approximates the rational cubic path as a `CubicPath2d`.
    *
-   * @param tolerance - Maximum allowed midpoint deviation per segment. Must be positive.
+   * @param tolerance - Maximum allowed Hausdorff distance. Must be positive.
    * @returns A function that takes a rational path and returns its approximation.
    * @since 2.0.0
    */

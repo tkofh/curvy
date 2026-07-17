@@ -138,6 +138,41 @@ measure of row independence (1 for orthogonal rows, 0 for parallel ones), so
 `diag(1e8, 1e8, 1)`) while a large matrix with nearly dependent rows is
 correctly singular even when its raw determinant is sizeable.
 
+## Certified approximations
+
+Rule 1 covers constructions whose exact answer is representable. A few
+operations construct an object in a genuinely different representation:
+`RationalCubicCurve2d.approximateAsCubicCurves` and
+`RationalCubicPath2d.approximateAsCubicPath` rebuild a rational curve from
+polynomial cubics, `CoordinateSystem.image` rebuilds the nonlinear polar
+image of a chart path the same way, and the tolerance-taking `boundingBox`
+on rational curves and paths returns a box it cannot compute tightly in
+closed form. No exact answer exists in the output's representation, so
+these operations carry a third contract: the caller supplies a positive
+`tolerance` in output-space units, and the result is certified to deviate
+from the true object by at most that much.
+
+For the cubic approximations the certificate is a symmetric Hausdorff
+bound: every point of the true object lies within `tolerance` of the
+output, and every point of the output lies within `tolerance` of the true
+object. The bound is established by subdividing until interval enclosures
+prove it, never by sampling, which can only ever disprove it. For
+`boundingBox` the certificate is per-side slack: the returned box contains
+the object and overhangs the tight box by at most `tolerance` on each
+side. Emitted segments start and end exactly on the true object, so
+junctions of a continuous input stay closed.
+
+`tolerance` is not a rule 2 band. It has no default and does not scale
+with the data: it is the caller's statement of how much geometric
+deviation the use can absorb, a fraction of a pixel for SVG output. One
+honest limit: refinement depth is capped at 20 levels (up to ~1e6 output
+segments per input curve), with 30 more inside the certifier. A
+certification that fails below the cap always subdivides further and can
+never issue a false certificate, but a candidate still uncertified at the
+refinement cap is accepted best-effort, so the guarantee is conditional on
+the cap not biting. At any tolerance coarser than the geometry's own
+rounding noise the cap is unreachable and the bound is unconditional.
+
 ## What the brands guarantee
 
 Trait brands are claims at working precision, in the backward-error sense:

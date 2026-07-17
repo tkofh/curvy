@@ -3,11 +3,11 @@ import { EPSILON, coincident, minMax, mod } from '../number.ts'
 import { Pipeable, dual, invariant } from '../utils.ts'
 import type { Cyclical, Dimension, Linear } from './dimension.ts'
 
-const TypeId: unique symbol = Symbol.for('curvy/coordinates/dimension')
-type TypeId = typeof TypeId
+export const DimensionTypeId: unique symbol = Symbol.for('curvy/coordinates/dimension')
+export type DimensionTypeId = typeof DimensionTypeId
 
 abstract class DimensionImpl extends Pipeable {
-  readonly [TypeId]: TypeId = TypeId
+  readonly [DimensionTypeId]: DimensionTypeId = DimensionTypeId
 
   abstract readonly kind: 'linear' | 'cyclical'
 
@@ -59,7 +59,7 @@ class CyclicalImpl extends DimensionImpl implements Cyclical {
 
 /** @internal */
 export const isDimension = (v: unknown): v is Dimension =>
-  typeof v === 'object' && v !== null && TypeId in v
+  typeof v === 'object' && v !== null && DimensionTypeId in v
 
 /** @internal */
 export const isLinear = (d: Dimension): d is Linear => d.kind === 'linear'

@@ -1,8 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import * as CoordinateSystem from '../src/coordinates/coordinateSystem.ts'
 import * as Dimension from '../src/coordinates/dimension.ts'
+import * as CubicCurve2d from '../src/curve/cubic2d.ts'
 import * as RationalCubicCurve2d from '../src/curve/rationalCubic2d.ts'
+import * as CubicPath2d from '../src/path/cubic2d.ts'
 import * as RationalCubicPath2d from '../src/path/rationalCubic2d.ts'
+import * as CubicPolynomial from '../src/polynomial/cubic.ts'
 import * as Vector2 from '../src/vector/vector2.ts'
 
 const TWO_PI = 2 * Math.PI
@@ -703,5 +706,206 @@ describe('coordinateSystem', () => {
   test('shape ops support data-last application', () => {
     const dataLast = unitPolar.pipe(CoordinateSystem.arcPathData({ start: 0, end: Math.PI }, 2))
     expect(dataLast).toBe(CoordinateSystem.arcPathData(unitPolar, { start: 0, end: Math.PI }, 2))
+  })
+})
+
+const chartSegment = (
+  x: readonly [number, number, number, number],
+  y: readonly [number, number, number, number],
+) => CubicCurve2d.fromPolynomials(CubicPolynomial.make(...x), CubicPolynomial.make(...y))
+
+// theta(t) = (pi/2) t, r(t) = 1 + 0.25 t: a quarter turn of an
+// Archimedean spiral with closed form (1 + 0.25 t) * u((pi/2) t).
+const spiralPath = () => CubicPath2d.make(chartSegment([0, Math.PI / 2, 0, 0], [1, 0.25, 0, 0]))
+
+const spiralTruth = (t: number): [number, number] => {
+  const a = (Math.PI / 2) * t
+  const rho = 1 + 0.25 * t
+  return [rho * Math.cos(a), rho * Math.sin(a)]
+}
+
+// Same angular ramp with r(t) = -1 + 2t: the mapped radius crosses zero at
+// t = 0.5, so the image passes through the center onto the reflected lobe.
+const crossingTruth = (t: number): [number, number] => {
+  const a = (Math.PI / 2) * t
+  const rho = -1 + 2 * t
+  return [rho * Math.cos(a), rho * Math.sin(a)]
+}
+
+const distToPolyline = (qx: number, qy: number, pts: Array<[number, number]>): number => {
+  let best = Number.POSITIVE_INFINITY
+  for (let i = 1; i < pts.length; i++) {
+    const [ax, ay] = pts[i - 1] as [number, number]
+    const [bx, by] = pts[i] as [number, number]
+    const dx = bx - ax
+    const dy = by - ay
+    const len2 = dx * dx + dy * dy
+    const s = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((qx - ax) * dx + (qy - ay) * dy) / len2))
+    best = Math.min(best, Math.hypot(qx - (ax + s * dx), qy - (ay + s * dy)))
+  }
+  return best
+}
+
+// Dense two-sided Hausdorff regression: output samples against a fine
+// closed-form truth polyline, and truth samples against a fine output
+// polyline. Polyline chord sagitta ((dL)^2 * kmax / 8) stays orders of
+// magnitude under the 2% slack at these sample counts, so a failure means
+// the certified bound is broken, not the measurement.
+const assertWithinBothWays = (
+  out: CubicPath2d.CubicPath2d,
+  truthFn: (t: number) => [number, number],
+  tolerance: number,
+): void => {
+  const segments = [...out].length
+  const truthPts: Array<[number, number]> = []
+  for (let i = 0; i <= 8192; i++) {
+    truthPts.push(truthFn(i / 8192))
+  }
+  const dense = 256 * segments
+  const outPts: Array<[number, number]> = []
+  for (let i = 0; i <= dense; i++) {
+    const p = CubicPath2d.solve(out, i / dense)
+    outPts.push([p.x, p.y])
+  }
+  for (let i = 0; i <= 128 * segments; i++) {
+    const p = CubicPath2d.solve(out, i / (128 * segments))
+    expect(distToPolyline(p.x, p.y, truthPts)).toBeLessThanOrEqual(tolerance * 1.02)
+  }
+  for (let i = 0; i <= 2048; i++) {
+    const [tx, ty] = truthFn(i / 2048)
+    expect(distToPolyline(tx, ty, outPts)).toBeLessThanOrEqual(tolerance * 1.02)
+  }
+}
+
+describe('coordinateSystem.image', () => {
+  const unitPolar = CoordinateSystem.polar()
+
+  // Certification cost grows with (image arc length / tolerance) — the
+  // accept walk subdivides enclosures until their boxes shrink to the
+  // tolerance scale — so dense-check tolerances here stay at pixel-ish
+  // scales to keep the suite fast. The bound itself is tolerance-uniform.
+  test('archimedean spiral honors the certified bound at both tolerances', () => {
+    for (const tolerance of [1e-3, 1e-4]) {
+      const out = CoordinateSystem.image(unitPolar, spiralPath(), tolerance)
+      assertWithinBothWays(out, spiralTruth, tolerance)
+    }
+  })
+
+  test('segment counts stay modest and scale with tolerance', () => {
+    const loose = [...CoordinateSystem.image(unitPolar, spiralPath(), 1e-2)].length
+    const tight = [...CoordinateSystem.image(unitPolar, spiralPath(), 1e-4)].length
+    expect(loose).toBeLessThanOrEqual(8)
+    expect(tight).toBeLessThanOrEqual(32)
+    expect(tight).toBeGreaterThan(loose)
+  })
+
+  test('cartesian system returns the path unchanged', () => {
+    const path = spiralPath()
+    expect(CoordinateSystem.image(CoordinateSystem.cartesian, path, 1e-3)).toBe(path)
+    expect(() => CoordinateSystem.image(CoordinateSystem.cartesian, path, 0)).toThrow()
+  })
+
+  test('iso-r chart segments stay on the circle', () => {
+    const tolerance = 1e-4
+    const out = CoordinateSystem.image(
+      unitPolar,
+      CubicPath2d.make(chartSegment([0, Math.PI / 2, 0, 0], [5, 0, 0, 0])),
+      tolerance,
+    )
+    for (let i = 0; i <= 200; i++) {
+      const p = CubicPath2d.solve(out, i / 200)
+      expect(Math.abs(Math.hypot(p.x, p.y) - 5)).toBeLessThanOrEqual(tolerance * 1.02)
+    }
+  })
+
+  test('endpoints land exactly on the true image', () => {
+    const out = CoordinateSystem.image(unitPolar, spiralPath(), 1e-3)
+    expect(CubicPath2d.solve(out, 0)).toBeCloseToValue(
+      CoordinateSystem.toCartesian(unitPolar, Vector2.make(0, 1)),
+    )
+    expect(CubicPath2d.solve(out, 1)).toBeCloseToValue(
+      CoordinateSystem.toCartesian(unitPolar, Vector2.make(Math.PI / 2, 1.25)),
+    )
+  })
+
+  test('continuous input yields a continuous output', () => {
+    const path = CubicPath2d.make(
+      chartSegment([0, Math.PI / 2, 0, 0], [1, 0.25, 0, 0]),
+      chartSegment([Math.PI / 2, Math.PI / 2, 0, 0], [1.25, -0.25, 0, 0]),
+    )
+    const out = CoordinateSystem.image(unitPolar, path, 1e-4)
+    expect(CubicPath2d.isContinuous(out)).toBe(true)
+  })
+
+  test('multi-turn spirals loop', () => {
+    const out = CoordinateSystem.image(
+      unitPolar,
+      CubicPath2d.make(chartSegment([0, 6 * Math.PI, 0, 0], [1.5, 0, 0, 0])),
+      1e-3,
+    )
+    expect([...out].length).toBeGreaterThanOrEqual(12)
+    expect(CubicPath2d.isContinuous(out)).toBe(true)
+    for (let i = 0; i <= 400; i++) {
+      const p = CubicPath2d.solve(out, i / 400)
+      expect(Math.abs(Math.hypot(p.x, p.y) - 1.5)).toBeLessThanOrEqual(1e-3 * 1.02)
+    }
+  })
+
+  test('paths crossing mapped radius zero image through the center', () => {
+    const tolerance = 1e-3
+    const out = CoordinateSystem.image(
+      unitPolar,
+      CubicPath2d.make(chartSegment([0, Math.PI / 2, 0, 0], [-1, 2, 0, 0])),
+      tolerance,
+    )
+    assertWithinBothWays(out, crossingTruth, tolerance)
+    expect(CubicPath2d.isContinuous(out)).toBe(true)
+  })
+
+  test('zero-length segments image to exact point curves', () => {
+    const out = CoordinateSystem.image(
+      unitPolar,
+      CubicPath2d.make(chartSegment([1, 0, 0, 0], [2, 0, 0, 0])),
+      1e-3,
+    )
+    const segments = [...out]
+    expect(segments.length).toBe(1)
+    const only = segments[0] as CubicCurve2d.CubicCurve2d
+    expect(only.x.c1).toBe(0)
+    expect(only.x.c2).toBe(0)
+    expect(only.x.c3).toBe(0)
+    expect(only.y.c1).toBe(0)
+    expect(only.y.c2).toBe(0)
+    expect(only.y.c3).toBe(0)
+  })
+
+  test('loose tolerance keeps a quarter arc to one segment', () => {
+    const out = CoordinateSystem.image(
+      unitPolar,
+      CubicPath2d.make(chartSegment([0, Math.PI / 2, 0, 0], [1, 0, 0, 0])),
+      0.5,
+    )
+    expect([...out].length).toBe(1)
+  })
+
+  test('scaling geometry and tolerance together preserves segment counts', () => {
+    const base = [...CoordinateSystem.image(unitPolar, spiralPath(), 1e-3)].length
+    for (const scale of [1e-6, 1e6]) {
+      const scaled = CoordinateSystem.polar({ radius: Dimension.linear(scale) })
+      const scaledCount = [...CoordinateSystem.image(scaled, spiralPath(), 1e-3 * scale)].length
+      expect(scaledCount).toBe(base)
+    }
+  })
+
+  test('rejects a bad tolerance', () => {
+    for (const tolerance of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() => CoordinateSystem.image(unitPolar, spiralPath(), tolerance)).toThrow()
+    }
+  })
+
+  test('supports data-last application', () => {
+    const dataFirst = CoordinateSystem.image(unitPolar, spiralPath(), 1e-3)
+    const dataLast = unitPolar.pipe(CoordinateSystem.image(spiralPath(), 1e-3))
+    expect([...dataLast].length).toBe([...dataFirst].length)
   })
 })

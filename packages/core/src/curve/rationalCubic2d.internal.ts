@@ -661,8 +661,10 @@ export const boundingBox = dual<
 
 // Approximation cap. At depth 20 we'd emit up to 2^20 (~1M) segments for one
 // input curve — well past any sane target — so the cap is really just a guard
-// against pathological tolerances (e.g. tolerance approaching 0).
-const MAX_APPROX_DEPTH = 20
+// against pathological tolerances (e.g. tolerance approaching 0). Shared with
+// the coordinates module's `image`, which runs the same recursion shape.
+/** @internal */
+export const MAX_APPROX_DEPTH = 20
 
 // Builds the polynomial-cubic candidate for one rational segment by:
 //   1. Inverting Bernstein -> monomial on each of x, y, w to recover the four
@@ -788,7 +790,8 @@ const MAX_HAUSDORFF_DEPTH = 30
 // `eval_`. Stationary points of (P(s) - q) * P'(s) are local extrema of
 // D^2(s); 32 coarse samples reliably bracket the global min for cubic-degree
 // curves (which have at most ~5 critical points of squared distance).
-const closestSquaredDistance = (
+/** @internal */
+export const closestSquaredDistance = (
   eval_: (s: number) => { px: number; py: number; tx: number; ty: number },
   qx: number,
   qy: number,
@@ -836,7 +839,8 @@ const closestSquaredDistance = (
   return d2 < d2Best ? d2 : d2Best
 }
 
-const polynomialEval = (c: CubicCurve2d.CubicCurve2d, s: number) => ({
+/** @internal */
+export const polynomialEval = (c: CubicCurve2d.CubicCurve2d, s: number) => ({
   px: c.x.c0 + s * (c.x.c1 + s * (c.x.c2 + s * c.x.c3)),
   py: c.y.c0 + s * (c.y.c1 + s * (c.y.c2 + s * c.y.c3)),
   tx: c.x.c1 + s * (2 * c.x.c2 + s * 3 * c.x.c3),
@@ -882,7 +886,14 @@ const subdividePolynomial = (
   return [CubicCurve2d.fromPolynomials(leftX, leftY), CubicCurve2d.fromPolynomials(rightX, rightY)]
 }
 
-interface CertifiedPiece {
+// The piece abstraction the one-sided Hausdorff walker consumes: a rigorous
+// bounding box for the piece's span of the source curve, a witness point that
+// lies ON the source curve, and exact bisection. Any curve family that can
+// supply these three things can be certified against a target — the rational
+// and polynomial providers below, and the coordinates module's transcendental
+// polar images.
+/** @internal */
+export interface CertifiedPiece {
   box: Interval2d.Interval2d
   witnessX: number
   witnessY: number
@@ -906,7 +917,8 @@ const rationalPiece = (c: RationalCubicCurve2d, depth = 0): CertifiedPiece => {
   }
 }
 
-const polynomialPiece = (c: CubicCurve2d.CubicCurve2d, depth = 0): CertifiedPiece => {
+/** @internal */
+export const polynomialPiece = (c: CubicCurve2d.CubicCurve2d, depth = 0): CertifiedPiece => {
   const witnessX = CubicPolynomial.solve(c.x, 0.5)
   const witnessY = CubicPolynomial.solve(c.y, 0.5)
   return {
@@ -921,7 +933,8 @@ const polynomialPiece = (c: CubicCurve2d.CubicCurve2d, depth = 0): CertifiedPiec
   }
 }
 
-const oneSidedWithinTolerance = (
+/** @internal */
+export const oneSidedWithinTolerance = (
   initialPiece: CertifiedPiece,
   targetBox: Interval2d.Interval2d,
   targetClosestSquared: (qx: number, qy: number) => number,

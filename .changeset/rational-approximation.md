@@ -17,7 +17,7 @@ RationalCubicCurve2d.approximateAsCubicCurves(rationalCurve, tolerance)
 RationalCubicPath2d.approximateAsCubicPath(rationalPath, tolerance)
 ```
 
-For each segment a polynomial-cubic candidate is built by projecting the four homogeneous Bézier control points back to 2D; if the midpoint deviates from the true rational by more than `tolerance`, the segment is split at `t = 0.5` and the procedure recurses on each half. Endpoints and endpoint tangent directions are preserved exactly. For a uniform-weight curve the result is a single exact segment.
+For each segment a polynomial-cubic candidate is built by projecting the four homogeneous Bézier control points back to 2D; if the candidate cannot be certified to lie within `tolerance` of the true rational — a symmetric Hausdorff bound, every point of each within `tolerance` of the other, verified by subdivision enclosures rather than a point sample — the segment is split at `t = 0.5` and the procedure recurses on each half. Endpoints and endpoint tangent directions are preserved exactly. For a uniform-weight curve the result is a single exact segment.
 
 **New `CubicPolynomial.subdivide(p, t)`.** General de Casteljau-equivalent subdivision in monomial form. Returns `[left, right]` where the left half's evaluation on `[0, 1]` matches the input's on `[0, t]`, and the right half matches on `[t, 1]`. Available data-first and data-last.
 
