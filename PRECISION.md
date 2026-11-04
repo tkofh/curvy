@@ -108,10 +108,15 @@ and its relatives with the same band, so rounding noise never orders two
 values. `before` and `inside` are strict: they hold only beyond the band.
 `atMost`, `within`, and `touches` are closed: they hold within it.
 `overlaps` asks whether two ranges share more than a point, and `touches`
-whether they share at least one. A non-finite pair compares exactly. Against
-an infinity, the band is itself infinite (`|5 - Infinity| <= relative *
-Infinity`), so `coincident(5, Infinity)` holds; the ordering predicates step
-around that, and every finite value comes before `Infinity`.
+whether they share at least one.
+
+**Non-finite values compare exactly.** Against an infinity the band is
+infinite itself (`|5 - Infinity| <= relative * Infinity`) and would call
+every finite value equal to it, while `Infinity - Infinity` is `NaN` and
+would leave an infinity unequal to itself. So `coincident` falls back to
+`===` when either value is non-finite: an infinity equals only the infinity
+of the same sign, and `NaN` equals nothing. The ordering predicates inherit
+this, so every finite value comes before `Infinity`.
 
 ### 3. Sign and degeneracy of derived scalars
 

@@ -38,6 +38,19 @@ describe('coincident', () => {
     expect(coincident(1e9, 1e9 + 1)).toBe(false)
   })
 
+  test.each<[string, number, number, boolean]>([
+    ['an infinity against itself', Infinity, Infinity, true],
+    ['negative infinity against itself', -Infinity, -Infinity, true],
+    ['opposite infinities', Infinity, -Infinity, false],
+    ['a large value against infinity', 1e300, Infinity, false],
+    ['zero against infinity', 0, Infinity, false],
+    ['NaN against itself', Number.NaN, Number.NaN, false],
+    ['NaN against zero', Number.NaN, 0, false],
+  ])('compares %s exactly', (_, a, b, expected) => {
+    expect(coincident(a, b)).toBe(expected)
+    expect(coincident(b, a)).toBe(expected)
+  })
+
   test('accepts explicit tolerance overrides', () => {
     expect(coincident(0, 0.5, 1)).toBe(true)
     expect(coincident(1e9, 1e9 + 1, undefined, 1e-8)).toBe(true)

@@ -69,6 +69,12 @@ export function epsEquals(a: number, b: number, eps: number = EPSILON): boolean 
  * `absolute` when your data has a different natural resolution. Both
  * parameters are positional, mirroring `epsEquals`.
  *
+ * A non-finite pair compares exactly. Against an infinity the band would be
+ * infinite itself and call every finite value equal to it, and `Infinity`
+ * minus itself is `NaN`, which would leave an infinity unequal to itself.
+ * So an infinity equals only the infinity of the same sign, and `NaN`
+ * equals nothing.
+ *
  * Not transitive. `coincident(a, b)` and `coincident(b, c)` do not imply
  * `coincident(a, c)`, because chains of pairwise-coincident values can
  * drift beyond the band. Path continuity relies on exactly that. It claims
@@ -79,7 +85,14 @@ export function epsEquals(a: number, b: number, eps: number = EPSILON): boolean 
  * @param b - The second value.
  * @param absolute - Absolute floor of the band. Defaults to `EPSILON`.
  * @param relative - Magnitude-proportional term of the band. Defaults to `RELATIVE_TOLERANCE`.
- * @returns `true` when the values are equal to within the combined band.
+ * @returns `true` when the values are equal to within the combined band, or, when either is
+ *   non-finite, identical.
+ * @example
+ * ```ts
+ * coincident(0.1 + 0.2, 0.3) // true
+ * coincident(Infinity, Infinity) // true
+ * coincident(1e300, Infinity) // false
+ * ```
  * @since 2.0.0
  */
 export function coincident(
@@ -88,13 +101,15 @@ export function coincident(
   absolute: number = EPSILON,
   relative: number = RELATIVE_TOLERANCE,
 ): boolean {
+  if (!Number.isFinite(a) || !Number.isFinite(b)) {
+    return a === b
+  }
   return Math.abs(a - b) <= absolute + relative * Math.max(Math.abs(a), Math.abs(b))
 }
 
 // The ordering predicates. Each decides a discrete question about the order
 // of two values with the `coincident` band, so that rounding noise never
-// flips it. A non-finite pair compares exactly: against an infinity the band
-// is infinite itself, and would call every finite value equal to it.
+// flips it. A non-finite pair compares exactly, as it does in `coincident`.
 
 /**
  * Tests whether `a` comes strictly before `b`, beyond the `coincident` band.
@@ -123,9 +138,6 @@ export function before(
   absolute: number = EPSILON,
   relative: number = RELATIVE_TOLERANCE,
 ): boolean {
-  if (!Number.isFinite(a) || !Number.isFinite(b)) {
-    return a < b
-  }
   return a < b && !coincident(a, b, absolute, relative)
 }
 
@@ -155,9 +167,6 @@ export function atMost(
   absolute: number = EPSILON,
   relative: number = RELATIVE_TOLERANCE,
 ): boolean {
-  if (!Number.isFinite(a) || !Number.isFinite(b)) {
-    return a <= b
-  }
   return a <= b || coincident(a, b, absolute, relative)
 }
 
