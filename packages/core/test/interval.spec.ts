@@ -109,6 +109,9 @@ describe('interval', () => {
     expect(Interval.equals(Interval.make(0, 1), Interval.makeOpen(0, 1))).toBe(false)
     expect(Interval.equals(Interval.makeOpenStart(0, 1), Interval.makeOpenStart(0, 1))).toBe(true)
     expect(Interval.equals(Interval.make(0, 1), Interval.make(0, 2))).toBe(false)
+    const line = Interval.make(Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY)
+    expect(Interval.equals(line, line)).toBe(true)
+    expect(Interval.equals(line, Interval.make(-1e300, 1e300))).toBe(false)
   })
 
   test('aligned compares numeric range only', () => {
