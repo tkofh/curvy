@@ -8,7 +8,9 @@ import { RELATIVE_TOLERANCE } from '../number.ts'
 import { dual, invariant } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { CubicPath2d } from './cubic2d.ts'
+import type { LinearPath2d } from './linear2d.ts'
 import * as Path2d from './path2d.ts'
+import type { QuadraticPath2d } from './quadratic2d.ts'
 import {
   type Continuous,
   type DecreasingX,
@@ -42,6 +44,28 @@ export const make = (...curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): Cubic
 export const fromArray = (curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d => {
   invariant(curves.length > 0, 'cubic path requires at least one curve')
   return methods.fromArray(curves) as CubicPath2d
+}
+
+// Per-curve degree elevation is bitwise-exact (zero-padded monomial
+// coefficients), so knot points, per-axis ranges, and every trait check
+// see identical values: the input path's brands transfer soundly. The
+// input's own construction invariant guarantees non-emptiness.
+/** @internal */
+export const fromLinear = <T>(p: LinearPath2d<T>): CubicPath2d<T> => {
+  const curves: Array<CubicCurve2d.CubicCurve2d> = []
+  for (const curve of p) {
+    curves.push(cubicCurveInternal.fromLinear(curve))
+  }
+  return methods.fromArray(curves) as CubicPath2d<T>
+}
+
+/** @internal */
+export const fromQuadratic = <T>(p: QuadraticPath2d<T>): CubicPath2d<T> => {
+  const curves: Array<CubicCurve2d.CubicCurve2d> = []
+  for (const curve of p) {
+    curves.push(cubicCurveInternal.fromQuadratic(curve))
+  }
+  return methods.fromArray(curves) as CubicPath2d<T>
 }
 
 /** @internal */

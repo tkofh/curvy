@@ -173,6 +173,72 @@ refinement cap is accepted best-effort, so the guarantee is conditional on
 the cap not biting. At any tolerance coarser than the geometry's own
 rounding noise the cap is unreachable and the bound is unconditional.
 
+## Working with certificates
+
+The section above says what one certified operation promises. Two
+boundaries on that promise matter when certified results feed further
+work.
+
+**The certificate is geometric, not parametric.** The symmetric Hausdorff
+bound relates point sets: every point of the output lies within
+`tolerance` of the true object, and conversely. It says nothing about
+parameter alignment: `solve(output, t)` is within `tolerance` of _some_
+point of the true object, not of the true object's point at the same
+`t`. Set-level questions inherit the bound — the output's bounding box
+deviates from the true box by at most `tolerance` per side, a
+distance-to-curve query is off by at most `tolerance` — but quantities
+read off the parameterization inherit nothing: evaluation at a shared
+parameter, tangent direction, curvature, arc length, and dash phase all
+sit outside the certificate. Where exact lengths matter, stay with the
+exact representations: `Arc.length` is closed form, and the images built
+by `arc`, `sector`, and `ray` are exact up to IEEE 754 rounding.
+
+**Certificates compose in output space only.** A tolerance is a promise
+in the output's own units, and a further nonlinear map re-prices it by
+its local stretch. Sending a chart-space result through a polar system
+magnifies a chart-space deviation `e` to as much as
+`e * max(rho * k, |m|)` on screen, where `rho` is the mapped radius,
+`k = 2*pi / period` converts the angular unit, and `m` is the radial
+scale. The angular term is the trap: under `Dimension.turns`
+(`k = 2*pi`) at a 200px radius, a `0.125` chart-space certificate is
+only a ~157px screen bound. Splitting a pixel budget into a chart-space
+half and an output-space half is therefore wrong by the full stretch
+factor. The rule: keep chart-space construction exact — degree
+elevation, the shape constructors — and spend the one certified
+operation as late as possible, in the space whose units the tolerance
+names. For screen output that means `image` with a pixel-fraction
+tolerance is the last step, never an early one.
+
+## Polar conventions
+
+Two semantic conventions in the coordinates module read like numerical
+decisions and are documented here so their rationale has one home.
+
+**Point maps reflect a negative mapped radius; region constructors
+reject it.** The polar point map is total: a negative mapped radius
+reflects through the center, the standard mathematical convention, and
+`toCartesian`, `image`, and `ray` all apply it. `ray` stays exact under
+reflection because its image is the affine image of the radial span
+along a fixed direction — one straight segment, even when the mapped
+radii change sign mid-span. The shape constructors `arc` and `sector`
+(and their path-data twins) instead throw on a negative mapped radius:
+a reflected arc renders at the antipodal angle, which in layout code is
+the signature of a broken radial map, not an intent — the same reasoning
+behind canvas `arc()` rejecting negative radii. Callers who want the
+reflection behavior for shapes can clamp or split spans at the mapped
+zero radius themselves; its chart preimage is `fromCartesian(s, center).y`.
+
+**Curves lap, regions clamp.** Path-valued outputs — `arc`, `image`,
+`Arc.toPath` — preserve sweeps past one period, tracing the circle more
+than once, because parameterization is part of a curve's identity: laps
+carry arc length, dash phase, and `solveByDistance` structure. The
+region-valued outputs — `sector`, `sectorPathData` — clamp sweeps to one
+full period, because a region covered twice is the same region, and a
+lapping boundary actively breaks rendering: under `evenodd` a
+double-covered area becomes a hole, and the two-subpath annulus emission
+stops working. `arcPathData` also clamps, for a narrower reason: a
+retraced lap has no geometric extent that path data can express.
+
 ## What the brands guarantee
 
 Trait brands are claims at working precision, in the backward-error sense:

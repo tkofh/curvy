@@ -5,7 +5,7 @@ import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import * as internal from './coordinateSystem.internal.ts'
 import type { CoordinateSystemTypeId } from './coordinateSystem.internal.ts'
-import type { Cyclical, Linear } from './dimension.ts'
+import type { Cyclical, Dimension } from './dimension.ts'
 
 /**
  * A chart map from a two-axis chart space onto the cartesian plane:
@@ -20,6 +20,12 @@ import type { Cyclical, Linear } from './dimension.ts'
  * mapping: converting a curve's control points with `toCartesian` produces
  * the wrong curve. Convert points pointwise, convert axis-aligned shapes
  * with the exact constructors, and convert arbitrary paths with `image`.
+ *
+ * Operations stay total over the union wherever both kinds have an honest
+ * reading — `Cartesian` answers the shape constructors with the chart
+ * shapes themselves. Where only a polar system gives a question meaning,
+ * like the scalar maps `mapAngle` and `mapRadius`, the operation narrows
+ * its parameter to `Polar` instead of inventing a cartesian answer.
  *
  * @since 2.0.0
  */
@@ -38,9 +44,10 @@ export type Winding = 'clockwise' | 'counterclockwise'
 
 /**
  * The identity chart map: chart space is the cartesian plane itself. Its
- * shape constructors still work — `arc` is a horizontal segment and
- * `sector` is an axis-aligned rectangle — so code driving a
- * `CoordinateSystem` never branches on kind.
+ * shape constructors still work — `arc` is a horizontal segment, `ray` a
+ * vertical one, and `sector` an axis-aligned rectangle — so code driving
+ * a `CoordinateSystem` through the shared operations never branches on
+ * kind. Only the polar-specific scalar maps require narrowing first.
  *
  * @since 2.0.0
  */
@@ -75,11 +82,16 @@ export interface Polar extends Pipeable {
    */
   readonly winding: Winding
   /**
-   * The radial axis map: mapped radius is `r * scale + offset`. An offset
-   * shifts chart radius `0` outward, which puts an inner hole under a
-   * chart that starts at `r = 0`.
+   * The radial axis map. Today this is always a `Linear` dimension —
+   * mapped radius is `r * scale + offset`, and an offset shifts chart
+   * radius `0` outward, which puts an inner hole under a chart that
+   * starts at `r = 0`.
+   *
+   * The field is typed as the full `Dimension` union so future radial-map
+   * kinds can arrive without breaking readers. Apply the map with
+   * `mapRadius` rather than reading `scale` and `offset` off the field.
    */
-  readonly radius: Linear
+  readonly radius: Dimension
   /**
    * Where chart angle `0` points, as a rotation from the `+x` direction
    * measured in the angular unit, positive rotating `+x` toward `+y`.
@@ -112,10 +124,12 @@ export interface PolarConfig {
    */
   readonly winding?: Winding
   /**
-   * The radial axis map applied to chart radii. Defaults to
+   * The radial axis map applied to chart radii. Must be a `Linear`
+   * dimension — the union type reserves room for future radial-map
+   * kinds, and `polar` rejects a `Cyclical` radius. Defaults to
    * `Dimension.identity`.
    */
-  readonly radius?: Linear
+  readonly radius?: Dimension
   /**
    * Where chart angle `0` points, as a rotation from the `+x` direction
    * measured in the angular unit, positive rotating `+x` toward `+y` and
@@ -164,7 +178,8 @@ export const cartesian: Cartesian = internal.cartesian
  * @param config - Center, angular axis, winding, radial map, and angular
  *   origin. All optional; see `PolarConfig` for the defaults.
  * @returns A new `Polar` system.
- * @throws `Error` when `thetaOrigin` is not finite.
+ * @throws `Error` when `thetaOrigin` is not finite, or when `radius` is
+ *   not a `Linear` dimension.
  * @since 2.0.0
  * @example
  * ```ts
@@ -262,6 +277,88 @@ export const fromCartesian: {
   (point: Vector2): (s: CoordinateSystem) => Vector2
 } = internal.fromCartesian
 
+export const mapAngle: {
+  /**
+   * Maps a chart-space angular coordinate to its on-screen angle in
+   * radians, positive rotating `+x` toward `+y`. This is the angular half
+   * of `toCartesian`: `(thetaOrigin + sign * theta) * (2*pi / period)`,
+   * where `sign` is `+1` for a `'clockwise'` winding and `-1` for
+   * `'counterclockwise'`.
+   *
+   * The result is not wrapped. A chart angle past one period keeps
+   * accumulating turns, so differences of mapped angles are mapped
+   * sweeps.
+   *
+   * Only a polar system has an angular axis, so the parameter narrows to
+   * `Polar`; refine with `isPolar` first when holding the union.
+   *
+   * @param s - The polar system whose angular map to apply.
+   * @param theta - The chart-space angular coordinate, in the unit of the
+   *   system's `theta` axis.
+   * @returns The on-screen angle in radians.
+   * @since 2.0.0
+   * @example
+   * ```ts
+   * // Rotate a tick label to its angular position (SVG rotate() wants
+   * // degrees):
+   * const angle = CoordinateSystem.mapAngle(system, 45)
+   * const transform = `rotate(${(180 / Math.PI) * angle})`
+   * ```
+   */
+  (s: Polar, theta: number): number
+  /**
+   * Maps a chart-space angular coordinate to its on-screen angle in
+   * radians.
+   *
+   * @param theta - The chart-space angular coordinate, in the unit of the
+   *   system's `theta` axis.
+   * @returns A function that takes a polar system and returns the
+   *   on-screen angle in radians.
+   * @since 2.0.0
+   */
+  (theta: number): (s: Polar) => number
+} = internal.mapAngleDual
+
+export const mapRadius: {
+  /**
+   * Maps a chart-space radial coordinate to its on-screen distance from
+   * the center. This is the radial half of `toCartesian`:
+   * `r * scale + offset` under today's always-linear radial axis.
+   *
+   * The result can be negative when the map sends the chart radius below
+   * zero. Point-mapping operations read a negative mapped radius as a
+   * reflection through the center; shape constructors like `arc` and
+   * `sector` reject it.
+   *
+   * Only a polar system has a radial axis, so the parameter narrows to
+   * `Polar`; refine with `isPolar` first when holding the union.
+   *
+   * @param s - The polar system whose radial map to apply.
+   * @param r - The chart-space radial coordinate.
+   * @returns The signed on-screen distance from the center.
+   * @since 2.0.0
+   * @example
+   * ```ts
+   * // mapRadius maps positions, not lengths. A chart-space length maps
+   * // through the difference, where the offset cancels:
+   * const bandWidth =
+   *   CoordinateSystem.mapRadius(system, 3.5) -
+   *   CoordinateSystem.mapRadius(system, 3)
+   * ```
+   */
+  (s: Polar, r: number): number
+  /**
+   * Maps a chart-space radial coordinate to its on-screen distance from
+   * the center.
+   *
+   * @param r - The chart-space radial coordinate.
+   * @returns A function that takes a polar system and returns the signed
+   *   on-screen distance.
+   * @since 2.0.0
+   */
+  (r: number): (s: Polar) => number
+} = internal.mapRadiusDual
+
 export const arc: {
   /**
    * Constructs the exact cartesian image of the chart-space segment that
@@ -302,6 +399,50 @@ export const arc: {
    */
   (theta: Bounds, r: number): (s: CoordinateSystem) => RationalCubicPath2d
 } = internal.arc
+
+export const ray: {
+  /**
+   * Constructs the exact cartesian image of the chart-space segment that
+   * holds `theta` fixed and runs `r` from `r.start` to `r.end`. On a polar
+   * system that image is a straight segment along the fixed direction —
+   * the radial map is affine, so the image is exact, a single rational
+   * line segment. On a cartesian system it is the vertical segment at
+   * `x = theta`.
+   *
+   * Unlike `arc` and `sector`, negative mapped radii are allowed: a
+   * negative mapped radius reflects through the center, the same
+   * convention `toCartesian` applies, and a radial span whose mapped
+   * radii change sign stays one straight segment passing through the
+   * center. A zero-length span is constructible and degenerates to a
+   * point segment.
+   *
+   * @param s - The coordinate system.
+   * @param theta - The fixed angular coordinate.
+   * @param r - The radial span, traced from `start` to `end`.
+   * @returns The image as a `RationalCubicPath2d` of one segment.
+   * @throws `Error` when an input is not finite.
+   * @since 2.0.0
+   * @example
+   * ```ts
+   * // A radial gridline from the hole to the rim at 3 o'clock:
+   * const gridline = CoordinateSystem.ray(
+   *   CoordinateSystem.polar({ theta: Dimension.degrees }),
+   *   0,
+   *   { start: 80, end: 120 },
+   * )
+   * ```
+   */
+  (s: CoordinateSystem, theta: number, r: Bounds): RationalCubicPath2d
+  /**
+   * Constructs the exact cartesian image of a fixed-angle radial span.
+   *
+   * @param theta - The fixed angular coordinate.
+   * @param r - The radial span, traced from `start` to `end`.
+   * @returns A function that takes a system and returns the image path.
+   * @since 2.0.0
+   */
+  (theta: number, r: Bounds): (s: CoordinateSystem) => RationalCubicPath2d
+} = internal.ray
 
 export const sector: {
   /**
@@ -496,6 +637,34 @@ export const arcPathData: {
    */
   (theta: Bounds, r: number): (s: CoordinateSystem) => string
 } = internal.arcPathData
+
+export const rayPathData: {
+  /**
+   * Emits exact SVG path data for the same segment `ray` constructs: an
+   * `M` to the mapped start of the radial span and an `L` to its mapped
+   * end. Negative mapped radii follow `ray`'s reflection convention.
+   *
+   * Degenerate contract: a zero-length radial span (`r.start === r.end`)
+   * emits an `M` command alone, which renders nothing.
+   *
+   * @param s - The coordinate system.
+   * @param theta - The fixed angular coordinate.
+   * @param r - The radial span, traced from `start` to `end`.
+   * @returns The SVG path data string.
+   * @throws `Error` when an input is not finite.
+   * @since 2.0.0
+   */
+  (s: CoordinateSystem, theta: number, r: Bounds): string
+  /**
+   * Emits exact SVG path data for a fixed-angle radial span.
+   *
+   * @param theta - The fixed angular coordinate.
+   * @param r - The radial span, traced from `start` to `end`.
+   * @returns A function that takes a system and returns the path data.
+   * @since 2.0.0
+   */
+  (theta: number, r: Bounds): (s: CoordinateSystem) => string
+} = internal.rayPathData
 
 export const sectorPathData: {
   /**

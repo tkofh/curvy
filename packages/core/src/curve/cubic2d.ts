@@ -9,6 +9,8 @@ import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { CubicCurve2dTypeId } from './cubic2d.internal.ts'
 import * as internal from './cubic2d.internal.ts'
+import type { LinearCurve2d } from './linear2d.ts'
+import type { QuadraticCurve2d } from './quadratic2d.ts'
 
 export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
 
@@ -81,6 +83,39 @@ export const fromBezierPoints: (
   p2: Vector2,
   p3: Vector2,
 ) => CubicCurve2d = internal.fromBezierPoints
+
+/**
+ * Creates a `CubicCurve2d` tracing the same points as a `LinearCurve2d`.
+ *
+ * Degree elevation is exact: the linear curve's monomial coefficients carry
+ * over with zero `t^2` and `t^3` terms, so the cubic evaluates to the same
+ * point at every parameter, endpoints included, with no rounding. Per-axis
+ * trait brands carry over with them.
+ *
+ * Use this to hand straight segments to cubic-only consumers, like
+ * `CubicPath2d.make` or `CoordinateSystem.image`.
+ *
+ * @param c - The linear curve to elevate.
+ * @returns A `CubicCurve2d` tracing the same points at the same parameters.
+ * @since 2.0.0
+ */
+export const fromLinear: <XT, YT>(c: LinearCurve2d<XT, YT>) => CubicCurve2d<XT, YT> =
+  internal.fromLinear
+
+/**
+ * Creates a `CubicCurve2d` tracing the same points as a `QuadraticCurve2d`.
+ *
+ * Degree elevation is exact: the quadratic curve's monomial coefficients
+ * carry over with a zero `t^3` term, so the cubic evaluates to the same
+ * point at every parameter, endpoints included, with no rounding. Per-axis
+ * trait brands carry over with them.
+ *
+ * @param c - The quadratic curve to elevate.
+ * @returns A `CubicCurve2d` tracing the same points at the same parameters.
+ * @since 2.0.0
+ */
+export const fromQuadratic: <XT, YT>(c: QuadraticCurve2d<XT, YT>) => CubicCurve2d<XT, YT> =
+  internal.fromQuadratic
 
 /**
  * Checks if a value is a `CubicCurve2d`.

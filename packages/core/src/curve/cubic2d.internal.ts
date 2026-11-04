@@ -109,6 +109,27 @@ export const fromBezierPoints: (
     ),
   )
 
+// Degree elevation is exact in monomial form: a linear or quadratic
+// polynomial IS a cubic whose high coefficients are zero, so the elevated
+// curve evaluates bitwise-identically at every parameter. Trait brands
+// carry because they are claims about the scalar functions, which are
+// unchanged (a linear axis monotonic on all of R is monotonic on [0, 1]).
+/** @internal */
+export const fromLinear = <XT, YT>(c: LinearCurve2d.LinearCurve2d<XT, YT>): CubicCurve2d<XT, YT> =>
+  new CubicCurve2dImpl(
+    CubicPolynomial.make(c.x.c0, c.x.c1, 0, 0),
+    CubicPolynomial.make(c.y.c0, c.y.c1, 0, 0),
+  ) as CubicCurve2d<XT, YT>
+
+/** @internal */
+export const fromQuadratic = <XT, YT>(
+  c: QuadraticCurve2d.QuadraticCurve2d<XT, YT>,
+): CubicCurve2d<XT, YT> =>
+  new CubicCurve2dImpl(
+    CubicPolynomial.make(c.x.c0, c.x.c1, c.x.c2, 0),
+    CubicPolynomial.make(c.y.c0, c.y.c1, c.y.c2, 0),
+  ) as CubicCurve2d<XT, YT>
+
 /** @internal */
 export const isCubicCurve2d = (c: unknown): c is CubicCurve2d =>
   typeof c === 'object' && c !== null && CubicCurve2dTypeId in c

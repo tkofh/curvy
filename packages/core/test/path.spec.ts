@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 import * as cubicCurve2d from '../src/curve/cubic2d.ts'
 import * as linearCurve2d from '../src/curve/linear2d.ts'
 import * as quadraticCurve2d from '../src/curve/quadratic2d.ts'
@@ -378,6 +378,44 @@ describe('cubic2d', () => {
     )
     const d = cubicPath2d.make(c0, c1).pipe(cubicPath2d.toPathData)
     expect(d).toBe('M 0,0 C 1,0 1,1 0,1 M 10,10 C 11,10 11,11 10,11')
+  })
+  test('fromLinear elevates per segment, bitwise-exact, and keeps traits', () => {
+    const path = linearPath2d.asContinuous(
+      linearPath2d.make(
+        linearCurve2d.fromEndpoints(vector2.make(0.1, 0.2), vector2.make(2.3, 1.1)),
+        linearCurve2d.fromEndpoints(vector2.make(2.3, 1.1), vector2.make(4.5, 1.9)),
+      ),
+    )
+    const elevated = cubicPath2d.fromLinear(path)
+    expectTypeOf(elevated).toEqualTypeOf<cubicPath2d.CubicPath2d<cubicPath2d.Continuous>>()
+    expect([...elevated].length).toBe(2)
+    expect(cubicPath2d.isCubicPath2d(elevated)).toBe(true)
+    for (const u of [0, 0.25, 0.5, 0.77, 1]) {
+      const a = cubicPath2d.solve(elevated, u)
+      const b = linearPath2d.solve(path, u)
+      expect(a.x).toBe(b.x)
+      expect(a.y).toBe(b.y)
+    }
+    expect(cubicPath2d.isContinuous(elevated)).toBe(true)
+    expect(cubicPath2d.isIncreasingX(elevated)).toBe(true)
+    expect(cubicPath2d.length(elevated)).toBeCloseTo(linearPath2d.length(path), 12)
+  })
+  test('fromQuadratic elevates per segment bitwise-exact', () => {
+    const path = quadraticPath2d.make(
+      quadraticCurve2d.fromBezierPoints(
+        vector2.make(0.1, 0.7),
+        vector2.make(3.3, 6.1),
+        vector2.make(9.9, 0.7),
+      ),
+    )
+    const elevated = cubicPath2d.fromQuadratic(path)
+    expect([...elevated].length).toBe(1)
+    for (const u of [0, 0.25, 0.5, 0.77, 1]) {
+      const a = cubicPath2d.solve(elevated, u)
+      const b = quadraticPath2d.solve(path, u)
+      expect(a.x).toBe(b.x)
+      expect(a.y).toBe(b.y)
+    }
   })
 })
 

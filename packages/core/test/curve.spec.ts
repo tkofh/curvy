@@ -286,6 +286,60 @@ describe('cubic2d', () => {
     )
     expect(cubic2d.toPathDataSegment(c)).toBe('C 3,6 6,-3 9,0')
   })
+  test('fromLinear zero-pads the coefficients and evaluates bitwise-identically', () => {
+    // Non-dyadic coordinates so any hidden re-association would round
+    // differently and fail the exact comparison.
+    const line = linear2d.fromEndpoints(vector2.make(0.1, 2.3), vector2.make(7.7, -1.1))
+    const elevated = cubic2d.fromLinear(line)
+    expect(elevated.x).toMatchObject({ c0: line.x.c0, c1: line.x.c1, c2: 0, c3: 0 })
+    expect(elevated.y).toMatchObject({ c0: line.y.c0, c1: line.y.c1, c2: 0, c3: 0 })
+    for (const t of [0, 0.3, 0.5, 0.77, 1]) {
+      const a = cubic2d.solve(elevated, t)
+      const b = linear2d.solve(line, t)
+      expect(a.x).toBe(b.x)
+      expect(a.y).toBe(b.y)
+    }
+    const start = cubic2d.startPoint(elevated)
+    const end = cubic2d.endPoint(elevated)
+    expect(start.x).toBe(linear2d.startPoint(line).x)
+    expect(start.y).toBe(linear2d.startPoint(line).y)
+    expect(end.x).toBe(linear2d.endPoint(line).x)
+    expect(end.y).toBe(linear2d.endPoint(line).y)
+  })
+  test('fromQuadratic zero-pads the coefficient and evaluates bitwise-identically', () => {
+    const parabola = quadratic2d.fromBezierPoints(
+      vector2.make(0.1, 0.7),
+      vector2.make(3.3, 6.1),
+      vector2.make(9.9, 0.7),
+    )
+    const elevated = cubic2d.fromQuadratic(parabola)
+    expect(elevated.x).toMatchObject({
+      c0: parabola.x.c0,
+      c1: parabola.x.c1,
+      c2: parabola.x.c2,
+      c3: 0,
+    })
+    for (const t of [0, 0.3, 0.5, 0.77, 1]) {
+      const a = cubic2d.solve(elevated, t)
+      const b = quadratic2d.solve(parabola, t)
+      expect(a.x).toBe(b.x)
+      expect(a.y).toBe(b.y)
+    }
+    const end = cubic2d.endPoint(elevated)
+    expect(end.x).toBe(quadratic2d.endPoint(parabola).x)
+    expect(end.y).toBe(quadratic2d.endPoint(parabola).y)
+  })
+  test('elevation carries the per-axis trait brands', () => {
+    const c = linear2d.fromCoefficients(vector2.make(0, 0), vector2.make(2, 1))
+    if (linear2d.isIncreasingX(c) && linear2d.isIncreasingY(c)) {
+      const elevated = cubic2d.fromLinear(c)
+      expectTypeOf(elevated).toEqualTypeOf<
+        cubic2d.CubicCurve2d<linearPolynomial.Increasing, linearPolynomial.Increasing>
+      >()
+      expect(cubic2d.isIncreasingX(elevated)).toBe(true)
+      expect(cubic2d.isIncreasingY(elevated)).toBe(true)
+    }
+  })
 })
 
 describe('rationalCubic2d.fromBezierPoints', () => {

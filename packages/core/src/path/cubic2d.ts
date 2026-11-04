@@ -7,6 +7,8 @@ import type { Pipeable } from '../utils.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { CubicPath2dTypeId } from './cubic2d.internal.ts'
 import * as internal from './cubic2d.internal.ts'
+import type { LinearPath2d } from './linear2d.ts'
+import type { QuadraticPath2d } from './quadratic2d.ts'
 import type {
   Continuous,
   DecreasingX,
@@ -62,6 +64,50 @@ export const make: (...curves: ReadonlyArray<CubicCurve2d>) => CubicPath2d = int
  * @since 2.0.0
  */
 export const fromArray: (curves: ReadonlyArray<CubicCurve2d>) => CubicPath2d = internal.fromArray
+
+/**
+ * Creates a `CubicPath2d` tracing the same points as a `LinearPath2d`.
+ *
+ * Each segment is degree-elevated exactly — its monomial coefficients carry
+ * over with zero `t^2` and `t^3` terms — so the cubic path evaluates to the
+ * same point at every parameter, with no rounding. Trait brands
+ * (`Continuous`, the per-axis monotonicity brands) carry over with them.
+ *
+ * Use this to hand polyline geometry to cubic-only consumers: a straight
+ * chart segment must become a `CubicPath2d` before `CoordinateSystem.image`
+ * can map it.
+ *
+ * @param p - The linear path to elevate.
+ * @returns A `CubicPath2d` tracing the same points at the same parameters.
+ * @since 2.0.0
+ * @example
+ * ```ts
+ * // A polyline into the polar plane: elevate, then map.
+ * const chartPath = LinearPath2d.make(
+ *   LinearCurve2d.fromEndpoints(Vector2.make(0, 40), Vector2.make(90, 120)),
+ * )
+ * const spiral = CoordinateSystem.image(
+ *   CoordinateSystem.polar({ theta: Dimension.degrees }),
+ *   CubicPath2d.fromLinear(chartPath),
+ *   0.25,
+ * )
+ * ```
+ */
+export const fromLinear: <T>(p: LinearPath2d<T>) => CubicPath2d<T> = internal.fromLinear
+
+/**
+ * Creates a `CubicPath2d` tracing the same points as a `QuadraticPath2d`.
+ *
+ * Each segment is degree-elevated exactly — its monomial coefficients carry
+ * over with a zero `t^3` term — so the cubic path evaluates to the same
+ * point at every parameter, with no rounding. Trait brands (`Continuous`,
+ * the per-axis monotonicity brands) carry over with them.
+ *
+ * @param p - The quadratic path to elevate.
+ * @returns A `CubicPath2d` tracing the same points at the same parameters.
+ * @since 2.0.0
+ */
+export const fromQuadratic: <T>(p: QuadraticPath2d<T>) => CubicPath2d<T> = internal.fromQuadratic
 
 /**
  * Checks if a value is a `CubicPath2d`.

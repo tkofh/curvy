@@ -173,8 +173,14 @@ describe('coordinateSystem', () => {
     expect(Vector2.equals(unitPolar.center, Vector2.make(0, 0))).toBe(true)
     expect(unitPolar.theta.period).toBe(TWO_PI)
     expect(unitPolar.winding).toBe('clockwise')
-    expect(unitPolar.radius.scale).toBe(1)
-    expect(unitPolar.radius.offset).toBe(0)
+    expect(Dimension.equals(unitPolar.radius, Dimension.identity)).toBe(true)
+  })
+
+  test('polar constructor invariants throw', () => {
+    expect(() => CoordinateSystem.polar({ thetaOrigin: Number.NaN })).toThrow()
+    // The radius field's type is the Dimension union, but only linear
+    // radial maps are constructible today.
+    expect(() => CoordinateSystem.polar({ radius: Dimension.degrees })).toThrow()
   })
 
   test('guards and equals', () => {
@@ -251,6 +257,88 @@ describe('coordinateSystem', () => {
 
     const holed = CoordinateSystem.polar({ radius: Dimension.linear(1, 40) })
     expect(CoordinateSystem.fromCartesian(holed, Vector2.make(50, 0)).y).toBeCloseTo(10, 12)
+  })
+
+  test('mapAngle applies origin, winding, and unit without wrapping', () => {
+    expect(CoordinateSystem.mapAngle(degreesPolar, 90)).toBeCloseTo(Math.PI / 2, 12)
+    expect(CoordinateSystem.mapAngle(degreesPolar, 450)).toBeCloseTo(2.5 * Math.PI, 12)
+
+    const ccw = CoordinateSystem.polar({ theta: Dimension.degrees, winding: 'counterclockwise' })
+    expect(CoordinateSystem.mapAngle(ccw, 90)).toBeCloseTo(-Math.PI / 2, 12)
+
+    // thetaOrigin is screen-anchored: chart zero lands at the same screen
+    // angle whichever way the system winds.
+    const up = CoordinateSystem.polar({ theta: Dimension.degrees, thetaOrigin: -90 })
+    const upCcw = CoordinateSystem.polar({
+      theta: Dimension.degrees,
+      thetaOrigin: -90,
+      winding: 'counterclockwise',
+    })
+    expect(CoordinateSystem.mapAngle(up, 0)).toBeCloseTo(-Math.PI / 2, 12)
+    expect(CoordinateSystem.mapAngle(upCcw, 0)).toBeCloseTo(-Math.PI / 2, 12)
+  })
+
+  test('mapRadius applies the radial affine map, sign included', () => {
+    const holed = CoordinateSystem.polar({ radius: Dimension.linear(2, 40) })
+    expect(CoordinateSystem.mapRadius(holed, 5)).toBe(50)
+    expect(CoordinateSystem.mapRadius(holed, -30)).toBe(-20)
+    expect(CoordinateSystem.mapRadius(unitPolar, 7)).toBe(7)
+  })
+
+  test('scalar maps support data-last application', () => {
+    expect(degreesPolar.pipe(CoordinateSystem.mapAngle(90))).toBe(
+      CoordinateSystem.mapAngle(degreesPolar, 90),
+    )
+    expect(unitPolar.pipe(CoordinateSystem.mapRadius(3))).toBe(3)
+  })
+
+  test('ray images a fixed-angle radial span exactly', () => {
+    const path = CoordinateSystem.ray(degreesPolar, 0, { start: 80, end: 120 })
+    expect([...path].length).toBe(1)
+    expect(RationalCubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(80, 0))
+    expect(RationalCubicPath2d.solve(path, 0.5)).toBeCloseToValue(Vector2.make(100, 0))
+    expect(RationalCubicPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(120, 0))
+
+    const diagonal = CoordinateSystem.ray(unitPolar, Math.PI / 4, { start: 0, end: Math.SQRT2 })
+    expect(RationalCubicPath2d.solve(diagonal, 1)).toBeCloseToValue(Vector2.make(1, 1))
+  })
+
+  test('ray permits negative mapped radii and passes through the center', () => {
+    const crossing = CoordinateSystem.ray(unitPolar, 0, { start: -2, end: 2 })
+    expect(RationalCubicPath2d.solve(crossing, 0)).toBeCloseToValue(Vector2.make(-2, 0))
+    expect(RationalCubicPath2d.solve(crossing, 0.5)).toBeCloseToValue(Vector2.make(0, 0))
+    expect(RationalCubicPath2d.solve(crossing, 1)).toBeCloseToValue(Vector2.make(2, 0))
+
+    // A radial map can send chart radii negative too; arc throws there,
+    // ray reflects.
+    const holed = CoordinateSystem.polar({ radius: Dimension.linear(1, -10) })
+    expect(() => CoordinateSystem.arc(holed, { start: 0, end: 1 }, 0)).toThrow()
+    const reflected = CoordinateSystem.ray(holed, 0, { start: 0, end: 20 })
+    expect(RationalCubicPath2d.solve(reflected, 0)).toBeCloseToValue(Vector2.make(-10, 0))
+    expect(RationalCubicPath2d.solve(reflected, 1)).toBeCloseToValue(Vector2.make(10, 0))
+  })
+
+  test('cartesian ray is a vertical segment', () => {
+    const path = CoordinateSystem.ray(CoordinateSystem.cartesian, 5, { start: 1, end: 3 })
+    expect(RationalCubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(5, 1))
+    expect(RationalCubicPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(5, 3))
+  })
+
+  test('rayPathData emits M/L with a bare-M degenerate', () => {
+    expect(CoordinateSystem.rayPathData(degreesPolar, 0, { start: 80, end: 120 })).toBe(
+      'M 80,0 L 120,0',
+    )
+    expect(CoordinateSystem.rayPathData(degreesPolar, 0, { start: 80, end: 80 })).toBe('M 80,0')
+    expect(CoordinateSystem.rayPathData(CoordinateSystem.cartesian, 5, { start: 1, end: 3 })).toBe(
+      'M 5,1 L 5,3',
+    )
+  })
+
+  test('ray rejects non-finite inputs', () => {
+    expect(() => CoordinateSystem.ray(unitPolar, Number.NaN, { start: 0, end: 1 })).toThrow()
+    expect(() =>
+      CoordinateSystem.rayPathData(unitPolar, 0, { start: 0, end: Number.POSITIVE_INFINITY }),
+    ).toThrow()
   })
 
   test('arc reproduces the canonical quarter-circle constants', () => {

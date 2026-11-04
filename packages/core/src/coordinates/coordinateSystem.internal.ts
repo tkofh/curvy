@@ -28,7 +28,7 @@ import type {
   Winding,
 } from './coordinateSystem.ts'
 import * as dimension from './dimension.internal.ts'
-import type { Cyclical, Linear } from './dimension.ts'
+import type { Cyclical, Dimension, Linear } from './dimension.ts'
 
 export const CoordinateSystemTypeId: unique symbol = Symbol.for(
   'curvy/coordinates/coordinateSystem',
@@ -61,19 +61,25 @@ class PolarImpl extends CoordinateSystemImpl implements Polar {
   readonly center: Vector2.Vector2
   readonly theta: Cyclical
   readonly winding: Winding
-  readonly radius: Linear
+  readonly radius: Dimension
   readonly thetaOrigin: number
 
   constructor(
     center: Vector2.Vector2,
     theta: Cyclical,
     winding: Winding,
-    radius: Linear,
+    radius: Dimension,
     thetaOrigin: number,
   ) {
     super()
 
     invariant(Number.isFinite(thetaOrigin), 'Polar thetaOrigin must be finite')
+    // The field is typed as the Dimension union so the type can admit new
+    // radial-map kinds without breaking readers, but every operation in
+    // this module assumes an affine radial map (foldMap and fromCartesian
+    // read scale/offset; a wrapping radius would tear sector and image at
+    // period seams), so construction is where non-linear kinds stop.
+    invariant(radius.kind === 'linear', 'Polar radius must be a linear dimension')
 
     this.center = center
     this.theta = theta
@@ -138,7 +144,28 @@ const mapTheta = (s: Polar, theta: number): number =>
 const mapSweep = (s: Polar, sweep: number): number =>
   windingSign(s.winding) * sweep * ((2 * Math.PI) / s.theta.period)
 
-const mapRadius = (s: Polar, r: number): number => s.radius.scale * r + s.radius.offset
+// The single consumer of the constructor's linear-radius invariant: every
+// radial read in this module comes through here, so a future radial-map
+// kind lands by widening this helper (and foldMap) rather than by hunting
+// field reads.
+const radialMap = (s: Polar): Linear => s.radius as Linear
+
+const mapRadius = (s: Polar, r: number): number => {
+  const radius = radialMap(s)
+  return radius.scale * r + radius.offset
+}
+
+/** @internal */
+export const mapAngleDual = dual<
+  (theta: number) => (s: Polar) => number,
+  (s: Polar, theta: number) => number
+>(2, mapTheta)
+
+/** @internal */
+export const mapRadiusDual = dual<
+  (r: number) => (s: Polar) => number,
+  (s: Polar, r: number) => number
+>(2, mapRadius)
 
 /** @internal */
 export const toCartesian = dual<
@@ -168,7 +195,8 @@ export const fromCartesian = dual<
     windingSign(s.winding) *
       (Math.atan2(dy, dx) * (s.theta.period / (2 * Math.PI)) - s.thetaOrigin),
   )
-  const r = (Math.hypot(dx, dy) - s.radius.offset) / s.radius.scale
+  const radius = radialMap(s)
+  const r = (Math.hypot(dx, dy) - radius.offset) / radius.scale
   return Vector2.make(theta, r)
 })
 
@@ -212,6 +240,43 @@ export const arc = dual<
   return RationalCubicPath2d.fromArray(
     arcSegments(s.center, rho, mapTheta(s, theta.start), mapTheta(s, theta.end)),
   )
+})
+
+// The segment between the two mapped endpoints IS the exact image of the
+// radial span: with theta fixed the direction vector is constant and the
+// radial map is affine, so the image is the affine image of an interval —
+// a straight segment — even when the mapped radii change sign and the
+// segment passes through the center. No kind branch: on a cartesian
+// system toCartesian is the identity and the same segment is the
+// vertical chart-space edge itself.
+/** @internal */
+export const ray = dual<
+  (theta: number, r: Bounds) => (s: CoordinateSystem) => RationalCubicPath2d.RationalCubicPath2d,
+  (s: CoordinateSystem, theta: number, r: Bounds) => RationalCubicPath2d.RationalCubicPath2d
+>(3, (s: CoordinateSystem, theta: number, r: Bounds): RationalCubicPath2d.RationalCubicPath2d => {
+  assertFinite('ray', theta, r.start, r.end)
+
+  return RationalCubicPath2d.make(
+    lineSegment(
+      toCartesian(s, Vector2.make(theta, r.start)),
+      toCartesian(s, Vector2.make(theta, r.end)),
+    ),
+  )
+})
+
+/** @internal */
+export const rayPathData = dual<
+  (theta: number, r: Bounds) => (s: CoordinateSystem) => string,
+  (s: CoordinateSystem, theta: number, r: Bounds) => string
+>(3, (s: CoordinateSystem, theta: number, r: Bounds): string => {
+  assertFinite('rayPathData', theta, r.start, r.end)
+
+  const p0 = toCartesian(s, Vector2.make(theta, r.start))
+  if (r.start === r.end) {
+    return `M ${p0.x},${p0.y}`
+  }
+  const p1 = toCartesian(s, Vector2.make(theta, r.end))
+  return `M ${p0.x},${p0.y} L ${p1.x},${p1.y}`
 })
 
 /** @internal */
@@ -400,11 +465,12 @@ interface FoldedMap {
 
 const foldMap = (s: Polar): FoldedMap => {
   const k = FULL_TURN / s.theta.period
+  const radius = radialMap(s)
   return {
     a0: k * s.thetaOrigin,
     a1: k * windingSign(s.winding),
-    m: s.radius.scale,
-    b: s.radius.offset,
+    m: radius.scale,
+    b: radius.offset,
     cx: s.center.x,
     cy: s.center.y,
   }
