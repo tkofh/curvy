@@ -94,12 +94,24 @@ Built on `coincident`:
 - knot snapping and segment bracketing in `solveAtX`/`solveAtY`
 - `Affine2d.fromMatrix`'s bottom-row check, with its zero band widened by
   the magnitude of the matrix's other entries
+- the ordering predicates in `curvy/number`: `before`, `atMost`, `within`,
+  `inside`, `overlaps`, and `touches`
 
 **`coincident` is not transitive.** `coincident(a, b)` and `coincident(b, c)`
 do not imply `coincident(a, c)`. Chains of pairwise-coincident values can
 drift beyond the band. That is the behavior continuity needs: it claims each
 junction's two knots agree, and the first and last knots of a long path may
 still sit far apart.
+
+**Ordering.** The ordering predicates answer "Does this come before that?"
+and its relatives with the same band, so rounding noise never orders two
+values. `before` and `inside` are strict: they hold only beyond the band.
+`atMost`, `within`, and `touches` are closed: they hold within it.
+`overlaps` asks whether two ranges share more than a point, and `touches`
+whether they share at least one. A non-finite pair compares exactly. Against
+an infinity, the band is itself infinite (`|5 - Infinity| <= relative *
+Infinity`), so `coincident(5, Infinity)` holds; the ordering predicates step
+around that, and every finite value comes before `Infinity`.
 
 ### 3. Sign and degeneracy of derived scalars
 

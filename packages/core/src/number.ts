@@ -91,6 +91,197 @@ export function coincident(
   return Math.abs(a - b) <= absolute + relative * Math.max(Math.abs(a), Math.abs(b))
 }
 
+// The ordering predicates. Each decides a discrete question about the order
+// of two values with the `coincident` band, so that rounding noise never
+// flips it. A non-finite pair compares exactly: against an infinity the band
+// is infinite itself, and would call every finite value equal to it.
+
+/**
+ * Tests whether `a` comes strictly before `b`, beyond the `coincident` band.
+ *
+ * Values within rounding noise of each other are not ordered: neither comes
+ * before the other. When either value is non-finite the comparison is the
+ * exact `a < b`, so every finite value comes before `Infinity`, and `NaN`
+ * comes before nothing. See `PRECISION.md`.
+ *
+ * @param a - The first value.
+ * @param b - The second value.
+ * @param absolute - Absolute floor of the band. Defaults to `EPSILON`.
+ * @param relative - Magnitude-proportional term of the band. Defaults to `RELATIVE_TOLERANCE`.
+ * @returns `true` when `a < b` and the values do not coincide.
+ * @example
+ * ```ts
+ * before(1, 2) // true
+ * before(1, 1 + 1e-13) // false (rounding noise)
+ * before(1e300, Infinity) // true
+ * ```
+ * @since 2.0.0
+ */
+export function before(
+  a: number,
+  b: number,
+  absolute: number = EPSILON,
+  relative: number = RELATIVE_TOLERANCE,
+): boolean {
+  if (!Number.isFinite(a) || !Number.isFinite(b)) {
+    return a < b
+  }
+  return a < b && !coincident(a, b, absolute, relative)
+}
+
+/**
+ * Tests whether `a` comes at or before `b`, within the `coincident` band.
+ *
+ * The closed counterpart of `before`: `atMost(a, b)` is `!before(b, a)` for
+ * every pair but those with a `NaN`, which nothing is at most. When either
+ * value is non-finite the comparison is the exact `a <= b`. See
+ * `PRECISION.md`.
+ *
+ * @param a - The first value.
+ * @param b - The second value.
+ * @param absolute - Absolute floor of the band. Defaults to `EPSILON`.
+ * @param relative - Magnitude-proportional term of the band. Defaults to `RELATIVE_TOLERANCE`.
+ * @returns `true` when `a <= b` or the values coincide.
+ * @example
+ * ```ts
+ * atMost(2, 1) // false
+ * atMost(1 + 1e-13, 1) // true (rounding noise)
+ * ```
+ * @since 2.0.0
+ */
+export function atMost(
+  a: number,
+  b: number,
+  absolute: number = EPSILON,
+  relative: number = RELATIVE_TOLERANCE,
+): boolean {
+  if (!Number.isFinite(a) || !Number.isFinite(b)) {
+    return a <= b
+  }
+  return a <= b || coincident(a, b, absolute, relative)
+}
+
+/**
+ * Tests whether `x` lies in the closed range `[low, high]`, within the
+ * `coincident` band at each end.
+ *
+ * @param x - The value.
+ * @param low - The lesser bound.
+ * @param high - The greater bound.
+ * @param absolute - Absolute floor of the band. Defaults to `EPSILON`.
+ * @param relative - Magnitude-proportional term of the band. Defaults to `RELATIVE_TOLERANCE`.
+ * @returns `true` when `atMost(low, x)` and `atMost(x, high)`.
+ * @example
+ * ```ts
+ * within(0, 0, 1) // true
+ * within(1 + 1e-13, 0, 1) // true (rounding noise)
+ * within(2, 0, 1) // false
+ * ```
+ * @since 2.0.0
+ */
+export function within(
+  x: number,
+  low: number,
+  high: number,
+  absolute: number = EPSILON,
+  relative: number = RELATIVE_TOLERANCE,
+): boolean {
+  return atMost(low, x, absolute, relative) && atMost(x, high, absolute, relative)
+}
+
+/**
+ * Tests whether `x` lies strictly inside the range `(low, high)`, beyond the
+ * `coincident` band at each end.
+ *
+ * @param x - The value.
+ * @param low - The lesser bound.
+ * @param high - The greater bound.
+ * @param absolute - Absolute floor of the band. Defaults to `EPSILON`.
+ * @param relative - Magnitude-proportional term of the band. Defaults to `RELATIVE_TOLERANCE`.
+ * @returns `true` when `before(low, x)` and `before(x, high)`.
+ * @example
+ * ```ts
+ * inside(0.5, 0, 1) // true
+ * inside(1e-13, 0, 1) // false (rounding noise from the bound)
+ * ```
+ * @since 2.0.0
+ */
+export function inside(
+  x: number,
+  low: number,
+  high: number,
+  absolute: number = EPSILON,
+  relative: number = RELATIVE_TOLERANCE,
+): boolean {
+  return before(low, x, absolute, relative) && before(x, high, absolute, relative)
+}
+
+/**
+ * Tests whether the ranges `[a0, a1]` and `[b0, b1]` share more than a
+ * point, beyond the `coincident` band. Ranges that only touch end to end, or
+ * come within rounding noise of touching, do not overlap. A range without
+ * length overlaps one that it lies strictly inside.
+ *
+ * Each range is given as its lesser bound, then its greater.
+ *
+ * @param a0 - The lesser bound of the first range.
+ * @param a1 - The greater bound of the first range.
+ * @param b0 - The lesser bound of the second range.
+ * @param b1 - The greater bound of the second range.
+ * @param absolute - Absolute floor of the band. Defaults to `EPSILON`.
+ * @param relative - Magnitude-proportional term of the band. Defaults to `RELATIVE_TOLERANCE`.
+ * @returns `true` when each range starts strictly before the other ends.
+ * @example
+ * ```ts
+ * overlaps(0, 2, 1, 3) // true
+ * overlaps(0, 1, 1, 2) // false (they only touch)
+ * overlaps(1, 1, 0, 2) // true (a point strictly inside)
+ * ```
+ * @since 2.0.0
+ */
+export function overlaps(
+  a0: number,
+  a1: number,
+  b0: number,
+  b1: number,
+  absolute: number = EPSILON,
+  relative: number = RELATIVE_TOLERANCE,
+): boolean {
+  return before(a0, b1, absolute, relative) && before(b0, a1, absolute, relative)
+}
+
+/**
+ * Tests whether the ranges `[a0, a1]` and `[b0, b1]` share at least a
+ * point, within the `coincident` band. Ranges that touch end to end, or come
+ * within rounding noise of touching, do.
+ *
+ * Each range is given as its lesser bound, then its greater.
+ *
+ * @param a0 - The lesser bound of the first range.
+ * @param a1 - The greater bound of the first range.
+ * @param b0 - The lesser bound of the second range.
+ * @param b1 - The greater bound of the second range.
+ * @param absolute - Absolute floor of the band. Defaults to `EPSILON`.
+ * @param relative - Magnitude-proportional term of the band. Defaults to `RELATIVE_TOLERANCE`.
+ * @returns `true` when each range starts at or before the other ends.
+ * @example
+ * ```ts
+ * touches(0, 1, 1, 2) // true
+ * touches(0, 1, 2, 3) // false
+ * ```
+ * @since 2.0.0
+ */
+export function touches(
+  a0: number,
+  a1: number,
+  b0: number,
+  b1: number,
+  absolute: number = EPSILON,
+  relative: number = RELATIVE_TOLERANCE,
+): boolean {
+  return atMost(a0, b1, absolute, relative) && atMost(b0, a1, absolute, relative)
+}
+
 /**
  * Snaps near-zero values to exactly zero for stable sign tests.
  *
