@@ -269,7 +269,9 @@ export const subdivide = (c: CubicCurve2d, t: number): [CubicCurve2d, CubicCurve
 
 // Point (px, py) and first derivative (tx, ty) at parameter `t` in one Horner
 // pass. Hot-loop helper for the subdivision certification, which evaluates
-// both on every closest-point step.
+// both on every closest-point step. It restates `solve` and `derivative`
+// inline on purpose; `CurveSample` in `certified.internal.ts` records the
+// measurement.
 /** @internal */
 export const solveWithDerivative = (c: CubicCurve2d, t: number) => ({
   px: c.x.c0 + t * (c.x.c1 + t * (c.x.c2 + t * c.x.c3)),

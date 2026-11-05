@@ -648,11 +648,10 @@ const patchBox = (
 // midpoint (a point ON the curve, which the one-sided walker's triangle
 // bound requires), and bisection is exact polynomial subdivision.
 const imagePiece = (f: FoldedMap, chart: ChartPiece, depth: number): certified.CertifiedPiece => {
-  const witness = imageEval(f, chart, 0.5)
+  const { px, py } = imageEval(f, chart, 0.5)
   return {
     box: patchBox(f, chart),
-    witnessX: witness.px,
-    witnessY: witness.py,
+    witness: Vector2.make(px, py),
     depth,
     subdivide: () => {
       const [left, right] = chart.halves()
@@ -672,7 +671,7 @@ const imageWithinTolerance = (
 ): boolean =>
   certified.withinTolerance(
     imagePiece(f, chart, 0),
-    (qx, qy) => certified.closestSquaredDistance((s) => imageEval(f, chart, s), qx, qy),
+    (s) => imageEval(f, chart, s),
     candidate,
     tolerance,
   )

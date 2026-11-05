@@ -23,10 +23,11 @@
 // whose `lower` exceeds `tolerance` (definitive miss) and accepts once every
 // piece's `upper` <= tolerance.
 
-import * as Interval2d from '../interval/interval2d.ts'
-import * as CubicPolynomial from '../polynomial/cubic.ts'
+import * as Interval2d from '../interval/interval2d.internal.ts'
+import type { Interval2d as Box } from '../interval/interval2d.ts'
 import * as CubicCurve2d from './cubic2d.internal.ts'
 import type { CubicCurve2d as Cubic } from './cubic2d.ts'
+import type * as Vector2 from '../vector/vector2.ts'
 
 // Approximation cap for the clients' fit-and-split recursions. At depth 20
 // one input curve could emit up to 2^20 (~1M) segments — well past any sane
@@ -38,6 +39,13 @@ export const MAX_APPROX_DEPTH = 20
 
 const MAX_HAUSDORFF_DEPTH = 30
 
+// A curve's point (px, py) and first derivative (tx, ty) at one parameter.
+// Deliberately flat numbers rather than two `Vector2`s: closest-point search
+// evaluates a curve ~70 times per query, and measured on 2026-11-05 a
+// `Vector2` sample (built from the curve solvers, distances via
+// `Vector2.subtract`/`Vector2.dot`) made the whole fit 1.65x-2.3x slower
+// across `image` and `approximateAsCubicCurves`. The cost is allocation in
+// that inner loop, so the samplers stay hand-written Horner forms.
 /** @internal */
 export interface CurveSample {
   readonly px: number
@@ -47,7 +55,7 @@ export interface CurveSample {
 }
 
 // Coarse sample + bisection on the squared-distance derivative. Returns the
-// minimum squared distance from (qx, qy) to a parametric curve described by
+// minimum squared distance from `q` to a parametric curve described by
 // `eval_`. Stationary points of (P(s) - q) * P'(s) are local extrema of
 // D^2(s); 32 coarse samples reliably bracket the global min for cubic-degree
 // curves (which have at most ~5 critical points of squared distance). The
@@ -56,9 +64,9 @@ export interface CurveSample {
 /** @internal */
 export const closestSquaredDistance = (
   eval_: (s: number) => CurveSample,
-  qx: number,
-  qy: number,
+  q: Vector2.Vector2,
 ): number => {
+  const { x: qx, y: qy } = q
   const coarseSamples = 32
   let sBest = 0
   let d2Best = Number.POSITIVE_INFINITY
@@ -102,62 +110,49 @@ export const closestSquaredDistance = (
   return d2 < d2Best ? d2 : d2Best
 }
 
-const maxDistFromPointToBox = (px: number, py: number, box: Interval2d.Interval2d): number => {
-  const xLo = Math.min(box.x.start, box.x.end)
-  const xHi = Math.max(box.x.start, box.x.end)
-  const yLo = Math.min(box.y.start, box.y.end)
-  const yHi = Math.max(box.y.start, box.y.end)
-  const dx = Math.max(px - xLo, xHi - px)
-  const dy = Math.max(py - yLo, yHi - py)
-  return Math.hypot(dx, dy)
-}
-
 // The piece abstraction the one-sided walker consumes: a rigorous bounding
 // box for the piece's span of the source curve, a witness point that lies ON
 // the source curve, and exact bisection. Any curve family that can supply
 // these three things can be certified against a candidate.
 /** @internal */
 export interface CertifiedPiece {
-  box: Interval2d.Interval2d
-  witnessX: number
-  witnessY: number
-  depth: number
+  readonly box: Box
+  readonly witness: Vector2.Vector2
+  readonly depth: number
   subdivide(): [CertifiedPiece, CertifiedPiece]
 }
 
 /** @internal */
-export const polynomialPiece = (c: Cubic, depth = 0): CertifiedPiece => {
-  const witnessX = CubicPolynomial.solve(c.x, 0.5)
-  const witnessY = CubicPolynomial.solve(c.y, 0.5)
-  return {
-    box: CubicCurve2d.boundingBox(c),
-    witnessX,
-    witnessY,
-    depth,
-    subdivide: () => {
-      const [left, right] = CubicCurve2d.subdivide(c, 0.5)
-      return [polynomialPiece(left, depth + 1), polynomialPiece(right, depth + 1)]
-    },
-  }
-}
+export const polynomialPiece = (c: Cubic, depth = 0): CertifiedPiece => ({
+  box: CubicCurve2d.boundingBox(c),
+  witness: CubicCurve2d.solve(c, 0.5),
+  depth,
+  subdivide: () => {
+    const [left, right] = CubicCurve2d.subdivide(c, 0.5)
+    return [polynomialPiece(left, depth + 1), polynomialPiece(right, depth + 1)]
+  },
+})
 
+// One-sided certified check: true when every point of the curve `initialPiece`
+// spans is provably within `tolerance` of the target curve, which `targetEval`
+// evaluates and `targetBox` encloses.
 /** @internal */
 export const oneSidedWithinTolerance = (
   initialPiece: CertifiedPiece,
-  targetBox: Interval2d.Interval2d,
-  targetClosestSquared: (qx: number, qy: number) => number,
+  targetBox: Box,
+  targetEval: (s: number) => CurveSample,
   tolerance: number,
 ): boolean => {
   const tol2 = tolerance * tolerance
   const stack: Array<CertifiedPiece> = [initialPiece]
   while (stack.length > 0) {
     const piece = stack.pop() as CertifiedPiece
-    const lower2 = targetClosestSquared(piece.witnessX, piece.witnessY)
+    const lower2 = closestSquaredDistance(targetEval, piece.witness)
     if (lower2 > tol2) {
       return false
     }
     const lower = Math.sqrt(lower2)
-    const triangleUpper = lower + maxDistFromPointToBox(piece.witnessX, piece.witnessY, piece.box)
+    const triangleUpper = lower + Interval2d.maxDistanceToVector(piece.box, piece.witness)
     const boxPairUpper = Interval2d.maxDistance(piece.box, targetBox)
     const upper = triangleUpper < boxPairUpper ? triangleUpper : boxPairUpper
     if (upper <= tolerance) {
@@ -176,11 +171,12 @@ export const oneSidedWithinTolerance = (
 // cubic candidate: true when every point of the source is provably within
 // `tolerance` of the candidate and every point of the candidate is provably
 // within `tolerance` of the source. `source` is the source's root piece, and
-// its box doubles as the target box for the candidate-side walk.
+// its box doubles as the target box for the candidate-side walk; `sourceEval`
+// evaluates the source curve on the root piece's parameter range.
 /** @internal */
 export const withinTolerance = (
   source: CertifiedPiece,
-  sourceClosestSquared: (qx: number, qy: number) => number,
+  sourceEval: (s: number) => CurveSample,
   candidate: Cubic,
   tolerance: number,
 ): boolean => {
@@ -189,17 +185,11 @@ export const withinTolerance = (
     !oneSidedWithinTolerance(
       source,
       candidateBox,
-      (qx, qy) =>
-        closestSquaredDistance((s) => CubicCurve2d.solveWithDerivative(candidate, s), qx, qy),
+      (s) => CubicCurve2d.solveWithDerivative(candidate, s),
       tolerance,
     )
   ) {
     return false
   }
-  return oneSidedWithinTolerance(
-    polynomialPiece(candidate),
-    source.box,
-    sourceClosestSquared,
-    tolerance,
-  )
+  return oneSidedWithinTolerance(polynomialPiece(candidate), source.box, sourceEval, tolerance)
 }

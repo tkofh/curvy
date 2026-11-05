@@ -173,3 +173,19 @@ export const maxDistance = dual<
   const dy = Math.max(aYHi, bYHi) - Math.min(aYLo, bYLo)
   return Math.hypot(dx, dy)
 })
+
+// Distance from a point to the farthest point of a box: the farthest corner
+// on each axis independently.
+/** @internal */
+export const maxDistanceToVector = dual<
+  (v: Vector2.Vector2) => (box: Bounds2d) => number,
+  (box: Bounds2d, v: Vector2.Vector2) => number
+>(2, (box: Bounds2d, v: Vector2.Vector2): number => {
+  const xLo = Math.min(box.x.start, box.x.end)
+  const xHi = Math.max(box.x.start, box.x.end)
+  const yLo = Math.min(box.y.start, box.y.end)
+  const yHi = Math.max(box.y.start, box.y.end)
+  const dx = Math.max(v.x - xLo, xHi - v.x)
+  const dy = Math.max(v.y - yLo, yHi - v.y)
+  return Math.hypot(dx, dy)
+})

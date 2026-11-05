@@ -749,7 +749,8 @@ export const hasPositiveWeights = (c: RationalCubicCurve2d): boolean =>
   cubicPolynomial.bernsteinCoefficients(c.w).every((w) => w > 0)
 
 // R(s) = (X(s)/W(s), Y(s)/W(s))  ->  R'(s) = ((X'W - XW')/W^2, (Y'W - YW')/W^2)
-// Point (px, py) and first derivative (tx, ty) at parameter `s` in one pass.
+// Point (px, py) and first derivative (tx, ty) at parameter `s` in one pass,
+// inline for the same hot-loop reason as `CubicCurve2d.solveWithDerivative`.
 /** @internal */
 export const solveWithDerivative = (c: RationalCubicCurve2d, s: number) => {
   const X = c.x.c0 + s * (c.x.c1 + s * (c.x.c2 + s * c.x.c3))
@@ -767,21 +768,15 @@ export const solveWithDerivative = (c: RationalCubicCurve2d, s: number) => {
   }
 }
 
-const rationalPiece = (c: RationalCubicCurve2d, depth = 0): certified.CertifiedPiece => {
-  const wMid = CubicPolynomial.solve(c.w, 0.5)
-  const witnessX = CubicPolynomial.solve(c.x, 0.5) / wMid
-  const witnessY = CubicPolynomial.solve(c.y, 0.5) / wMid
-  return {
-    box: hullBoundingBox(c),
-    witnessX,
-    witnessY,
-    depth,
-    subdivide: () => {
-      const [left, right] = subdivide(c, 0.5)
-      return [rationalPiece(left, depth + 1), rationalPiece(right, depth + 1)]
-    },
-  }
-}
+const rationalPiece = (c: RationalCubicCurve2d, depth = 0): certified.CertifiedPiece => ({
+  box: hullBoundingBox(c),
+  witness: solve(c, 0.5),
+  depth,
+  subdivide: () => {
+    const [left, right] = subdivide(c, 0.5)
+    return [rationalPiece(left, depth + 1), rationalPiece(right, depth + 1)]
+  },
+})
 
 // Certified Hausdorff-within-tolerance check between a rational and a
 // candidate polynomial cubic, by the two one-sided walks in
@@ -810,7 +805,7 @@ const hausdorffWithinTolerance = (
 
   return certified.withinTolerance(
     rationalPiece(rational),
-    (qx, qy) => certified.closestSquaredDistance((s) => solveWithDerivative(rational, s), qx, qy),
+    (s) => solveWithDerivative(rational, s),
     candidate,
     tolerance,
   )
