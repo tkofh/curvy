@@ -1,17 +1,15 @@
 import * as LinearCurve2d from '../curve/linear2d.ts'
 import * as LinearPath2d from '../path/linear2d.ts'
 import * as Affine2d from '../transform/affine2d.ts'
-import { dual, Pipeable } from '../utils.ts'
-import { invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { Linear2d } from './linear2d.ts'
 
-export const Linear2dTypeId = Symbol('curvy/splines/linear2d')
-export type Linear2dTypeId = typeof Linear2dTypeId
+const Linear2dTypeId = '~curvy/Linear2d'
 
-class Linear2dImpl extends Pipeable implements Linear2d {
-  readonly [Linear2dTypeId]: Linear2dTypeId = Linear2dTypeId
-
+class Linear2dImpl extends Value(Linear2dTypeId) implements Linear2d {
   readonly points: ReadonlyArray<Vector2.Vector2>
 
   constructor(points: ReadonlyArray<Vector2.Vector2>) {
@@ -22,6 +20,10 @@ class Linear2dImpl extends Pipeable implements Linear2d {
 
   [Symbol.iterator]() {
     return this.points[Symbol.iterator]()
+  }
+
+  toString() {
+    return `Linear2d(${this.points.join(', ')})`
   }
 }
 

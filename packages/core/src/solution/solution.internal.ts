@@ -1,5 +1,7 @@
 import * as Interval from '../interval/interval.ts'
-import { dual, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import type {
   AtMostOne,
   AtMostThree,
@@ -11,23 +13,28 @@ import type {
   Three,
   Two,
 } from './solution.ts'
-import { invariant } from '../utils.ts'
+
+const SolutionBase = Value('~curvy/Solution')
 
 // Empty iterator — shared across all None instances since None has no data.
 const EMPTY_ITERATOR: Iterator<never> = {
   next: () => ({ done: true, value: undefined as never }),
 }
 
-class NoneImpl extends Pipeable implements None {
+class NoneImpl extends SolutionBase implements None {
   readonly _tag = 'none' as const
   readonly length = 0 as const;
 
   [Symbol.iterator](): Iterator<never> {
     return EMPTY_ITERATOR
   }
+
+  toString() {
+    return `Solution.None()`
+  }
 }
 
-class OneImpl<T> extends Pipeable implements One<T> {
+class OneImpl<T> extends SolutionBase implements One<T> {
   readonly _tag = 'one' as const
   readonly length = 1 as const
   readonly value: T
@@ -40,9 +47,13 @@ class OneImpl<T> extends Pipeable implements One<T> {
   [Symbol.iterator](): Iterator<T> {
     return [this.value][Symbol.iterator]()
   }
+
+  toString() {
+    return `Solution.One(${String(this.value)})`
+  }
 }
 
-class TwoImpl<T> extends Pipeable implements Two<T> {
+class TwoImpl<T> extends SolutionBase implements Two<T> {
   readonly _tag = 'two' as const
   readonly length = 2 as const
   readonly values: readonly [T, T]
@@ -59,9 +70,13 @@ class TwoImpl<T> extends Pipeable implements Two<T> {
   [Symbol.iterator](): Iterator<T> {
     return this.values[Symbol.iterator]()
   }
+
+  toString() {
+    return `Solution.Two(${this.values.join(', ')})`
+  }
 }
 
-class ThreeImpl<T> extends Pipeable implements Three<T> {
+class ThreeImpl<T> extends SolutionBase implements Three<T> {
   readonly _tag = 'three' as const
   readonly length = 3 as const
   readonly values: readonly [T, T, T]
@@ -77,6 +92,10 @@ class ThreeImpl<T> extends Pipeable implements Three<T> {
 
   [Symbol.iterator](): Iterator<T> {
     return this.values[Symbol.iterator]()
+  }
+
+  toString() {
+    return `Solution.Three(${this.values.join(', ')})`
   }
 }
 

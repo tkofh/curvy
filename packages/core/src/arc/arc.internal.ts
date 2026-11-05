@@ -3,20 +3,21 @@ import * as Interval from '../interval/interval.ts'
 import * as Interval2d from '../interval/interval2d.ts'
 import { EPSILON, coincident } from '../number.ts'
 import * as RationalCubicPath2d from '../path/rationalCubic2d.ts'
-import { Pipeable, dual, invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { Arc, Circular, CircularConfig, Elliptical, EllipticalConfig } from './arc.ts'
 
-export const ArcTypeId: unique symbol = Symbol.for('curvy/arc/arc')
-export type ArcTypeId = typeof ArcTypeId
+const ArcTypeId = '~curvy/Arc'
+
+const ArcBase = Value(ArcTypeId)
 
 const FULL_TURN = 2 * Math.PI
 const HALF_TURN = Math.PI
 const QUARTER_TURN = Math.PI / 2
 
-class CircularImpl extends Pipeable implements Circular {
-  readonly [ArcTypeId]: ArcTypeId = ArcTypeId
-
+class CircularImpl extends ArcBase implements Circular {
   readonly kind = 'circular' as const
 
   readonly center: Vector2.Vector2
@@ -40,18 +41,12 @@ class CircularImpl extends Pipeable implements Circular {
     this.sweep = sweep
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Arc.Circular(center (${this.center.x}, ${this.center.y}), radius ${this.radius}, start ${this.startAngle}, sweep ${this.sweep})`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this[Symbol.toStringTag]
   }
 }
 
-class EllipticalImpl extends Pipeable implements Elliptical {
-  readonly [ArcTypeId]: ArcTypeId = ArcTypeId
-
+class EllipticalImpl extends ArcBase implements Elliptical {
   readonly kind = 'elliptical' as const
 
   readonly center: Vector2.Vector2
@@ -91,12 +86,8 @@ class EllipticalImpl extends Pipeable implements Elliptical {
     this.sweep = sweep
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Arc.Elliptical(center (${this.center.x}, ${this.center.y}), radii (${this.radiusX}, ${this.radiusY}), rotation ${this.rotation}, start ${this.startAngle}, sweep ${this.sweep})`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this[Symbol.toStringTag]
   }
 }
 

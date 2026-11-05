@@ -1,10 +1,9 @@
 import type { Bounds } from '../interval/interval.ts'
 import type { CubicPath2d } from '../path/cubic2d.ts'
 import type { RationalCubicPath2d } from '../path/rationalCubic2d.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import * as internal from './coordinateSystem.internal.ts'
-import type { CoordinateSystemTypeId } from './coordinateSystem.internal.ts'
 import type { Cyclical, Dimension } from './dimension.ts'
 
 /**
@@ -51,8 +50,8 @@ export type Winding = 'clockwise' | 'counterclockwise'
  *
  * @since 2.0.0
  */
-export interface Cartesian extends Pipeable {
-  readonly [CoordinateSystemTypeId]: CoordinateSystemTypeId
+export interface Cartesian extends Value.Instance {
+  readonly '~curvy/CoordinateSystem': '~curvy/CoordinateSystem'
   readonly kind: 'cartesian'
 }
 
@@ -64,8 +63,8 @@ export interface Cartesian extends Pipeable {
  *
  * @since 2.0.0
  */
-export interface Polar extends Pipeable {
-  readonly [CoordinateSystemTypeId]: CoordinateSystemTypeId
+export interface Polar extends Value.Instance {
+  readonly '~curvy/CoordinateSystem': '~curvy/CoordinateSystem'
   readonly kind: 'polar'
   /**
    * The cartesian point where mapped radius `0` sits.

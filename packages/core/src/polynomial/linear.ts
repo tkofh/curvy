@@ -1,8 +1,7 @@
 import type { Closed, Interval } from '../interval/interval.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { LinearPolynomialTypeId } from './linear.internal.ts'
 import * as internal from './linear.internal.ts'
 import type { GuaranteedMonotonicity } from '../monotonicity/monotonicity.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
@@ -24,8 +23,8 @@ export type { Monotonic, Increasing, Decreasing, Reflected } from './traits.ts'
  *
  * @since 1.0.0
  */
-export interface LinearPolynomial<out Traits = unknown> extends Pipeable {
-  readonly [LinearPolynomialTypeId]: LinearPolynomialTypeId
+export interface LinearPolynomial<out Traits = unknown> extends Value.Instance {
+  readonly '~curvy/LinearPolynomial': '~curvy/LinearPolynomial'
   readonly [PolynomialTraits]: Traits
 
   /**

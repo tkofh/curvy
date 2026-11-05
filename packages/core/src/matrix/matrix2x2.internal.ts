@@ -1,17 +1,15 @@
 import { toTwoDimensionalIndex } from '../dimensions.ts'
-import { dual, Pipeable } from '../utils.ts'
-import { invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import { coincident } from '../number.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import * as vector2 from '../vector/vector2.internal.ts'
 import type { Matrix2x2, Matrix2x2Coordinate } from './matrix2x2.ts'
 
-export const Matrix2x2TypeId: unique symbol = Symbol.for('curvy/matrix2x2')
-export type Matrix2x2TypeId = typeof Matrix2x2TypeId
+const Matrix2x2TypeId = '~curvy/Matrix2x2'
 
-class Matrix2x2Impl extends Pipeable implements Matrix2x2 {
-  readonly [Matrix2x2TypeId]: Matrix2x2TypeId = Matrix2x2TypeId
-
+class Matrix2x2Impl extends Value(Matrix2x2TypeId) implements Matrix2x2 {
   readonly m00: number
   readonly m01: number
 
@@ -26,16 +24,8 @@ class Matrix2x2Impl extends Pipeable implements Matrix2x2 {
     this.m11 = m11
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Matrix2x2(${this.m00}, ${this.m01}, ${this.m10}, ${this.m11})`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return `Matrix2x2(${this.m00}, ${this.m01}, ${this.m10}, ${this.m11})`
-  }
-
-  [Symbol.hasInstance](m: unknown): m is Matrix2x2 {
-    return isMatrix2x2(m)
   }
 }
 

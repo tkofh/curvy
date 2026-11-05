@@ -1,9 +1,8 @@
 import type { Closed } from '../interval/interval.ts'
 import type { Interval2d } from '../interval/interval2d.ts'
 import type { RationalCubicPath2d } from '../path/rationalCubic2d.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { ArcTypeId } from './arc.internal.ts'
 import * as internal from './arc.internal.ts'
 
 /**
@@ -41,8 +40,8 @@ export type Arc = Circular | Elliptical
  *
  * @since 2.0.0
  */
-export interface Circular extends Pipeable {
-  readonly [ArcTypeId]: ArcTypeId
+export interface Circular extends Value.Instance {
+  readonly '~curvy/Arc': '~curvy/Arc'
   readonly kind: 'circular'
   /**
    * The cartesian center of the circle the arc lies on.
@@ -110,8 +109,8 @@ export interface CircularConfig {
  *
  * @since 2.0.0
  */
-export interface Elliptical extends Pipeable {
-  readonly [ArcTypeId]: ArcTypeId
+export interface Elliptical extends Value.Instance {
+  readonly '~curvy/Arc': '~curvy/Arc'
   readonly kind: 'elliptical'
   /**
    * The cartesian center of the ellipse the arc lies on.

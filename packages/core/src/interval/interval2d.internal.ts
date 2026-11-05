@@ -1,17 +1,16 @@
-import { dual, invariant, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Interval from './interval.ts'
 import type { Bounds2d, Interval2d } from './interval2d.ts'
 
-export const Interval2dTypeId: unique symbol = Symbol('curvy/interval/interval2d')
-export type Interval2dTypeId = typeof Interval2dTypeId
+const Interval2dTypeId = '~curvy/Interval2d'
 
 class Interval2dImpl<X extends Interval.Interval, Y extends Interval.Interval>
-  extends Pipeable
+  extends Value(Interval2dTypeId)
   implements Interval2d<X, Y>
 {
-  readonly [Interval2dTypeId]: Interval2dTypeId = Interval2dTypeId
-
   readonly x: X
   readonly y: Y
 
@@ -21,12 +20,8 @@ class Interval2dImpl<X extends Interval.Interval, Y extends Interval.Interval>
     this.y = y
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Interval2d(${String(this.x)} x ${String(this.y)})`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this[Symbol.toStringTag]
   }
 }
 

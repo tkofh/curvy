@@ -1,20 +1,18 @@
 import * as Characteristic from '../characteristic/characteristic.ts'
 import * as CubicPath2d from '../path/cubic2d.ts'
 import * as Affine2d from '../transform/affine2d.ts'
-import { dual, Pipeable } from '../utils.ts'
-import { invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { Bezier2d } from './bezier2d.ts'
 import * as bezierInternal from './bezier2d.internal.ts'
 import type { Hermite2d } from './hermite2d.ts'
 import { toCurves } from './util.ts'
 
-export const Hermite2dTypeId = Symbol('curvy/splines/hermite2d')
-export type Hermite2dTypeId = typeof Hermite2dTypeId
+const Hermite2dTypeId = '~curvy/Hermite2d'
 
-class Hermite2dImpl extends Pipeable implements Hermite2d {
-  readonly [Hermite2dTypeId]: Hermite2dTypeId = Hermite2dTypeId
-
+class Hermite2dImpl extends Value(Hermite2dTypeId) implements Hermite2d {
   readonly points: ReadonlyArray<Vector2.Vector2>
 
   constructor(points: ReadonlyArray<Vector2.Vector2>) {
@@ -27,6 +25,10 @@ class Hermite2dImpl extends Pipeable implements Hermite2d {
 
   [Symbol.iterator]() {
     return this.points[Symbol.iterator]()
+  }
+
+  toString() {
+    return `Hermite2d(${this.points.join(', ')})`
   }
 }
 

@@ -34,9 +34,9 @@ import {
   GL32_X15,
 } from '../length.ts'
 import * as Monotonicity from '../monotonicity/monotonicity.ts'
-import { dual } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
 import * as Solution from '../solution/solution.ts'
-import { invariant } from '../utils.ts'
 import { clampToZero, coincident, RELATIVE_TOLERANCE } from '../number.ts'
 import type * as Vector2 from '../vector/vector2.ts'
 import type { Vector4 } from '../vector/vector4.ts'

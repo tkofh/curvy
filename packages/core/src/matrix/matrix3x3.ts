@@ -1,9 +1,8 @@
 import type { ThreeDimensionalComponent, ThreeDimensionalIndex } from '../dimensions.ts'
 import type * as Solution from '../solution/solution.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector3 } from '../vector/vector3.ts'
 import type { Matrix2x2 } from './matrix2x2.ts'
-import type { Matrix3x3TypeId } from './matrix3x3.internal.ts'
 import * as internal from './matrix3x3.internal.ts'
 import type { Invertible, MatrixTraits } from './traits.ts'
 
@@ -30,8 +29,8 @@ export type Matrix3x3Coordinate = ThreeDimensionalIndex | ThreeDimensionalCompon
  *
  * @since 1.0.0
  */
-export interface Matrix3x3<out Traits = unknown> extends Pipeable {
-  readonly [Matrix3x3TypeId]: Matrix3x3TypeId
+export interface Matrix3x3<out Traits = unknown> extends Value.Instance {
+  readonly '~curvy/Matrix3x3': '~curvy/Matrix3x3'
   readonly [MatrixTraits]: Traits
   /**
    * The value of the first row and first column.

@@ -3,9 +3,8 @@ import type { CubicCurve2d } from '../curve/cubic2d.ts'
 import type { Closed } from '../interval/interval.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { CubicPath2dTypeId } from './cubic2d.internal.ts'
 import * as internal from './cubic2d.internal.ts'
 import type { LinearPath2d } from './linear2d.ts'
 import type { QuadraticPath2d } from './quadratic2d.ts'
@@ -40,8 +39,8 @@ export type {
  *
  * @since 1.0.0
  */
-export interface CubicPath2d<out Trait = unknown> extends Pipeable, Iterable<CubicCurve2d> {
-  readonly [CubicPath2dTypeId]: CubicPath2dTypeId
+export interface CubicPath2d<out Trait = unknown> extends Value.Instance, Iterable<CubicCurve2d> {
+  readonly '~curvy/CubicPath2d': '~curvy/CubicPath2d'
   readonly [PathTraits]: Trait
 }
 

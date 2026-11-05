@@ -1,17 +1,13 @@
-import { dual, Pipeable } from '../utils.ts'
-import { invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import { coincident } from '../number.ts'
 import type { Vector2, Weighted } from './vector2.ts'
 
-export const Vector2TypeId = Symbol.for('curvy/vector2')
-export type Vector2TypeId = typeof Vector2TypeId
+const TypeId = '~curvy/Vector2'
+const WeightedTypeId = '~curvy/Vector2/Weighted'
 
-export const WeightedVector2TypeId = Symbol.for('curvy/vector2/weighted')
-export type WeightedVector2TypeId = typeof WeightedVector2TypeId
-
-class Vector2Impl extends Pipeable implements Vector2 {
-  readonly [Vector2TypeId]: Vector2TypeId = Vector2TypeId
-
+class Vector2Impl extends Value(TypeId) implements Vector2 {
   readonly x: number
   readonly y: number
 
@@ -29,18 +25,12 @@ class Vector2Impl extends Pipeable implements Vector2 {
     return this.y
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Vector2(${this.x}, ${this.y})`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this[Symbol.toStringTag]
   }
 }
 
-class WeightedImpl extends Pipeable implements Weighted {
-  readonly [WeightedVector2TypeId]: WeightedVector2TypeId = WeightedVector2TypeId
-
+class WeightedImpl extends Value(WeightedTypeId) implements Weighted {
   readonly x: number
   readonly y: number
   readonly weight: number
@@ -52,22 +42,18 @@ class WeightedImpl extends Pipeable implements Weighted {
     this.weight = weight
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Vector2.Weighted(${this.x}, ${this.y}, w=${this.weight})`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this[Symbol.toStringTag]
   }
 }
 
 /** @internal */
 export const isVector2 = (v: unknown): v is Vector2 =>
-  typeof v === 'object' && v !== null && Vector2TypeId in v
+  typeof v === 'object' && v !== null && TypeId in v
 
 /** @internal */
 export const isWeighted = (v: unknown): v is Weighted =>
-  typeof v === 'object' && v !== null && WeightedVector2TypeId in v
+  typeof v === 'object' && v !== null && WeightedTypeId in v
 
 /** @internal */
 export const equals = dual<

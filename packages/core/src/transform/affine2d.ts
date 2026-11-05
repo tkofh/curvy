@@ -1,9 +1,8 @@
 import type { Matrix2x2 } from '../matrix/matrix2x2.ts'
 import type { Matrix3x3 } from '../matrix/matrix3x3.ts'
 import type * as Solution from '../solution/solution.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { Affine2dTypeId } from './affine2d.internal.ts'
 import * as internal from './affine2d.internal.ts'
 import type { AffineTraits, Invertible } from './traits.ts'
 
@@ -34,8 +33,8 @@ export type { Invertible } from './traits.ts'
  *
  * @since 2.0.0
  */
-export interface Affine2d<out Traits = unknown> extends Pipeable {
-  readonly [Affine2dTypeId]: Affine2dTypeId
+export interface Affine2d<out Traits = unknown> extends Value.Instance {
+  readonly '~curvy/Affine2d': '~curvy/Affine2d'
   readonly [AffineTraits]: Traits
   /**
    * The underlying 3x3 homogeneous matrix. Last row is always `[0, 0, 1]`.

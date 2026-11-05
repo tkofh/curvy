@@ -3,9 +3,8 @@ import type { LinearCurve2d } from '../curve/linear2d.ts'
 import type { Closed } from '../interval/interval.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { LinearPath2dTypeId } from './linear2d.internal.ts'
 import * as internal from './linear2d.internal.ts'
 import type {
   Continuous,
@@ -39,8 +38,8 @@ export type {
  *
  * @since 1.0.0
  */
-export interface LinearPath2d<out Trait = unknown> extends Pipeable, Iterable<LinearCurve2d> {
-  readonly [LinearPath2dTypeId]: LinearPath2dTypeId
+export interface LinearPath2d<out Trait = unknown> extends Value.Instance, Iterable<LinearCurve2d> {
+  readonly '~curvy/LinearPath2d': '~curvy/LinearPath2d'
   readonly [PathTraits]: Trait
 }
 

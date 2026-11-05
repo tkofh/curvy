@@ -3,7 +3,7 @@ import { defineConfig } from 'tsdown'
 export default defineConfig({
   entry: [
     'src/number.ts',
-    'src/utils.ts',
+    'src/utils/index.ts',
     'src/vector/index.ts',
     'src/matrix/index.ts',
     'src/polynomial/index.ts',

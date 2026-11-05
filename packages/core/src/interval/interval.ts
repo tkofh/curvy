@@ -1,5 +1,5 @@
 import * as internal from './interval.internal.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 
 /**
  * A `start`/`end` pair carrying no endpoint-inclusivity information, the
@@ -48,7 +48,8 @@ export type Interval = Closed | OpenStart | OpenEnd | Open
  *
  * @since 2.0.0
  */
-export interface Closed extends Pipeable, Bounds {
+export interface Closed extends Value.Instance, Bounds {
+  readonly '~curvy/Interval': '~curvy/Interval'
   readonly kind: 'closed'
 }
 
@@ -57,7 +58,8 @@ export interface Closed extends Pipeable, Bounds {
  *
  * @since 2.0.0
  */
-export interface OpenStart extends Pipeable, Bounds {
+export interface OpenStart extends Value.Instance, Bounds {
+  readonly '~curvy/Interval': '~curvy/Interval'
   readonly kind: 'open-start'
 }
 
@@ -66,7 +68,8 @@ export interface OpenStart extends Pipeable, Bounds {
  *
  * @since 2.0.0
  */
-export interface OpenEnd extends Pipeable, Bounds {
+export interface OpenEnd extends Value.Instance, Bounds {
+  readonly '~curvy/Interval': '~curvy/Interval'
   readonly kind: 'open-end'
 }
 
@@ -75,7 +78,8 @@ export interface OpenEnd extends Pipeable, Bounds {
  *
  * @since 2.0.0
  */
-export interface Open extends Pipeable, Bounds {
+export interface Open extends Value.Instance, Bounds {
+  readonly '~curvy/Interval': '~curvy/Interval'
   readonly kind: 'open'
 }
 

@@ -1,8 +1,7 @@
 import type { CubicPath2d } from '../path/cubic2d.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { Basis2dTypeId } from './basis2d.internal.ts'
 import * as internal from './basis2d.internal.ts'
 import type { Bezier2d } from './bezier2d.ts'
 
@@ -16,8 +15,8 @@ import type { Bezier2d } from './bezier2d.ts'
  *
  * @since 1.0.0
  */
-export interface Basis2d extends Pipeable {
-  readonly [Basis2dTypeId]: Basis2dTypeId
+export interface Basis2d extends Value.Instance {
+  readonly '~curvy/Basis2d': '~curvy/Basis2d'
   [Symbol.iterator](): Iterator<Vector2>
 }
 

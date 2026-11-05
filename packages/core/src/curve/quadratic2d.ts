@@ -1,14 +1,13 @@
 import type { Interval2d } from '../interval/interval2d.ts'
 import type { TwoDimensional } from '../dimensions.ts'
 import type { Closed, Interval } from '../interval/interval.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { QuadraticPolynomial } from '../polynomial/quadratic.ts'
 import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearCurve2d } from './linear2d.ts'
-import type { QuadraticCurve2dTypeId } from './quadratic2d.internal.ts'
 import * as internal from './quadratic2d.internal.ts'
 
 export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
@@ -25,8 +24,10 @@ export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
  * @since 1.0.0
  */
 export interface QuadraticCurve2d<out XTraits = unknown, out YTraits = unknown>
-  extends Pipeable, TwoDimensional<QuadraticPolynomial<XTraits>, QuadraticPolynomial<YTraits>> {
-  readonly [QuadraticCurve2dTypeId]: QuadraticCurve2dTypeId
+  extends
+    Value.Instance,
+    TwoDimensional<QuadraticPolynomial<XTraits>, QuadraticPolynomial<YTraits>> {
+  readonly '~curvy/QuadraticCurve2d': '~curvy/QuadraticCurve2d'
 }
 
 /**

@@ -1,5 +1,5 @@
 import type { Closed, Interval } from '../interval/interval.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Vector3 } from '../vector/vector3.ts'
@@ -7,7 +7,6 @@ import type { CubicPolynomial } from './cubic.ts'
 import type { LinearPolynomial } from './linear.ts'
 import type { Monotonicity } from '../monotonicity/monotonicity.ts'
 import * as internal from './quadratic.internal.ts'
-import type { QuadraticPolynomialTypeId } from './quadratic.internal.circular.ts'
 import type { Decreasing, Increasing, Monotonic, PolynomialTraits, Reflected } from './traits.ts'
 
 export type { Monotonic, Increasing, Decreasing, Reflected } from './traits.ts'
@@ -26,8 +25,8 @@ export type { Monotonic, Increasing, Decreasing, Reflected } from './traits.ts'
  *
  * @since 1.0.0
  */
-export interface QuadraticPolynomial<out Traits = unknown> extends Pipeable {
-  readonly [QuadraticPolynomialTypeId]: QuadraticPolynomialTypeId
+export interface QuadraticPolynomial<out Traits = unknown> extends Value.Instance {
+  readonly '~curvy/QuadraticPolynomial': '~curvy/QuadraticPolynomial'
   readonly [PolynomialTraits]: Traits
 
   /**

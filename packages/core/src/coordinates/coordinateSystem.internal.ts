@@ -20,7 +20,9 @@ import * as CubicPath2d from '../path/cubic2d.ts'
 import * as RationalCubicPath2d from '../path/rationalCubic2d.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
 import * as cubicPolynomial from '../polynomial/cubic.internal.ts'
-import { Pipeable, dual, invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Vector4 from '../vector/vector4.ts'
 import type {
@@ -33,27 +35,16 @@ import type {
 import * as dimension from './dimension.internal.ts'
 import type { Cyclical, Dimension } from './dimension.ts'
 
-export const CoordinateSystemTypeId: unique symbol = Symbol.for(
-  'curvy/coordinates/coordinateSystem',
-)
-export type CoordinateSystemTypeId = typeof CoordinateSystemTypeId
+const CoordinateSystemTypeId = '~curvy/CoordinateSystem'
 
-abstract class CoordinateSystemImpl extends Pipeable {
-  readonly [CoordinateSystemTypeId]: CoordinateSystemTypeId = CoordinateSystemTypeId
-
+abstract class CoordinateSystemImpl extends Value(CoordinateSystemTypeId) {
   abstract readonly kind: 'cartesian' | 'polar'
-
-  abstract get [Symbol.toStringTag](): string
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this[Symbol.toStringTag]
-  }
 }
 
 class CartesianImpl extends CoordinateSystemImpl implements Cartesian {
   readonly kind = 'cartesian' as const
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return 'CoordinateSystem.Cartesian'
   }
 }
@@ -90,7 +81,7 @@ class PolarImpl extends CoordinateSystemImpl implements Polar {
     this.thetaOrigin = thetaOrigin
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `CoordinateSystem.Polar(center (${this.center.x}, ${this.center.y}), period ${this.theta.period}, origin ${this.thetaOrigin}, ${this.winding})`
   }
 }

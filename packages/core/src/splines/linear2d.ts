@@ -1,9 +1,8 @@
 import type { LinearPath2d } from '../path/linear2d.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import * as internal from './linear2d.internal.ts'
-import type { Linear2dTypeId } from './linear2d.internal.ts'
 
 /**
  * A polyline in 2D space, an ordered list of points that converts to a
@@ -14,8 +13,8 @@ import type { Linear2dTypeId } from './linear2d.internal.ts'
  *
  * @since 2.0.0
  */
-export interface Linear2d extends Pipeable {
-  readonly [Linear2dTypeId]: Linear2dTypeId
+export interface Linear2d extends Value.Instance {
+  readonly '~curvy/Linear2d': '~curvy/Linear2d'
   [Symbol.iterator](): Iterator<Vector2>
 }
 

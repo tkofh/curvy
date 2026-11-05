@@ -1,7 +1,6 @@
 import type { TwoDimensionalComponent, TwoDimensionalIndex } from '../dimensions.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { Matrix2x2TypeId } from './matrix2x2.internal.ts'
 import * as internal from './matrix2x2.internal.ts'
 
 /**
@@ -20,8 +19,8 @@ export type Matrix2x2Coordinate = TwoDimensionalIndex | TwoDimensionalComponent
  *
  * @since 1.0.0
  */
-export interface Matrix2x2 extends Pipeable {
-  readonly [Matrix2x2TypeId]: Matrix2x2TypeId
+export interface Matrix2x2 extends Value.Instance {
+  readonly '~curvy/Matrix2x2': '~curvy/Matrix2x2'
 
   /**
    * The value in the first row and first column.

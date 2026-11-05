@@ -2,10 +2,9 @@ import type { RationalCubicCurve2d } from '../curve/rationalCubic2d.ts'
 import type { Closed } from '../interval/interval.ts'
 import type { Interval2d } from '../interval/interval2d.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { CubicPath2d } from './cubic2d.ts'
-import type { RationalCubicPath2dTypeId } from './rationalCubic2d.internal.ts'
 import * as internal from './rationalCubic2d.internal.ts'
 
 /**
@@ -24,8 +23,8 @@ import * as internal from './rationalCubic2d.internal.ts'
  *
  * @since 2.0.0
  */
-export interface RationalCubicPath2d extends Pipeable, Iterable<RationalCubicCurve2d> {
-  readonly [RationalCubicPath2dTypeId]: RationalCubicPath2dTypeId
+export interface RationalCubicPath2d extends Value.Instance, Iterable<RationalCubicCurve2d> {
+  readonly '~curvy/RationalCubicPath2d': '~curvy/RationalCubicPath2d'
 }
 
 /**

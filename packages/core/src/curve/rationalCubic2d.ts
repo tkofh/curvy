@@ -1,14 +1,14 @@
 import type { Closed } from '../interval/interval.ts'
 import type { Interval2d } from '../interval/interval2d.ts'
 import type { Monotonicity } from '../monotonicity/monotonicity.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { CubicPolynomial } from '../polynomial/cubic.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2, Weighted } from '../vector/vector2.ts'
 import type { CubicCurve2d } from './cubic2d.ts'
-import type { RationalCubicCurve2dTypeId, RationalCurveTraits } from './rationalCubic2d.internal.ts'
+import type { RationalCurveTraits } from './rationalCubic2d.internal.ts'
 import * as internal from './rationalCubic2d.internal.ts'
 
 export type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
@@ -37,11 +37,9 @@ export { RationalCurveTraits } from './rationalCubic2d.internal.ts'
  *
  * @since 2.0.0
  */
-export interface RationalCubicCurve2d<
-  out XTraits = unknown,
-  out YTraits = unknown,
-> extends Pipeable {
-  readonly [RationalCubicCurve2dTypeId]: RationalCubicCurve2dTypeId
+export interface RationalCubicCurve2d<out XTraits = unknown, out YTraits = unknown>
+  extends Value.Instance {
+  readonly '~curvy/RationalCubicCurve2d': '~curvy/RationalCubicCurve2d'
   readonly [RationalCurveTraits]: [XTraits, YTraits]
   /**
    * The x numerator. The curve's x coordinate at `t` is `x(t) / w(t)`.

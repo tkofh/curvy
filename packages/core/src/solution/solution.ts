@@ -1,5 +1,5 @@
 import type { Interval } from '../interval/interval.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import * as internal from './solution.internal.ts'
 
 /**
@@ -30,7 +30,8 @@ export type Solution<T> = None | One<T> | Two<T> | Three<T>
  *
  * @since 2.0.0
  */
-export interface None extends Pipeable, Iterable<never> {
+export interface None extends Value.Instance, Iterable<never> {
+  readonly '~curvy/Solution': '~curvy/Solution'
   readonly _tag: 'none'
   readonly length: 0
 }
@@ -40,7 +41,8 @@ export interface None extends Pipeable, Iterable<never> {
  *
  * @since 2.0.0
  */
-export interface One<T> extends Pipeable, Iterable<T> {
+export interface One<T> extends Value.Instance, Iterable<T> {
+  readonly '~curvy/Solution': '~curvy/Solution'
   readonly _tag: 'one'
   readonly length: 1
   /**
@@ -54,7 +56,8 @@ export interface One<T> extends Pipeable, Iterable<T> {
  *
  * @since 2.0.0
  */
-export interface Two<T> extends Pipeable, Iterable<T> {
+export interface Two<T> extends Value.Instance, Iterable<T> {
+  readonly '~curvy/Solution': '~curvy/Solution'
   readonly _tag: 'two'
   readonly length: 2
   /**
@@ -72,7 +75,8 @@ export interface Two<T> extends Pipeable, Iterable<T> {
  *
  * @since 2.0.0
  */
-export interface Three<T> extends Pipeable, Iterable<T> {
+export interface Three<T> extends Value.Instance, Iterable<T> {
+  readonly '~curvy/Solution': '~curvy/Solution'
   readonly _tag: 'three'
   readonly length: 3
   /**

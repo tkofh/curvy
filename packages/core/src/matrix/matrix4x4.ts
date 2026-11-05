@@ -1,9 +1,8 @@
 import type { FourDimensionalComponent, FourDimensionalIndex } from '../dimensions.ts'
 import type * as Solution from '../solution/solution.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector4 } from '../vector/vector4.ts'
 import type { Matrix3x3 } from './matrix3x3.ts'
-import type { Matrix4x4TypeId } from './matrix4x4.internal.ts'
 import * as internal from './matrix4x4.internal.ts'
 import type { Invertible, MatrixTraits } from './traits.ts'
 
@@ -31,8 +30,8 @@ export type Matrix4x4Coordinate = FourDimensionalIndex | FourDimensionalComponen
  *
  * @since 1.0.0
  */
-export interface Matrix4x4<out Traits = unknown> extends Pipeable {
-  readonly [Matrix4x4TypeId]: Matrix4x4TypeId
+export interface Matrix4x4<out Traits = unknown> extends Value.Instance {
+  readonly '~curvy/Matrix4x4': '~curvy/Matrix4x4'
   readonly [MatrixTraits]: Traits
 
   /**

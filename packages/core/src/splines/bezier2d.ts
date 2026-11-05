@@ -1,9 +1,8 @@
 import type { CubicPath2d } from '../path/cubic2d.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { Bezier2dTypeId } from './bezier2d.internal.ts'
 import * as internal from './bezier2d.internal.ts'
 import type { RationalBezier2d } from './rationalBezier2d.ts'
 
@@ -20,8 +19,8 @@ import type { RationalBezier2d } from './rationalBezier2d.ts'
  *
  * @since 1.0.0
  */
-export interface Bezier2d extends Pipeable {
-  readonly [Bezier2dTypeId]: Bezier2dTypeId
+export interface Bezier2d extends Value.Instance {
+  readonly '~curvy/Bezier2d': '~curvy/Bezier2d'
   [Symbol.iterator](): IterableIterator<Vector2>
 }
 

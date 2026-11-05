@@ -1,7 +1,6 @@
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Bounds, Closed, Interval } from './interval.ts'
-import type { Interval2dTypeId } from './interval2d.internal.ts'
 import * as internal from './interval2d.internal.ts'
 
 /**
@@ -18,11 +17,9 @@ import * as internal from './interval2d.internal.ts'
  *
  * @since 2.0.0
  */
-export interface Interval2d<
-  X extends Interval = Interval,
-  Y extends Interval = Interval,
-> extends Pipeable {
-  readonly [Interval2dTypeId]: Interval2dTypeId
+export interface Interval2d<X extends Interval = Interval, Y extends Interval = Interval>
+  extends Value.Instance {
+  readonly '~curvy/Interval2d': '~curvy/Interval2d'
   readonly x: X
   readonly y: Y
 }

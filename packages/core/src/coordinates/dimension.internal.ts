@@ -1,21 +1,14 @@
 import type { Bounds } from '../interval/interval.ts'
 import { EPSILON, coincident, minMax, mod } from '../number.ts'
-import { Pipeable, dual, invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import type { Cyclical, Dimension, Linear, Logarithmic, Power } from './dimension.ts'
 
-export const DimensionTypeId: unique symbol = Symbol.for('curvy/coordinates/dimension')
-export type DimensionTypeId = typeof DimensionTypeId
+const DimensionTypeId = '~curvy/Dimension'
 
-abstract class DimensionImpl extends Pipeable {
-  readonly [DimensionTypeId]: DimensionTypeId = DimensionTypeId
-
+abstract class DimensionImpl extends Value(DimensionTypeId) {
   abstract readonly kind: 'linear' | 'power' | 'logarithmic' | 'cyclical'
-
-  abstract get [Symbol.toStringTag](): string
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this[Symbol.toStringTag]
-  }
 }
 
 class LinearImpl extends DimensionImpl implements Linear {
@@ -34,7 +27,7 @@ class LinearImpl extends DimensionImpl implements Linear {
     this.offset = offset
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Dimension.Linear(scale ${this.scale}, offset ${this.offset})`
   }
 }
@@ -61,7 +54,7 @@ class PowerImpl extends DimensionImpl implements Power {
     this.offset = offset
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Dimension.Power(exponent ${this.exponent}, scale ${this.scale}, offset ${this.offset})`
   }
 }
@@ -91,7 +84,7 @@ class LogarithmicImpl extends DimensionImpl implements Logarithmic {
     this.base = base
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Dimension.Logarithmic(scale ${this.scale}, offset ${this.offset}, base ${this.base})`
   }
 }
@@ -109,7 +102,7 @@ class CyclicalImpl extends DimensionImpl implements Cyclical {
     this.period = period
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Dimension.Cyclical(period ${this.period})`
   }
 }

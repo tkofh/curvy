@@ -1,9 +1,8 @@
 import type { CubicPath2d } from '../path/cubic2d.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Bezier2d } from './bezier2d.ts'
-import type { Cardinal2dTypeId } from './cardinal2d.internal.ts'
 import * as internal from './cardinal2d.internal.ts'
 
 /**
@@ -22,8 +21,8 @@ import * as internal from './cardinal2d.internal.ts'
  *
  * @since 1.0.0
  */
-export interface Cardinal2d extends Pipeable {
-  readonly [Cardinal2dTypeId]: Cardinal2dTypeId
+export interface Cardinal2d extends Value.Instance {
+  readonly '~curvy/Cardinal2d': '~curvy/Cardinal2d'
   /**
    * The control points the spline interpolates, in order.
    */

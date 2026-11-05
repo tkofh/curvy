@@ -1,13 +1,12 @@
 import type { Interval2d } from '../interval/interval2d.ts'
 import type { TwoDimensional } from '../dimensions.ts'
 import type { Closed, Interval } from '../interval/interval.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { LinearPolynomial } from '../polynomial/linear.ts'
 import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import type { LinearCurve2dTypeId } from './linear2d.internal.ts'
 import * as internal from './linear2d.internal.ts'
 
 export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
@@ -26,8 +25,8 @@ export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
  * @since 1.0.0
  */
 export interface LinearCurve2d<out XTraits = unknown, out YTraits = unknown>
-  extends Pipeable, TwoDimensional<LinearPolynomial<XTraits>, LinearPolynomial<YTraits>> {
-  readonly [LinearCurve2dTypeId]: LinearCurve2dTypeId
+  extends Value.Instance, TwoDimensional<LinearPolynomial<XTraits>, LinearPolynomial<YTraits>> {
+  readonly '~curvy/LinearCurve2d': '~curvy/LinearCurve2d'
 }
 
 /**

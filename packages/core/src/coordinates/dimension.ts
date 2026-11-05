@@ -1,7 +1,6 @@
 import type { Bounds } from '../interval/interval.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import * as internal from './dimension.internal.ts'
-import type { DimensionTypeId } from './dimension.internal.ts'
 
 /**
  * Describes the structure of a single chart-space axis. Three kinds are
@@ -32,8 +31,8 @@ export type Dimension = Linear | Power | Logarithmic | Cyclical
  *
  * @since 2.0.0
  */
-export interface Linear extends Pipeable {
-  readonly [DimensionTypeId]: DimensionTypeId
+export interface Linear extends Value.Instance {
+  readonly '~curvy/Dimension': '~curvy/Dimension'
   readonly kind: 'linear'
   /**
    * The multiplicative coefficient of the axis map. Never zero.
@@ -58,8 +57,8 @@ export interface Linear extends Pipeable {
  *
  * @since 2.0.0
  */
-export interface Power extends Pipeable {
-  readonly [DimensionTypeId]: DimensionTypeId
+export interface Power extends Value.Instance {
+  readonly '~curvy/Dimension': '~curvy/Dimension'
   readonly kind: 'power'
   /**
    * The exponent applied to the chart value's magnitude. Always positive
@@ -88,8 +87,8 @@ export interface Power extends Pipeable {
  *
  * @since 2.0.0
  */
-export interface Logarithmic extends Pipeable {
-  readonly [DimensionTypeId]: DimensionTypeId
+export interface Logarithmic extends Value.Instance {
+  readonly '~curvy/Dimension': '~curvy/Dimension'
   readonly kind: 'logarithmic'
   /**
    * The output distance between chart values one factor of `base` apart.
@@ -114,8 +113,8 @@ export interface Logarithmic extends Pipeable {
  *
  * @since 2.0.0
  */
-export interface Cyclical extends Pipeable {
-  readonly [DimensionTypeId]: DimensionTypeId
+export interface Cyclical extends Value.Instance {
+  readonly '~curvy/Dimension': '~curvy/Dimension'
   readonly kind: 'cyclical'
   /**
    * The length of one full cycle. Always positive and finite.

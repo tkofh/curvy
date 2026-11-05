@@ -1,20 +1,18 @@
 import * as Characteristic from '../characteristic/characteristic.ts'
 import * as CubicPath2d from '../path/cubic2d.ts'
 import * as Affine2d from '../transform/affine2d.ts'
-import { dual, Pipeable } from '../utils.ts'
-import { invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { Basis2d } from './basis2d.ts'
 import type { Bezier2d } from './bezier2d.ts'
 import * as bezierInternal from './bezier2d.internal.ts'
 import { toCurves } from './util.ts'
 
-export const Basis2dTypeId = Symbol('curvy/splines/basis2d')
-export type Basis2dTypeId = typeof Basis2dTypeId
+const Basis2dTypeId = '~curvy/Basis2d'
 
-class Basis2dImpl extends Pipeable implements Basis2d {
-  readonly [Basis2dTypeId]: Basis2dTypeId = Basis2dTypeId
-
+class Basis2dImpl extends Value(Basis2dTypeId) implements Basis2d {
   readonly points: ReadonlyArray<Vector2.Vector2>
 
   constructor(points: ReadonlyArray<Vector2.Vector2>) {
@@ -25,6 +23,10 @@ class Basis2dImpl extends Pipeable implements Basis2d {
 
   [Symbol.iterator]() {
     return this.points[Symbol.iterator]()
+  }
+
+  toString() {
+    return `Basis2d(${this.points.join(', ')})`
   }
 }
 

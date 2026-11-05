@@ -4,7 +4,9 @@ import * as Interval2d from '../interval/interval2d.ts'
 import { coincident, EPSILON } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import { dual, invariant, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import {
   PathTraits,
@@ -29,31 +31,8 @@ import {
  *
  * @since 2.0.0
  */
-export interface Path2d<C, Trait = unknown> extends Pipeable, Iterable<C> {
+export interface Path2d<C, Trait = unknown> extends Value.Instance, Iterable<C> {
   readonly [PathTraits]: Trait
-}
-
-/**
- * Concrete implementation backing every `Path2d<C>`. The per-kind `TypeId`
- * symbol is stamped onto each instance as a dynamic property at the symbol
- * key it identifies, so the existing per-kind `is{Linear,Quadratic,Cubic}Path2d`
- * typeguards continue to work as `TypeId in p` checks.
- *
- * @internal
- */
-export class Path2dImpl<C> extends Pipeable implements Path2d<C, unknown> {
-  declare readonly [PathTraits]: unknown
-  readonly curves: ReadonlyArray<C>
-
-  constructor(typeId: symbol, curves: ReadonlyArray<C>) {
-    super()
-    ;(this as unknown as Record<symbol, symbol>)[typeId] = typeId
-    this.curves = curves
-  }
-
-  [Symbol.iterator](): Iterator<C> {
-    return this.curves[Symbol.iterator]()
-  }
 }
 
 /**
@@ -65,13 +44,37 @@ export class Path2dImpl<C> extends Pipeable implements Path2d<C, unknown> {
  * `ops` and `typeId` are captured by closure, so the returned operations
  * incur no per-call lookup overhead.
  *
- * @param typeId - The per-kind brand symbol stamped onto each path instance.
+ * @param typeId - The kind's `~curvy/<Name>` type id, which names the
+ *   kind's implementation class.
  * @param ops - The curve kind's operation bundle.
  * @returns The generic path operations, specialized to `C`.
  * @since 2.0.0
  */
-export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
-  const fromArray = (curves: ReadonlyArray<C>): Path2d<C> => new Path2dImpl(typeId, curves)
+export const makeMethods = <C>(typeId: `~curvy/${string}`, ops: Curve2dOps<C>) => {
+  class KindImpl extends Value(typeId) implements Path2d<C, unknown> {
+    declare readonly [PathTraits]: unknown
+    readonly curves: ReadonlyArray<C>
+
+    constructor(curves: ReadonlyArray<C>) {
+      super()
+      this.curves = curves
+    }
+
+    [Symbol.iterator](): Iterator<C> {
+      return this.curves[Symbol.iterator]()
+    }
+
+    toString() {
+      return `${this[Symbol.toStringTag]}(${this.curves.join(', ')})`
+    }
+  }
+
+  // A path's curves without copying when this module built it, else a
+  // spread of its iterator.
+  const curvesOf = (p: Path2d<C, unknown>): ReadonlyArray<C> =>
+    p instanceof KindImpl ? p.curves : [...p]
+
+  const fromArray = (curves: ReadonlyArray<C>): Path2d<C> => new KindImpl(curves)
 
   const make = (...curves: ReadonlyArray<C>): Path2d<C> => fromArray(curves)
 
@@ -88,7 +91,7 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
     (c: C) => (p: Path2d<C, Continuous>) => Path2d<C, Continuous>,
     (p: Path2d<C, Continuous>, c: C) => Path2d<C, Continuous>
   >(2, (p: Path2d<C, Continuous>, c: C) => {
-    const curves = p instanceof Path2dImpl ? (p.curves as ReadonlyArray<C>) : [...p]
+    const curves = curvesOf(p)
     const end = ops.endPoint(curves[curves.length - 1] as C)
     const start = ops.startPoint(c)
     invariant(
@@ -113,7 +116,7 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
     // Parameter space is normalized, so a fixed absolute EPSILON is the
     // grazing band (PRECISION.md, regime 1); beyond it is misuse.
     invariant(u >= -EPSILON && u <= 1 + EPSILON, 'path parameter must be within [0, 1]')
-    const curves = p instanceof Path2dImpl ? (p.curves as ReadonlyArray<C>) : [...p]
+    const curves = curvesOf(p)
     if (u >= 1) {
       return ops.solve(curves.at(-1) as C, 1)
     }
@@ -327,6 +330,7 @@ export const makeMethods = <C>(typeId: symbol, ops: Curve2dOps<C>) => {
   }
 
   return {
+    curvesOf,
     fromArray,
     make,
     append,

@@ -1,6 +1,5 @@
 import type { TwoDimensional } from '../dimensions.ts'
-import type { Pipeable } from '../utils.ts'
-import type { Vector2TypeId, WeightedVector2TypeId } from './vector2.internal.ts'
+import type { Value } from '../utils/value.ts'
 import * as internal from './vector2.internal.ts'
 
 /**
@@ -14,8 +13,8 @@ import * as internal from './vector2.internal.ts'
  *
  * @since 1.0.0
  */
-export interface Vector2 extends Pipeable, TwoDimensional<number> {
-  readonly [Vector2TypeId]: Vector2TypeId
+export interface Vector2 extends Value.Instance, TwoDimensional<number> {
+  readonly '~curvy/Vector2': '~curvy/Vector2'
 }
 
 /**
@@ -32,8 +31,8 @@ export interface Vector2 extends Pipeable, TwoDimensional<number> {
  *
  * @since 2.0.0
  */
-export interface Weighted extends Pipeable {
-  readonly [WeightedVector2TypeId]: WeightedVector2TypeId
+export interface Weighted extends Value.Instance {
+  readonly '~curvy/Vector2/Weighted': '~curvy/Vector2/Weighted'
   /**
    * The point's x coordinate.
    */

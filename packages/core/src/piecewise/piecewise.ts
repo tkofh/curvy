@@ -7,9 +7,8 @@ import type { CubicPolynomial } from '../polynomial/cubic.ts'
 import type { LinearPolynomial } from '../polynomial/linear.ts'
 import type { QuadraticPolynomial } from '../polynomial/quadratic.ts'
 import type * as Solution from '../solution/solution.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import * as internal from './piecewise.internal.ts'
-import type { PiecewiseTypeId } from './piecewise.internal.ts'
 import type { Contiguous, Continuous, Monotonic, PiecewiseTraits } from './traits.ts'
 
 export type { Contiguous, Continuous, Monotonic } from './traits.ts'
@@ -52,8 +51,8 @@ export type Piece<P> = readonly [Closed, P]
  *
  * @since 2.0.0
  */
-export interface Piecewise<P, out Trait = unknown> extends Pipeable, Iterable<Piece<P>> {
-  readonly [PiecewiseTypeId]: PiecewiseTypeId
+export interface Piecewise<P, out Trait = unknown> extends Value.Instance, Iterable<Piece<P>> {
+  readonly '~curvy/Piecewise': '~curvy/Piecewise'
   readonly [PiecewiseTraits]: Trait
 }
 

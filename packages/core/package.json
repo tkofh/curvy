@@ -79,8 +79,8 @@
       "import": "./dist/number.mjs"
     },
     "./utils": {
-      "types": "./dist/utils.d.ts",
-      "import": "./dist/utils.mjs"
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.mjs"
     }
   },
   "publishConfig": {

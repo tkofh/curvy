@@ -1,8 +1,9 @@
 import * as Interval from '../interval/interval.ts'
 import * as Monotonicity from '../monotonicity/monotonicity.ts'
-import { dual, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as Solution from '../solution/solution.ts'
-import { invariant } from '../utils.ts'
 import { coincident } from '../number.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { LinearPolynomial } from './linear.ts'
@@ -12,11 +13,12 @@ import { PolynomialTraits } from './traits.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
 import { QuadraticPolynomialImpl } from './quadratic.internal.circular.ts'
 
-export const LinearPolynomialTypeId: unique symbol = Symbol.for('curvy/linear')
-export type LinearPolynomialTypeId = typeof LinearPolynomialTypeId
+const LinearPolynomialTypeId = '~curvy/LinearPolynomial'
 
-class LinearPolynomialImpl extends Pipeable implements LinearPolynomial<unknown> {
-  readonly [LinearPolynomialTypeId]: LinearPolynomialTypeId = LinearPolynomialTypeId
+class LinearPolynomialImpl
+  extends Value(LinearPolynomialTypeId)
+  implements LinearPolynomial<unknown>
+{
   declare readonly [PolynomialTraits]: unknown
 
   readonly c0: number
@@ -27,6 +29,10 @@ class LinearPolynomialImpl extends Pipeable implements LinearPolynomial<unknown>
 
     this.c0 = c0
     this.c1 = c1
+  }
+
+  toString() {
+    return `LinearPolynomial(${this.c0}, ${this.c1})`
   }
 }
 

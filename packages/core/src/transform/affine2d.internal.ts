@@ -4,18 +4,18 @@ import * as matrix3x3 from '../matrix/matrix3x3.internal.ts'
 import type { Matrix3x3 } from '../matrix/matrix3x3.ts'
 import { coincident, EPSILON, RELATIVE_TOLERANCE } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
-import { dual, invariant, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as vector2 from '../vector/vector2.internal.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Affine2d } from './affine2d.ts'
 import type { Invertible } from './traits.ts'
 import { AffineTraits } from './traits.ts'
 
-export const Affine2dTypeId: unique symbol = Symbol.for('curvy/transform/affine2d')
-export type Affine2dTypeId = typeof Affine2dTypeId
+const Affine2dTypeId = '~curvy/Affine2d'
 
-class Affine2dImpl extends Pipeable implements Affine2d<unknown> {
-  readonly [Affine2dTypeId]: Affine2dTypeId = Affine2dTypeId
+class Affine2dImpl extends Value(Affine2dTypeId) implements Affine2d<unknown> {
   declare readonly [AffineTraits]: unknown
   readonly matrix: Matrix3x3
 
@@ -24,13 +24,9 @@ class Affine2dImpl extends Pipeable implements Affine2d<unknown> {
     this.matrix = matrix
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     const m = this.matrix
     return `Affine2d([${m.m00}, ${m.m01}, ${m.m02}], [${m.m10}, ${m.m11}, ${m.m12}])`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this[Symbol.toStringTag]
   }
 }
 

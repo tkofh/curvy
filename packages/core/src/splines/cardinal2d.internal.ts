@@ -1,23 +1,22 @@
 import * as CubicCurve2d from '../curve/cubic2d.ts'
 import * as CubicPath2d from '../path/cubic2d.ts'
 import * as Affine2d from '../transform/affine2d.ts'
-import { dual, invariant, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { Bezier2d } from './bezier2d.ts'
 import * as bezierInternal from './bezier2d.internal.ts'
 import type { Cardinal2d, Options } from './cardinal2d.ts'
 import { toPointQuads } from './util.ts'
 
-export const Cardinal2dTypeId: unique symbol = Symbol.for('curvy/splines/cardinal2d')
-export type Cardinal2dTypeId = typeof Cardinal2dTypeId
+const Cardinal2dTypeId = '~curvy/Cardinal2d'
 
 const DEFAULT_TENSION = 0.5
 const DEFAULT_ALPHA = 0.5
 
 /** @internal */
-export class Cardinal2dImpl extends Pipeable implements Cardinal2d {
-  readonly [Cardinal2dTypeId]: Cardinal2dTypeId = Cardinal2dTypeId
-
+export class Cardinal2dImpl extends Value(Cardinal2dTypeId) implements Cardinal2d {
   readonly points: ReadonlyArray<Vector2.Vector2>
   readonly tension: number
   readonly alpha: number
@@ -32,6 +31,10 @@ export class Cardinal2dImpl extends Pipeable implements Cardinal2d {
 
   [Symbol.iterator]() {
     return this.points[Symbol.iterator]()
+  }
+
+  toString() {
+    return `Cardinal2d([${this.points.join(', ')}], tension ${this.tension}, alpha ${this.alpha})`
   }
 }
 

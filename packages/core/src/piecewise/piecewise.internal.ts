@@ -15,12 +15,13 @@ import type { PolynomialOps } from '../polynomial/polynomial.ts'
 import { Ops as quadraticOps } from '../polynomial/quadratic.internal.ts'
 import * as QuadraticPolynomial from '../polynomial/quadratic.ts'
 import * as Solution from '../solution/solution.ts'
-import { dual, invariant, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import type { Piece, Piecewise } from './piecewise.ts'
 import { type Contiguous, type Continuous, type Monotonic, PiecewiseTraits } from './traits.ts'
 
-export const PiecewiseTypeId: unique symbol = Symbol('curvy/piecewise')
-export type PiecewiseTypeId = typeof PiecewiseTypeId
+const PiecewiseTypeId = '~curvy/Piecewise'
 
 // The generic `Piecewise` evaluates its pieces through a `PolynomialOps` bundle
 // (defined in `polynomial/polynomial.ts`, the analog of `curve/curve2d.ts`).
@@ -46,8 +47,7 @@ const resolveOps = (p: unknown): PolynomialOps<unknown> => {
 }
 
 /** @internal */
-class PiecewiseImpl<P> extends Pipeable implements Piecewise<P, unknown> {
-  readonly [PiecewiseTypeId]: PiecewiseTypeId = PiecewiseTypeId
+class PiecewiseImpl<P> extends Value(PiecewiseTypeId) implements Piecewise<P, unknown> {
   declare readonly [PiecewiseTraits]: unknown
 
   readonly pieces: ReadonlyArray<Piece<P>>
@@ -62,6 +62,10 @@ class PiecewiseImpl<P> extends Pipeable implements Piecewise<P, unknown> {
 
   [Symbol.iterator](): IterableIterator<Piece<P>> {
     return this.pieces[Symbol.iterator]()
+  }
+
+  toString() {
+    return `Piecewise(${this.pieces.map(([interval, p]) => `[${interval}, ${String(p)}]`).join(', ')})`
   }
 }
 

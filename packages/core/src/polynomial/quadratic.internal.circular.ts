@@ -1,13 +1,14 @@
-import { Pipeable } from '../utils.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
 import { PolynomialTraits } from './traits.ts'
+import { Value } from '../utils/value.ts'
 
-export const QuadraticPolynomialTypeId: unique symbol = Symbol.for('curvy/polynomial/quadratic')
-export type QuadraticPolynomialTypeId = typeof QuadraticPolynomialTypeId
+export const QuadraticPolynomialTypeId = '~curvy/QuadraticPolynomial'
 
 /** @internal */
-export class QuadraticPolynomialImpl extends Pipeable implements QuadraticPolynomial<unknown> {
-  readonly [QuadraticPolynomialTypeId]: QuadraticPolynomialTypeId = QuadraticPolynomialTypeId
+export class QuadraticPolynomialImpl
+  extends Value(QuadraticPolynomialTypeId)
+  implements QuadraticPolynomial<unknown>
+{
   declare readonly [PolynomialTraits]: unknown
 
   readonly c0: number
@@ -20,5 +21,9 @@ export class QuadraticPolynomialImpl extends Pipeable implements QuadraticPolyno
     this.c0 = c0
     this.c1 = c1
     this.c2 = c2
+  }
+
+  toString() {
+    return `QuadraticPolynomial(${this.c0}, ${this.c1}, ${this.c2})`
   }
 }

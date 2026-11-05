@@ -1,6 +1,5 @@
 import type { FourDimensional } from '../dimensions.ts'
-import type { Pipeable } from '../utils.ts'
-import type { Vector4TypeId } from './vector4.internal.ts'
+import type { Value } from '../utils/value.ts'
 import * as internal from './vector4.internal.ts'
 
 /**
@@ -14,8 +13,8 @@ import * as internal from './vector4.internal.ts'
  *
  * @since 1.0.0
  */
-export interface Vector4 extends Pipeable, FourDimensional<number> {
-  readonly [Vector4TypeId]: Vector4TypeId
+export interface Vector4 extends Value.Instance, FourDimensional<number> {
+  readonly '~curvy/Vector4': '~curvy/Vector4'
 }
 
 /**

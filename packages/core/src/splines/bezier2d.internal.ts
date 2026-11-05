@@ -2,9 +2,10 @@ import * as Characteristic from '../characteristic/characteristic.ts'
 import * as Matrix4x4 from '../matrix/matrix4x4.ts'
 import * as CubicPath2d from '../path/cubic2d.ts'
 import * as Affine2d from '../transform/affine2d.ts'
-import { dual, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as Solution from '../solution/solution.ts'
-import { invariant } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Vector4 from '../vector/vector4.ts'
 import type { Bezier2d } from './bezier2d.ts'
@@ -28,12 +29,9 @@ const getConversionMatrix = (source: Matrix4x4.Matrix4x4): Matrix4x4.Matrix4x4 =
   return combined
 }
 
-export const Bezier2dTypeId = Symbol('curvy/splines/bezier2d')
-export type Bezier2dTypeId = typeof Bezier2dTypeId
+const Bezier2dTypeId = '~curvy/Bezier2d'
 
-class Bezier2dImpl extends Pipeable implements Bezier2d {
-  readonly [Bezier2dTypeId]: Bezier2dTypeId = Bezier2dTypeId
-
+class Bezier2dImpl extends Value(Bezier2dTypeId) implements Bezier2d {
   readonly points: ReadonlyArray<Vector2.Vector2>
 
   constructor(points: ReadonlyArray<Vector2.Vector2>) {
@@ -45,6 +43,10 @@ class Bezier2dImpl extends Pipeable implements Bezier2d {
 
   [Symbol.iterator]() {
     return this.points[Symbol.iterator]()
+  }
+
+  toString() {
+    return `Bezier2d(${this.points.join(', ')})`
   }
 }
 

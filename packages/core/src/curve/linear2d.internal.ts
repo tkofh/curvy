@@ -1,7 +1,8 @@
 import * as Interval2d from '../interval/interval2d.ts'
 import * as Interval from '../interval/interval.ts'
 import type * as Affine2d from '../transform/affine2d.ts'
-import { dual, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { Value } from '../utils/value.ts'
 import * as LinearPolynomial from '../polynomial/linear.ts'
 import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/traits.ts'
 import * as Solution from '../solution/solution.ts'
@@ -9,13 +10,13 @@ import * as Vector2 from '../vector/vector2.ts'
 import type { Curve2dOps } from './curve2d.ts'
 import type { LinearCurve2d } from './linear2d.ts'
 
-export const LinearCurve2dTypeId: unique symbol = Symbol('curvy/curve/linear2d')
-export type LinearCurve2dTypeId = typeof LinearCurve2dTypeId
+const LinearCurve2dTypeId = '~curvy/LinearCurve2d'
 
 /** @internal */
-export class LinearCurve2dImpl extends Pipeable implements LinearCurve2d<unknown, unknown> {
-  readonly [LinearCurve2dTypeId]: LinearCurve2dTypeId = LinearCurve2dTypeId
-
+export class LinearCurve2dImpl
+  extends Value(LinearCurve2dTypeId)
+  implements LinearCurve2d<unknown, unknown>
+{
   readonly x: LinearPolynomial.LinearPolynomial
   readonly y: LinearPolynomial.LinearPolynomial
 
@@ -31,6 +32,10 @@ export class LinearCurve2dImpl extends Pipeable implements LinearCurve2d<unknown
 
   get [1]() {
     return this.y
+  }
+
+  toString() {
+    return `LinearCurve2d(${this.x}, ${this.y})`
   }
 }
 

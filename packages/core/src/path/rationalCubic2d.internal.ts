@@ -3,19 +3,20 @@ import * as RationalCubicCurve2d from '../curve/rationalCubic2d.ts'
 import type * as Interval from '../interval/interval.ts'
 import * as Interval2d from '../interval/interval2d.ts'
 import type * as Affine2d from '../transform/affine2d.ts'
-import { dual, Pipeable } from '../utils.ts'
-import { invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import type * as Vector2 from '../vector/vector2.ts'
 import * as CubicPath2d from './cubic2d.ts'
 import type { RationalCubicPath2d } from './rationalCubic2d.ts'
 
-export const RationalCubicPath2dTypeId: unique symbol = Symbol('curvy/path/rationalCubic2d')
-export type RationalCubicPath2dTypeId = typeof RationalCubicPath2dTypeId
+const RationalCubicPath2dTypeId = '~curvy/RationalCubicPath2d'
 
 /** @internal */
-export class RationalCubicPath2dImpl extends Pipeable implements RationalCubicPath2d {
-  readonly [RationalCubicPath2dTypeId]: RationalCubicPath2dTypeId = RationalCubicPath2dTypeId
-
+export class RationalCubicPath2dImpl
+  extends Value(RationalCubicPath2dTypeId)
+  implements RationalCubicPath2d
+{
   readonly curves: ReadonlyArray<RationalCubicCurve2d.RationalCubicCurve2d>
 
   constructor(curves: ReadonlyArray<RationalCubicCurve2d.RationalCubicCurve2d>) {
@@ -26,6 +27,10 @@ export class RationalCubicPath2dImpl extends Pipeable implements RationalCubicPa
 
   [Symbol.iterator](): Iterator<RationalCubicCurve2d.RationalCubicCurve2d> {
     return this.curves[Symbol.iterator]()
+  }
+
+  toString() {
+    return `RationalCubicPath2d(${this.curves.join(', ')})`
   }
 }
 

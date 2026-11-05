@@ -3,37 +3,35 @@ import * as Interval from '../interval/interval.ts'
 import * as Interval2d from '../interval/interval2d.ts'
 import * as Monotonicity from '../monotonicity/monotonicity.ts'
 import type * as Affine2d from '../transform/affine2d.ts'
-import { dual, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
 import * as cubicPolynomial from '../polynomial/cubic.internal.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
-import { invariant } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Vector4 from '../vector/vector4.ts'
 import * as certified from './certified.internal.ts'
 import * as CubicCurve2d from './cubic2d.ts'
 import type { RationalCubicCurve2d } from './rationalCubic2d.ts'
 
-export const RationalCubicCurve2dTypeId: unique symbol = Symbol('curvy/curve/rationalCubic2d')
-export type RationalCubicCurve2dTypeId = typeof RationalCubicCurve2dTypeId
+const RationalCubicCurve2dTypeId = '~curvy/RationalCubicCurve2d'
 
 // Phantom property key carrying the per-axis trait tuple. Unlike `CubicCurve2d`
 // where traits flow through to the underlying polynomials, rational curve
 // traits are properties of the projected rational functions x(t)/w(t) and
 // y(t)/w(t) — not of any individual polynomial — so the brand lives on the
-// curve itself.
-/** @internal */
+// curve itself. It stays in the declaration build: the public module
+// re-exports it, and stripping it would leave that re-export dangling.
 export const RationalCurveTraits: unique symbol = Symbol.for('curvy/curve/rationalCubic2d/traits')
-/** @internal */
 export type RationalCurveTraits = typeof RationalCurveTraits
 
 /** @internal */
 export class RationalCubicCurve2dImpl
-  extends Pipeable
+  extends Value(RationalCubicCurve2dTypeId)
   implements RationalCubicCurve2d<unknown, unknown>
 {
-  readonly [RationalCubicCurve2dTypeId]: RationalCubicCurve2dTypeId = RationalCubicCurve2dTypeId
   declare readonly [RationalCurveTraits]: [unknown, unknown]
 
   readonly x: CubicPolynomial.CubicPolynomial
@@ -49,6 +47,10 @@ export class RationalCubicCurve2dImpl
     this.x = x
     this.y = y
     this.w = w
+  }
+
+  toString() {
+    return `RationalCubicCurve2d(${this.x}, ${this.y}, ${this.w})`
   }
 }
 

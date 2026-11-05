@@ -1,10 +1,9 @@
 import type { CubicPath2d } from '../path/cubic2d.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
-import type { Pipeable } from '../utils.ts'
+import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Bezier2d } from './bezier2d.ts'
 import * as internal from './hermite2d.internal.ts'
-import type { Hermite2dTypeId } from './hermite2d.internal.ts'
 
 /**
  * A Hermite spline in 2D space.
@@ -16,8 +15,8 @@ import type { Hermite2dTypeId } from './hermite2d.internal.ts'
  *
  * @since 1.0.0
  */
-export interface Hermite2d extends Pipeable {
-  readonly [Hermite2dTypeId]: Hermite2dTypeId
+export interface Hermite2d extends Value.Instance {
+  readonly '~curvy/Hermite2d': '~curvy/Hermite2d'
 
   [Symbol.iterator](): IterableIterator<Vector2>
 }

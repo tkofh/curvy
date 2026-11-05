@@ -1,13 +1,14 @@
-import { Pipeable } from '../utils.ts'
 import type { CubicPolynomial } from './cubic.ts'
 import { PolynomialTraits } from './traits.ts'
+import { Value } from '../utils/value.ts'
 
-export const CubicPolynomialTypeId: unique symbol = Symbol.for('curvy/polynomial/cubic')
-export type CubicPolynomialTypeId = typeof CubicPolynomialTypeId
+export const CubicPolynomialTypeId = '~curvy/CubicPolynomial'
 
 /** @internal */
-export class CubicPolynomialImpl extends Pipeable implements CubicPolynomial<unknown> {
-  readonly [CubicPolynomialTypeId]: CubicPolynomialTypeId = CubicPolynomialTypeId
+export class CubicPolynomialImpl
+  extends Value(CubicPolynomialTypeId)
+  implements CubicPolynomial<unknown>
+{
   declare readonly [PolynomialTraits]: unknown
 
   readonly c0: number
@@ -22,5 +23,9 @@ export class CubicPolynomialImpl extends Pipeable implements CubicPolynomial<unk
     this.c1 = c1
     this.c2 = c2
     this.c3 = c3
+  }
+
+  toString() {
+    return `CubicPolynomial(${this.c0}, ${this.c1}, ${this.c2}, ${this.c3})`
   }
 }

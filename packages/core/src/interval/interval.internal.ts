@@ -1,13 +1,11 @@
 import type { Bounds, Closed, Interval, Open, OpenEnd, OpenStart } from './interval.ts'
-import { dual, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { Value } from '../utils/value.ts'
 import { EPSILON, coincident } from '../number.ts'
 
-const TypeId: unique symbol = Symbol.for('curvy/interval')
-type TypeId = typeof TypeId
+const TypeId = '~curvy/Interval'
 
-abstract class IntervalImpl extends Pipeable {
-  readonly [TypeId]: TypeId = TypeId
-
+abstract class IntervalImpl extends Value(TypeId) {
   abstract readonly kind: 'closed' | 'open-start' | 'open-end' | 'open'
 
   readonly start: number
@@ -24,14 +22,10 @@ abstract class IntervalImpl extends Pipeable {
     this.end = end
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     const open = this.kind === 'open-start' || this.kind === 'open' ? '(' : '['
     const close = this.kind === 'open-end' || this.kind === 'open' ? ')' : ']'
     return `Interval ${open}${this.start}, ${this.end}${close}`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this[Symbol.toStringTag]
   }
 }
 

@@ -1,13 +1,11 @@
-import { dual, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { Value } from '../utils/value.ts'
 import { coincident } from '../number.ts'
 import type { Vector3 } from './vector3.ts'
 
-export const Vector3TypeId: unique symbol = Symbol.for('curvy/vector3')
-export type Vector3TypeId = typeof Vector3TypeId
+const Vector3TypeId = '~curvy/Vector3'
 
-class Vector3Impl extends Pipeable implements Vector3 {
-  readonly [Vector3TypeId]: Vector3TypeId = Vector3TypeId
-
+class Vector3Impl extends Value(Vector3TypeId) implements Vector3 {
   readonly x: number
   readonly y: number
   readonly z: number
@@ -31,12 +29,8 @@ class Vector3Impl extends Pipeable implements Vector3 {
     return this.z
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Vector3(${this.x}, ${this.y}, ${this.z})`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this[Symbol.toStringTag]
   }
 }
 

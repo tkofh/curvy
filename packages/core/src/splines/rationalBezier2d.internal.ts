@@ -1,26 +1,24 @@
 import * as RationalCubicCurve2d from '../curve/rationalCubic2d.ts'
 import * as RationalCubicPath2d from '../path/rationalCubic2d.ts'
 import * as Affine2d from '../transform/affine2d.ts'
-import { dual, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import * as Solution from '../solution/solution.ts'
-import { invariant } from '../utils.ts'
 import { coincident } from '../number.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Vector3 from '../vector/vector3.ts'
 import type { Bezier2d } from './bezier2d.ts'
 import type { RationalBezier2d } from './rationalBezier2d.ts'
 
-export const RationalBezier2dTypeId = Symbol('curvy/splines/rationalBezier2d')
-export type RationalBezier2dTypeId = typeof RationalBezier2dTypeId
+const RationalBezier2dTypeId = '~curvy/RationalBezier2d'
 
 // Internally each control point is stored in homogeneous form as
 // `(w*x, w*y, w)`. De Casteljau in 3D plus a final projection (`x/w`, `y/w`)
 // is exactly the rational evaluator, so the homogeneous form keeps the hot
 // paths identical to the non-rational case modulo one division at the end.
 
-class RationalBezier2dImpl extends Pipeable implements RationalBezier2d {
-  readonly [RationalBezier2dTypeId]: RationalBezier2dTypeId = RationalBezier2dTypeId
-
+class RationalBezier2dImpl extends Value(RationalBezier2dTypeId) implements RationalBezier2d {
   readonly homogeneous: ReadonlyArray<Vector3.Vector3>
 
   constructor(homogeneous: ReadonlyArray<Vector3.Vector3>) {
@@ -34,6 +32,10 @@ class RationalBezier2dImpl extends Pipeable implements RationalBezier2d {
     for (const h of this.homogeneous) {
       yield Vector2.makeWeighted(h.x / h.z, h.y / h.z, h.z)
     }
+  }
+
+  toString() {
+    return `RationalBezier2d(${[...this].join(', ')})`
   }
 }
 

@@ -36,7 +36,8 @@ import {
   GL32_X14,
   GL32_X15,
 } from '../length.ts'
-import { dual, Pipeable } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { Value } from '../utils/value.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
 import * as QuadraticPolynomial from '../polynomial/quadratic.ts'
 import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/traits.ts'
@@ -48,13 +49,13 @@ import type { CubicCurve2d } from './cubic2d.ts'
 import * as LinearCurve2d from './linear2d.ts'
 import * as QuadraticCurve2d from './quadratic2d.ts'
 
-export const CubicCurve2dTypeId: unique symbol = Symbol('curvy/curve/cubic2d')
-export type CubicCurve2dTypeId = typeof CubicCurve2dTypeId
+const CubicCurve2dTypeId = '~curvy/CubicCurve2d'
 
 /** @internal */
-export class CubicCurve2dImpl extends Pipeable implements CubicCurve2d<unknown, unknown> {
-  readonly [CubicCurve2dTypeId]: CubicCurve2dTypeId = CubicCurve2dTypeId
-
+export class CubicCurve2dImpl
+  extends Value(CubicCurve2dTypeId)
+  implements CubicCurve2d<unknown, unknown>
+{
   readonly x: CubicPolynomial.CubicPolynomial
   readonly y: CubicPolynomial.CubicPolynomial
 
@@ -70,6 +71,10 @@ export class CubicCurve2dImpl extends Pipeable implements CubicCurve2d<unknown, 
 
   get [1]() {
     return this.y
+  }
+
+  toString() {
+    return `CubicCurve2d(${this.x}, ${this.y})`
   }
 }
 

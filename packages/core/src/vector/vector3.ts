@@ -1,6 +1,5 @@
 import type { ThreeDimensional } from '../dimensions.ts'
-import type { Pipeable } from '../utils.ts'
-import type { Vector3TypeId } from './vector3.internal.ts'
+import type { Value } from '../utils/value.ts'
 import * as internal from './vector3.internal.ts'
 
 /**
@@ -14,8 +13,8 @@ import * as internal from './vector3.internal.ts'
  *
  * @since 1.0.0
  */
-export interface Vector3 extends Pipeable, ThreeDimensional<number> {
-  readonly [Vector3TypeId]: Vector3TypeId
+export interface Vector3 extends Value.Instance, ThreeDimensional<number> {
+  readonly '~curvy/Vector3': '~curvy/Vector3'
 }
 
 /**

@@ -1,6 +1,7 @@
 import { toThreeDimensionalIndex } from '../dimensions.ts'
-import { dual, Pipeable } from '../utils.ts'
-import { invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import { coincident, RELATIVE_TOLERANCE } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Vector3 } from '../vector/vector3.ts'
@@ -11,11 +12,9 @@ import type { Matrix3x3, Matrix3x3Coordinate } from './matrix3x3.ts'
 import type { Invertible } from './traits.ts'
 import { MatrixTraits } from './traits.ts'
 
-export const Matrix3x3TypeId: unique symbol = Symbol.for('curvy/matrix3x3')
-export type Matrix3x3TypeId = typeof Matrix3x3TypeId
+const Matrix3x3TypeId = '~curvy/Matrix3x3'
 
-class Matrix3x3Impl extends Pipeable implements Matrix3x3<unknown> {
-  readonly [Matrix3x3TypeId]: Matrix3x3TypeId = Matrix3x3TypeId
+class Matrix3x3Impl extends Value(Matrix3x3TypeId) implements Matrix3x3<unknown> {
   declare readonly [MatrixTraits]: unknown
 
   readonly m00: number
@@ -43,16 +42,8 @@ class Matrix3x3Impl extends Pipeable implements Matrix3x3<unknown> {
     this.m22 = m22
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Matrix3x3(${this.m00}, ${this.m01}, ${this.m02}, ${this.m10}, ${this.m11}, ${this.m12}, ${this.m20}, ${this.m21}, ${this.m22})`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return `Matrix3x3(${this.m00}, ${this.m01}, ${this.m02}, ${this.m10}, ${this.m11}, ${this.m12}, ${this.m20}, ${this.m21}, ${this.m22})`
-  }
-
-  [Symbol.hasInstance](m: unknown): m is Matrix3x3 {
-    return isMatrix3x3(m)
   }
 }
 

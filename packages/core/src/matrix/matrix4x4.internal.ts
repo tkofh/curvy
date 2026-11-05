@@ -1,6 +1,7 @@
 import { toFourDimensionalIndex } from '../dimensions.ts'
-import { dual, Pipeable } from '../utils.ts'
-import { invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
+import { Value } from '../utils/value.ts'
 import { coincident, RELATIVE_TOLERANCE } from '../number.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Vector4 } from '../vector/vector4.ts'
@@ -11,11 +12,9 @@ import type { Matrix4x4, Matrix4x4Coordinate } from './matrix4x4.ts'
 import type { Invertible } from './traits.ts'
 import { MatrixTraits } from './traits.ts'
 
-export const Matrix4x4TypeId: unique symbol = Symbol.for('curvy/matrix4x4')
-export type Matrix4x4TypeId = typeof Matrix4x4TypeId
+const Matrix4x4TypeId = '~curvy/Matrix4x4'
 
-class Matrix4x4Impl extends Pipeable implements Matrix4x4<unknown> {
-  readonly [Matrix4x4TypeId]: Matrix4x4TypeId = Matrix4x4TypeId
+class Matrix4x4Impl extends Value(Matrix4x4TypeId) implements Matrix4x4<unknown> {
   declare readonly [MatrixTraits]: unknown
 
   readonly m00: number
@@ -76,16 +75,8 @@ class Matrix4x4Impl extends Pipeable implements Matrix4x4<unknown> {
     this.m33 = m33
   }
 
-  get [Symbol.toStringTag]() {
+  toString() {
     return `Matrix4x4(${this.m00}, ${this.m01}, ${this.m02}, ${this.m03}, ${this.m10}, ${this.m11}, ${this.m12}, ${this.m13}, ${this.m20}, ${this.m21}, ${this.m22}, ${this.m23}, ${this.m30}, ${this.m31}, ${this.m32}, ${this.m33})`
-  }
-
-  get [Symbol.for('nodejs.util.inspect.custom')]() {
-    return `Matrix4x4(${this.m00}, ${this.m01}, ${this.m02}, ${this.m03}, ${this.m10}, ${this.m11}, ${this.m12}, ${this.m13}, ${this.m20}, ${this.m21}, ${this.m22}, ${this.m23}, ${this.m30}, ${this.m31}, ${this.m32}, ${this.m33})`
-  }
-
-  [Symbol.hasInstance](m: unknown): m is Matrix4x4 {
-    return isMatrix4x4(m)
   }
 }
 

@@ -5,7 +5,8 @@ import * as Interval from '../interval/interval.ts'
 import type { Closed } from '../interval/interval.ts'
 import type { Interval2d } from '../interval/interval2d.ts'
 import { RELATIVE_TOLERANCE } from '../number.ts'
-import { dual, invariant } from '../utils.ts'
+import { dual } from '../utils/function.ts'
+import { invariant } from '../utils/invariant.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import type { CubicPath2d } from './cubic2d.ts'
 import type { LinearPath2d } from './linear2d.ts'
@@ -21,8 +22,7 @@ import {
   type MonotonicY,
 } from './traits.ts'
 
-export const CubicPath2dTypeId: unique symbol = Symbol('curvy/path/cubic2d')
-export type CubicPath2dTypeId = typeof CubicPath2dTypeId
+const CubicPath2dTypeId = '~curvy/CubicPath2d'
 
 // Generic operation surface, built once for CubicCurve2d's Ops.
 const methods = Path2d.makeMethods(CubicPath2dTypeId, cubicCurveInternal.Ops)
@@ -279,8 +279,7 @@ export const solveByDistance = dual<
   const segmentLength = segmentEnd - segmentStart
   const segmentTarget = target - segmentStart
 
-  const curves =
-    p instanceof Path2d.Path2dImpl ? (p.curves as ReadonlyArray<CubicCurve2d.CubicCurve2d>) : [...p]
+  const curves = methods.curvesOf(p)
   const curve = curves[k] as CubicCurve2d.CubicCurve2d
   const localT = solveCurveByDistance(curve, segmentTarget, segmentLength)
 
