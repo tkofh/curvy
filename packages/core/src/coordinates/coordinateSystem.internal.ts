@@ -28,7 +28,7 @@ import type {
   Winding,
 } from './coordinateSystem.ts'
 import * as dimension from './dimension.internal.ts'
-import type { Cyclical, Dimension, Linear } from './dimension.ts'
+import type { Cyclical, Dimension } from './dimension.ts'
 
 export const CoordinateSystemTypeId: unique symbol = Symbol.for(
   'curvy/coordinates/coordinateSystem',
@@ -74,12 +74,11 @@ class PolarImpl extends CoordinateSystemImpl implements Polar {
     super()
 
     invariant(Number.isFinite(thetaOrigin), 'Polar thetaOrigin must be finite')
-    // The field is typed as the Dimension union so the type can admit new
-    // radial-map kinds without breaking readers, but every operation in
-    // this module assumes an affine radial map (foldMap and fromCartesian
-    // read scale/offset; a wrapping radius would tear sector and image at
-    // period seams), so construction is where non-linear kinds stop.
-    invariant(radius.kind === 'linear', 'Polar radius must be a linear dimension')
+    // Every operation in this module needs a strictly monotone radial map:
+    // ray's straight-segment image, image's endpoint-mapped radius bounds,
+    // and fromCartesian's inverse all rest on it. A wrapping radius has no
+    // such map and would tear sector and image at period seams.
+    invariant(radius.kind !== 'cyclical', 'Polar radius must not be a cyclical dimension')
 
     this.center = center
     this.theta = theta
@@ -144,16 +143,11 @@ const mapTheta = (s: Polar, theta: number): number =>
 const mapSweep = (s: Polar, sweep: number): number =>
   windingSign(s.winding) * sweep * ((2 * Math.PI) / s.theta.period)
 
-// The single consumer of the constructor's linear-radius invariant: every
-// radial read in this module comes through here, so a future radial-map
-// kind lands by widening this helper (and foldMap) rather than by hunting
-// field reads.
-const radialMap = (s: Polar): Linear => s.radius as Linear
+// The single consumer of the constructor's non-cyclical-radius invariant:
+// every radial read in this module comes through here.
+const radialMap = (s: Polar): dimension.Mapped => s.radius as dimension.Mapped
 
-const mapRadius = (s: Polar, r: number): number => {
-  const radius = radialMap(s)
-  return radius.scale * r + radius.offset
-}
+const mapRadius = (s: Polar, r: number): number => dimension.applyMap(radialMap(s), r)
 
 /** @internal */
 export const mapAngleDual = dual<
@@ -195,8 +189,7 @@ export const fromCartesian = dual<
     windingSign(s.winding) *
       (Math.atan2(dy, dx) * (s.theta.period / (2 * Math.PI)) - s.thetaOrigin),
   )
-  const radius = radialMap(s)
-  const r = (Math.hypot(dx, dy) - radius.offset) / radius.scale
+  const r = dimension.invertMap(radialMap(s), Math.hypot(dx, dy))
   return Vector2.make(theta, r)
 })
 
@@ -244,9 +237,10 @@ export const arc = dual<
 
 // The segment between the two mapped endpoints IS the exact image of the
 // radial span: with theta fixed the direction vector is constant and the
-// radial map is affine, so the image is the affine image of an interval —
-// a straight segment — even when the mapped radii change sign and the
-// segment passes through the center. No kind branch: on a cartesian
+// radial map is continuous and monotone, so the image is the set of points
+// between the mapped endpoints — a straight segment — even when the mapped
+// radii change sign and the segment passes through the center. Only the
+// parametrization differs from the true map's under a non-linear radius. No kind branch: on a cartesian
 // system toCartesian is the identity and the same segment is the
 // vertical chart-space edge itself.
 /** @internal */
@@ -451,29 +445,153 @@ export const sectorPathData = dual<
 
 const FULL_TURN = 2 * Math.PI
 
-// The polar map's constants folded once per call: a(t) = a0 + a1 * theta(t)
-// and rho(t) = m * r(t) + b. thetaOrigin contributes one constant rotation;
-// winding and the angular unit fold into a1's sign and magnitude.
+// The polar map folded once per call: a(t) = a0 + a1 * theta(t) and
+// rho(t) = rho(r(t)). thetaOrigin contributes one constant rotation; winding
+// and the angular unit fold into a1's sign and magnitude. rFloor is a
+// certified lower bound on the chart radius, set per segment for a
+// logarithmic radius (see radialFloor) and -Infinity otherwise; enclosures
+// clamp to it so a loose hull never leaves the map's domain.
 interface FoldedMap {
   readonly a0: number
   readonly a1: number
-  readonly m: number
-  readonly b: number
+  readonly radius: dimension.Mapped
+  readonly rFloor: number
   readonly cx: number
   readonly cy: number
 }
 
 const foldMap = (s: Polar): FoldedMap => {
   const k = FULL_TURN / s.theta.period
-  const radius = radialMap(s)
   return {
     a0: k * s.thetaOrigin,
     a1: k * windingSign(s.winding),
-    m: radius.scale,
-    b: radius.offset,
+    radius: radialMap(s),
+    rFloor: Number.NEGATIVE_INFINITY,
     cx: s.center.x,
     cy: s.center.y,
   }
+}
+
+// One piece of a chart-space segment, polynomial or rational: the chart
+// coordinates and their parameter derivatives at t in [0, 1], a rigorous
+// range of each coordinate over the piece, and exact bisection. The image
+// machinery below runs on this interface alone.
+interface ChartSample {
+  readonly theta: number
+  readonly r: number
+  readonly dTheta: number
+  readonly dr: number
+}
+
+interface ChartPiece {
+  readonly at: (t: number) => ChartSample
+  // [thetaLo, thetaHi, rLo, rHi]
+  readonly hull: () => readonly [number, number, number, number]
+  readonly halves: () => readonly [ChartPiece, ChartPiece]
+}
+
+// Rigorous range of a cubic on [0, 1] from its Bernstein control values
+// (convex-hull property). Deliberately looser than a root-based tight range:
+// unconditionally conservative, and the slack vanishes under subdivision.
+const bernsteinRange = (p: CubicPolynomial.CubicPolynomial): [number, number] => {
+  const [b0, b1, b2, b3] = bernsteinValues(p)
+  return [Math.min(b0, b1, b2, b3), Math.max(b0, b1, b2, b3)]
+}
+
+const bernsteinValues = (
+  p: CubicPolynomial.CubicPolynomial,
+): readonly [number, number, number, number] => [
+  p.c0,
+  p.c0 + p.c1 / 3,
+  p.c0 + (2 * p.c1) / 3 + p.c2 / 3,
+  p.c0 + p.c1 + p.c2 + p.c3,
+]
+
+const polynomialChart = (chart: CubicCurve2d.CubicCurve2d): ChartPiece => ({
+  at: (t) => ({
+    theta: chart.x.c0 + t * (chart.x.c1 + t * (chart.x.c2 + t * chart.x.c3)),
+    r: chart.y.c0 + t * (chart.y.c1 + t * (chart.y.c2 + t * chart.y.c3)),
+    dTheta: chart.x.c1 + t * (2 * chart.x.c2 + t * 3 * chart.x.c3),
+    dr: chart.y.c1 + t * (2 * chart.y.c2 + t * 3 * chart.y.c3),
+  }),
+  hull: () => [...bernsteinRange(chart.x), ...bernsteinRange(chart.y)],
+  halves: () => {
+    const [leftX, rightX] = CubicPolynomial.subdivide(chart.x, 0.5)
+    const [leftY, rightY] = CubicPolynomial.subdivide(chart.y, 0.5)
+    return [
+      polynomialChart(CubicCurve2d.fromPolynomials(leftX, leftY)),
+      polynomialChart(CubicCurve2d.fromPolynomials(rightX, rightY)),
+    ]
+  },
+})
+
+// A rational piece, X/W and Y/W with quotient-rule derivatives. Its hull is
+// the range of the projected Bernstein control points, which encloses the
+// curve only when every weight is positive; image checks that up front.
+const rationalChart = (chart: RationalCubicCurve2d.RationalCubicCurve2d): ChartPiece => ({
+  at: (t) => {
+    const X = chart.x.c0 + t * (chart.x.c1 + t * (chart.x.c2 + t * chart.x.c3))
+    const Y = chart.y.c0 + t * (chart.y.c1 + t * (chart.y.c2 + t * chart.y.c3))
+    const W = chart.w.c0 + t * (chart.w.c1 + t * (chart.w.c2 + t * chart.w.c3))
+    const dX = chart.x.c1 + t * (2 * chart.x.c2 + t * 3 * chart.x.c3)
+    const dY = chart.y.c1 + t * (2 * chart.y.c2 + t * 3 * chart.y.c3)
+    const dW = chart.w.c1 + t * (2 * chart.w.c2 + t * 3 * chart.w.c3)
+    const w2 = W * W
+    return {
+      theta: X / W,
+      r: Y / W,
+      dTheta: (dX * W - X * dW) / w2,
+      dr: (dY * W - Y * dW) / w2,
+    }
+  },
+  hull: () => {
+    const [x0, x1, x2, x3] = bernsteinValues(chart.x)
+    const [y0, y1, y2, y3] = bernsteinValues(chart.y)
+    const [w0, w1, w2, w3] = bernsteinValues(chart.w)
+    const t0 = x0 / w0
+    const t1 = x1 / w1
+    const t2 = x2 / w2
+    const t3 = x3 / w3
+    const r0 = y0 / w0
+    const r1 = y1 / w1
+    const r2 = y2 / w2
+    const r3 = y3 / w3
+    return [
+      Math.min(t0, t1, t2, t3),
+      Math.max(t0, t1, t2, t3),
+      Math.min(r0, r1, r2, r3),
+      Math.max(r0, r1, r2, r3),
+    ]
+  },
+  halves: () => {
+    const [left, right] = certified.subdivide(chart, 0.5)
+    return [rationalChart(left), rationalChart(right)]
+  },
+})
+
+const hasPositiveWeights = (c: RationalCubicCurve2d.RationalCubicCurve2d): boolean =>
+  bernsteinValues(c.w).every((w) => w > 0)
+
+// Certified positive lower bound on a piece's chart radius, for a
+// logarithmic radius whose map is undefined at r <= 0. The hull bound is
+// sound but loose, so a non-positive hull bisects until it clears; a sample
+// at or below zero is a real domain violation.
+const RADIAL_FLOOR_MAX_DEPTH = 30
+
+const radialFloor = (piece: ChartPiece, depth = 0): number => {
+  const rLo = piece.hull()[2]
+  if (rLo > 0) {
+    return rLo
+  }
+  for (const t of [0, 0.5, 1]) {
+    invariant(piece.at(t).r > 0, 'image requires positive chart radii on a logarithmic radius')
+  }
+  invariant(
+    depth < RADIAL_FLOOR_MAX_DEPTH,
+    'image requires positive chart radii on a logarithmic radius',
+  )
+  const [left, right] = piece.halves()
+  return Math.min(radialFloor(left, depth + 1), radialFloor(right, depth + 1))
 }
 
 // Point and tangent of the composed image curve at parameter t, exact per
@@ -482,17 +600,16 @@ const foldMap = (s: Polar): FoldedMap => {
 // image'(t) = (rho'*cos a - rho*a'*sin a, rho'*sin a + rho*a'*cos a).
 // Nothing in the image machinery divides, so there is no 0/0 to guard —
 // a chart path crossing mapped radius 0 evaluates straight through the
-// center (an analytic pass, not a parametrization cusp).
-const imageEval = (f: FoldedMap, chart: CubicCurve2d.CubicCurve2d, t: number) => {
-  const theta = chart.x.c0 + t * (chart.x.c1 + t * (chart.x.c2 + t * chart.x.c3))
-  const r = chart.y.c0 + t * (chart.y.c1 + t * (chart.y.c2 + t * chart.y.c3))
-  const dTheta = chart.x.c1 + t * (2 * chart.x.c2 + t * 3 * chart.x.c3)
-  const dr = chart.y.c1 + t * (2 * chart.y.c2 + t * 3 * chart.y.c3)
+// center (an analytic pass, not a parametrization cusp). The one non-finite
+// case is a power radius below exponent 1 at chart radius 0, where the
+// map's slope is infinite; imageSegment replaces such a tangent.
+const imageEval = (f: FoldedMap, chart: ChartPiece, t: number) => {
+  const { theta, r, dTheta, dr } = chart.at(t)
   const a = f.a0 + f.a1 * theta
-  const rho = f.m * r + f.b
+  const rho = dimension.applyMap(f.radius, r)
   const cosA = Math.cos(a)
   const sinA = Math.sin(a)
-  const dRho = f.m * dr
+  const dRho = dr === 0 ? 0 : dimension.mapDerivative(f.radius, r) * dr
   const da = f.a1 * dTheta
   return {
     px: f.cx + rho * cosA,
@@ -518,25 +635,6 @@ const hermiteCandidate = (start: ImageSample, end: ImageSample): CubicCurve2d.Cu
   return CubicCurve2d.fromPolynomials(x, y)
 }
 
-const subdivideChart = (
-  chart: CubicCurve2d.CubicCurve2d,
-): [CubicCurve2d.CubicCurve2d, CubicCurve2d.CubicCurve2d] => {
-  const [leftX, rightX] = CubicPolynomial.subdivide(chart.x, 0.5)
-  const [leftY, rightY] = CubicPolynomial.subdivide(chart.y, 0.5)
-  return [CubicCurve2d.fromPolynomials(leftX, leftY), CubicCurve2d.fromPolynomials(rightX, rightY)]
-}
-
-// Rigorous range of a cubic on [0, 1] from its Bernstein control values
-// (convex-hull property). Deliberately looser than a root-based tight range:
-// unconditionally conservative, and the slack vanishes under subdivision.
-const bernsteinRange = (p: CubicPolynomial.CubicPolynomial): [number, number] => {
-  const b0 = p.c0
-  const b1 = p.c0 + p.c1 / 3
-  const b2 = p.c0 + (2 * p.c1) / 3 + p.c2 / 3
-  const b3 = p.c0 + p.c1 + p.c2 + p.c3
-  return [Math.min(b0, b1, b2, b3), Math.max(b0, b1, b2, b3)]
-}
-
 // Range of the product rho * u over rho in [rhoLo, rhoHi], u in [uLo, uHi]:
 // a bilinear function on a rectangle attains its extrema at corners. This is
 // what makes negative mapped radii free — corner products cover the
@@ -549,8 +647,8 @@ const productRange = (rhoLo: number, rhoHi: number, uLo: number, uHi: number): [
   return [Math.min(p1, p2, p3, p4), Math.max(p1, p2, p3, p4)]
 }
 
-// Rigorous cartesian AABB of a chart piece's image: Bernstein hulls bound the
-// chart coordinates, the affine maps carry those to sorted angle and radius
+// Rigorous cartesian AABB of a chart piece's image: hulls bound the chart
+// coordinates, the monotone maps carry those to sorted angle and radius
 // intervals, and the image then lies in the annular patch
 // { center + rho * (cos a, sin a) : a in aInterval, rho in rhoInterval }.
 // The trig ranges over the angle interval are exact (endpoint values, plus
@@ -559,17 +657,18 @@ const productRange = (rhoLo: number, rhoHi: number, uLo: number, uHi: number): [
 // subdivision shrinks at O(piece width).
 const patchBox = (
   f: FoldedMap,
-  chart: CubicCurve2d.CubicCurve2d,
+  chart: ChartPiece,
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {
-  const [thetaLo, thetaHi] = bernsteinRange(chart.x)
-  const [rLo, rHi] = bernsteinRange(chart.y)
+  const [thetaLo, thetaHi, rHullLo, rHullHi] = chart.hull()
+  const rLo = Math.max(rHullLo, f.rFloor)
+  const rHi = Math.max(rHullHi, f.rFloor)
 
   const aA = f.a0 + f.a1 * thetaLo
   const aB = f.a0 + f.a1 * thetaHi
   const aLo = Math.min(aA, aB)
   const aHi = Math.max(aA, aB)
-  const rhoA = f.m * rLo + f.b
-  const rhoB = f.m * rHi + f.b
+  const rhoA = dimension.applyMap(f.radius, rLo)
+  const rhoB = dimension.applyMap(f.radius, rHi)
   const rhoLo = Math.min(rhoA, rhoB)
   const rhoHi = Math.max(rhoA, rhoB)
 
@@ -605,11 +704,7 @@ const patchBox = (
 // the rigorous enclosure, the witness is the exact image of the chart
 // midpoint (a point ON the curve, which the one-sided walker's triangle
 // bound requires), and bisection is exact polynomial subdivision.
-const imagePiece = (
-  f: FoldedMap,
-  chart: CubicCurve2d.CubicCurve2d,
-  depth: number,
-): certified.CertifiedPiece => {
+const imagePiece = (f: FoldedMap, chart: ChartPiece, depth: number): certified.CertifiedPiece => {
   const witness = imageEval(f, chart, 0.5)
   return {
     box: patchBox(f, chart),
@@ -617,7 +712,7 @@ const imagePiece = (
     witnessY: witness.py,
     depth,
     subdivide: () => {
-      const [left, right] = subdivideChart(chart)
+      const [left, right] = chart.halves()
       return [imagePiece(f, left, depth + 1), imagePiece(f, right, depth + 1)]
     },
   }
@@ -628,7 +723,7 @@ const imagePiece = (
 // rational approximation runs, with imagePiece supplying the enclosures.
 const imageWithinTolerance = (
   f: FoldedMap,
-  chart: CubicCurve2d.CubicCurve2d,
+  chart: ChartPiece,
   candidate: CubicCurve2d.CubicCurve2d,
   tolerance: number,
 ): boolean => {
@@ -663,9 +758,26 @@ interface SharedPoint {
   readonly py: number
 }
 
+// A power radius below exponent 1 has infinite slope at chart radius 0, so
+// an endpoint there has no finite tangent. The chord stands in: any
+// candidate is sound, since certification judges the curve and not the
+// tangents, and subdivision converges because the image itself is smooth.
+const finiteTangent = (
+  sample: ImageSample,
+  startPoint: SharedPoint,
+  endPoint: SharedPoint,
+): ImageSample =>
+  Number.isFinite(sample.tx) && Number.isFinite(sample.ty)
+    ? sample
+    : {
+        ...sample,
+        tx: endPoint.px - startPoint.px,
+        ty: endPoint.py - startPoint.py,
+      }
+
 const imageSegment = (
   f: FoldedMap,
-  segment: CubicCurve2d.CubicCurve2d,
+  segment: ChartPiece,
   tolerance: number,
   out: Array<CubicCurve2d.CubicCurve2d>,
 ): void => {
@@ -676,13 +788,13 @@ const imageSegment = (
   // endpoint tangents on its exactly-subdivided polynomials, where the
   // chain-rule factor is already baked into the coefficients.
   const recurse = (
-    chart: CubicCurve2d.CubicCurve2d,
+    chart: ChartPiece,
     startPoint: SharedPoint,
     endPoint: SharedPoint,
     depth: number,
   ): void => {
     const split = (): void => {
-      const [left, right] = subdivideChart(chart)
+      const [left, right] = chart.halves()
       const mid = imageEval(f, left, 1)
       recurse(left, startPoint, mid, depth + 1)
       recurse(right, mid, endPoint, depth + 1)
@@ -692,15 +804,15 @@ const imageSegment = (
       // Adaptive conditioning gate: pre-split pieces whose mapped sweep can
       // exceed a quarter turn (Bernstein bound), spending certification
       // only where it can plausibly succeed.
-      const [thetaLo, thetaHi] = bernsteinRange(chart.x)
+      const [thetaLo, thetaHi] = chart.hull()
       if (Math.abs(f.a1) * (thetaHi - thetaLo) > SWEEP_GATE) {
         split()
         return
       }
     }
 
-    const start = imageEval(f, chart, 0)
-    const end = imageEval(f, chart, 1)
+    const start = finiteTangent(imageEval(f, chart, 0), startPoint, endPoint)
+    const end = finiteTangent(imageEval(f, chart, 1), startPoint, endPoint)
     const candidate = hermiteCandidate(
       { px: startPoint.px, py: startPoint.py, tx: start.tx, ty: start.ty },
       { px: endPoint.px, py: endPoint.py, tx: end.tx, ty: end.ty },
@@ -721,21 +833,48 @@ const imageSegment = (
 /** @internal */
 export const image = dual<
   (
-    path: CubicPath2d.CubicPath2d,
+    path: CubicPath2d.CubicPath2d | RationalCubicPath2d.RationalCubicPath2d,
     tolerance: number,
   ) => (s: CoordinateSystem) => CubicPath2d.CubicPath2d,
-  (s: CoordinateSystem, path: CubicPath2d.CubicPath2d, tolerance: number) => CubicPath2d.CubicPath2d
->(3, (s: CoordinateSystem, path: CubicPath2d.CubicPath2d, tolerance: number) => {
-  invariant(Number.isFinite(tolerance) && tolerance > 0, 'image: tolerance must be finite and > 0')
+  (
+    s: CoordinateSystem,
+    path: CubicPath2d.CubicPath2d | RationalCubicPath2d.RationalCubicPath2d,
+    tolerance: number,
+  ) => CubicPath2d.CubicPath2d
+>(
+  3,
+  (
+    s: CoordinateSystem,
+    path: CubicPath2d.CubicPath2d | RationalCubicPath2d.RationalCubicPath2d,
+    tolerance: number,
+  ) => {
+    invariant(
+      Number.isFinite(tolerance) && tolerance > 0,
+      'image: tolerance must be finite and > 0',
+    )
 
-  if (s.kind === 'cartesian') {
-    return path
-  }
+    const rational = RationalCubicPath2d.isRationalCubicPath2d(path)
+    if (rational) {
+      for (const segment of path) {
+        invariant(hasPositiveWeights(segment), 'image requires positive rational weights')
+      }
+    }
 
-  const f = foldMap(s)
-  const out: Array<CubicCurve2d.CubicCurve2d> = []
-  for (const segment of path) {
-    imageSegment(f, segment, tolerance, out)
-  }
-  return CubicPath2d.fromArray(out)
-})
+    if (s.kind === 'cartesian') {
+      return rational
+        ? RationalCubicPath2d.approximateAsCubicPath(path, tolerance)
+        : (path as CubicPath2d.CubicPath2d)
+    }
+
+    const f = foldMap(s)
+    const out: Array<CubicCurve2d.CubicCurve2d> = []
+    for (const segment of path) {
+      const chart = rational
+        ? rationalChart(segment as RationalCubicCurve2d.RationalCubicCurve2d)
+        : polynomialChart(segment as CubicCurve2d.CubicCurve2d)
+      const folded = f.radius.kind === 'logarithmic' ? { ...f, rFloor: radialFloor(chart) } : f
+      imageSegment(folded, chart, tolerance, out)
+    }
+    return CubicPath2d.fromArray(out)
+  },
+)

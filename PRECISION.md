@@ -162,7 +162,7 @@ operations construct an object in a genuinely different representation:
 `RationalCubicCurve2d.approximateAsCubicCurves` and
 `RationalCubicPath2d.approximateAsCubicPath` rebuild a rational curve from
 polynomial cubics, `CoordinateSystem.image` rebuilds the nonlinear polar
-image of a chart path the same way, and the tolerance-taking `boundingBox`
+image of a polynomial or rational chart path the same way, and the tolerance-taking `boundingBox`
 on rational curves and paths returns a box it cannot compute tightly in
 closed form. No exact answer exists in the output's representation, so
 these operations carry a third contract: the caller supplies a positive
@@ -207,8 +207,10 @@ distance-to-curve query is off by at most `tolerance` — but quantities
 read off the parameterization inherit nothing: evaluation at a shared
 parameter, tangent direction, curvature, arc length, and dash phase all
 sit outside the certificate. Where exact lengths matter, stay with the
-exact representations: `Arc.length` is closed form, and the images built
-by `arc`, `sector`, and `ray` are exact up to IEEE 754 rounding.
+exact representations: `Arc.length` is closed form on a circular arc and
+an elliptic integral evaluated to about `1e-15` relative error on an
+elliptical one, and the images built by `arc`, `sector`, and `ray` are
+exact up to IEEE 754 rounding.
 
 **Certificates compose in output space only.** A tolerance is a promise
 in the output's own units, and a further nonlinear map re-prices it by
@@ -216,12 +218,14 @@ its local stretch. Sending a chart-space result through a polar system
 magnifies a chart-space deviation `e` to as much as
 `e * max(rho * k, |m|)` on screen, where `rho` is the mapped radius,
 `k = 2*pi / period` converts the angular unit, and `m` is the radial
-scale. The angular term is the trap: under `Dimension.turns`
+map's slope at that radius: the scale itself on a `Linear` radius, and
+unbounded near chart radius `0` on a square-root one. The angular term is the trap: under `Dimension.turns`
 (`k = 2*pi`) at a 200px radius, a `0.125` chart-space certificate is
 only a ~157px screen bound. Splitting a pixel budget into a chart-space
 half and an output-space half is therefore wrong by the full stretch
 factor. The rule: keep chart-space construction exact — degree
-elevation, the shape constructors — and spend the one certified
+elevation, the shape constructors, `Arc.toPath` for ellipses, all of
+which `image` accepts directly — and spend the one certified
 operation as late as possible, in the space whose units the tolerance
 names. For screen output that means `image` with a pixel-fraction
 tolerance is the last step, never an early one.
@@ -235,9 +239,10 @@ decisions and are documented here so their rationale has one home.
 reject it.** The polar point map is total: a negative mapped radius
 reflects through the center, the standard mathematical convention, and
 `toCartesian`, `image`, and `ray` all apply it. `ray` stays exact under
-reflection because its image is the affine image of the radial span
-along a fixed direction — one straight segment, even when the mapped
-radii change sign mid-span. The shape constructors `arc` and `sector`
+reflection because the radial map is continuous and monotone, so the
+image of a radial span along a fixed direction is the set of points
+between its mapped endpoints — one straight segment, even when the
+mapped radii change sign mid-span. The shape constructors `arc` and `sector`
 (and their path-data twins) instead throw on a negative mapped radius:
 a reflected arc renders at the antipodal angle, which in layout code is
 the signature of a broken radial map, not an intent — the same reasoning
@@ -255,6 +260,22 @@ lapping boundary actively breaks rendering: under `evenodd` a
 double-covered area becomes a hole, and the two-subpath annulus emission
 stops working. `arcPathData` also clamps, for a narrower reason: a
 retraced lap has no geometric extent that path data can express.
+
+**Radial maps are monotone, and only the logarithm has a domain.** Every
+radial dimension maps chart radius to mapped radius by a strictly
+monotone function, which is what `ray`'s straight segments, `image`'s
+endpoint-mapped radius enclosures, and `fromCartesian`'s inverse rely on.
+`Power` uses the signed power `sign(x) * abs(x)^exponent` rather than
+rejecting negative input: the point map stays total, the reflection
+convention above carries over unchanged, and it is the same choice
+d3's power scales make. `Logarithmic` cannot follow suit, because no
+monotone extension of `log` reaches `r <= 0` with finite values.
+Operations that map a non-positive chart radius through it throw, rather
+than return `-Infinity` or `NaN` coordinates that would surface later as
+an empty or broken SVG path. `image` certifies a positive lower bound on
+each segment's chart radius before it runs, by the same subdivision
+enclosures it uses everywhere else, so a path that merely has a loose
+control polygon below zero is still accepted.
 
 ## What the brands guarantee
 

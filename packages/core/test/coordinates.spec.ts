@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import * as Arc from '../src/arc/arc.ts'
 import * as CoordinateSystem from '../src/coordinates/coordinateSystem.ts'
 import * as Dimension from '../src/coordinates/dimension.ts'
 import * as CubicCurve2d from '../src/curve/cubic2d.ts'
@@ -37,6 +38,58 @@ describe('dimension', () => {
     expect(() => Dimension.cyclical(0)).toThrow()
     expect(() => Dimension.cyclical(-2)).toThrow()
     expect(() => Dimension.cyclical(Number.NaN)).toThrow()
+  })
+
+  test('power and logarithmic constructors, guards, and invariants', () => {
+    const power = Dimension.power(1 / 3, 50, 4)
+    expect(power.kind).toBe('power')
+    expect(power.exponent).toBe(1 / 3)
+    expect(power.scale).toBe(50)
+    expect(power.offset).toBe(4)
+    expect(Dimension.isPower(power)).toBe(true)
+    expect(Dimension.isLinear(power)).toBe(false)
+
+    const sqrt = Dimension.sqrt(10)
+    expect(sqrt.kind).toBe('power')
+    expect(sqrt.exponent).toBe(0.5)
+    expect(sqrt.offset).toBe(0)
+
+    const log = Dimension.logarithmic(40, 20)
+    expect(log.kind).toBe('logarithmic')
+    expect(log.base).toBe(10)
+    expect(Dimension.isLogarithmic(log)).toBe(true)
+    expect(Dimension.isDimension(log)).toBe(true)
+
+    for (const exponent of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() => Dimension.power(exponent)).toThrow()
+    }
+    expect(() => Dimension.power(2, 0)).toThrow()
+    expect(() => Dimension.sqrt(1, Number.NaN)).toThrow()
+    for (const base of [0, -2, 1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() => Dimension.logarithmic(1, 0, base)).toThrow()
+    }
+    expect(() => Dimension.logarithmic(0)).toThrow()
+  })
+
+  test('number-line kinds share the non-wrapping operations', () => {
+    for (const d of [Dimension.sqrt(), Dimension.logarithmic()]) {
+      expect(Dimension.wrap(d, 725)).toBe(725)
+      expect(Dimension.delta(d, 350, 10)).toBe(-340)
+      expect(Dimension.lerp(d, 0, 10, 0.25)).toBe(2.5)
+      expect(Dimension.contains(d, { start: 10, end: 0 }, 5)).toBe(true)
+      expect(Dimension.contains(d, { start: 0, end: 10 }, 11)).toBe(false)
+      expect(Dimension.unwrap(d, [350, 5])).toEqual([350, 5])
+    }
+  })
+
+  test('equals distinguishes the number-line kinds', () => {
+    expect(Dimension.equals(Dimension.sqrt(2), Dimension.power(0.5, 2))).toBe(true)
+    expect(Dimension.equals(Dimension.sqrt(2), Dimension.power(0.6, 2))).toBe(false)
+    expect(Dimension.equals(Dimension.power(1), Dimension.linear())).toBe(false)
+    expect(Dimension.equals(Dimension.logarithmic(1, 0, 2), Dimension.logarithmic(1, 0, 2))).toBe(
+      true,
+    )
+    expect(Dimension.equals(Dimension.logarithmic(1, 0, 2), Dimension.logarithmic())).toBe(false)
   })
 
   test('unit constants', () => {
@@ -178,9 +231,79 @@ describe('coordinateSystem', () => {
 
   test('polar constructor invariants throw', () => {
     expect(() => CoordinateSystem.polar({ thetaOrigin: Number.NaN })).toThrow()
-    // The radius field's type is the Dimension union, but only linear
-    // radial maps are constructible today.
+    // A wrapping radius has no monotone radial map.
     expect(() => CoordinateSystem.polar({ radius: Dimension.degrees })).toThrow()
+  })
+
+  describe('non-linear radial maps', () => {
+    const sqrtPolar = CoordinateSystem.polar({ radius: Dimension.sqrt(10) })
+    const logPolar = CoordinateSystem.polar({ radius: Dimension.logarithmic(40, 20) })
+
+    test('mapRadius applies the map, exactly at representable points', () => {
+      expect(CoordinateSystem.mapRadius(sqrtPolar, 100)).toBe(100)
+      expect(CoordinateSystem.mapRadius(sqrtPolar, -100)).toBe(-100)
+      expect(CoordinateSystem.mapRadius(logPolar, 1)).toBe(20)
+      expect(CoordinateSystem.mapRadius(logPolar, 1000)).toBe(140)
+      expect(CoordinateSystem.mapRadius(logPolar, 0.01)).toBe(-60)
+      const binary = CoordinateSystem.polar({ radius: Dimension.logarithmic(1, 0, 2) })
+      expect(CoordinateSystem.mapRadius(binary, 1024)).toBe(10)
+      const cube = CoordinateSystem.polar({ radius: Dimension.power(3) })
+      expect(CoordinateSystem.mapRadius(cube, -2)).toBe(-8)
+    })
+
+    test('a logarithmic radius rejects non-positive chart radii', () => {
+      for (const r of [0, -1]) {
+        expect(() => CoordinateSystem.mapRadius(logPolar, r)).toThrow()
+        expect(() => CoordinateSystem.toCartesian(logPolar, Vector2.make(0, r))).toThrow()
+        expect(() => CoordinateSystem.arc(logPolar, { start: 0, end: 1 }, r)).toThrow()
+        expect(() =>
+          CoordinateSystem.sector(logPolar, { start: 0, end: 1 }, { start: r, end: 10 }),
+        ).toThrow()
+      }
+    })
+
+    test('fromCartesian inverts the map', () => {
+      for (const system of [sqrtPolar, logPolar]) {
+        for (const chart of [Vector2.make(1, 4), Vector2.make(2.5, 3), Vector2.make(5, 200)]) {
+          const back = CoordinateSystem.fromCartesian(
+            system,
+            CoordinateSystem.toCartesian(system, chart),
+          )
+          expect(back.x).toBeCloseTo(chart.x, 12)
+          expect(back.y / chart.y).toBeCloseTo(1, 12)
+        }
+      }
+    })
+
+    test('shapes stay exact: arcs keep their mapped radius, rays stay straight', () => {
+      const ring = CoordinateSystem.sector(sqrtPolar, { start: 0, end: 2 }, { start: 4, end: 9 })
+      const radii = new Set<number>()
+      for (let i = 0; i <= 64; i++) {
+        const p = RationalCubicPath2d.solve(ring, i / 64)
+        radii.add(Math.round(Math.hypot(p.x, p.y) * 1e9) / 1e9)
+      }
+      // Arc points sit at 10 * sqrt(4) or 10 * sqrt(9); edge points between.
+      expect(radii.has(20)).toBe(true)
+      expect(radii.has(30)).toBe(true)
+      for (const r of radii) {
+        expect(r).toBeGreaterThanOrEqual(20)
+        expect(r).toBeLessThanOrEqual(30)
+      }
+
+      expect(CoordinateSystem.rayPathData(logPolar, 0, { start: 1, end: 100 })).toBe(
+        'M 20,0 L 100,0',
+      )
+    })
+
+    test('containsPoint judges radii in chart space', () => {
+      const span = { start: 10, end: 100 }
+      const theta = { start: -0.5, end: 0.5 }
+      expect(CoordinateSystem.containsPoint(logPolar, theta, span, Vector2.make(70, 0))).toBe(true)
+      expect(CoordinateSystem.containsPoint(logPolar, theta, span, Vector2.make(110, 0))).toBe(
+        false,
+      )
+      expect(CoordinateSystem.containsPoint(logPolar, theta, span, Vector2.make(50, 0))).toBe(false)
+    })
   })
 
   test('guards and equals', () => {
@@ -983,6 +1106,132 @@ describe('coordinateSystem.image', () => {
       const scaledCount = [...CoordinateSystem.image(scaled, spiralPath(), 1e-3 * scale)].length
       expect(scaledCount).toBe(base)
     }
+  })
+
+  describe('non-linear radial maps', () => {
+    const sqrtPolar = CoordinateSystem.polar({ radius: Dimension.sqrt() })
+    const logPolar = CoordinateSystem.polar({ radius: Dimension.logarithmic(1, 1) })
+
+    test('a square-root spiral honors the certified bound', () => {
+      const tolerance = 1e-3
+      const out = CoordinateSystem.image(sqrtPolar, spiralPath(), tolerance)
+      assertWithinBothWays(
+        out,
+        (t) => {
+          const a = (Math.PI / 2) * t
+          const rho = Math.sqrt(1 + 0.25 * t)
+          return [rho * Math.cos(a), rho * Math.sin(a)]
+        },
+        tolerance,
+      )
+    })
+
+    // r(t) = 4t starts on the square root's infinite-slope point, and
+    // r(t) = -1 + 2t crosses it mid-segment.
+    test('square-root paths through chart radius zero converge', () => {
+      const tolerance = 1e-3
+      for (const [r0, r1] of [
+        [0, 4],
+        [-1, 2],
+      ] as const) {
+        const out = CoordinateSystem.image(
+          sqrtPolar,
+          CubicPath2d.make(chartSegment([0, Math.PI / 2, 0, 0], [r0, r1, 0, 0])),
+          tolerance,
+        )
+        assertWithinBothWays(
+          out,
+          (t) => {
+            const a = (Math.PI / 2) * t
+            const r = r0 + r1 * t
+            const rho = Math.sign(r) * Math.sqrt(Math.abs(r))
+            return [rho * Math.cos(a), rho * Math.sin(a)]
+          },
+          tolerance,
+        )
+        expect(CubicPath2d.isContinuous(out)).toBe(true)
+        expect([...out].length).toBeLessThanOrEqual(64)
+      }
+    })
+
+    test('a logarithmic radius images a path whose hull dips below zero', () => {
+      // r(t) = 1 - 3.6t + 3.6t^2 bottoms out at 0.1, but two of its
+      // Bernstein control values are -0.2.
+      const tolerance = 1e-3
+      const out = CoordinateSystem.image(
+        logPolar,
+        CubicPath2d.make(chartSegment([0, Math.PI, 0, 0], [1, -3.6, 3.6, 0])),
+        tolerance,
+      )
+      assertWithinBothWays(
+        out,
+        (t) => {
+          const a = Math.PI * t
+          const rho = Math.log10(1 - 3.6 * t + 3.6 * t * t) + 1
+          return [rho * Math.cos(a), rho * Math.sin(a)]
+        },
+        tolerance,
+      )
+    })
+
+    test('a logarithmic radius rejects paths reaching chart radius zero', () => {
+      for (const r of [
+        [1, -2, 0, 0],
+        [1, -4, 4, 0],
+      ] as const) {
+        expect(() =>
+          CoordinateSystem.image(logPolar, CubicPath2d.make(chartSegment([0, 1, 0, 0], r)), 1e-3),
+        ).toThrow()
+      }
+    })
+  })
+
+  describe('rational chart paths', () => {
+    // A chart-space half circle of radius 0.5 around (1, 3), lowered to
+    // rational segments with interior weights below 1.
+    const chartArc = Arc.circular({ center: Vector2.make(1, 3), radius: 0.5, sweep: Math.PI })
+    const halfCircle = () => Arc.toPath(chartArc)
+
+    test('a lowered chart-space arc honors the certified bound', () => {
+      const tolerance = 1e-3
+      const out = CoordinateSystem.image(unitPolar, halfCircle(), tolerance)
+      assertWithinBothWays(
+        out,
+        (t) => {
+          const p = Arc.solve(chartArc, t)
+          return [p.y * Math.cos(p.x), p.y * Math.sin(p.x)]
+        },
+        tolerance,
+      )
+      expect(CubicPath2d.isContinuous(out)).toBe(true)
+    })
+
+    test('cartesian systems approximate rational paths to the same tolerance', () => {
+      const out = CoordinateSystem.image(CoordinateSystem.cartesian, halfCircle(), 1e-4)
+      expect(CubicPath2d.isCubicPath2d(out)).toBe(true)
+      expect([...out].length).toBe(
+        [...RationalCubicPath2d.approximateAsCubicPath(halfCircle(), 1e-4)].length,
+      )
+    })
+
+    test('rejects non-positive rational weights', () => {
+      // w(t) = 1 - 3t + 3t^2 stays positive, but its Bernstein weights are
+      // [1, 0, 0, 1], so the hull enclosure would divide by zero.
+      const zeroWeight = RationalCubicPath2d.make(
+        RationalCubicCurve2d.fromPolynomials(
+          CubicPolynomial.make(1, 1, 0, 0),
+          CubicPolynomial.make(1, 0, 0, 0),
+          CubicPolynomial.make(1, -3, 3, 0),
+        ),
+      )
+      expect(() => CoordinateSystem.image(unitPolar, zeroWeight, 1e-3)).toThrow()
+      expect(() => CoordinateSystem.image(CoordinateSystem.cartesian, zeroWeight, 1e-3)).toThrow()
+    })
+
+    test('supports data-last application', () => {
+      const out = unitPolar.pipe(CoordinateSystem.image(halfCircle(), 1e-3))
+      expect(CubicPath2d.isContinuous(out)).toBe(true)
+    })
   })
 
   test('rejects a bad tolerance', () => {

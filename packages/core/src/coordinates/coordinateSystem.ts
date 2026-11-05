@@ -82,14 +82,16 @@ export interface Polar extends Pipeable {
    */
   readonly winding: Winding
   /**
-   * The radial axis map. Today this is always a `Linear` dimension —
-   * mapped radius is `r * scale + offset`, and an offset shifts chart
-   * radius `0` outward, which puts an inner hole under a chart that
-   * starts at `r = 0`.
+   * The radial axis map: any `Dimension` but `Cyclical`. Every kind
+   * carries an `offset`, which shifts the mapped radius outward and puts
+   * an inner hole under a chart that starts at its lowest value.
+   * - `Linear`: mapped radius is `r * scale + offset`
+   * - `Power`: a signed power of `r`, like a square-root radius that keeps
+   *   sector area proportional to chart area
+   * - `Logarithmic`: `scale * log(r) + offset`, defined only for `r > 0`
    *
-   * The field is typed as the full `Dimension` union so future radial-map
-   * kinds can arrive without breaking readers. Apply the map with
-   * `mapRadius` rather than reading `scale` and `offset` off the field.
+   * Apply the map with `mapRadius` rather than reading fields off the
+   * dimension.
    */
   readonly radius: Dimension
   /**
@@ -124,10 +126,9 @@ export interface PolarConfig {
    */
   readonly winding?: Winding
   /**
-   * The radial axis map applied to chart radii. Must be a `Linear`
-   * dimension — the union type reserves room for future radial-map
-   * kinds, and `polar` rejects a `Cyclical` radius. Defaults to
-   * `Dimension.identity`.
+   * The radial axis map applied to chart radii: `Linear`, `Power`, or
+   * `Logarithmic`. `polar` rejects a `Cyclical` radius, since a wrapping
+   * radius would tear shapes at its seam. Defaults to `Dimension.identity`.
    */
   readonly radius?: Dimension
   /**
@@ -179,7 +180,7 @@ export const cartesian: Cartesian = internal.cartesian
  *   origin. All optional; see `PolarConfig` for the defaults.
  * @returns A new `Polar` system.
  * @throws `Error` when `thetaOrigin` is not finite, or when `radius` is
- *   not a `Linear` dimension.
+ *   a `Cyclical` dimension.
  * @since 2.0.0
  * @example
  * ```ts
@@ -228,12 +229,14 @@ export const toCartesian: {
    * radius reflects through the center, the standard polar convention. On
    * a cartesian system the point is returned unchanged.
    *
-   * The arithmetic is exact IEEE 754 trig with no rounding or snapping;
-   * see `PRECISION.md`.
+   * The arithmetic is exact IEEE 754 trig with no rounding or snapping.
+   * See `PRECISION.md`.
    *
    * @param s - The coordinate system.
    * @param point - The chart-space point.
    * @returns The cartesian image of the point.
+   * @throws `Error` when the system's radius is `Logarithmic` and
+   *   `point.y` is not positive.
    * @since 2.0.0
    */
   (s: CoordinateSystem, point: Vector2): Vector2
@@ -242,7 +245,8 @@ export const toCartesian: {
    *
    * @param point - The chart-space point.
    * @returns A function that takes a system and returns the cartesian
-   *   image.
+   *   image. It throws when the system's radius is `Logarithmic` and
+   *   `point.y` is not positive.
    * @since 2.0.0
    */
   (point: Vector2): (s: CoordinateSystem) => Vector2
@@ -256,9 +260,12 @@ export const fromCartesian: {
    * exact center the angle is `0`. On a cartesian system the point is
    * returned unchanged.
    *
-   * Round-trips with `toCartesian` up to angle wrapping: a chart angle
-   * comes back as its canonical representative, and a negative chart
-   * radius comes back positive with the angle turned half a period.
+   * Round-trips with `toCartesian` up to angle wrapping. A chart angle
+   * comes back as its canonical representative, and a point whose mapped
+   * radius was negative comes back on the reflected side, with a positive
+   * mapped radius and the angle turned half a period. Every cartesian
+   * point has a preimage, including under a `Logarithmic` radius, whose
+   * inverse returns a positive chart radius for any distance.
    *
    * @param s - The coordinate system.
    * @param point - The cartesian point.
@@ -322,12 +329,12 @@ export const mapAngle: {
 export const mapRadius: {
   /**
    * Maps a chart-space radial coordinate to its on-screen distance from
-   * the center. This is the radial half of `toCartesian`:
-   * `r * scale + offset` under today's always-linear radial axis.
+   * the center through the system's radial dimension. This is the radial
+   * half of `toCartesian`, and `r * scale + offset` on a `Linear` radius.
    *
    * The result can be negative when the map sends the chart radius below
    * zero. Point-mapping operations read a negative mapped radius as a
-   * reflection through the center; shape constructors like `arc` and
+   * reflection through the center. Shape constructors like `arc` and
    * `sector` reject it.
    *
    * Only a polar system has a radial axis, so the parameter narrows to
@@ -336,6 +343,8 @@ export const mapRadius: {
    * @param s - The polar system whose radial map to apply.
    * @param r - The chart-space radial coordinate.
    * @returns The signed on-screen distance from the center.
+   * @throws `Error` when the system's radius is `Logarithmic` and `r` is
+   *   not positive.
    * @since 2.0.0
    * @example
    * ```ts
@@ -353,7 +362,8 @@ export const mapRadius: {
    *
    * @param r - The chart-space radial coordinate.
    * @returns A function that takes a polar system and returns the signed
-   *   on-screen distance.
+   *   on-screen distance. It throws when the system's radius is
+   *   `Logarithmic` and `r` is not positive.
    * @since 2.0.0
    */
   (r: number): (s: Polar) => number
@@ -375,8 +385,9 @@ export const arc: {
    * @param theta - The angular span, in either order.
    * @param r - The fixed radial coordinate.
    * @returns The image as a `RationalCubicPath2d`.
-   * @throws `Error` when an input is not finite, or when the mapped radius
-   *   is negative.
+   * @throws `Error` when an input is not finite, when the mapped radius is
+   *   negative, or when the system's radius is `Logarithmic` and a chart radius is not
+   *   positive.
    * @since 2.0.0
    * @example
    * ```ts
@@ -404,9 +415,11 @@ export const ray: {
   /**
    * Constructs the exact cartesian image of the chart-space segment that
    * holds `theta` fixed and runs `r` from `r.start` to `r.end`. On a polar
-   * system that image is a straight segment along the fixed direction —
-   * the radial map is affine, so the image is exact, a single rational
-   * line segment. On a cartesian system it is the vertical segment at
+   * system that image is a straight segment along the fixed direction.
+   * The radial map is monotone, so the image is exactly the single
+   * rational line segment between the mapped endpoints. Under a non-linear
+   * radius the segment's parameter runs uniformly in mapped distance, not
+   * in chart radius. On a cartesian system it is the vertical segment at
    * `x = theta`.
    *
    * Unlike `arc` and `sector`, negative mapped radii are allowed: a
@@ -420,7 +433,8 @@ export const ray: {
    * @param theta - The fixed angular coordinate.
    * @param r - The radial span, traced from `start` to `end`.
    * @returns The image as a `RationalCubicPath2d` of one segment.
-   * @throws `Error` when an input is not finite.
+   * @throws `Error` when an input is not finite, or when the system's
+   *   radius is `Logarithmic` and a chart radius is not positive.
    * @since 2.0.0
    * @example
    * ```ts
@@ -464,8 +478,9 @@ export const sector: {
    * @param theta - The angular span, in either order.
    * @param r - The radial span, in either order.
    * @returns The closed image as a `RationalCubicPath2d`.
-   * @throws `Error` when an input is not finite, or when a mapped radius
-   *   is negative.
+   * @throws `Error` when an input is not finite, when a mapped radius is
+   *   negative, or when the system's radius is `Logarithmic` and a chart radius is not
+   *   positive.
    * @since 2.0.0
    * @example
    * ```ts
@@ -548,7 +563,12 @@ export const image: {
    * true image lies within `tolerance` of the output, and every point of
    * the output lies within `tolerance` of the true image, verified by
    * subdivision enclosures rather than point samples (see `PRECISION.md`).
-   * On a cartesian system the path is returned unchanged.
+   *
+   * The path may be polynomial or rational. A rational path lets shapes
+   * with exact rational forms enter chart space, like an ellipse lowered
+   * with `Arc.toPath`. On a cartesian system a polynomial path comes back
+   * unchanged and a rational one is approximated to the same bound with
+   * `RationalCubicPath2d.approximateAsCubicPath`.
    *
    * The path is read pointwise like `toCartesian`: each point `(x, y)` as
    * `(theta, r)`, a negative mapped radius reflecting through the center.
@@ -559,6 +579,11 @@ export const image: {
    * junctions close; reassert the brand with `CubicPath2d.asContinuous`
    * where needed.
    *
+   * Every radial dimension kind is supported. A `Power` radius below
+   * exponent 1 has infinite slope at chart radius `0`, which costs extra
+   * segments near the center without loosening the bound. A `Logarithmic`
+   * radius requires the path to stay at positive chart radii.
+   *
    * For axis-aligned chart shapes prefer `arc` and `sector`, whose images
    * are exact. For SVG output pass the result to `CubicPath2d.toPathData`.
    * Certification cost grows roughly with the ratio of the image's size to
@@ -567,12 +592,18 @@ export const image: {
    * they get wrong.
    *
    * @param s - The coordinate system.
-   * @param path - The chart-space path, each point read as `(theta, r)`.
+   * @param path - The chart-space path, polynomial or rational, each
+   *   point read as `(theta, r)`. A rational path's Bernstein weights
+   *   must all be positive, which every path `Arc.toPath` builds
+   *   satisfies.
    * @param tolerance - Maximum allowed Hausdorff distance, in cartesian
    *   output units. Must be positive.
    * @returns The image as a `CubicPath2d` within `tolerance` of the true
    *   image.
-   * @throws `Error` when `tolerance` is not a positive finite number.
+   * @throws `Error` when `tolerance` is not a positive finite number, when
+   *   a rational path has a weight that is not positive, or when the
+   *   system's radius is `Logarithmic` and the path reaches a chart radius
+   *   that is not positive.
    * @since 2.0.0
    * @example
    * ```ts
@@ -588,19 +619,30 @@ export const image: {
    * const d = CubicPath2d.toPathData(
    *   CoordinateSystem.image(system, chartPath, 0.25),
    * )
+   *
+   * // The ellipse inscribed in the chart rect theta in [0, 0.25], r in [80, 120]:
+   * const node = Arc.elliptical({
+   *   center: Vector2.make(0.125, 100),
+   *   radiusX: 0.125,
+   *   radiusY: 20,
+   * })
+   * const blob = CoordinateSystem.image(system, Arc.toPath(node), 0.25)
    * ```
    */
-  (s: CoordinateSystem, path: CubicPath2d, tolerance: number): CubicPath2d
+  (s: CoordinateSystem, path: CubicPath2d | RationalCubicPath2d, tolerance: number): CubicPath2d
   /**
    * Constructs the cartesian image of an arbitrary chart-space path.
    *
-   * @param path - The chart-space path, each point read as `(theta, r)`.
+   * @param path - The chart-space path, polynomial or rational, each
+   *   point read as `(theta, r)`. A rational path's Bernstein weights
+   *   must all be positive.
    * @param tolerance - Maximum allowed Hausdorff distance, in cartesian
    *   output units. Must be positive.
-   * @returns A function that takes a system and returns the image path.
+   * @returns A function that takes a system and returns the image path,
+   *   certified to `tolerance`.
    * @since 2.0.0
    */
-  (path: CubicPath2d, tolerance: number): (s: CoordinateSystem) => CubicPath2d
+  (path: CubicPath2d | RationalCubicPath2d, tolerance: number): (s: CoordinateSystem) => CubicPath2d
 } = internal.image
 
 export const arcPathData: {
@@ -622,8 +664,9 @@ export const arcPathData: {
    * @param theta - The angular span, in either order.
    * @param r - The fixed radial coordinate.
    * @returns The SVG path data string.
-   * @throws `Error` when an input is not finite, or when the mapped radius
-   *   is negative.
+   * @throws `Error` when an input is not finite, when the mapped radius is
+   *   negative, or when the system's radius is `Logarithmic` and a chart radius is not
+   *   positive.
    * @since 2.0.0
    */
   (s: CoordinateSystem, theta: Bounds, r: number): string
@@ -651,7 +694,8 @@ export const rayPathData: {
    * @param theta - The fixed angular coordinate.
    * @param r - The radial span, traced from `start` to `end`.
    * @returns The SVG path data string.
-   * @throws `Error` when an input is not finite.
+   * @throws `Error` when an input is not finite, or when the system's
+   *   radius is `Logarithmic` and a chart radius is not positive.
    * @since 2.0.0
    */
   (s: CoordinateSystem, theta: number, r: Bounds): string
@@ -684,8 +728,9 @@ export const sectorPathData: {
    * @param theta - The angular span, in either order.
    * @param r - The radial span, in either order.
    * @returns The SVG path data string.
-   * @throws `Error` when an input is not finite, or when a mapped radius
-   *   is negative.
+   * @throws `Error` when an input is not finite, when a mapped radius is
+   *   negative, or when the system's radius is `Logarithmic` and a chart radius is not
+   *   positive.
    * @since 2.0.0
    * @example
    * ```ts

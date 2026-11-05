@@ -4,17 +4,26 @@ import * as internal from './dimension.internal.ts'
 import type { DimensionTypeId } from './dimension.internal.ts'
 
 /**
- * Describes the structure of a single chart-space axis: `Linear` for an
- * ordinary number line, optionally scaled and offset, or `Cyclical` for an
- * axis whose values wrap modulo a period, like an angle or a hue.
+ * Describes the structure of a single chart-space axis. Three kinds are
+ * ordinary number lines, each carrying a map from chart values to output
+ * values:
+ * - `Linear`: `x * scale + offset`, for unit conversions
+ * - `Power`: `scale * x^exponent + offset`, like a square-root radius
+ *   that makes ring area track the data
+ * - `Logarithmic`: `scale * log(x) + offset`, for data spanning orders
+ *   of magnitude
  *
- * Every operation in this module accepts the full union and treats the
- * linear case as the trivial branch, so per-axis code never needs to
- * discriminate before calling.
+ * The fourth, `Cyclical`, is an axis whose values wrap modulo a period,
+ * like an angle or a hue.
+ *
+ * Every operation in this module accepts the full union. The three
+ * number-line kinds share one branch: chart values on them never wrap,
+ * and operations like `delta`, `lerp`, and `contains` read the chart
+ * values directly, not the mapped ones.
  *
  * @since 2.0.0
  */
-export type Dimension = Linear | Cyclical
+export type Dimension = Linear | Power | Logarithmic | Cyclical
 
 /**
  * An ordinary number-line axis carrying the affine map
@@ -34,6 +43,67 @@ export interface Linear extends Pipeable {
    * The additive coefficient of the axis map.
    */
   readonly offset: number
+}
+
+/**
+ * A number-line axis carrying the signed power map
+ * `scale * sign(x) * abs(x)^exponent + offset`. An exponent of `0.5` is
+ * the square-root axis. As a polar radius with offset `0`, it makes every
+ * sector's on-screen area proportional to its chart-space area, where a
+ * linear radius inflates outer rings.
+ *
+ * The map is signed, so it is defined for every input and increases
+ * strictly for any positive exponent. A negative chart value maps to the
+ * mirror image of its absolute value.
+ *
+ * @since 2.0.0
+ */
+export interface Power extends Pipeable {
+  readonly [DimensionTypeId]: DimensionTypeId
+  readonly kind: 'power'
+  /**
+   * The exponent applied to the chart value's magnitude. Always positive
+   * and finite. Below `1` the map's slope is infinite at `0`.
+   */
+  readonly exponent: number
+  /**
+   * The coefficient applied after the power. Never zero.
+   */
+  readonly scale: number
+  /**
+   * The constant added last, equal to the output at chart value `0`.
+   */
+  readonly offset: number
+}
+
+/**
+ * A number-line axis carrying the map `scale * log(x) + offset`, the
+ * logarithm taken in `base`. Each factor of `base` in the chart value
+ * moves the output by `scale`, so `logarithmic(40)` spaces every decade
+ * 40 units apart.
+ *
+ * Only positive chart values have an image. Operations that map a value
+ * through the axis throw on zero or negative input rather than produce
+ * `-Infinity` or `NaN`.
+ *
+ * @since 2.0.0
+ */
+export interface Logarithmic extends Pipeable {
+  readonly [DimensionTypeId]: DimensionTypeId
+  readonly kind: 'logarithmic'
+  /**
+   * The output distance between chart values one factor of `base` apart.
+   * Never zero.
+   */
+  readonly scale: number
+  /**
+   * The constant added last, equal to the output at chart value `1`.
+   */
+  readonly offset: number
+  /**
+   * The logarithm's base. Positive, finite, and not `1`.
+   */
+  readonly base: number
 }
 
 /**
@@ -72,6 +142,24 @@ export const isDimension: (v: unknown) => v is Dimension = internal.isDimension
 export const isLinear: (d: Dimension) => d is Linear = internal.isLinear
 
 /**
+ * Checks if a `Dimension` is `Power`.
+ *
+ * @param d - The dimension to check.
+ * @returns `true` if the dimension is `Power`, `false` otherwise.
+ * @since 2.0.0
+ */
+export const isPower: (d: Dimension) => d is Power = internal.isPower
+
+/**
+ * Checks if a `Dimension` is `Logarithmic`.
+ *
+ * @param d - The dimension to check.
+ * @returns `true` if the dimension is `Logarithmic`, `false` otherwise.
+ * @since 2.0.0
+ */
+export const isLogarithmic: (d: Dimension) => d is Logarithmic = internal.isLogarithmic
+
+/**
  * Checks if a `Dimension` is `Cyclical`.
  *
  * @param d - The dimension to check.
@@ -92,6 +180,79 @@ export const isCyclical: (d: Dimension) => d is Cyclical = internal.isCyclical
  * @since 2.0.0
  */
 export const linear: (scale?: number, offset?: number) => Linear = internal.linear
+
+/**
+ * Creates a `Power` dimension with the axis map
+ * `scale * sign(x) * abs(x)^exponent + offset`.
+ *
+ * @param exponent - The power applied to the chart value's magnitude.
+ *   Must be positive and finite. `0.5` is the square-root axis, which
+ *   `sqrt` builds directly.
+ * @param scale - The coefficient applied after the power. Defaults to `1`.
+ * @param offset - The constant added last. Defaults to `0`.
+ * @returns A new `Power` dimension.
+ * @throws `Error` when `exponent` is not positive and finite, when `scale`
+ *   is zero or not finite, or when `offset` is not finite.
+ * @since 2.0.0
+ * @example
+ * ```ts
+ * // A radius that grows with the cube root of the data:
+ * const radius = Dimension.power(1 / 3, 50)
+ * ```
+ */
+export const power: (exponent: number, scale?: number, offset?: number) => Power = internal.power
+
+/**
+ * Creates a square-root `Power` dimension, `power(0.5, scale, offset)`:
+ * the axis map `scale * sign(x) * sqrt(abs(x)) + offset`.
+ *
+ * As a polar radius with offset `0`, it makes every sector's on-screen
+ * area proportional to its chart-space area, which keeps outer rings from
+ * looking bigger than their data.
+ *
+ * @param scale - The coefficient applied after the square root. Defaults
+ *   to `1`.
+ * @param offset - The constant added last. Defaults to `0`.
+ * @returns A new `Power` dimension with exponent `0.5`.
+ * @throws `Error` when `scale` is zero or not finite, or when `offset` is
+ *   not finite.
+ * @since 2.0.0
+ * @example
+ * ```ts
+ * const system = CoordinateSystem.polar({
+ *   theta: Dimension.degrees,
+ *   radius: Dimension.sqrt(10),
+ * })
+ *
+ * CoordinateSystem.mapRadius(system, 100) // 100, since 10 * sqrt(100)
+ * ```
+ */
+export const sqrt: (scale?: number, offset?: number) => Power = internal.sqrt
+
+/**
+ * Creates a `Logarithmic` dimension with the axis map
+ * `scale * log(x) + offset`, the logarithm taken in `base`.
+ *
+ * @param scale - The output distance between chart values one factor of
+ *   `base` apart. Defaults to `1`.
+ * @param offset - The output value at chart value `1`. Defaults to `0`.
+ * @param base - The logarithm's base. Defaults to `10`. Bases `10`, `2`,
+ *   and `Math.E` use the dedicated `Math` functions, so exact powers of
+ *   the base map to exact integers.
+ * @returns A new `Logarithmic` dimension.
+ * @throws `Error` when `scale` is zero or not finite, when `offset` is not
+ *   finite, or when `base` is not positive and finite or equals `1`.
+ * @since 2.0.0
+ * @example
+ * ```ts
+ * // Decades 40 pixels apart, with chart value 1 at radius 20:
+ * const system = CoordinateSystem.polar({ radius: Dimension.logarithmic(40, 20) })
+ *
+ * CoordinateSystem.mapRadius(system, 1000) // 140
+ * ```
+ */
+export const logarithmic: (scale?: number, offset?: number, base?: number) => Logarithmic =
+  internal.logarithmic
 
 /**
  * Creates a `Cyclical` dimension whose values wrap modulo `period`.
@@ -163,7 +324,7 @@ export const wrap: {
   /**
    * Canonicalizes a coordinate on the axis. On a cyclical axis the result
    * is the representative in `[0, period)`, computed with a floored
-   * modulo, so negative inputs wrap upward. On a linear axis the value is
+   * modulo, so negative inputs wrap upward. On a non-cyclical axis the value is
    * returned unchanged.
    *
    * @param d - The axis the value lives on.
@@ -188,7 +349,7 @@ export const delta: {
    * Computes the shortest signed difference from `a` to `b`. On a cyclical
    * axis the result lands in `(-period/2, period/2]`, and an exact
    * antipodal pair resolves to `+period/2` regardless of argument order.
-   * On a linear axis the result is plain `b - a`.
+   * On a non-cyclical axis the result is plain `b - a`.
    *
    * Representatives whole periods apart are handled: only the wrapped
    * positions matter.
@@ -223,7 +384,7 @@ export const congruent: {
    * a cyclical axis the shortest wrapped difference is compared against a
    * band of `EPSILON * period`, so `2 * Math.PI - 1e-16` is congruent to
    * `0` under `radians`, and representatives whole periods apart agree
-   * whenever their wrapped positions do. On a linear axis this is
+   * whenever their wrapped positions do. On a non-cyclical axis this is
    * `coincident` from `curvy/number`.
    *
    * Like `coincident`, the comparison is not transitive. See `PRECISION.md`
@@ -256,7 +417,7 @@ export const contains: {
    * reads it: the sign of `end - start` picks the direction, a wrap
    * crossing is written by going past the period (`{ start: 350, end:
    * 370 }` covers the 20 degrees across the seam), and a sweep of a whole
-   * period or more covers the entire axis. On a linear axis the span is
+   * period or more covers the entire axis. On a non-cyclical axis the span is
    * undirected and this is a plain min/max range check.
    *
    * Edges are exact. For tolerant edges use `containsApprox`.
@@ -283,14 +444,14 @@ export const contains: {
 /**
  * Checks whether a coordinate lies on the span `bounds`, widening both
  * edges by `eps`. The span semantics are those of `contains`: directed
- * sweeps on cyclical axes, min/max ranges on linear ones.
+ * sweeps on cyclical axes, min/max ranges on non-cyclical ones.
  *
  * @param d - The axis the values live on.
  * @param bounds - The span, directed on cyclical axes.
  * @param value - The coordinate to test.
  * @param eps - The edge tolerance. Defaults to `EPSILON * period` on a
- *   cyclical axis and plain `EPSILON` (from `curvy/number`) on a linear
- *   one.
+ *   cyclical axis and plain `EPSILON` (from `curvy/number`) on a
+ *   non-cyclical one.
  * @returns `true` if the coordinate lies within `eps` of the span,
  *   `false` otherwise.
  * @since 2.0.0
@@ -311,7 +472,7 @@ export const unwrap: {
    * this is the preprocessing step before splining through angles or hue.
    * Wrap sampled outputs back with `wrap`.
    *
-   * On a linear axis, or when the input has fewer than two elements, the
+   * On a non-cyclical axis, or when the input has fewer than two elements, the
    * input array is returned as-is.
    *
    * @param d - The axis the values live on.
@@ -341,7 +502,7 @@ export const lerp: {
    * Interpolates between two coordinates on the axis. On a cyclical axis
    * the interpolation runs along the shortest arc from `a` to `b`, and the
    * result is canonicalized to `[0, period)`; `t` outside `[0, 1]`
-   * extrapolates along that same arc. On a linear axis this is the plain
+   * extrapolates along that same arc. On a non-cyclical axis this is the plain
    * affine interpolation `(1 - t) * a + t * b`, neither wrapped nor
    * clamped.
    *
