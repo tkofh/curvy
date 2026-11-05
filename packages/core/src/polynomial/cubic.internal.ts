@@ -388,6 +388,30 @@ export const range = dual<
 /** @internal */
 export const unitRange = (p: CubicPolynomial): Interval.Closed => range(p, Interval.unit)
 
+// Bernstein control values (b0, b1, b2, b3) of a cubic on [0, 1], recovered
+// from its monomial coefficients: the inverse of the Bernstein -> monomial
+// change of basis in `Characteristic.cubicBezier`.
+/** @internal */
+export const bernsteinCoefficients = (
+  p: CubicPolynomial,
+): readonly [number, number, number, number] => [
+  p.c0,
+  p.c0 + p.c1 / 3,
+  p.c0 + (2 * p.c1) / 3 + p.c2 / 3,
+  p.c0 + p.c1 + p.c2 + p.c3,
+]
+
+// Conservative [min, max] of a cubic on [0, 1] from its Bernstein control
+// values (convex-hull property). Looser than `unitRange`, which solves for the
+// extrema, but never too small and free of root finding. The slack vanishes
+// under subdivision, which is what the subdivision-based certification in
+// `curve/certified.internal.ts` and its clients rely on.
+/** @internal */
+export const bernsteinRange = (p: CubicPolynomial): readonly [number, number] => {
+  const [b0, b1, b2, b3] = bernsteinCoefficients(p)
+  return [Math.min(b0, b1, b2, b3), Math.max(b0, b1, b2, b3)]
+}
+
 /** @internal */
 export const length = dual<
   (domain: Interval.Interval) => (p: CubicPolynomial) => number,

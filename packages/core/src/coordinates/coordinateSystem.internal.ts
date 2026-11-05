@@ -8,7 +8,9 @@ import {
 } from '../arc/arc.internal.ts'
 import * as Characteristic from '../characteristic/characteristic.ts'
 import * as CubicCurve2d from '../curve/cubic2d.ts'
-import * as certified from '../curve/rationalCubic2d.internal.ts'
+import * as certified from '../curve/certified.internal.ts'
+import * as cubicCurve2d from '../curve/cubic2d.internal.ts'
+import * as rationalCubicCurve2d from '../curve/rationalCubic2d.internal.ts'
 import * as RationalCubicCurve2d from '../curve/rationalCubic2d.ts'
 import type { Bounds } from '../interval/interval.ts'
 import * as Interval from '../interval/interval.ts'
@@ -17,6 +19,7 @@ import { EPSILON, coincident, minMax } from '../number.ts'
 import * as CubicPath2d from '../path/cubic2d.ts'
 import * as RationalCubicPath2d from '../path/rationalCubic2d.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
+import * as cubicPolynomial from '../polynomial/cubic.internal.ts'
 import { Pipeable, dual, invariant } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Vector4 from '../vector/vector4.ts'
@@ -473,104 +476,44 @@ const foldMap = (s: Polar): FoldedMap => {
 }
 
 // One piece of a chart-space segment, polynomial or rational: the chart
-// coordinates and their parameter derivatives at t in [0, 1], a rigorous
-// range of each coordinate over the piece, and exact bisection. The image
-// machinery below runs on this interface alone.
-interface ChartSample {
-  readonly theta: number
-  readonly r: number
-  readonly dTheta: number
-  readonly dr: number
-}
-
+// coordinates and their parameter derivatives at t in [0, 1] (a curve sample
+// whose x is theta and whose y is r), a rigorous range of each coordinate over
+// the piece, and exact bisection. The image machinery below runs on this
+// interface alone; the two adapters delegate every operation to their curve
+// module.
 interface ChartPiece {
-  readonly at: (t: number) => ChartSample
+  readonly at: (t: number) => certified.CurveSample
   // [thetaLo, thetaHi, rLo, rHi]
   readonly hull: () => readonly [number, number, number, number]
   readonly halves: () => readonly [ChartPiece, ChartPiece]
 }
 
-// Rigorous range of a cubic on [0, 1] from its Bernstein control values
-// (convex-hull property). Deliberately looser than a root-based tight range:
-// unconditionally conservative, and the slack vanishes under subdivision.
-const bernsteinRange = (p: CubicPolynomial.CubicPolynomial): [number, number] => {
-  const [b0, b1, b2, b3] = bernsteinValues(p)
-  return [Math.min(b0, b1, b2, b3), Math.max(b0, b1, b2, b3)]
-}
-
-const bernsteinValues = (
-  p: CubicPolynomial.CubicPolynomial,
-): readonly [number, number, number, number] => [
-  p.c0,
-  p.c0 + p.c1 / 3,
-  p.c0 + (2 * p.c1) / 3 + p.c2 / 3,
-  p.c0 + p.c1 + p.c2 + p.c3,
-]
-
+// The hull is the range of the Bernstein control values per axis (the
+// convex-hull property): deliberately looser than a root-based tight range,
+// unconditionally conservative, and its slack vanishes under subdivision.
 const polynomialChart = (chart: CubicCurve2d.CubicCurve2d): ChartPiece => ({
-  at: (t) => ({
-    theta: chart.x.c0 + t * (chart.x.c1 + t * (chart.x.c2 + t * chart.x.c3)),
-    r: chart.y.c0 + t * (chart.y.c1 + t * (chart.y.c2 + t * chart.y.c3)),
-    dTheta: chart.x.c1 + t * (2 * chart.x.c2 + t * 3 * chart.x.c3),
-    dr: chart.y.c1 + t * (2 * chart.y.c2 + t * 3 * chart.y.c3),
-  }),
-  hull: () => [...bernsteinRange(chart.x), ...bernsteinRange(chart.y)],
+  at: (t) => cubicCurve2d.solveWithDerivative(chart, t),
+  hull: () => [
+    ...cubicPolynomial.bernsteinRange(chart.x),
+    ...cubicPolynomial.bernsteinRange(chart.y),
+  ],
   halves: () => {
-    const [leftX, rightX] = CubicPolynomial.subdivide(chart.x, 0.5)
-    const [leftY, rightY] = CubicPolynomial.subdivide(chart.y, 0.5)
-    return [
-      polynomialChart(CubicCurve2d.fromPolynomials(leftX, leftY)),
-      polynomialChart(CubicCurve2d.fromPolynomials(rightX, rightY)),
-    ]
+    const [left, right] = cubicCurve2d.subdivide(chart, 0.5)
+    return [polynomialChart(left), polynomialChart(right)]
   },
 })
 
-// A rational piece, X/W and Y/W with quotient-rule derivatives. Its hull is
-// the range of the projected Bernstein control points, which encloses the
-// curve only when every weight is positive; image checks that up front.
+// A rational piece's hull is the range of its projected Bernstein control
+// points, which encloses the curve only when every weight is positive; image
+// checks that up front.
 const rationalChart = (chart: RationalCubicCurve2d.RationalCubicCurve2d): ChartPiece => ({
-  at: (t) => {
-    const X = chart.x.c0 + t * (chart.x.c1 + t * (chart.x.c2 + t * chart.x.c3))
-    const Y = chart.y.c0 + t * (chart.y.c1 + t * (chart.y.c2 + t * chart.y.c3))
-    const W = chart.w.c0 + t * (chart.w.c1 + t * (chart.w.c2 + t * chart.w.c3))
-    const dX = chart.x.c1 + t * (2 * chart.x.c2 + t * 3 * chart.x.c3)
-    const dY = chart.y.c1 + t * (2 * chart.y.c2 + t * 3 * chart.y.c3)
-    const dW = chart.w.c1 + t * (2 * chart.w.c2 + t * 3 * chart.w.c3)
-    const w2 = W * W
-    return {
-      theta: X / W,
-      r: Y / W,
-      dTheta: (dX * W - X * dW) / w2,
-      dr: (dY * W - Y * dW) / w2,
-    }
-  },
-  hull: () => {
-    const [x0, x1, x2, x3] = bernsteinValues(chart.x)
-    const [y0, y1, y2, y3] = bernsteinValues(chart.y)
-    const [w0, w1, w2, w3] = bernsteinValues(chart.w)
-    const t0 = x0 / w0
-    const t1 = x1 / w1
-    const t2 = x2 / w2
-    const t3 = x3 / w3
-    const r0 = y0 / w0
-    const r1 = y1 / w1
-    const r2 = y2 / w2
-    const r3 = y3 / w3
-    return [
-      Math.min(t0, t1, t2, t3),
-      Math.max(t0, t1, t2, t3),
-      Math.min(r0, r1, r2, r3),
-      Math.max(r0, r1, r2, r3),
-    ]
-  },
+  at: (t) => rationalCubicCurve2d.solveWithDerivative(chart, t),
+  hull: () => rationalCubicCurve2d.hullRanges(chart),
   halves: () => {
-    const [left, right] = certified.subdivide(chart, 0.5)
+    const [left, right] = rationalCubicCurve2d.subdivide(chart, 0.5)
     return [rationalChart(left), rationalChart(right)]
   },
 })
-
-const hasPositiveWeights = (c: RationalCubicCurve2d.RationalCubicCurve2d): boolean =>
-  bernsteinValues(c.w).every((w) => w > 0)
 
 // Certified positive lower bound on a piece's chart radius, for a
 // logarithmic radius whose map is undefined at r <= 0. The hull bound is
@@ -584,7 +527,7 @@ const radialFloor = (piece: ChartPiece, depth = 0): number => {
     return rLo
   }
   for (const t of [0, 0.5, 1]) {
-    invariant(piece.at(t).r > 0, 'image requires positive chart radii on a logarithmic radius')
+    invariant(piece.at(t).py > 0, 'image requires positive chart radii on a logarithmic radius')
   }
   invariant(
     depth < RADIAL_FLOOR_MAX_DEPTH,
@@ -604,7 +547,7 @@ const radialFloor = (piece: ChartPiece, depth = 0): number => {
 // case is a power radius below exponent 1 at chart radius 0, where the
 // map's slope is infinite; imageSegment replaces such a tangent.
 const imageEval = (f: FoldedMap, chart: ChartPiece, t: number) => {
-  const { theta, r, dTheta, dr } = chart.at(t)
+  const { px: theta, py: r, tx: dTheta, ty: dr } = chart.at(t)
   const a = f.a0 + f.a1 * theta
   const rho = dimension.applyMap(f.radius, r)
   const cosA = Math.cos(a)
@@ -719,33 +662,20 @@ const imagePiece = (f: FoldedMap, chart: ChartPiece, depth: number): certified.C
 }
 
 // Certified symmetric Hausdorff check between the true image of a chart
-// piece and a polynomial cubic candidate — the same two one-sided walks the
-// rational approximation runs, with imagePiece supplying the enclosures.
+// piece and a polynomial cubic candidate, with imagePiece supplying the
+// enclosures.
 const imageWithinTolerance = (
   f: FoldedMap,
   chart: ChartPiece,
   candidate: CubicCurve2d.CubicCurve2d,
   tolerance: number,
-): boolean => {
-  const candidateBox = CubicCurve2d.boundingBox(candidate)
-  if (
-    !certified.oneSidedWithinTolerance(
-      imagePiece(f, chart, 0),
-      candidateBox,
-      (qx, qy) =>
-        certified.closestSquaredDistance((s) => certified.polynomialEval(candidate, s), qx, qy),
-      tolerance,
-    )
-  ) {
-    return false
-  }
-  return certified.oneSidedWithinTolerance(
-    certified.polynomialPiece(candidate),
-    patchBox(f, chart),
+): boolean =>
+  certified.withinTolerance(
+    imagePiece(f, chart, 0),
     (qx, qy) => certified.closestSquaredDistance((s) => imageEval(f, chart, s), qx, qy),
+    candidate,
     tolerance,
   )
-}
 
 // A mapped sweep at or under a quarter turn keeps the annular enclosure
 // tight and the closest-point search unimodal enough for its fixed sampling;
@@ -856,7 +786,10 @@ export const image = dual<
     const rational = RationalCubicPath2d.isRationalCubicPath2d(path)
     if (rational) {
       for (const segment of path) {
-        invariant(hasPositiveWeights(segment), 'image requires positive rational weights')
+        invariant(
+          rationalCubicCurve2d.hasPositiveWeights(segment),
+          'image requires positive rational weights',
+        )
       }
     }
 

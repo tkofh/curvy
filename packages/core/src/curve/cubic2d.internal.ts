@@ -257,6 +257,27 @@ export const xRange = (c: CubicCurve2d): Interval.Closed => CubicPolynomial.unit
 /** @internal */
 export const yRange = (c: CubicCurve2d): Interval.Closed => CubicPolynomial.unitRange(c.y)
 
+// Exact split at parameter `t in (0, 1)`, subdividing each axis polynomial
+// independently. The halves stay in monomial form, so each carries the
+// local-parameter chain-rule factor in its coefficients.
+/** @internal */
+export const subdivide = (c: CubicCurve2d, t: number): [CubicCurve2d, CubicCurve2d] => {
+  const [leftX, rightX] = CubicPolynomial.subdivide(c.x, t)
+  const [leftY, rightY] = CubicPolynomial.subdivide(c.y, t)
+  return [fromPolynomials(leftX, leftY), fromPolynomials(rightX, rightY)]
+}
+
+// Point (px, py) and first derivative (tx, ty) at parameter `t` in one Horner
+// pass. Hot-loop helper for the subdivision certification, which evaluates
+// both on every closest-point step.
+/** @internal */
+export const solveWithDerivative = (c: CubicCurve2d, t: number) => ({
+  px: c.x.c0 + t * (c.x.c1 + t * (c.x.c2 + t * c.x.c3)),
+  py: c.y.c0 + t * (c.y.c1 + t * (c.y.c2 + t * c.y.c3)),
+  tx: c.x.c1 + t * (2 * c.x.c2 + t * 3 * c.x.c3),
+  ty: c.y.c1 + t * (2 * c.y.c2 + t * 3 * c.y.c3),
+})
+
 // Cubic Bernstein basis: P(t) = (1-t)^3*p0 + 3(1-t)^2t*p1 + 3(1-t)t^2*p2 + t^3*p3
 // expanded gives c0 = p0, c1 = -3p0 + 3p1, c2 = 3p0 - 6p1 + 3p2,
 // c3 = -p0 + 3p1 - 3p2 + p3, so the inverse is

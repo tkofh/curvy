@@ -5,11 +5,13 @@ import * as Monotonicity from '../monotonicity/monotonicity.ts'
 import type * as Affine2d from '../transform/affine2d.ts'
 import { dual, Pipeable } from '../utils.ts'
 import * as CubicPolynomial from '../polynomial/cubic.ts'
+import * as cubicPolynomial from '../polynomial/cubic.internal.ts'
 import * as Solution from '../solution/solution.ts'
 import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
 import { invariant } from '../utils.ts'
 import * as Vector2 from '../vector/vector2.ts'
 import * as Vector4 from '../vector/vector4.ts'
+import * as certified from './certified.internal.ts'
 import * as CubicCurve2d from './cubic2d.ts'
 import type { RationalCubicCurve2d } from './rationalCubic2d.ts'
 
@@ -659,13 +661,6 @@ export const boundingBox = dual<
   return recurse(c, 0)
 })
 
-// Approximation cap. At depth 20 we'd emit up to 2^20 (~1M) segments for one
-// input curve — well past any sane target — so the cap is really just a guard
-// against pathological tolerances (e.g. tolerance approaching 0). Shared with
-// the coordinates module's `image`, which runs the same recursion shape.
-/** @internal */
-export const MAX_APPROX_DEPTH = 20
-
 // Builds the polynomial-cubic candidate for one rational segment by:
 //   1. Inverting Bernstein -> monomial on each of x, y, w to recover the four
 //      homogeneous Bézier control points (X_i, Y_i, W_i).
@@ -675,21 +670,9 @@ export const MAX_APPROX_DEPTH = 20
 // tangent directions, but interior shape diverges whenever the weights are
 // not all equal.
 const buildCubicCandidate = (c: RationalCubicCurve2d): CubicCurve2d.CubicCurve2d => {
-  const x0 = c.x.c0
-  const x1 = c.x.c0 + c.x.c1 / 3
-  const x2 = c.x.c0 + (2 * c.x.c1) / 3 + c.x.c2 / 3
-  const x3 = c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3
-
-  const y0 = c.y.c0
-  const y1 = c.y.c0 + c.y.c1 / 3
-  const y2 = c.y.c0 + (2 * c.y.c1) / 3 + c.y.c2 / 3
-  const y3 = c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3
-
-  const w0 = c.w.c0
-  const w1 = c.w.c0 + c.w.c1 / 3
-  const w2 = c.w.c0 + (2 * c.w.c1) / 3 + c.w.c2 / 3
-  const w3 = c.w.c0 + c.w.c1 + c.w.c2 + c.w.c3
-
+  const [x0, x1, x2, x3] = cubicPolynomial.bernsteinCoefficients(c.x)
+  const [y0, y1, y2, y3] = cubicPolynomial.bernsteinCoefficients(c.y)
+  const [w0, w1, w2, w3] = cubicPolynomial.bernsteinCoefficients(c.w)
   return CubicCurve2d.fromBezierPoints(
     Vector2.make(x0 / w0, y0 / w0),
     Vector2.make(x1 / w1, y1 / w1),
@@ -717,9 +700,11 @@ export const subdivide = dual<
   ]
 })
 
-// Loose hull-based bounding box from the rational's projected Bézier control
-// polygon. Private leaf helper for the subdivision-based public `boundingBox`
-// and for the Hausdorff machinery in `approximateAsCubicCurves`.
+// Loose hull-based bounds from the rational's projected Bézier control
+// polygon, as [xLo, xHi, yLo, yHi]. Leaf helper for the subdivision-based
+// public `boundingBox`, for the Hausdorff machinery in
+// `approximateAsCubicCurves`, and for `CoordinateSystem.image`'s rational
+// chart pieces.
 //
 // Rational Bézier curves with positive weights satisfy the projected
 // convex-hull property: the curve lies inside the convex hull of the four
@@ -729,126 +714,44 @@ export const subdivide = dual<
 // Looser than the public tight box — for that we'd need the extrema of
 // x(t)/w(t) and y(t)/w(t), each a degree-5 root problem — but tight enough
 // for subdivision-based geometric queries, which compensate via depth.
+/** @internal */
+export const hullRanges = (c: RationalCubicCurve2d): readonly [number, number, number, number] => {
+  const [x0, x1, x2, x3] = cubicPolynomial.bernsteinCoefficients(c.x)
+  const [y0, y1, y2, y3] = cubicPolynomial.bernsteinCoefficients(c.y)
+  const [w0, w1, w2, w3] = cubicPolynomial.bernsteinCoefficients(c.w)
+  const px0 = x0 / w0
+  const px1 = x1 / w1
+  const px2 = x2 / w2
+  const px3 = x3 / w3
+  const py0 = y0 / w0
+  const py1 = y1 / w1
+  const py2 = y2 / w2
+  const py3 = y3 / w3
+  return [
+    Math.min(px0, px1, px2, px3),
+    Math.max(px0, px1, px2, px3),
+    Math.min(py0, py1, py2, py3),
+    Math.max(py0, py1, py2, py3),
+  ]
+}
+
 const hullBoundingBox = (
   c: RationalCubicCurve2d,
 ): Interval2d.Interval2d<Interval.Closed, Interval.Closed> => {
-  // Bernstein control points recovered from monomial coefficients — same
-  // inversion as `buildCubicCandidate`.
-  const x0 = c.x.c0
-  const x1 = c.x.c0 + c.x.c1 / 3
-  const x2 = c.x.c0 + (2 * c.x.c1) / 3 + c.x.c2 / 3
-  const x3 = c.x.c0 + c.x.c1 + c.x.c2 + c.x.c3
-
-  const y0 = c.y.c0
-  const y1 = c.y.c0 + c.y.c1 / 3
-  const y2 = c.y.c0 + (2 * c.y.c1) / 3 + c.y.c2 / 3
-  const y3 = c.y.c0 + c.y.c1 + c.y.c2 + c.y.c3
-
-  const w0 = c.w.c0
-  const w1 = c.w.c0 + c.w.c1 / 3
-  const w2 = c.w.c0 + (2 * c.w.c1) / 3 + c.w.c2 / 3
-  const w3 = c.w.c0 + c.w.c1 + c.w.c2 + c.w.c3
-
-  return Interval2d.fromVectors(
-    Vector2.make(x0 / w0, y0 / w0),
-    Vector2.make(x1 / w1, y1 / w1),
-    Vector2.make(x2 / w2, y2 / w2),
-    Vector2.make(x3 / w3, y3 / w3),
-  )
+  const [xLo, xHi, yLo, yHi] = hullRanges(c)
+  return Interval2d.make(Interval.fromMinMax(xLo, xHi), Interval.fromMinMax(yLo, yHi))
 }
 
-// Certified Hausdorff-within-tolerance check between a rational and a
-// candidate polynomial cubic.
-//
-// `approximateAsCubicCurves` uses this as the stopping criterion: when it
-// returns `true`, every point on the rational is provably within `tolerance`
-// of the candidate, and every point on the candidate is within `tolerance` of
-// the rational. When `false`, the rational is subdivided and the procedure
-// recurses.
-//
-// Implementation: for each direction (rational -> candidate, candidate ->
-// rational), run a depth-first subdivision on the source side. At each
-// piece, compute
-//
-//   lower = dist(witness-on-piece, target)
-//   upper = min(
-//     lower + maxDist(witness, piece.box),     // triangle inequality bound
-//     maxDist(piece.box, target.box),          // box-pair bound
-//   )
-//
-// Both upper bounds are provable; their min is too. The triangle bound
-// shrinks proportionally to source box diameter, so it dominates when source
-// and target overlap (which they usually do here — the candidate matches the
-// rational at endpoints and tangents). Early-terminate on the first piece
-// whose `lower` exceeds `tolerance` (definitive miss) or accept whenever
-// every piece's `upper` <= tolerance.
-
-const MAX_HAUSDORFF_DEPTH = 30
-
-// Coarse sample + bisection on the squared-distance derivative. Returns the
-// minimum squared distance from (qx, qy) to a parametric curve described by
-// `eval_`. Stationary points of (P(s) - q) * P'(s) are local extrema of
-// D^2(s); 32 coarse samples reliably bracket the global min for cubic-degree
-// curves (which have at most ~5 critical points of squared distance).
+// The projected convex-hull property behind `hullRanges` holds only when every
+// Bernstein weight is positive.
 /** @internal */
-export const closestSquaredDistance = (
-  eval_: (s: number) => { px: number; py: number; tx: number; ty: number },
-  qx: number,
-  qy: number,
-): number => {
-  const coarseSamples = 32
-  let sBest = 0
-  let d2Best = Number.POSITIVE_INFINITY
-  for (let i = 0; i <= coarseSamples; i++) {
-    const s = i / coarseSamples
-    const { px, py } = eval_(s)
-    const dx = px - qx
-    const dy = py - qy
-    const d2 = dx * dx + dy * dy
-    if (d2 < d2Best) {
-      d2Best = d2
-      sBest = s
-    }
-  }
-  const step = 1 / coarseSamples
-  let lo = Math.max(0, sBest - step)
-  let hi = Math.min(1, sBest + step)
-  const gradient = (s: number): number => {
-    const { px, py, tx, ty } = eval_(s)
-    return (px - qx) * tx + (py - qy) * ty
-  }
-  if (gradient(lo) > 0 || gradient(hi) < 0) {
-    return d2Best
-  }
-  for (let i = 0; i < 40; i++) {
-    const m = 0.5 * (lo + hi)
-    if (gradient(m) > 0) {
-      hi = m
-    } else {
-      lo = m
-    }
-    if (hi - lo < 1e-12) {
-      break
-    }
-  }
-  const s = 0.5 * (lo + hi)
-  const { px, py } = eval_(s)
-  const dx = px - qx
-  const dy = py - qy
-  const d2 = dx * dx + dy * dy
-  return d2 < d2Best ? d2 : d2Best
-}
-
-/** @internal */
-export const polynomialEval = (c: CubicCurve2d.CubicCurve2d, s: number) => ({
-  px: c.x.c0 + s * (c.x.c1 + s * (c.x.c2 + s * c.x.c3)),
-  py: c.y.c0 + s * (c.y.c1 + s * (c.y.c2 + s * c.y.c3)),
-  tx: c.x.c1 + s * (2 * c.x.c2 + s * 3 * c.x.c3),
-  ty: c.y.c1 + s * (2 * c.y.c2 + s * 3 * c.y.c3),
-})
+export const hasPositiveWeights = (c: RationalCubicCurve2d): boolean =>
+  cubicPolynomial.bernsteinCoefficients(c.w).every((w) => w > 0)
 
 // R(s) = (X(s)/W(s), Y(s)/W(s))  ->  R'(s) = ((X'W - XW')/W^2, (Y'W - YW')/W^2)
-const rationalEval = (c: RationalCubicCurve2d, s: number) => {
+// Point (px, py) and first derivative (tx, ty) at parameter `s` in one pass.
+/** @internal */
+export const solveWithDerivative = (c: RationalCubicCurve2d, s: number) => {
   const X = c.x.c0 + s * (c.x.c1 + s * (c.x.c2 + s * c.x.c3))
   const Y = c.y.c0 + s * (c.y.c1 + s * (c.y.c2 + s * c.y.c3))
   const W = c.w.c0 + s * (c.w.c1 + s * (c.w.c2 + s * c.w.c3))
@@ -864,44 +767,7 @@ const rationalEval = (c: RationalCubicCurve2d, s: number) => {
   }
 }
 
-const maxDistFromPointToBox = (px: number, py: number, box: Interval2d.Interval2d): number => {
-  const xLo = Math.min(box.x.start, box.x.end)
-  const xHi = Math.max(box.x.start, box.x.end)
-  const yLo = Math.min(box.y.start, box.y.end)
-  const yHi = Math.max(box.y.start, box.y.end)
-  const dx = Math.max(px - xLo, xHi - px)
-  const dy = Math.max(py - yLo, yHi - py)
-  return Math.hypot(dx, dy)
-}
-
-// Subdivide a polynomial cubic curve at parameter t by subdividing each
-// per-axis polynomial independently — the polynomial split is exact and in
-// monomial form.
-const subdividePolynomial = (
-  c: CubicCurve2d.CubicCurve2d,
-  t: number,
-): [CubicCurve2d.CubicCurve2d, CubicCurve2d.CubicCurve2d] => {
-  const [leftX, rightX] = CubicPolynomial.subdivide(c.x, t)
-  const [leftY, rightY] = CubicPolynomial.subdivide(c.y, t)
-  return [CubicCurve2d.fromPolynomials(leftX, leftY), CubicCurve2d.fromPolynomials(rightX, rightY)]
-}
-
-// The piece abstraction the one-sided Hausdorff walker consumes: a rigorous
-// bounding box for the piece's span of the source curve, a witness point that
-// lies ON the source curve, and exact bisection. Any curve family that can
-// supply these three things can be certified against a target — the rational
-// and polynomial providers below, and the coordinates module's transcendental
-// polar images.
-/** @internal */
-export interface CertifiedPiece {
-  box: Interval2d.Interval2d
-  witnessX: number
-  witnessY: number
-  depth: number
-  subdivide(): [CertifiedPiece, CertifiedPiece]
-}
-
-const rationalPiece = (c: RationalCubicCurve2d, depth = 0): CertifiedPiece => {
+const rationalPiece = (c: RationalCubicCurve2d, depth = 0): certified.CertifiedPiece => {
   const wMid = CubicPolynomial.solve(c.w, 0.5)
   const witnessX = CubicPolynomial.solve(c.x, 0.5) / wMid
   const witnessY = CubicPolynomial.solve(c.y, 0.5) / wMid
@@ -917,53 +783,12 @@ const rationalPiece = (c: RationalCubicCurve2d, depth = 0): CertifiedPiece => {
   }
 }
 
-/** @internal */
-export const polynomialPiece = (c: CubicCurve2d.CubicCurve2d, depth = 0): CertifiedPiece => {
-  const witnessX = CubicPolynomial.solve(c.x, 0.5)
-  const witnessY = CubicPolynomial.solve(c.y, 0.5)
-  return {
-    box: CubicCurve2d.boundingBox(c),
-    witnessX,
-    witnessY,
-    depth,
-    subdivide: () => {
-      const [left, right] = subdividePolynomial(c, 0.5)
-      return [polynomialPiece(left, depth + 1), polynomialPiece(right, depth + 1)]
-    },
-  }
-}
-
-/** @internal */
-export const oneSidedWithinTolerance = (
-  initialPiece: CertifiedPiece,
-  targetBox: Interval2d.Interval2d,
-  targetClosestSquared: (qx: number, qy: number) => number,
-  tolerance: number,
-): boolean => {
-  const tol2 = tolerance * tolerance
-  const stack: Array<CertifiedPiece> = [initialPiece]
-  while (stack.length > 0) {
-    const piece = stack.pop() as CertifiedPiece
-    const lower2 = targetClosestSquared(piece.witnessX, piece.witnessY)
-    if (lower2 > tol2) {
-      return false
-    }
-    const lower = Math.sqrt(lower2)
-    const triangleUpper = lower + maxDistFromPointToBox(piece.witnessX, piece.witnessY, piece.box)
-    const boxPairUpper = Interval2d.maxDistance(piece.box, targetBox)
-    const upper = triangleUpper < boxPairUpper ? triangleUpper : boxPairUpper
-    if (upper <= tolerance) {
-      continue
-    }
-    if (piece.depth >= MAX_HAUSDORFF_DEPTH) {
-      return false
-    }
-    const [left, right] = piece.subdivide()
-    stack.push(left, right)
-  }
-  return true
-}
-
+// Certified Hausdorff-within-tolerance check between a rational and a
+// candidate polynomial cubic, by the two one-sided walks in
+// `certified.withinTolerance`. `approximateAsCubicCurves` uses it as the
+// stopping criterion: when it returns `true`, every point on the rational is
+// provably within `tolerance` of the candidate and vice versa. When `false`,
+// the rational is subdivided and the procedure recurses.
 const hausdorffWithinTolerance = (
   rational: RationalCubicCurve2d,
   candidate: CubicCurve2d.CubicCurve2d,
@@ -983,22 +808,10 @@ const hausdorffWithinTolerance = (
     return true
   }
 
-  const candidateBox = CubicCurve2d.boundingBox(candidate)
-  if (
-    !oneSidedWithinTolerance(
-      rationalPiece(rational),
-      candidateBox,
-      (qx, qy) => closestSquaredDistance((s) => polynomialEval(candidate, s), qx, qy),
-      tolerance,
-    )
-  ) {
-    return false
-  }
-  const rationalBox = hullBoundingBox(rational)
-  return oneSidedWithinTolerance(
-    polynomialPiece(candidate),
-    rationalBox,
-    (qx, qy) => closestSquaredDistance((s) => rationalEval(rational, s), qx, qy),
+  return certified.withinTolerance(
+    rationalPiece(rational),
+    (qx, qy) => certified.closestSquaredDistance((s) => solveWithDerivative(rational, s), qx, qy),
+    candidate,
     tolerance,
   )
 }
@@ -1016,7 +829,10 @@ export const approximateAsCubicCurves = dual<
   const out: Array<CubicCurve2d.CubicCurve2d> = []
   const recurse = (curr: RationalCubicCurve2d, depth: number): void => {
     const candidate = buildCubicCandidate(curr)
-    if (depth >= MAX_APPROX_DEPTH || hausdorffWithinTolerance(curr, candidate, tolerance)) {
+    if (
+      depth >= certified.MAX_APPROX_DEPTH ||
+      hausdorffWithinTolerance(curr, candidate, tolerance)
+    ) {
       out.push(candidate)
       return
     }
