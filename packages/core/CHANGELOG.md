@@ -1,5 +1,237 @@
 # Change Log
 
+## 2.0.0-alpha.20
+
+### Minor Changes
+
+- 0e1291d: **`Affine2d` constructors take vectors and an optional origin.** `translate` and `scale` accept their per-axis values as one `Vector2` as well as separate numbers. Every constructor with a fixed point takes it as an optional last `origin`, defaulting to `Vector2.zero`. That folds three functions into the ones they specialized:
+  - `translate(v)` replaces `translateBy(v)`
+  - `scale(sx, sy, origin)` replaces `scaleAround(sx, sy, origin)`
+  - `rotate(theta, origin)` replaces `rotateAround(theta, origin)`
+
+  The same rule adds two forms that didn't exist: a uniform scale about a point, `scale(2, center)`, and a shear about a point, `shear(kx, ky, origin)`.
+
+  **`reflectAcrossLine` now takes `(direction, origin?)`, reversing its arguments.** Both are `Vector2`s, so an old `reflectAcrossLine(origin, direction)` call still compiles and silently reflects across a different line. Swap the arguments at each call site, or drop `origin` for a line through the zero vector.
+
+  ```ts
+  Affine2d.translate(Vector2.make(10, 0)) // was translateBy(Vector2.make(10, 0))
+  Affine2d.rotate(Math.PI / 2, center) // was rotateAround(Math.PI / 2, center)
+  Affine2d.scale(Vector2.make(2, 3), center) // was scaleAround(2, 3, center)
+  Affine2d.reflectAcrossLine(direction, point) // was reflectAcrossLine(point, direction)
+  ```
+
+- 0e1291d: **3D affine transforms.** `curvy/transform` gains `Affine3d`, the 3D counterpart of `Affine2d`: a 4x4 homogeneous matrix whose fourth row is `[0, 0, 0, 1]`, refined by the same `Invertible` brand. It mirrors `Affine2d`'s surface with `identity`, `fromMatrix`, `translate`, `scale`, `rotate`, `shear`, `andThen`, `inverse`, `inverseUnsafe`, `isInvertible`, `asInvertible`, `apply`, `applyTo`, `linear`, `translation`, `linearPart`, and `equals`. `translate` and `scale` take their per-axis values either as separate numbers or as one `Vector3`. `scale`, `rotate`, and `shear` take an optional last `origin`, the point that stays fixed, which defaults to the zero vector. `rotate(r, origin?)` takes a `Rotation3d` or a `Quaternion<Unit>`.
+
+  `compose` and `decompose` move between a transform and its parts. `compose({ translation?, rotation?, scale?, shear? })` applies scale, then shear, then rotation, then translation. `decompose` splits any invertible transform back into those parts, so the two round-trip. Shear is part of the split because a child rotated inside a non-uniformly scaled parent carries shear that no rotation-and-scale pair can express. A transform that mirrors space gets a negative `x` scale. A singular transform returns `none`, and an `Invertible`-branded one returns `Solution.One`.
+
+  Both affine types now map directions and normals as well as points. `applyDirection` ignores translation, for tangents and edge vectors. `applyNormal` maps by the inverse transpose of the linear part and normalizes. Under a non-uniform scale or a shear that is the only map that keeps a normal perpendicular to its surface, and it keeps an outward normal outward under a reflection.
+
+  Both also gain `isMirror(a)`, which is `true` when the transform is invertible and reverses handedness (a negative determinant in its linear part). That is the case where a polygon's winding flips, so it tells you when to `reverse` faces after transforming them.
+
+  ```ts
+  import { Affine3d, Rotation3d } from 'curvy/transform'
+  import { Vector3 } from 'curvy/vector'
+
+  const joint = Affine3d.compose({
+    translation: Vector3.make(0, 2, 0),
+    rotation: Rotation3d.aboutX(0.3),
+    scale: Vector3.make(1, 0.5, 1),
+  })
+
+  Affine3d.applyNormal(joint, Vector3.unitY) // stays perpendicular to the squashed surface
+  Affine3d.decompose(joint) // Solution.one({ translation, rotation, scale, shear })
+  ```
+
+- 4a693e3: **Ellipses from conjugate semi-diameters.** `Arc.fromConjugateDiameters(center, a, b)` builds the full ellipse traced by `center + a * cos(t) + b * sin(t)`, which is how a circle comes out of any linear map, such as a parallel projection. The arc starts at `center + a`, runs toward `center + b`, and keeps that parametrization, so a point at parametric extent `t` from the start is `center + a * cos(t) + b * sin(t)`. It finds `radiusX`, `radiusY`, and `rotation` for you.
+
+  ```ts
+  import { Arc } from 'curvy/arc'
+  import { Vector2 } from 'curvy/vector'
+
+  const e = Arc.fromConjugateDiameters(Vector2.zero, Vector2.make(2, 0), Vector2.make(1, 1))
+
+  Arc.solve(e, 0.25) // Vector2(1, 1), up to rounding
+  ```
+
+- f8a2c57: **Cameras.** A new `curvy/camera` module adds `Camera`, which projects 3D points onto a 2D viewport in SVG coordinates. Like `Arc`, it is a union with two kinds. `Camera.perspective({ eye, target, up?, fovY, near, far?, viewport })` builds one where distant things look smaller. `Camera.orthographic({ eye, target, up?, height, far?, viewport })` builds one where size doesn't change with distance. The viewport is any `Bounds2d`, so an `Interval2d` works, and the view's up lands toward the top of it even though SVG's y axis points down.
+
+  `project(camera, point)` returns the viewport position and a `depth`, the point's distance in front of the eye in world units. Depth is linear, so sorting faces by it paints back to front. A perspective camera returns `none` for points closer than its near plane, and either kind returns `none` for points beyond its far plane, which defaults to infinity. A point on either plane to within rounding still projects, so geometry clipped against the planes projects whole. `projectTo(camera)` is the curried form for mapping arrays of points, and it computes the screen mapping once.
+
+  Each camera exposes its `eye` and its directions as a `Frame3d`, and `Camera.view` gives the rigid `Affine3d` from world coordinates to OpenGL-style eye space. Projected faces combine with `Polygon2d.winding` for back-face culling: a face whose normal points toward the camera projects `'counterclockwise'`, and one that turns away flips.
+
+  `Camera.clippingPlanes` returns the near and far planes as `Plane3d` values facing into the view, and `Camera.clip(camera, face)` cuts a convex `Polygon3d` against them. Every vertex of the result projects, so a face that crosses the near plane draws correctly instead of losing the vertices behind the eye.
+
+  `Camera.projectCircle(camera, center, normal, radius)` and `Camera.projectSphere(camera, center, radius)` return the outline of a 3D circle or a sphere as an `Arc.Elliptical` in the viewport, ready for `Arc.toPathData` or an SVG `<ellipse>`. Both are exact under either kind of camera, including the off-center ellipse a perspective camera makes of a circle and the stretched outline it gives a sphere off to the side. A circle facing the camera comes back with a negative `sweep`, matching the face rule. Each returns `none` unless the whole shape lies between the near and far planes.
+
+  ```ts
+  import { Camera } from 'curvy/camera'
+  import { Interval2d } from 'curvy/interval'
+  import { Vector2, Vector3 } from 'curvy/vector'
+
+  const camera = Camera.perspective({
+    eye: Vector3.make(0, 0, 10),
+    target: Vector3.zero,
+    fovY: Math.PI / 4,
+    near: 0.1,
+    viewport: Interval2d.fromCorners(Vector2.zero, Vector2.make(800, 600)),
+  })
+
+  Camera.project(camera, Vector3.zero) // Solution.one({ point: Vector2(400, 300), depth: 10 })
+  ```
+
+- 0e1291d: **Frames for yaw, pitch, and roll.** `curvy/transform` gains `Frame3d`, which names the directions an object or a space calls up, forward, and right. `Frame3d.make({ up, forward })` takes the first two and derives `right` as `cross(forward, up)`, the right-hand side of someone standing along `up` and facing `forward`.
+
+  Each angle turns one frame direction toward another, the aircraft conventions:
+  - a positive yaw turns `forward` toward `right`, about `up`
+  - a positive pitch turns `forward` toward `up`, about the yawed `right`
+  - a positive roll turns `up` toward `right`, about the final `forward`
+
+  `fromYawPitchRoll(frame, { yaw?, pitch?, roll? })` builds the `Rotation3d`, and `toYawPitchRoll(frame, r)` reads the angles back, putting the whole turn in the yaw at gimbal lock. `lookRotation(frame, direction, up?)` turns `forward` onto a direction and keeps `up` as close to a hint as it can, so looking around never rolls.
+
+  ```ts
+  import { Frame3d, Rotation3d } from 'curvy/transform'
+  import { Vector3 } from 'curvy/vector'
+
+  const body = Frame3d.make({ up: Vector3.unitY, forward: Vector3.unitZ })
+  body.right // Vector3(-1, 0, 0): its own right, as it faces the viewer
+
+  const turned = Frame3d.fromYawPitchRoll(body, { yaw: Math.PI / 2 })
+  Rotation3d.apply(turned, body.forward) // Vector3(-1, 0, 0), up to rounding
+  ```
+
+- 4bbe4ca: **Planes.** A new `curvy/plane` module adds `Plane3d`, the points `p` with `dot(normal, p) = offset`. The normal is stored as a unit vector, and it picks a front side: `signedDistance` is positive there, and clipping keeps it.
+  - Build one with `make(normal, offset)`, which normalizes the normal and scales the offset with it, `fromPointNormal(point, normal)`, or `through(a, b, c)`. `through` returns `none` for collinear points, and its normal is `cross(b - a, c - a)`.
+  - `signedDistance`, `closestPoint`, `flip`, and `shift` (move along the normal) cover the everyday questions.
+  - `transform(plane, affine)` maps a plane through an `Affine3d`. The front side stays the front, under a mirror too, so a solid's outward face planes stay outward.
+  - `intersection(a, b, c)` finds the point where three planes meet, which is how a solid's corners follow from its face planes. It returns `none` when the planes don't meet in a single point.
+  - `intersectRay(plane, origin, direction)` finds where a ray meets the plane, or `none` when it points away or runs parallel.
+
+  ```ts
+  import { Plane3d } from 'curvy/plane'
+  import { Vector3 } from 'curvy/vector'
+
+  Plane3d.intersection(
+    Plane3d.make(Vector3.unitX, 1),
+    Plane3d.make(Vector3.unitY, 2),
+    Plane3d.make(Vector3.unitZ, 3),
+  ) // Solution.one(Vector3(1, 2, 3))
+  ```
+
+- ce84b2a: **Polygons.** A new `curvy/polygon` module adds `Polygon2d`, a closed cycle of three or more vertices with an implicit closing edge. Build one with `make`, `fromArray`, or `fromTuples`. It iterates over its vertices, and `transform` applies an `Affine2d` to every vertex.
+
+  Measures read the polygon as a region:
+  - `signedArea` follows the shoelace formula. It is positive when the vertices rotate `+x` toward `+y`, which is `'clockwise'` on screen in the coordinates module's `Winding` convention.
+  - `winding` returns a `Winding`, or `none` for a polygon with no area at working precision. Back-face culling reads it off a projected face.
+  - `centroid` gives the area centroid, or `none` for a degenerate polygon. `area`, `perimeter`, and `boundingBox` round out the measures.
+
+  A `Convex` brand, set by `isConvex` and `asConvex`, gates the operations that need convexity. Convex means positive area, every corner turning the same way, and an outline that goes around once. Collinear and repeated vertices pass, and a pentagram fails. `convexHull` builds a branded hull from any point set by Andrew's monotone chain. It returns `none` when the points are collinear.
+
+  The branded operations each return results that stay convex:
+  - `clip(polygon, origin, normal)` keeps the side of a line the normal points toward, by the Sutherland–Hodgman step. Vertices on the line stay exact, and a polygon the line misses comes back as the same instance.
+  - `split` returns `{ front, back }`, each a `Solution.AtMostOne`. The two pieces share their crossing vertices.
+  - `inset(polygon, distance)` moves every edge inward. An edge that shrinks to nothing drops out, and an inset past the inradius returns `none`.
+
+  Rounded corners follow the arc module's pair of outputs. `rounded` builds a `RationalCubicPath2d` with exact circular fillets, and `roundedPathData` emits SVG `A` commands. Each takes one radius or one per vertex. A radius too large for its corner shrinks so that neighboring fillets meet at the edge midpoints. `toPathData` emits the plain outline, closed with `Z`, and `toPath` gives it as a `LinearPath2d`.
+
+  ```ts
+  import { Polygon2d } from 'curvy/polygon'
+
+  const face = Polygon2d.asConvex(
+    Polygon2d.fromTuples([
+      [0, 0],
+      [10, 0],
+      [10, 10],
+      [0, 10],
+    ]),
+  )
+
+  Polygon2d.winding(face) // Solution.one('clockwise')
+  Polygon2d.inset(face, 1) // Solution.one(Polygon2d((1, 1), (9, 1), (9, 9), (1, 9)))
+  Polygon2d.roundedPathData(face, 2)
+  // 'M 0,2 A 2 2 0 0 1 2,0 L 8,0 A 2 2 0 0 1 10,2 L 10,8 A 2 2 0 0 1 8,10 L 2,10 A 2 2 0 0 1 0,8 Z'
+  ```
+
+- 4bbe4ca: **3D polygons.** `curvy/polygon` adds `Polygon3d`, a closed cycle of 3D vertices such as a face of a solid. It has the same constructors as `Polygon2d` (`make`, `fromArray`, `fromTuples`), and `transform` applies an `Affine3d`.
+  - `normal` gives the unit normal by Newell's method, which follows the right-hand rule and averages out small departures from a plane. `area`, `perimeter`, and `centroid` (the area centroid) round out the measures. `normal` and `centroid` return `none` for a polygon with no area.
+  - `isPlanar` and `asPlanar` establish the `Planar` brand: the polygon has area and every vertex lies on one plane. `plane` takes a `Polygon3d<Planar>` and returns its `Plane3d`.
+  - `isConvex` and `asConvex` establish the `Convex` brand. A convex 3D polygon is also planar, so they grant `Planar` too, as do `clip` and `split` on their results.
+  - `clip(face, plane)` keeps the part on the plane's front side, by Sutherland–Hodgman, and `split(face, plane)` returns both pieces. A face lying in the plane counts as on both sides.
+  - `inset(face, distance)` shrinks a convex face within its plane by moving every edge inward, like `Polygon2d.inset`.
+
+  ```ts
+  import { Plane3d } from 'curvy/plane'
+  import { Polygon3d } from 'curvy/polygon'
+  import { Vector3 } from 'curvy/vector'
+
+  const face = Polygon3d.asConvex(
+    Polygon3d.fromTuples([
+      [0, 0, 0],
+      [4, 0, 0],
+      [4, 4, 0],
+      [0, 4, 0],
+    ]),
+  )
+
+  Polygon3d.normal(face) // Solution.one(Vector3(0, 0, 1))
+  Polygon3d.clip(face, Plane3d.make(Vector3.make(-1, 0, 0), -1))
+  // Solution.one(Polygon3d((0, 0, 0), (1, 0, 0), (1, 4, 0), (0, 4, 0)))
+  ```
+
+- 16d3bdb: **Convex solids from planes.** A new `curvy/polyhedron` module adds `ConvexPolyhedron`, a bounded convex solid stored as indexed geometry: shared `vertices`, and `faces` that index into them. Each face also keeps the `Plane3d` it lies in and a label.
+  - `fromHalfSpaces(planes)` builds the solid inside every half-space, each given as a plane facing out of the solid. Pass `{ plane, label }` objects to label the faces, or bare planes to label each face with its plane's index. Faces run counterclockwise seen from outside. A plane that only touches the solid, misses it, or repeats an earlier face makes no face. The result is `none` when the half-spaces enclose no bounded solid with volume.
+  - Every corner is the meeting point of three input planes, solved directly rather than built up by repeated clipping.
+  - `contains(solid, point)` tests a point, boundary included. `polygons(solid)` returns the faces as `Polygon3d<Convex & Planar>`, ready for `Camera.clip`.
+  - `transform(solid, affine)` moves vertices and planes together. Under a mirror it reverses each face so faces stay wound outward.
+
+  ```ts
+  import { Plane3d } from 'curvy/plane'
+  import { ConvexPolyhedron } from 'curvy/polyhedron'
+  import { Vector3 } from 'curvy/vector'
+
+  const wedge = ConvexPolyhedron.fromHalfSpaces([
+    { plane: Plane3d.make(Vector3.make(0, 0, -1), 0), label: 'floor' },
+    { plane: Plane3d.make(Vector3.make(-1, 0, 0), 0), label: 'back' },
+    { plane: Plane3d.make(Vector3.make(0, -1, 0), 0), label: 'left' },
+    { plane: Plane3d.make(Vector3.make(0, 1, 0), 1), label: 'right' },
+    { plane: Plane3d.make(Vector3.make(1, 0, 1), 1), label: 'roof' },
+  ])
+  // Solution.one(ConvexPolyhedron(6 vertices, 5 faces)), faces labeled
+  // 'floor', 'back', 'left', 'right', 'roof'
+  ```
+
+- 9e0a4bd: **3D rotations.** `curvy/transform` gains `Rotation3d`, a rotation about an axis through the origin, stored as a unit quaternion. A new `curvy/quaternion` module holds the quaternion algebra underneath it, with a `Unit` brand for the quaternions that represent rotations. Every `Rotation3d` operation that reads a rotation also accepts a `Quaternion<Unit>`, so code that already holds quaternions never has to wrap them.
+
+  `Rotation3d` builds rotations several ways:
+  - `fromAxisAngle`, plus `aboutX`, `aboutY`, and `aboutZ` for the coordinate axes
+  - `between(from, to)`, the shortest rotation turning one direction into another, with a deterministic half turn for opposite directions
+  - `fromEuler(angles, order?)`, where each component of `angles` is the angle about its own axis and the `EulerOrder` string names the matrix product left to right, as three.js does (`'YXZ'` is `Ry * Rx * Rz`)
+  - `fromMatrix3x3`, which returns `none` for a matrix that scales, shears, or reflects
+  - `fromQuaternion`, which wraps a unit quaternion
+
+  The operations cover use and conversion. `apply` rotates a vector, and `applyTo` is its curried form for `Array.prototype.map`. `andThen(a, b)` applies `a`, then `b`, matching `Affine2d.andThen`. `inverse` undoes a rotation. `toMatrix3x3`, `toAxisAngle`, and `toEuler` convert out, and `toEuler` reports gimbal lock by putting the whole turn in the first angle. `slerp` and `nlerp` interpolate along the shorter path. `angleBetween` measures the angle between two rotations, and `equals` compares as rotations, so `q` and `-q` are equal. `swingTwist(r, axis)` splits a rotation into a twist about an axis followed by a swing that moves the axis, which separates an eye spinning about its view direction from the eye turning to look somewhere else.
+
+  `Quaternion` provides `make`, `identity`, `multiply` (Hamilton's convention, keeping `Unit` when both factors have it), `conjugate`, `inverse`, `dot`, `magnitude`, `equals`, `normalize` (`none` for zero), and the `isUnit`/`asUnit` refiners. A quaternion is unit when its squared length is within `EPSILON` of `1`.
+
+  The conventions behind all of this, from composition order to the right-hand rule to Euler orders, are written down in a new `CONVENTIONS.md` at the repo root.
+
+  ```ts
+  import { Rotation3d } from 'curvy/transform'
+  import { Vector3 } from 'curvy/vector'
+
+  const r = Rotation3d.andThen(Rotation3d.aboutZ(Math.PI / 2), Rotation3d.aboutX(Math.PI / 2))
+  Rotation3d.apply(r, Vector3.unitX) // Vector3(0, 0, 1), up to rounding
+
+  const { swing, twist } = Rotation3d.swingTwist(r, Vector3.unitZ)
+  Rotation3d.equals(twist, Rotation3d.aboutZ(Math.PI / 2)) // true
+  ```
+
+- d6233a5: **Linear interpolation for vectors.** `Vector2.lerp(a, b, t)` and `Vector3.lerp(a, b, t)` return `(1 - t) * a + t * b`, landing exactly on `a` at `t = 0` and on `b` at `t = 1`. `t` isn't clamped, so values outside `[0, 1]` extrapolate. The data-last form `lerp(b, t)` takes the start piped in.
+
+### Patch Changes
+
+- 0e1291d: **`Affine2d` invertibility ignores translation.** `isInvertible`, `asInvertible`, `inverse`, and `inverseUnsafe` judged singularity on the whole 3x3 homogeneous matrix, so a translation counted toward the scale of the test and a well-conditioned transform far from the origin read as singular: a `1e-3` scale translated by `1000` had no inverse. The test now runs on the 2x2 linear part alone, and the inverse is built as `[L^-1 | -L^-1 * t]`.
+- d6233a5: **Faster matrix-vector products.** `vectorProductLeft` and `vectorProductRight` on `Matrix2x2`, `Matrix3x3`, and `Matrix4x4` read the matrix entries directly instead of building row or column vectors first, so each call allocates only its result. They run 3.5 to 6 times faster: `Matrix3x3.vectorProductLeft` went from about 62 ns to 14 ns per call, and moving 184 vertices with `Vector3.add(Matrix3x3.vectorProductLeft(m, v), t)` from 13.8 µs to 6.0 µs. `Affine3d.apply` does the same job in 3.8 µs. No results change.
+
 ## 2.0.0-alpha.19
 
 ### Minor Changes
