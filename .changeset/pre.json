@@ -18,6 +18,7 @@
     "degree-elevation",
     "dts-mts-extension",
     "dual-perf",
+    "elliptical-arcs",
     "flow-composition",
     "from-polar-theta-first",
     "interval",
@@ -33,14 +34,18 @@
     "polar-ray-scalar-maps",
     "precision-model",
     "punch-list",
+    "radial-scales",
     "rational-approximation",
     "rational-curves",
     "rational-easing",
+    "rational-traits-dts",
     "solution-type",
     "spline-conversion-cache",
     "spline-mapPoints-flatMap",
     "svg-path-data",
     "trait-system",
+    "value-printing",
+    "vector-iterable",
     "vector"
   ]
 }
