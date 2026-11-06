@@ -3,10 +3,10 @@ import type { Matrix3x3 } from '../matrix/matrix3x3.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import * as internal from './affine2d.internal.ts'
-import type { AffineTraits, Invertible } from './traits.ts'
+import * as internal from './internal/affine2d.ts'
+import type { AffineTraits, Invertible } from './internal/traits.ts'
 
-export type { Invertible } from './traits.ts'
+export type { Invertible } from './internal/traits.ts'
 
 /**
  * A 2D affine transformation: the most general map of the form

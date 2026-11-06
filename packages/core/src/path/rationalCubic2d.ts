@@ -5,7 +5,7 @@ import type { Affine2d } from '../transform/affine2d.ts'
 import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { CubicPath2d } from './cubic2d.ts'
-import * as internal from './rationalCubic2d.internal.ts'
+import * as internal from './internal/rationalCubic2d.ts'
 
 /**
  * A rational cubic path in 2D space.

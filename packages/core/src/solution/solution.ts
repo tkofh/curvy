@@ -1,6 +1,6 @@
 import type { Interval } from '../interval/interval.ts'
 import type { Value } from '../utils/value.ts'
-import * as internal from './solution.internal.ts'
+import * as internal from './internal/solution.ts'
 
 /**
  * A `Solution<T>` represents the result of an operation that may produce

@@ -1,17 +1,17 @@
 import type { Interval2d } from '../interval/interval2d.ts'
-import type { TwoDimensional } from '../dimensions.ts'
+import type { TwoDimensional } from '../internal/dimensions.ts'
 import type { Closed, Interval } from '../interval/interval.ts'
 import type { Value } from '../utils/value.ts'
 import type { CubicPolynomial } from '../polynomial/cubic.ts'
-import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/traits.ts'
+import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/internal/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import * as internal from './cubic2d.internal.ts'
+import * as internal from './internal/cubic2d.ts'
 import type { LinearCurve2d } from './linear2d.ts'
 import type { QuadraticCurve2d } from './quadratic2d.ts'
 
-export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
+export type { Monotonic, Increasing, Decreasing } from '../polynomial/internal/traits.ts'
 
 /**
  * A cubic curve in 2D space.

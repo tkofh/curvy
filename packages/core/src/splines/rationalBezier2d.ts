@@ -3,7 +3,7 @@ import type { Affine2d } from '../transform/affine2d.ts'
 import type { Value } from '../utils/value.ts'
 import type { Vector2, Weighted } from '../vector/vector2.ts'
 import type { Bezier2d } from './bezier2d.ts'
-import * as internal from './rationalBezier2d.internal.ts'
+import * as internal from './internal/rationalBezier2d.ts'
 
 /**
  * A piecewise rational cubic Bézier curve in 2D space.

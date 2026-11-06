@@ -1,6 +1,6 @@
-import type { TwoDimensional } from '../dimensions.ts'
+import type { TwoDimensional } from '../internal/dimensions.ts'
 import type { Value } from '../utils/value.ts'
-import * as internal from './vector2.internal.ts'
+import * as internal from './internal/vector2.ts'
 
 /**
  * A 2D vector.

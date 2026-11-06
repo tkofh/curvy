@@ -3,7 +3,7 @@ import type { Affine2d } from '../transform/affine2d.ts'
 import type { Value } from '../utils/value.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import * as internal from './bezier2d.internal.ts'
+import * as internal from './internal/bezier2d.ts'
 import type { RationalBezier2d } from './rationalBezier2d.ts'
 
 /**

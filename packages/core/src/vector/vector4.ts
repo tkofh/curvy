@@ -1,6 +1,6 @@
-import type { FourDimensional } from '../dimensions.ts'
+import type { FourDimensional } from '../internal/dimensions.ts'
 import type { Value } from '../utils/value.ts'
-import * as internal from './vector4.internal.ts'
+import * as internal from './internal/vector4.ts'
 
 /**
  * A 4D vector.

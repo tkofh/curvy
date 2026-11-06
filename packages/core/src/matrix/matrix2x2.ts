@@ -1,7 +1,7 @@
-import type { TwoDimensionalComponent, TwoDimensionalIndex } from '../dimensions.ts'
+import type { TwoDimensionalComponent, TwoDimensionalIndex } from '../internal/dimensions.ts'
 import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import * as internal from './matrix2x2.internal.ts'
+import * as internal from './internal/matrix2x2.ts'
 
 /**
  * A row or column selector for a `Matrix2x2`: a numeric index (`0 | 1`) or

@@ -3,16 +3,16 @@ import type { Interval2d } from '../interval/interval2d.ts'
 import type { Monotonicity } from '../monotonicity/monotonicity.ts'
 import type { Value } from '../utils/value.ts'
 import type { CubicPolynomial } from '../polynomial/cubic.ts'
-import type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
+import type { Decreasing, Increasing, Monotonic } from '../polynomial/internal/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2, Weighted } from '../vector/vector2.ts'
 import type { CubicCurve2d } from './cubic2d.ts'
-import type { RationalCurveTraits } from './rationalCubic2d.internal.ts'
-import * as internal from './rationalCubic2d.internal.ts'
+import type { RationalCurveTraits } from './internal/rationalCubic2d.ts'
+import * as internal from './internal/rationalCubic2d.ts'
 
-export type { Decreasing, Increasing, Monotonic } from '../polynomial/traits.ts'
-export { RationalCurveTraits } from './rationalCubic2d.internal.ts'
+export type { Decreasing, Increasing, Monotonic } from '../polynomial/internal/traits.ts'
+export { RationalCurveTraits } from './internal/rationalCubic2d.ts'
 
 /**
  * A rational cubic curve in 2D space.

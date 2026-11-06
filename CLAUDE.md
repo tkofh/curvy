@@ -2,9 +2,12 @@
 
 A 2D curve and spline math library for TypeScript (npm: `curvy`),
 Effect-style: data-first/data-last dual signatures, branded types,
-immutable values. The public surface is `packages/core/src` minus
-`*.internal.ts`; implementations live in the internal modules and the
-public files are type-annotated re-exports where the JSDoc lives.
+immutable values. The public surface is `packages/core/src` minus its
+`internal/` directories. Each module keeps its implementation in
+`<module>/internal/`, and code shared across modules lives in
+`src/internal/`. Every other file is public: a package entry point, or a
+module its `index.ts` re-exports. The public files are type-annotated
+re-exports of the internal code, and the JSDoc lives on them.
 `PRECISION.md` at the repo root is the library's numerical contract.
 
 ## Documentation
@@ -25,8 +28,8 @@ Public doc comments address a developer using the library from npm:
   plainly and point to `PRECISION.md` rather than re-teaching mechanics.
 
 Contributor topics — module architecture, numerical design rationale,
-representation trade-offs — go in module-level docs, `*.internal.ts`
-comments, or repo docs like `PRECISION.md`, linked from consumer docs and
+representation trade-offs — go in module-level docs, comments in `internal/`
+files, or repo docs like `PRECISION.md`, linked from consumer docs and
 never inlined into them.
 
 ### Conventions

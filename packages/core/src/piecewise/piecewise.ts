@@ -2,16 +2,16 @@ import type { Closed } from '../interval/interval.ts'
 import type { CubicPath2d } from '../path/cubic2d.ts'
 import type { LinearPath2d } from '../path/linear2d.ts'
 import type { QuadraticPath2d } from '../path/quadratic2d.ts'
-import type { MonotonicX } from '../path/traits.ts'
+import type { MonotonicX } from '../path/internal/traits.ts'
 import type { CubicPolynomial } from '../polynomial/cubic.ts'
 import type { LinearPolynomial } from '../polynomial/linear.ts'
 import type { QuadraticPolynomial } from '../polynomial/quadratic.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Value } from '../utils/value.ts'
-import * as internal from './piecewise.internal.ts'
-import type { Contiguous, Continuous, Monotonic, PiecewiseTraits } from './traits.ts'
+import * as internal from './internal/piecewise.ts'
+import type { Contiguous, Continuous, Monotonic, PiecewiseTraits } from './internal/traits.ts'
 
-export type { Contiguous, Continuous, Monotonic } from './traits.ts'
+export type { Contiguous, Continuous, Monotonic } from './internal/traits.ts'
 
 /**
  * One piece of a `Piecewise`: a closed x-`Interval` paired with the polynomial

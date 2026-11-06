@@ -1,6 +1,6 @@
-import type { ThreeDimensional } from '../dimensions.ts'
+import type { ThreeDimensional } from '../internal/dimensions.ts'
 import type { Value } from '../utils/value.ts'
-import * as internal from './vector3.internal.ts'
+import * as internal from './internal/vector3.ts'
 
 /**
  * A 3D vector.

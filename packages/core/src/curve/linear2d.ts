@@ -1,15 +1,15 @@
 import type { Interval2d } from '../interval/interval2d.ts'
-import type { TwoDimensional } from '../dimensions.ts'
+import type { TwoDimensional } from '../internal/dimensions.ts'
 import type { Closed, Interval } from '../interval/interval.ts'
 import type { Value } from '../utils/value.ts'
 import type { LinearPolynomial } from '../polynomial/linear.ts'
-import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/traits.ts'
+import type { Decreasing, Increasing, Monotonic, Reflected } from '../polynomial/internal/traits.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import * as internal from './linear2d.internal.ts'
+import * as internal from './internal/linear2d.ts'
 
-export type { Monotonic, Increasing, Decreasing } from '../polynomial/traits.ts'
+export type { Monotonic, Increasing, Decreasing } from '../polynomial/internal/traits.ts'
 
 /**
  * A linear curve in 2D space, a straight segment parameterized over

@@ -5,7 +5,7 @@ import type * as Solution from '../solution/solution.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import * as internal from './cubic2d.internal.ts'
+import * as internal from './internal/cubic2d.ts'
 import type { LinearPath2d } from './linear2d.ts'
 import type { QuadraticPath2d } from './quadratic2d.ts'
 import type {
@@ -17,7 +17,7 @@ import type {
   MonotonicX,
   MonotonicY,
   PathTraits,
-} from './traits.ts'
+} from './internal/traits.ts'
 
 export type {
   Continuous,
@@ -27,7 +27,7 @@ export type {
   IncreasingY,
   MonotonicX,
   MonotonicY,
-} from './traits.ts'
+} from './internal/traits.ts'
 
 /**
  * A cubic path in 2D space.

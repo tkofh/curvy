@@ -2,7 +2,7 @@ import type { LinearPath2d } from '../path/linear2d.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import * as internal from './linear2d.internal.ts'
+import * as internal from './internal/linear2d.ts'
 
 /**
  * A polyline in 2D space, an ordered list of points that converts to a

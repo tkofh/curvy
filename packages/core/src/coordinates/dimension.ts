@@ -1,6 +1,6 @@
 import type { Bounds } from '../interval/interval.ts'
 import type { Value } from '../utils/value.ts'
-import * as internal from './dimension.internal.ts'
+import * as internal from './internal/dimension.ts'
 
 /**
  * Describes the structure of a single chart-space axis. Three kinds are

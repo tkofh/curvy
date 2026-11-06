@@ -6,10 +6,16 @@ import type { Vector3 } from '../vector/vector3.ts'
 import type { CubicPolynomial } from './cubic.ts'
 import type { LinearPolynomial } from './linear.ts'
 import type { Monotonicity } from '../monotonicity/monotonicity.ts'
-import * as internal from './quadratic.internal.ts'
-import type { Decreasing, Increasing, Monotonic, PolynomialTraits, Reflected } from './traits.ts'
+import * as internal from './internal/quadratic.ts'
+import type {
+  Decreasing,
+  Increasing,
+  Monotonic,
+  PolynomialTraits,
+  Reflected,
+} from './internal/traits.ts'
 
-export type { Monotonic, Increasing, Decreasing, Reflected } from './traits.ts'
+export type { Monotonic, Increasing, Decreasing, Reflected } from './internal/traits.ts'
 
 /**
  * A quadratic polynomial `c0 + c1*x + c2*x^2`, stored by coefficient.

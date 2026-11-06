@@ -1,12 +1,12 @@
-import type { FourDimensionalComponent, FourDimensionalIndex } from '../dimensions.ts'
+import type { FourDimensionalComponent, FourDimensionalIndex } from '../internal/dimensions.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Value } from '../utils/value.ts'
 import type { Vector4 } from '../vector/vector4.ts'
 import type { Matrix3x3 } from './matrix3x3.ts'
-import * as internal from './matrix4x4.internal.ts'
-import type { Invertible, MatrixTraits } from './traits.ts'
+import * as internal from './internal/matrix4x4.ts'
+import type { Invertible, MatrixTraits } from './internal/traits.ts'
 
-export type { Invertible } from './traits.ts'
+export type { Invertible } from './internal/traits.ts'
 
 /**
  * A row or column selector for a `Matrix4x4`: a numeric index

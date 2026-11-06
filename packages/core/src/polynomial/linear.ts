@@ -2,12 +2,18 @@ import type { Closed, Interval } from '../interval/interval.ts'
 import type { Value } from '../utils/value.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import * as internal from './linear.internal.ts'
+import * as internal from './internal/linear.ts'
 import type { GuaranteedMonotonicity } from '../monotonicity/monotonicity.ts'
 import type { QuadraticPolynomial } from './quadratic.ts'
-import type { Decreasing, Increasing, Monotonic, PolynomialTraits, Reflected } from './traits.ts'
+import type {
+  Decreasing,
+  Increasing,
+  Monotonic,
+  PolynomialTraits,
+  Reflected,
+} from './internal/traits.ts'
 
-export type { Monotonic, Increasing, Decreasing, Reflected } from './traits.ts'
+export type { Monotonic, Increasing, Decreasing, Reflected } from './internal/traits.ts'
 
 /**
  * A linear polynomial `c0 + c1*x`, stored by coefficient.

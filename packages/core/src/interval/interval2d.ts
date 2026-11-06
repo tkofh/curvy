@@ -1,7 +1,7 @@
 import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
 import type { Bounds, Closed, Interval } from './interval.ts'
-import * as internal from './interval2d.internal.ts'
+import * as internal from './internal/interval2d.ts'
 
 /**
  * An axis-aligned 2D interval, the Cartesian product of two 1D intervals.

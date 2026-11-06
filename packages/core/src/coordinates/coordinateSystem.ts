@@ -3,7 +3,7 @@ import type { CubicPath2d } from '../path/cubic2d.ts'
 import type { RationalCubicPath2d } from '../path/rationalCubic2d.ts'
 import type { Value } from '../utils/value.ts'
 import type { Vector2 } from '../vector/vector2.ts'
-import * as internal from './coordinateSystem.internal.ts'
+import * as internal from './internal/coordinateSystem.ts'
 import type { Cyclical, Dimension } from './dimension.ts'
 
 /**

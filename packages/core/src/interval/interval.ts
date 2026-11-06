@@ -1,4 +1,4 @@
-import * as internal from './interval.internal.ts'
+import * as internal from './internal/interval.ts'
 import type { Value } from '../utils/value.ts'
 
 /**

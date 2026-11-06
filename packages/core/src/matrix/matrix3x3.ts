@@ -1,12 +1,12 @@
-import type { ThreeDimensionalComponent, ThreeDimensionalIndex } from '../dimensions.ts'
+import type { ThreeDimensionalComponent, ThreeDimensionalIndex } from '../internal/dimensions.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Value } from '../utils/value.ts'
 import type { Vector3 } from '../vector/vector3.ts'
 import type { Matrix2x2 } from './matrix2x2.ts'
-import * as internal from './matrix3x3.internal.ts'
-import type { Invertible, MatrixTraits } from './traits.ts'
+import * as internal from './internal/matrix3x3.ts'
+import type { Invertible, MatrixTraits } from './internal/traits.ts'
 
-export type { Invertible } from './traits.ts'
+export type { Invertible } from './internal/traits.ts'
 
 /**
  * A row or column selector for a `Matrix3x3`: a numeric index (`0 | 1 | 2`)
