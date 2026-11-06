@@ -174,6 +174,9 @@ stores, so it sorts faces directly.
 
 A face whose normal points toward the camera projects with `Winding`
 `'counterclockwise'`, so the projected winding is the back-face test.
+`Camera.projectCircle` follows the same rule. A circle runs
+counterclockwise about its normal, so one facing the camera projects to an
+ellipse with a negative `sweep`.
 
 A perspective camera projects only points between its near and far planes.
 An orthographic camera projects every point up to its far plane, including

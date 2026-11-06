@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import type * as Arc from '../src/arc/arc.ts'
 import * as Camera from '../src/camera/camera.ts'
 import * as Interval2d from '../src/interval/interval2d.ts'
 import * as Plane3d from '../src/plane/plane3d.ts'
@@ -331,5 +332,185 @@ describe('shared operations', () => {
     expect(String(flat)).toBe(
       'Camera.Orthographic(eye (0, 0, 10), forward (0, 0, -1), height 6, viewport [0, 800] x [0, 600])',
     )
+  })
+})
+
+// How far a point lies off an ellipse, as a fraction of its radius there.
+const offEllipse = (
+  e: { center: Vector2.Vector2; radiusX: number; radiusY: number; rotation: number },
+  q: Vector2.Vector2,
+) => {
+  const c = Math.cos(e.rotation)
+  const s = Math.sin(e.rotation)
+  const dx = q.x - e.center.x
+  const dy = q.y - e.center.y
+  return Math.abs(Math.hypot((dx * c + dy * s) / e.radiusX, (dy * c - dx * s) / e.radiusY) - 1)
+}
+
+describe('projectCircle and projectSphere', () => {
+  const tilted = Camera.perspective({
+    eye: Vector3.make(3, 2, 10),
+    target: Vector3.make(0, 0.5, 0),
+    fovY: 0.8,
+    near: 0.1,
+    viewport,
+  })
+  const tiltedFlat = Camera.orthographic({
+    eye: Vector3.make(3, 2, 10),
+    target: Vector3.make(0, 0.5, 0),
+    height: 6,
+    viewport,
+  })
+
+  // Points around the circle center + u cos(t) + w sin(t).
+  const around = (center: Vector3.Vector3, normal: Vector3.Vector3, radius: number) => {
+    const n = Vector3.normalize(normal)
+    const seed = Math.abs(n.x) < 0.9 ? Vector3.unitX : Vector3.unitY
+    const u = Vector3.scale(Vector3.normalize(Vector3.cross(seed, n)), radius)
+    const w = Vector3.cross(n, u)
+    return Array.from({ length: 12 }, (_, k) => {
+      const t = (k * Math.PI) / 6
+      return Vector3.add(
+        center,
+        Vector3.add(Vector3.scale(u, Math.cos(t)), Vector3.scale(w, Math.sin(t))),
+      )
+    })
+  }
+
+  const circles: ReadonlyArray<readonly [Vector3.Vector3, Vector3.Vector3, number]> = [
+    [Vector3.make(0, 0, 0), Vector3.unitY, 2],
+    [Vector3.make(1.5, -0.5, 1), Vector3.make(1, 2, 3), 0.7],
+    [Vector3.make(-2, 1, -1), Vector3.make(-3, 0.2, 1), 1.2],
+    [Vector3.make(0.5, 1.5, 2), Vector3.make(0, 0, -1), 0.4],
+  ]
+
+  test.each([tilted, tiltedFlat])(
+    'every projected point of a circle lies on its outline',
+    (cam) => {
+      for (const [center, normal, radius] of circles) {
+        const outline = Solution.isNone(Camera.projectCircle(cam, center, normal, radius))
+        expect(outline).toBe(false)
+        const e = (
+          Camera.projectCircle(cam, center, normal, radius) as Solution.One<Arc.Elliptical>
+        ).value
+        for (const q of around(center, normal, radius)) {
+          expect(offEllipse(e, projected(cam, q).point)).toBeLessThan(1e-12)
+        }
+      }
+    },
+  )
+
+  test.each([tilted, tiltedFlat])('a circle facing the camera runs counterclockwise', (cam) => {
+    for (const [center, normal, radius] of circles) {
+      const e = (Camera.projectCircle(cam, center, normal, radius) as Solution.One<Arc.Elliptical>)
+        .value
+      const toward =
+        cam.kind === 'perspective'
+          ? Vector3.dot(normal, Vector3.subtract(cam.eye, center)) > 0
+          : Vector3.dot(normal, cam.frame.forward) < 0
+      expect(e.sweep < 0).toBe(toward)
+      // The same rule as for faces.
+      const face = Polygon2d.fromArray(
+        around(center, normal, radius).map((q) => projected(cam, q).point),
+      )
+      expect(Polygon2d.winding(face)).toEqual(
+        Solution.one(toward ? 'counterclockwise' : 'clockwise'),
+      )
+    }
+  })
+
+  test('the outline of a circle seen edge-on is flat', () => {
+    const e = (
+      Camera.projectCircle(flat, Vector3.zero, Vector3.unitX, 1) as Solution.One<Arc.Elliptical>
+    ).value
+    expect(e.radiusX).toBeCloseTo(100, 9)
+    expect(e.radiusY).toBeCloseTo(0, 9)
+  })
+
+  test('a perspective circle centers off the image of its center', () => {
+    const center = Vector3.make(1.5, -0.5, 1)
+    const e = (
+      Camera.projectCircle(tilted, center, Vector3.make(1, 0, 0), 1) as Solution.One<Arc.Elliptical>
+    ).value
+    expect(
+      Vector2.magnitude(Vector2.subtract(e.center, projected(tilted, center).point)),
+    ).toBeGreaterThan(1)
+  })
+
+  test.each([tilted, tiltedFlat])('every grazing point of a sphere lies on its outline', (cam) => {
+    const spheres: ReadonlyArray<readonly [Vector3.Vector3, number]> = [
+      [Vector3.make(0, 0.5, 0), 1],
+      [Vector3.make(2.5, -1, -2), 0.8],
+      [Vector3.make(-2, 2, 1), 0.5],
+    ]
+    for (const [center, radius] of spheres) {
+      const e = (Camera.projectSphere(cam, center, radius) as Solution.One<Arc.Elliptical>).value
+      // The sight lines graze the sphere along a circle: around the line to
+      // the eye under perspective, the great circle facing the view otherwise.
+      let ring: ReadonlyArray<Vector3.Vector3>
+      if (cam.kind === 'perspective') {
+        const d = Vector3.subtract(center, cam.eye)
+        const l = Vector3.magnitude(d)
+        const n = Vector3.scale(d, 1 / l)
+        ring = around(
+          Vector3.subtract(center, Vector3.scale(n, (radius * radius) / l)),
+          n,
+          (radius * Math.sqrt(l * l - radius * radius)) / l,
+        )
+      } else {
+        ring = around(center, cam.frame.forward, radius)
+      }
+      for (const q of ring) {
+        expect(offEllipse(e, projected(cam, q).point)).toBeLessThan(1e-12)
+      }
+    }
+  })
+
+  test('an orthographic sphere is a circle, and a centered one is too', () => {
+    const e = (Camera.projectSphere(flat, Vector3.make(1, 1, 0), 1) as Solution.One<Arc.Elliptical>)
+      .value
+    expect(e.radiusX).toBe(100)
+    expect(e.radiusY).toBe(100)
+    const centered = (Camera.projectSphere(camera, Vector3.zero, 1) as Solution.One<Arc.Elliptical>)
+      .value
+    expect(centered.radiusX).toBeCloseTo(centered.radiusY, 9)
+    expect(centered.center).toBeCloseToValue(Vector2.make(400, 300))
+  })
+
+  test('shapes not wholly between the near and far planes are none', () => {
+    // The sphere around the eye, and one straddling the near plane.
+    expect(Camera.projectSphere(camera, Vector3.make(0, 0, 10), 1)).toBe(Solution.none)
+    expect(Camera.projectSphere(camera, Vector3.make(0, 0, 9.5), 1)).toBe(Solution.none)
+    // A circle crossing the eye's plane.
+    expect(Camera.projectCircle(camera, Vector3.make(0, 0, 10), Vector3.unitX, 1)).toBe(
+      Solution.none,
+    )
+    const shallow = Camera.perspective({
+      eye: Vector3.make(0, 0, 10),
+      target: Vector3.zero,
+      fovY: Math.PI / 4,
+      near: 0.1,
+      far: 10,
+      viewport,
+    })
+    expect(Camera.projectSphere(shallow, Vector3.zero, 0.5)).toBe(Solution.none)
+    expect(Camera.projectSphere(shallow, Vector3.make(0, 0, 1), 0.5)).not.toBe(Solution.none)
+    // An orthographic camera only has a far plane.
+    expect(Camera.projectSphere(flat, Vector3.make(0, 0, 10), 1)).not.toBe(Solution.none)
+  })
+
+  test('data-last forms', () => {
+    expect(camera.pipe(Camera.projectSphere(Vector3.zero, 1))).toEqual(
+      Camera.projectSphere(camera, Vector3.zero, 1),
+    )
+    expect(camera.pipe(Camera.projectCircle(Vector3.zero, Vector3.unitY, 1))).toEqual(
+      Camera.projectCircle(camera, Vector3.zero, Vector3.unitY, 1),
+    )
+  })
+
+  test('rejects bad input', () => {
+    expect(() => Camera.projectCircle(camera, Vector3.zero, Vector3.zero, 1)).toThrow()
+    expect(() => Camera.projectCircle(camera, Vector3.zero, Vector3.unitY, -1)).toThrow()
+    expect(() => Camera.projectSphere(camera, Vector3.zero, Number.NaN)).toThrow()
   })
 })

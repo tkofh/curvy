@@ -120,6 +120,88 @@ export const elliptical = (config: EllipticalConfig): Elliptical =>
     config.sweep ?? FULL_TURN,
   )
 
+/**
+ * The axes of the ellipse `{ center + L * p : |p| = 1 }`, from its shape
+ * matrix `S = L * L^T` (entries `s11`, `s12`, `s22`) and `area`, which is
+ * `|det L|`, the product of the radii. Taking the minor radius from the
+ * area rather than the smaller eigenvalue avoids the cancellation that
+ * flattens a thin ellipse.
+ *
+ * @internal
+ */
+export const ellipseAxes = (
+  s11: number,
+  s12: number,
+  s22: number,
+  area: number,
+): { readonly radiusX: number; readonly radiusY: number; readonly rotation: number } => {
+  const radiusX = Math.sqrt((s11 + s22) / 2 + Math.hypot((s11 - s22) / 2, s12))
+  const radiusY = radiusX > 0 ? Math.min(radiusX, area / radiusX) : 0
+  return { radiusX, radiusY, rotation: 0.5 * Math.atan2(2 * s12, s11 - s22) }
+}
+
+/** @internal */
+export const fromConjugateDiameters = (
+  center: Vector2.Vector2,
+  a: Vector2.Vector2,
+  b: Vector2.Vector2,
+): Elliptical => {
+  invariant(
+    Number.isFinite(center.x) &&
+      Number.isFinite(center.y) &&
+      Number.isFinite(a.x) &&
+      Number.isFinite(a.y) &&
+      Number.isFinite(b.x) &&
+      Number.isFinite(b.y),
+    'fromConjugateDiameters requires finite vectors',
+  )
+  // The ellipse is center + M * (cos t, sin t) with M = [a b], whose axes
+  // are the singular vectors of M.
+  const cross = a.x * b.y - a.y * b.x
+  const { radiusX, radiusY, rotation } = ellipseAxes(
+    a.x * a.x + b.x * b.x,
+    a.x * a.y + b.x * b.y,
+    a.y * a.y + b.y * b.y,
+    Math.abs(cross),
+  )
+  // In the ellipse's own frame, a = (radiusX * cos(s0), ...) and b, a
+  // quarter turn on in the direction of travel, has x component
+  // -sign * radiusX * sin(s0). Reading s0 from the x components alone
+  // never divides by radiusY, so a flat ellipse works too.
+  const sign = cross < 0 ? -1 : 1
+  const c = Math.cos(rotation)
+  const sn = Math.sin(rotation)
+  const ax = a.x * c + a.y * sn
+  const bx = b.x * c + b.y * sn
+  return new EllipticalImpl(
+    center,
+    radiusX,
+    radiusY,
+    rotation,
+    Math.atan2(-sign * bx, ax),
+    sign * FULL_TURN,
+  )
+}
+
+/**
+ * A full ellipse from its center, its shape matrix and area (see
+ * `ellipseAxes`), traced in the direction `sign`, starting at the end of its
+ * major axis.
+ *
+ * @internal
+ */
+export const fullEllipse = (
+  center: Vector2.Vector2,
+  s11: number,
+  s12: number,
+  s22: number,
+  area: number,
+  sign: 1 | -1,
+): Elliptical => {
+  const { radiusX, radiusY, rotation } = ellipseAxes(s11, s12, s22, area)
+  return new EllipticalImpl(center, radiusX, radiusY, rotation, 0, sign * FULL_TURN)
+}
+
 /** @internal */
 export const equals = dual<(b: Arc) => (a: Arc) => boolean, (a: Arc, b: Arc) => boolean>(
   2,

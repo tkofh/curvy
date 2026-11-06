@@ -258,6 +258,41 @@ export const isElliptical: (v: unknown) => v is Elliptical = internal.isElliptic
  */
 export const elliptical: (config: EllipticalConfig) => Elliptical = internal.elliptical
 
+/**
+ * Creates the full ellipse traced by `center + a * cos(t) + b * sin(t)`,
+ * from two conjugate semi-diameters.
+ *
+ * Two semi-diameters are conjugate when each is parallel to the tangent at
+ * the other's end, the way the two radii of a circle stay conjugate under
+ * any affine map. That makes this the image of a circle under a linear
+ * map, such as a 3D circle seen in parallel projection: pass the images of
+ * two perpendicular radii.
+ *
+ * The arc starts at `center + a` and runs toward `center + b`, so its
+ * point at parametric extent `t` from the start is
+ * `center + a * cos(t) + b * sin(t)`. `sweep` is `2 * pi` when `a` turns
+ * toward `b` the positive way (`Vector2.cross(a, b) >= 0`) and `-2 * pi`
+ * otherwise. `radiusX` is the larger radius.
+ *
+ * @param center - The ellipse's center.
+ * @param a - The first semi-diameter, from the center to the start point.
+ * @param b - The second semi-diameter, conjugate to `a`.
+ * @returns The full ellipse. Parallel semi-diameters give a flat one,
+ *   with `radiusY` of `0`.
+ * @throws `Error` when a coordinate is not finite.
+ * @example
+ * ```ts
+ * const e = Arc.fromConjugateDiameters(Vector2.zero, Vector2.make(2, 0), Vector2.make(1, 1))
+ *
+ * Arc.startPoint(e) // Vector2(2, 0), up to rounding
+ * Arc.solve(e, 0.25) // Vector2(1, 1): a quarter of the way round, at the tip of b
+ * e.radiusX * e.radiusY // 2, the area of the parallelogram on a and b
+ * ```
+ * @since 2.0.0
+ */
+export const fromConjugateDiameters: (center: Vector2, a: Vector2, b: Vector2) => Elliptical =
+  internal.fromConjugateDiameters
+
 export const equals: {
   /**
    * Checks two arcs for equality, field by field. Numeric fields compare

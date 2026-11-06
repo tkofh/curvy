@@ -464,3 +464,52 @@ describe('elliptical', () => {
     expect(CubicPath2d.isContinuous(out)).toBe(true)
   })
 })
+
+describe('fromConjugateDiameters', () => {
+  const traced = (
+    center: Vector2.Vector2,
+    a: Vector2.Vector2,
+    b: Vector2.Vector2,
+    t: number,
+  ): Vector2.Vector2 =>
+    Vector2.make(
+      center.x + a.x * Math.cos(t) + b.x * Math.sin(t),
+      center.y + a.y * Math.cos(t) + b.y * Math.sin(t),
+    )
+
+  const cases: ReadonlyArray<readonly [string, Vector2.Vector2, Vector2.Vector2]> = [
+    ['skewed', Vector2.make(2, 0), Vector2.make(1, 1)],
+    ['clockwise', Vector2.make(0.3, -1.2), Vector2.make(-2, 0.4)],
+    ['perpendicular radii', Vector2.make(0, 3), Vector2.make(-1, 0)],
+    ['circle', Vector2.make(0.6, 0.8), Vector2.make(-0.8, 0.6)],
+    ['flat', Vector2.make(1, 2), Vector2.make(-0.5, -1)],
+  ]
+
+  test.each(cases)('%s: traces center + a cos(t) + b sin(t)', (_, a, b) => {
+    const center = Vector2.make(5, -3)
+    const e = Arc.fromConjugateDiameters(center, a, b)
+    expect(Math.abs(e.sweep)).toBe(2 * Math.PI)
+    expect(e.sweep > 0).toBe(Vector2.cross(a, b) >= 0)
+    expect(e.radiusX).toBeGreaterThanOrEqual(e.radiusY)
+    for (const t of [0, 0.4, 1.5, 3, 5.5]) {
+      expect(Arc.solve(e, t / (2 * Math.PI))).toBeCloseToValue(traced(center, a, b, t), 1e-12)
+    }
+  })
+
+  test('the radii multiply to the parallelogram area', () => {
+    const e = Arc.fromConjugateDiameters(Vector2.zero, Vector2.make(2, 0), Vector2.make(1, 1))
+    expect(e.radiusX * e.radiusY).toBeCloseTo(2, 12)
+    expect(e.radiusX ** 2 + e.radiusY ** 2).toBeCloseTo(6, 12)
+  })
+
+  test('a flat ellipse has radiusY 0', () => {
+    const e = Arc.fromConjugateDiameters(Vector2.zero, Vector2.make(1, 2), Vector2.make(-0.5, -1))
+    expect(e.radiusY).toBe(0)
+  })
+
+  test('rejects non-finite input', () => {
+    expect(() =>
+      Arc.fromConjugateDiameters(Vector2.zero, Vector2.make(Number.NaN, 0), Vector2.make(0, 1)),
+    ).toThrow()
+  })
+})

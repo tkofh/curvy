@@ -1,3 +1,4 @@
+import type { Elliptical } from '../arc/arc.ts'
 import type { Bounds2d } from '../interval/interval2d.ts'
 import type { Plane3d } from '../plane/plane3d.ts'
 import type { Convex, Planar, Polygon3d } from '../polygon/polygon3d.ts'
@@ -370,6 +371,94 @@ export const project: {
  */
 export const projectTo: (c: Camera) => (p: Vector3) => Solution.AtMostOne<ProjectedPoint> =
   internal.projectTo
+
+export const projectCircle: {
+  /**
+   * The outline of a 3D circle in the viewport, as a full ellipse.
+   *
+   * The result is exact for both kinds of camera. A perspective camera
+   * sees a circle as an ellipse whose center is generally not the image of
+   * the circle's center, and the result accounts for that.
+   *
+   * The arc runs the way the circle turns counterclockwise about `normal`.
+   * Like a face, a circle whose normal points toward the camera appears
+   * counterclockwise on screen, with a negative `sweep`, so the sign of
+   * `sweep` is its back-face test. A circle seen edge-on projects to a
+   * flat ellipse with `radiusY` of `0`.
+   *
+   * @param c - The camera.
+   * @param center - The circle's center, in world coordinates.
+   * @param normal - The normal of the circle's plane. Its length doesn't
+   *   matter.
+   * @param radius - The circle's radius, in world units.
+   * @returns The outline as an `Arc.Elliptical` in viewport coordinates,
+   *   starting at the end of its major axis. `none` unless the whole circle
+   *   lies between the camera's near and far planes, the range in which
+   *   `project` projects its points.
+   * @throws `Error` when `normal` is zero or not finite, `radius` is
+   *   negative or not finite, or `center` is not finite.
+   * @example
+   * ```ts
+   * // A ring of radius 2 lying flat on the ground.
+   * const ring = Camera.projectCircle(camera, Vector3.zero, Vector3.unitY, 2)
+   *
+   * if (Solution.isSome(ring)) {
+   *   const d = Arc.toPathData(ring.value)
+   * }
+   * ```
+   * @since 2.0.0
+   */
+  (c: Camera, center: Vector3, normal: Vector3, radius: number): Solution.AtMostOne<Elliptical>
+  /**
+   * The outline of a 3D circle in the piped-in camera's viewport.
+   *
+   * @param center - The circle's center, in world coordinates.
+   * @param normal - The normal of the circle's plane.
+   * @param radius - The circle's radius, in world units.
+   * @returns A function that takes a camera and returns the outline, or
+   *   `none` when the circle doesn't lie wholly between its near and far
+   *   planes.
+   * @throws `Error` when `normal` is zero or not finite, `radius` is
+   *   negative or not finite, or `center` is not finite.
+   * @since 2.0.0
+   */
+  (center: Vector3, normal: Vector3, radius: number): (c: Camera) => Solution.AtMostOne<Elliptical>
+} = internal.projectCircle
+
+export const projectSphere: {
+  /**
+   * The outline of a sphere in the viewport, as a full ellipse.
+   *
+   * An orthographic camera sees a circle. A perspective camera sees the
+   * exact ellipse where the cone of sight lines grazing the sphere meets
+   * the view, stretched along the line from the viewport's center, the
+   * more so the farther off-axis the sphere sits.
+   *
+   * @param c - The camera.
+   * @param center - The sphere's center, in world coordinates.
+   * @param radius - The sphere's radius, in world units.
+   * @returns The outline as an `Arc.Elliptical` in viewport coordinates,
+   *   or `none` unless the whole sphere lies between the camera's near and
+   *   far planes.
+   * @throws `Error` when `radius` is negative or not finite, or `center`
+   *   is not finite.
+   * @since 2.0.0
+   */
+  (c: Camera, center: Vector3, radius: number): Solution.AtMostOne<Elliptical>
+  /**
+   * The outline of a sphere in the piped-in camera's viewport.
+   *
+   * @param center - The sphere's center, in world coordinates.
+   * @param radius - The sphere's radius, in world units.
+   * @returns A function that takes a camera and returns the outline, or
+   *   `none` when the sphere doesn't lie wholly between its near and far
+   *   planes.
+   * @throws `Error` when `radius` is negative or not finite, or `center`
+   *   is not finite.
+   * @since 2.0.0
+   */
+  (center: Vector3, radius: number): (c: Camera) => Solution.AtMostOne<Elliptical>
+} = internal.projectSphere
 
 export const equals: {
   /**

@@ -1,3 +1,5 @@
+import type { Elliptical } from '../../arc/arc.ts'
+import * as arc from '../../arc/internal/arc.ts'
 import type { Bounds2d } from '../../interval/interval2d.ts'
 import * as matrix4x4 from '../../matrix/internal/matrix4x4.ts'
 import { before, coincident, EPSILON } from '../../number.ts'
@@ -286,6 +288,172 @@ export const projectTo = (c: Camera): ((p: Vector3) => Solution.AtMostOne<Projec
   const s = screen(c)
   return (p) => projectWith(c, s, p)
 }
+
+interface View {
+  readonly x: number
+  readonly y: number
+  readonly z: number
+}
+
+// A world direction in view coordinates: along right, up, and forward.
+const viewDirection = (c: Camera, d: Vector3): View => {
+  const { right: r, up: u, forward: f } = c.frame
+  return {
+    x: d.x * r.x + d.y * r.y + d.z * r.z,
+    y: d.x * u.x + d.y * u.y + d.z * u.z,
+    z: d.x * f.x + d.y * f.y + d.z * f.z,
+  }
+}
+
+const viewPoint = (c: Camera, p: Vector3): View =>
+  viewDirection(c, vector3.make(p.x - c.eye.x, p.y - c.eye.y, p.z - c.eye.z))
+
+const isFiniteVector = (v: Vector3): boolean =>
+  Number.isFinite(v.x) && Number.isFinite(v.y) && Number.isFinite(v.z)
+
+// Whether the depths [low, high] fit between the camera's clipping planes,
+// with the same tolerant cuts as `project`.
+const inDepth = (c: Camera, low: number, high: number): boolean =>
+  !before(c.far, high) && (c.kind === 'orthographic' || !before(low, c.near))
+
+// Maps an ellipse found in view-plane coordinates (x right, y up, at unit
+// depth for a perspective camera) to the viewport: scale by pixels per
+// unit and flip y. The flip reverses the direction of travel.
+const toViewport = (
+  c: Camera,
+  center: View,
+  s11: number,
+  s12: number,
+  s22: number,
+  area: number,
+  sign: 1 | -1,
+): Elliptical => {
+  const { scale: k, cx, cy } = screen(c)
+  const k2 = k * k
+  return arc.fullEllipse(
+    vector2.make(cx + center.x * k, cy - center.y * k),
+    s11 * k2,
+    -s12 * k2,
+    s22 * k2,
+    area * k2,
+    sign === 1 ? -1 : 1,
+  )
+}
+
+/** @internal */
+export const projectCircle = dual<
+  (
+    center: Vector3,
+    normal: Vector3,
+    radius: number,
+  ) => (c: Camera) => Solution.AtMostOne<Elliptical>,
+  (c: Camera, center: Vector3, normal: Vector3, radius: number) => Solution.AtMostOne<Elliptical>
+>(4, (c: Camera, center: Vector3, normal: Vector3, radius: number) => {
+  invariant(isFiniteVector(center), 'projectCircle requires a finite center')
+  invariant(
+    Number.isFinite(radius) && radius >= 0,
+    'projectCircle requires a finite non-negative radius',
+  )
+  const length = vector3.magnitude(normal)
+  invariant(
+    Number.isFinite(length) && length > 0,
+    'projectCircle requires a non-zero finite normal',
+  )
+  const n = vector3.make(normal.x / length, normal.y / length, normal.z / length)
+  // Two perpendicular radii with cross(u, w) = radius^2 * n, so the circle
+  // center + u * cos(t) + w * sin(t) runs counterclockwise about n.
+  const seed = Math.abs(n.x) < 0.9 ? vector3.make(1, 0, 0) : vector3.make(0, 1, 0)
+  const u = vector3.scale(vector3.normalize(vector3.cross(seed, n)), radius)
+  const w = vector3.cross(n, u)
+  const p = viewPoint(c, center)
+  const a = viewDirection(c, u)
+  const b = viewDirection(c, w)
+  const reach = Math.hypot(a.z, b.z)
+  if (!inDepth(c, p.z - reach, p.z + reach)) {
+    return Solution.none
+  }
+  if (c.kind === 'orthographic') {
+    // Parallel projection is linear, so the radii project to conjugate
+    // semi-diameters.
+    const det = a.x * b.y - a.y * b.x
+    return Solution.one(
+      toViewport(
+        c,
+        p,
+        a.x * a.x + b.x * b.x,
+        a.x * a.y + b.x * b.y,
+        a.y * a.y + b.y * b.y,
+        Math.abs(det),
+        det < 0 ? -1 : 1,
+      ),
+    )
+  }
+  // Under perspective the circle's image is the image of the unit circle
+  // under the homogeneous map A = [a b p], an exact ellipse while the whole
+  // circle is in front of the eye. Its dual conic is A * diag(1, 1, -1) *
+  // A^T, which for an ellipse with center m and shape S = L * L^T is
+  // proportional to [[S - m * m^T, -m], [-m^T, -1]]. Scaling by
+  // -q33 > 0 reads off m and S, and |det L| = |det A| / (-q33)^(3/2).
+  const q11 = a.x * a.x + b.x * b.x - p.x * p.x
+  const q12 = a.x * a.y + b.x * b.y - p.x * p.y
+  const q22 = a.y * a.y + b.y * b.y - p.y * p.y
+  const q13 = a.x * a.z + b.x * b.z - p.x * p.z
+  const q23 = a.y * a.z + b.y * b.z - p.y * p.z
+  const scale = (p.z - reach) * (p.z + reach)
+  const m = { x: -q13 / scale, y: -q23 / scale, z: 1 }
+  const det =
+    p.x * (a.y * b.z - a.z * b.y) + p.y * (a.z * b.x - a.x * b.z) + p.z * (a.x * b.y - a.y * b.x)
+  return Solution.one(
+    toViewport(
+      c,
+      m,
+      q11 / scale + m.x * m.x,
+      q12 / scale + m.x * m.y,
+      q22 / scale + m.y * m.y,
+      Math.abs(det) / (scale * Math.sqrt(scale)),
+      det < 0 ? -1 : 1,
+    ),
+  )
+})
+
+/** @internal */
+export const projectSphere = dual<
+  (center: Vector3, radius: number) => (c: Camera) => Solution.AtMostOne<Elliptical>,
+  (c: Camera, center: Vector3, radius: number) => Solution.AtMostOne<Elliptical>
+>(3, (c: Camera, center: Vector3, radius: number) => {
+  invariant(isFiniteVector(center), 'projectSphere requires a finite center')
+  invariant(
+    Number.isFinite(radius) && radius >= 0,
+    'projectSphere requires a finite non-negative radius',
+  )
+  const p = viewPoint(c, center)
+  if (!inDepth(c, p.z - radius, p.z + radius)) {
+    return Solution.none
+  }
+  const r2 = radius * radius
+  if (c.kind === 'orthographic') {
+    return Solution.one(toViewport(c, p, r2, 0, r2, r2, 1))
+  }
+  // The outline is where the cone of rays tangent to the sphere meets the
+  // view plane. With s = z^2 - r^2 and rho^2 = x^2 + y^2, its center is
+  // (x, y) * z / s and its shape is (r^2 / s^2) * [[s + x^2, x*y], [x*y,
+  // s + y^2]]: radius r * sqrt(s + rho^2) / s along the direction to the
+  // center, and r / sqrt(s) across it.
+  const s = (p.z - radius) * (p.z + radius)
+  const k = r2 / (s * s)
+  const rho2 = p.x * p.x + p.y * p.y
+  return Solution.one(
+    toViewport(
+      c,
+      { x: (p.x * p.z) / s, y: (p.y * p.z) / s, z: 1 },
+      k * (s + p.x * p.x),
+      k * p.x * p.y,
+      k * (s + p.y * p.y),
+      k * Math.sqrt(s * (s + rho2)),
+      1,
+    ),
+  )
+})
 
 // `coincident` is false for two infinities, which are the same far plane.
 const sameFar = (a: number, b: number): boolean => a === b || coincident(a, b)

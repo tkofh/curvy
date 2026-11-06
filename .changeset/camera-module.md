@@ -10,6 +10,8 @@ Each camera exposes its `eye` and its directions as a `Frame3d`, and `Camera.vie
 
 `Camera.clippingPlanes` returns the near and far planes as `Plane3d` values facing into the view, and `Camera.clip(camera, face)` cuts a convex `Polygon3d` against them. Every vertex of the result projects, so a face that crosses the near plane draws correctly instead of losing the vertices behind the eye.
 
+`Camera.projectCircle(camera, center, normal, radius)` and `Camera.projectSphere(camera, center, radius)` return the outline of a 3D circle or a sphere as an `Arc.Elliptical` in the viewport, ready for `Arc.toPathData` or an SVG `<ellipse>`. Both are exact under either kind of camera, including the off-center ellipse a perspective camera makes of a circle and the stretched outline it gives a sphere off to the side. A circle facing the camera comes back with a negative `sweep`, matching the face rule. Each returns `none` unless the whole shape lies between the near and far planes.
+
 ```ts
 import { Camera } from 'curvy/camera'
 import { Interval2d } from 'curvy/interval'
