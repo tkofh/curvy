@@ -18,6 +18,7 @@ export default defineConfig({
     'src/transform/index.ts',
     'src/coordinates/index.ts',
     'src/arc/index.ts',
+    'src/polygon/index.ts',
   ],
   format: 'esm',
   dts: false,

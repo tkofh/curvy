@@ -74,6 +74,10 @@
       "types": "./dist/arc/index.d.ts",
       "import": "./dist/arc/index.mjs"
     },
+    "./polygon": {
+      "types": "./dist/polygon/index.d.ts",
+      "import": "./dist/polygon/index.mjs"
+    },
     "./number": {
       "types": "./dist/number.d.ts",
       "import": "./dist/number.mjs"

@@ -65,6 +65,17 @@ export const fromPolynomials = (
   w: CubicPolynomial.CubicPolynomial,
 ): RationalCubicCurve2d => new RationalCubicCurve2dImpl(x, y, w)
 
+// Straight segment as a rational cubic with degree-1 numerators and constant
+// denominator: c2 = c3 = 0 exactly and w identically 1, so the segment is
+// linear in t with no characteristic-matrix cancellation residue.
+/** @internal */
+export const lineSegment = (p: Vector2.Vector2, q: Vector2.Vector2): RationalCubicCurve2d =>
+  new RationalCubicCurve2dImpl(
+    CubicPolynomial.make(p.x, q.x - p.x, 0, 0),
+    CubicPolynomial.make(p.y, q.y - p.y, 0, 0),
+    CubicPolynomial.make(1, 0, 0, 0),
+  )
+
 // Endpoint pins for the two-arg `fromBezierPoints` overload — the rational
 // analog of CSS `cubic-bezier(x1, y1, x2, y2)`. Module-level so the two-arg
 // path is allocation-free for the endpoints.

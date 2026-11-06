@@ -11,14 +11,13 @@ import * as CubicCurve2d from '../../curve/cubic2d.ts'
 import * as certified from '../../curve/internal/certified.ts'
 import * as cubicCurve2d from '../../curve/internal/cubic2d.ts'
 import * as rationalCubicCurve2d from '../../curve/internal/rationalCubic2d.ts'
-import * as RationalCubicCurve2d from '../../curve/rationalCubic2d.ts'
+import type * as RationalCubicCurve2d from '../../curve/rationalCubic2d.ts'
 import type { Bounds } from '../../interval/interval.ts'
 import * as Interval from '../../interval/interval.ts'
 import * as Interval2d from '../../interval/interval2d.ts'
 import { EPSILON, coincident, minMax } from '../../number.ts'
 import * as CubicPath2d from '../../path/cubic2d.ts'
 import * as RationalCubicPath2d from '../../path/rationalCubic2d.ts'
-import * as CubicPolynomial from '../../polynomial/cubic.ts'
 import * as cubicPolynomial from '../../polynomial/internal/cubic.ts'
 import { dual } from '../../utils/function.ts'
 import { invariant } from '../../utils/invariant.ts'
@@ -189,19 +188,6 @@ export const fromCartesian = dual<
 
 const QUARTER_TURN = Math.PI / 2
 
-// Straight segment as a rational cubic with degree-1 numerators and constant
-// denominator: c2 = c3 = 0 exactly and w identically 1, so the segment is
-// linear in t with no characteristic-matrix cancellation residue.
-const lineSegment = (
-  p: Vector2.Vector2,
-  q: Vector2.Vector2,
-): RationalCubicCurve2d.RationalCubicCurve2d =>
-  RationalCubicCurve2d.fromPolynomials(
-    CubicPolynomial.make(p.x, q.x - p.x, 0, 0),
-    CubicPolynomial.make(p.y, q.y - p.y, 0, 0),
-    CubicPolynomial.make(1, 0, 0, 0),
-  )
-
 const assertFinite = (label: string, ...values: ReadonlyArray<number>): void => {
   for (const value of values) {
     invariant(Number.isFinite(value), `${label} requires finite inputs`)
@@ -217,7 +203,7 @@ export const arc = dual<
 
   if (s.kind === 'cartesian') {
     return RationalCubicPath2d.make(
-      lineSegment(Vector2.make(theta.start, r), Vector2.make(theta.end, r)),
+      rationalCubicCurve2d.lineSegment(Vector2.make(theta.start, r), Vector2.make(theta.end, r)),
     )
   }
 
@@ -245,7 +231,7 @@ export const ray = dual<
   assertFinite('ray', theta, r.start, r.end)
 
   return RationalCubicPath2d.make(
-    lineSegment(
+    rationalCubicCurve2d.lineSegment(
       toCartesian(s, Vector2.make(theta, r.start)),
       toCartesian(s, Vector2.make(theta, r.end)),
     ),
@@ -281,10 +267,10 @@ export const sector = dual<
     const corner2 = Vector2.make(theta.end, y1)
     const corner3 = Vector2.make(theta.start, y1)
     return RationalCubicPath2d.make(
-      lineSegment(corner0, corner1),
-      lineSegment(corner1, corner2),
-      lineSegment(corner2, corner3),
-      lineSegment(corner3, corner0),
+      rationalCubicCurve2d.lineSegment(corner0, corner1),
+      rationalCubicCurve2d.lineSegment(corner1, corner2),
+      rationalCubicCurve2d.lineSegment(corner2, corner3),
+      rationalCubicCurve2d.lineSegment(corner3, corner0),
     )
   }
 
@@ -302,16 +288,16 @@ export const sector = dual<
   if (rhoInner === 0) {
     return RationalCubicPath2d.fromArray([
       ...outer,
-      lineSegment(outerEnd, s.center),
-      lineSegment(s.center, outerStart),
+      rationalCubicCurve2d.lineSegment(outerEnd, s.center),
+      rationalCubicCurve2d.lineSegment(s.center, outerStart),
     ])
   }
 
   return RationalCubicPath2d.fromArray([
     ...outer,
-    lineSegment(outerEnd, pointAt(s.center, rhoInner, a1)),
+    rationalCubicCurve2d.lineSegment(outerEnd, pointAt(s.center, rhoInner, a1)),
     ...arcSegments(s.center, rhoInner, a1, a0),
-    lineSegment(pointAt(s.center, rhoInner, a0), outerStart),
+    rationalCubicCurve2d.lineSegment(pointAt(s.center, rhoInner, a0), outerStart),
   ])
 })
 

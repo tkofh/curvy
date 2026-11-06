@@ -3,6 +3,7 @@ import * as ArcIndex from '../src/arc/index.ts'
 import * as Curve from '../src/curve/index.ts'
 import * as Matrix from '../src/matrix/index.ts'
 import * as Path from '../src/path/index.ts'
+import * as PolygonIndex from '../src/polygon/index.ts'
 import * as Polynomial from '../src/polynomial/index.ts'
 import * as Splines from '../src/splines/index.ts'
 import * as Vector from '../src/vector/index.ts'
@@ -16,6 +17,10 @@ describe('per-domain index re-exports', () => {
   test('arc index exposes the namespace', () => {
     expect(typeof ArcIndex.Arc.circular).toBe('function')
     expect(typeof ArcIndex.Arc.toPathData).toBe('function')
+  })
+  test('polygon index exposes the namespace', () => {
+    expect(typeof PolygonIndex.Polygon2d.fromArray).toBe('function')
+    expect(typeof PolygonIndex.Polygon2d.toPathData).toBe('function')
   })
   test('path index exposes namespaces by type name', () => {
     expect(typeof Path.LinearPath2d.make).toBe('function')
