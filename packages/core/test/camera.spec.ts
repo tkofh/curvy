@@ -72,6 +72,27 @@ describe('perspective', () => {
     expect(Solution.isSome(Camera.project(camera, Vector3.make(0, 0, 9.9 + 1e-14)))).toBe(true)
   })
 
+  test('points beyond the far plane do not project; points on it do', () => {
+    const bounded = Camera.perspective({
+      eye: Vector3.make(0, 0, 10),
+      target: Vector3.zero,
+      fovY: Math.PI / 4,
+      near: 0.1,
+      far: 20,
+      viewport,
+    })
+    expect(bounded.far).toBe(20)
+    expect(camera.far).toBe(Number.POSITIVE_INFINITY)
+    expect(Camera.project(bounded, Vector3.make(0, 0, -10.5))).toBe(Solution.none)
+    expect(Solution.isSome(Camera.project(bounded, Vector3.make(0, 0, -10)))).toBe(true)
+    // A rounding step past the plane still counts as on it.
+    expect(Solution.isSome(Camera.project(bounded, Vector3.make(0, 0, -10 - 1e-14)))).toBe(true)
+    expect(Solution.isSome(Camera.project(camera, Vector3.make(0, 0, -1e6)))).toBe(true)
+    expect(Camera.equals(camera, bounded)).toBe(false)
+    expect(String(bounded)).toContain('near 0.1, far 20, viewport')
+    expect(String(camera)).not.toContain('far')
+  })
+
   test('a viewport away from the origin centers there', () => {
     const offset = Camera.perspective({
       eye: Vector3.make(0, 0, 10),
@@ -105,6 +126,8 @@ describe('perspective', () => {
     expect(() => Camera.perspective({ ...base, fovY: 0 })).toThrow()
     expect(() => Camera.perspective({ ...base, fovY: Math.PI })).toThrow()
     expect(() => Camera.perspective({ ...base, near: 0 })).toThrow()
+    expect(() => Camera.perspective({ ...base, far: 0.1 })).toThrow()
+    expect(() => Camera.perspective({ ...base, far: Number.NaN })).toThrow()
     expect(() =>
       Camera.perspective({
         ...base,
@@ -125,6 +148,22 @@ describe('orthographic', () => {
   test('points behind the eye still project, with negative depth', () => {
     const { depth } = projected(flat, Vector3.make(0, 0, 20))
     expect(depth).toBe(-10)
+  })
+
+  test('far cuts off distant points, and behind the eye still projects', () => {
+    const bounded = Camera.orthographic({
+      eye: Vector3.make(0, 0, 10),
+      target: Vector3.zero,
+      height: 6,
+      far: 15,
+      viewport,
+    })
+    expect(Camera.project(bounded, Vector3.make(0, 0, -6))).toBe(Solution.none)
+    expect(Solution.isSome(Camera.project(bounded, Vector3.make(0, 0, -5)))).toBe(true)
+    expect(Solution.isSome(Camera.project(bounded, Vector3.make(0, 0, 20)))).toBe(true)
+    expect(() =>
+      Camera.orthographic({ eye: Vector3.one, target: Vector3.zero, height: 1, far: 0, viewport }),
+    ).toThrow()
   })
 
   test('invalid height throws', () => {

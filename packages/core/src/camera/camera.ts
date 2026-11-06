@@ -48,6 +48,12 @@ export interface Perspective extends Value.Instance {
    * returns `none` for points closer than this.
    */
   readonly near: number
+  /**
+   * The distance from the eye to the far plane, in world units, or
+   * `Infinity` when the camera has none. `project` returns `none` for
+   * points farther than this.
+   */
+  readonly far: number
   /** The screen rectangle the view fills, in SVG user units. */
   readonly viewport: Bounds2d
 }
@@ -71,6 +77,12 @@ export interface Orthographic extends Value.Instance {
   readonly frame: Frame3d
   /** How many world units fit between the viewport's top and bottom edges. */
   readonly height: number
+  /**
+   * The distance from the eye to the far plane, in world units, or
+   * `Infinity` when the camera has none. `project` returns `none` for
+   * points farther than this.
+   */
+  readonly far: number
   /** The screen rectangle the view fills, in SVG user units. */
   readonly viewport: Bounds2d
 }
@@ -102,6 +114,12 @@ export interface PerspectiveConfig {
    */
   readonly near: number
   /**
+   * The distance from the eye to the far plane, in world units. Must be
+   * greater than `near`. Points farther than this don't project. Defaults
+   * to `Infinity`, which keeps every point beyond `near`.
+   */
+  readonly far?: number
+  /**
    * The screen rectangle the view fills, in SVG user units with y pointing
    * down. An `Interval2d` works, as does `{ x: { start, end }, y: { start, end } }`.
    */
@@ -130,6 +148,12 @@ export interface OrthographicConfig {
    * ratio.
    */
   readonly height: number
+  /**
+   * The distance from the eye to the far plane, in world units, measured
+   * along the view. Must be positive. Points farther than this don't
+   * project. Defaults to `Infinity`, which keeps every point.
+   */
+  readonly far?: number
   /**
    * The screen rectangle the view fills, in SVG user units with y pointing
    * down. An `Interval2d` works, as does `{ x: { start, end }, y: { start, end } }`.
@@ -184,12 +208,13 @@ export const isOrthographic: (c: unknown) => c is Orthographic = internal.isOrth
  * Creates a perspective camera at `eye`, looking at `target`.
  *
  * @param config - The eye, target, optional up, field of view, near
- *   distance, and viewport.
+ *   distance, optional far distance, and viewport.
  * @returns The camera.
  * @throws `Error` when the target equals the eye, `up` is zero or
  *   parallel to the view, `fovY` is not strictly between `0` and `pi`,
- *   `near` is not positive, or the viewport has zero width or height. Any
- *   non-finite input also throws.
+ *   `near` is not positive, `far` is not greater than `near`, or the
+ *   viewport has zero width or height. Any non-finite input except
+ *   an infinite `far` also throws.
  * @example
  * ```ts
  * const camera = Camera.perspective({
@@ -212,12 +237,13 @@ export const perspective: (config: PerspectiveConfig) => Perspective = internal.
  * Only the view direction matters for where points land. The eye's
  * distance from the scene changes nothing but `depth`.
  *
- * @param config - The eye, target, optional up, visible height, and
- *   viewport.
+ * @param config - The eye, target, optional up, visible height,
+ *   optional far distance, and viewport.
  * @returns The camera.
  * @throws `Error` when the target equals the eye, `up` is zero or
- *   parallel to the view, `height` is not positive, or the viewport has
- *   zero width or height. Any non-finite input also throws.
+ *   parallel to the view, `height` or `far` is not positive, or the
+ *   viewport has zero width or height. Any non-finite input except
+ *   an infinite `far` also throws.
  * @since 2.0.0
  */
 export const orthographic: (config: OrthographicConfig) => Orthographic = internal.orthographic
@@ -242,16 +268,18 @@ export const project: {
    *
    * A perspective camera divides by depth, so the result is undefined for
    * points at or behind the eye. It returns `none` for any point closer
-   * than the near plane. A point on the near plane, to within rounding,
-   * still projects, so polygons clipped against that plane project whole.
+   * than the near plane or farther than the far plane. A point on either
+   * plane, to within rounding, still projects, so polygons clipped against
+   * those planes project whole.
    *
-   * An orthographic camera projects every point, including ones behind the
-   * eye, which come back with a negative `depth`.
+   * An orthographic camera projects every point up to its far plane,
+   * including ones behind the eye, which come back with a negative `depth`.
    *
    * @param c - The camera.
    * @param p - The point, in world coordinates.
-   * @returns The viewport position and depth, or `none` for a point in
-   *   front of a perspective camera's near plane.
+   * @returns The viewport position and depth, or `none` for a point
+   *   beyond the far plane or in front of a perspective camera's near
+   *   plane.
    * @example
    * ```ts
    * // A point one unit above the target lands above the viewport center.

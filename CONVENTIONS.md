@@ -147,5 +147,7 @@ distance in front of the eye along the view direction, the negative of its
 eye-space z. Depth is linear in world units, not the nonlinear depth a GPU
 stores, so it sorts faces directly.
 
-A perspective camera projects only points at or beyond its near plane. An
-orthographic camera projects every point.
+A perspective camera projects only points between its near and far planes.
+An orthographic camera projects every point up to its far plane, including
+points behind the eye. A camera built without a far distance has its far
+plane at infinity.

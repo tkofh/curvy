@@ -26,6 +26,8 @@ const CameraTypeId = '~curvy/Camera'
 const CameraBase = Value(CameraTypeId)
 
 const show = (v: Vector3) => `(${v.x}, ${v.y}, ${v.z})`
+// The default far plane is at infinity, which prints as nothing.
+const showFar = (far: number) => (far === Number.POSITIVE_INFINITY ? '' : `, far ${far}`)
 const showViewport = (b: Bounds2d) => `[${b.x.start}, ${b.x.end}] x [${b.y.start}, ${b.y.end}]`
 
 class PerspectiveImpl extends CameraBase implements Perspective {
@@ -34,19 +36,28 @@ class PerspectiveImpl extends CameraBase implements Perspective {
   readonly frame: Frame3d
   readonly fovY: number
   readonly near: number
+  readonly far: number
   readonly viewport: Bounds2d
 
-  constructor(eye: Vector3, frame: Frame3d, fovY: number, near: number, viewport: Bounds2d) {
+  constructor(
+    eye: Vector3,
+    frame: Frame3d,
+    fovY: number,
+    near: number,
+    far: number,
+    viewport: Bounds2d,
+  ) {
     super()
     this.eye = eye
     this.frame = frame
     this.fovY = fovY
     this.near = near
+    this.far = far
     this.viewport = viewport
   }
 
   toString() {
-    return `Camera.Perspective(eye ${show(this.eye)}, forward ${show(this.frame.forward)}, fovY ${this.fovY}, near ${this.near}, viewport ${showViewport(this.viewport)})`
+    return `Camera.Perspective(eye ${show(this.eye)}, forward ${show(this.frame.forward)}, fovY ${this.fovY}, near ${this.near}${showFar(this.far)}, viewport ${showViewport(this.viewport)})`
   }
 }
 
@@ -55,18 +66,20 @@ class OrthographicImpl extends CameraBase implements Orthographic {
   readonly eye: Vector3
   readonly frame: Frame3d
   readonly height: number
+  readonly far: number
   readonly viewport: Bounds2d
 
-  constructor(eye: Vector3, frame: Frame3d, height: number, viewport: Bounds2d) {
+  constructor(eye: Vector3, frame: Frame3d, height: number, far: number, viewport: Bounds2d) {
     super()
     this.eye = eye
     this.frame = frame
     this.height = height
+    this.far = far
     this.viewport = viewport
   }
 
   toString() {
-    return `Camera.Orthographic(eye ${show(this.eye)}, forward ${show(this.frame.forward)}, height ${this.height}, viewport ${showViewport(this.viewport)})`
+    return `Camera.Orthographic(eye ${show(this.eye)}, forward ${show(this.frame.forward)}, height ${this.height}${showFar(this.far)}, viewport ${showViewport(this.viewport)})`
   }
 }
 
@@ -124,12 +137,15 @@ export const perspective = (config: PerspectiveConfig): Perspective => {
     'perspective requires fovY strictly between 0 and pi',
   )
   invariant(Number.isFinite(near) && near > 0, 'perspective requires a positive finite near')
+  const far = config.far ?? Number.POSITIVE_INFINITY
+  invariant(far > near, 'perspective requires far to be greater than near')
   checkViewport('perspective', viewport)
   return new PerspectiveImpl(
     config.eye,
     aim('perspective', config.eye, config.target, config.up),
     fovY,
     near,
+    far,
     viewport,
   )
 }
@@ -138,11 +154,14 @@ export const perspective = (config: PerspectiveConfig): Perspective => {
 export const orthographic = (config: OrthographicConfig): Orthographic => {
   const { height, viewport } = config
   invariant(Number.isFinite(height) && height > 0, 'orthographic requires a positive finite height')
+  const far = config.far ?? Number.POSITIVE_INFINITY
+  invariant(far > 0, 'orthographic requires a positive far')
   checkViewport('orthographic', viewport)
   return new OrthographicImpl(
     config.eye,
     aim('orthographic', config.eye, config.target, config.up),
     height,
+    far,
     viewport,
   )
 }
@@ -197,9 +216,12 @@ const projectWith = (
   const x = dx * r.x + dy * r.y + dz * r.z
   const y = dx * u.x + dy * u.y + dz * u.z
   const depth = dx * f.x + dy * f.y + dz * f.z
+  // A point on a clipping plane, as clipping leaves it, can land a rounding
+  // step outside it, so both cuts are tolerant (PRECISION.md regime 2).
+  if (before(c.far, depth)) {
+    return Solution.none
+  }
   if (c.kind === 'perspective') {
-    // A point on the near plane, as clipping leaves it, can land a rounding
-    // step short of it, so the cut is tolerant (PRECISION.md regime 2).
     if (before(depth, c.near)) {
       return Solution.none
     }
@@ -224,6 +246,9 @@ export const projectTo = (c: Camera): ((p: Vector3) => Solution.AtMostOne<Projec
   return (p) => projectWith(c, s, p)
 }
 
+// `coincident` is false for two infinities, which are the same far plane.
+const sameFar = (a: number, b: number): boolean => a === b || coincident(a, b)
+
 /** @internal */
 export const equals = dual<
   (b: Camera) => (a: Camera) => boolean,
@@ -236,7 +261,8 @@ export const equals = dual<
     !coincident(a.viewport.x.start, b.viewport.x.start) ||
     !coincident(a.viewport.x.end, b.viewport.x.end) ||
     !coincident(a.viewport.y.start, b.viewport.y.start) ||
-    !coincident(a.viewport.y.end, b.viewport.y.end)
+    !coincident(a.viewport.y.end, b.viewport.y.end) ||
+    !sameFar(a.far, b.far)
   ) {
     return false
   }
