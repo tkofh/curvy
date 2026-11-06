@@ -8,7 +8,9 @@ immutable values. The public surface is `packages/core/src` minus its
 `src/internal/`. Every other file is public: a package entry point, or a
 module its `index.ts` re-exports. The public files are type-annotated
 re-exports of the internal code, and the JSDoc lives on them.
-`PRECISION.md` at the repo root is the library's numerical contract.
+`PRECISION.md` at the repo root is the library's numerical contract, and
+`CONVENTIONS.md` is its geometric one (composition order, angle sense,
+quaternion and Euler conventions).
 
 ## Documentation
 

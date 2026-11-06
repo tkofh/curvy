@@ -66,6 +66,13 @@ stated as `[0, 360)` or `[0, 1)`. Like `coincident`, the comparison is not
 transitive, and values stored millions of periods from zero lose angular
 resolution to representation error before the band enters the question.
 
+Rotations live on a fixed scale too. A unit quaternion has length `1` and a
+rotation matrix has orthonormal columns whatever the data, so both checks
+use plain `EPSILON`. `Quaternion.isUnit` tests
+`abs(x^2 + y^2 + z^2 + w^2 - 1) <= EPSILON`, and `Rotation3d.fromMatrix3x3`
+holds each column's squared length and each pair's dot product within
+`EPSILON` of a rotation's.
+
 ### 2. Identity of values and points
 
 `coincident(a, b, absolute?, relative?)` answers "Are these the same value /
@@ -94,6 +101,10 @@ Built on `coincident`:
 - knot snapping and segment bracketing in `solveAtX`/`solveAtY`
 - `Affine2d.fromMatrix`'s bottom-row check, with its zero band widened by
   the magnitude of the matrix's other entries
+- `Polygon2d.clip` and `split`'s on-the-line test, which counts a vertex
+  as on the cutting line when its signed distance is within
+  `EPSILON + RELATIVE_TOLERANCE * M`, `M` being the largest coordinate
+  among the vertices and the line's origin
 - the ordering predicates in `curvy/number`: `before`, `atMost`, `within`,
   `inside`, `overlaps`, and `touches`
 
@@ -126,14 +137,22 @@ that formed it. Determinants, discriminants, and derivatives that a
 construction drives to zero all fit this shape, and each such decision names
 its own scale:
 
-| decision                                | scale                                                      |
-| --------------------------------------- | ---------------------------------------------------------- |
-| polynomial monotonicity (sign coverage) | largest derivative value attained on the interval          |
-| matrix invertibility                    | Hadamard bound: the product of the row norms               |
-| quadratic root count                    | `max(c1^2, \|4*c2*c\|)`: the two discriminant terms        |
-| cubic solver branch dispatch            | `max(\|4p^3\|, 27q^2)`: the depressed discriminant's terms |
-| rational easing constraint singularity  | the Cramer-system term magnitudes                          |
-| arc-length Newton convergence           | the segment length                                         |
+| decision                                       | scale                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------- |
+| polynomial monotonicity (sign coverage)        | largest derivative value attained on the interval          |
+| matrix invertibility                           | Hadamard bound: the product of the row norms               |
+| quadratic root count                           | `max(c1^2, \|4*c2*c\|)`: the two discriminant terms        |
+| cubic solver branch dispatch                   | `max(\|4p^3\|, 27q^2)`: the depressed discriminant's terms |
+| rational easing constraint singularity         | the Cramer-system term magnitudes                          |
+| arc-length Newton convergence                  | the segment length                                         |
+| polygon area sign (winding, degeneracy)        | the shoelace products, plus `M` times the edge lengths     |
+| polygon corner turn (convexity, hull, fillets) | the cross-product terms, plus `M` times the edge lengths   |
+
+In the polygon rows, `M` is the largest coordinate magnitude among the
+vertices. Each edge vector is a difference of coordinates that large, so
+it carries rounding error on the order of an ulp of `M`, and the band
+grows with it. That ties the polygon verdicts to the known limit on
+extreme translation below.
 
 **Monotonicity** classification reads the derivative's _values_ and ignores
 its root locations (`Monotonicity.fromDerivativeRange(min, max, tolerance?)`).
@@ -288,6 +307,14 @@ condition under which `solveInverse` is unique to matching precision, the
 purpose the brand exists to serve. A brand is not a claim of
 exact-arithmetic truth, and cannot be: near the boundary, exact-arithmetic
 truth is unknowable from rounded coefficients.
+
+The geometric brands follow the same model. `Convex` on a `Polygon2d` claims
+that every corner turn exceeding its rounding band turns the same way, and
+that the outline goes around once. `Unit` on a `Quaternion` claims length
+`1` within `EPSILON`. Operations that guarantee a property by construction
+brand their results without re-checking them: products of unit quaternions,
+clipped and inset convex polygons, and convex hulls. Their results land
+within rounding distance of the property, which is all a brand promises.
 
 ## What stays exact
 

@@ -78,6 +78,10 @@
       "types": "./dist/polygon/index.d.ts",
       "import": "./dist/polygon/index.mjs"
     },
+    "./quaternion": {
+      "types": "./dist/quaternion/index.d.ts",
+      "import": "./dist/quaternion/index.mjs"
+    },
     "./number": {
       "types": "./dist/number.d.ts",
       "import": "./dist/number.mjs"

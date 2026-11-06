@@ -19,6 +19,7 @@ export default defineConfig({
     'src/coordinates/index.ts',
     'src/arc/index.ts',
     'src/polygon/index.ts',
+    'src/quaternion/index.ts',
   ],
   format: 'esm',
   dts: false,

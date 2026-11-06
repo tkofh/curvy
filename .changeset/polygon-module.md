@@ -23,7 +23,14 @@ Rounded corners follow the arc module's pair of outputs. `rounded` builds a `Rat
 ```ts
 import { Polygon2d } from 'curvy/polygon'
 
-const face = Polygon2d.asConvex(Polygon2d.fromTuples([[0, 0], [10, 0], [10, 10], [0, 10]]))
+const face = Polygon2d.asConvex(
+  Polygon2d.fromTuples([
+    [0, 0],
+    [10, 0],
+    [10, 10],
+    [0, 10],
+  ]),
+)
 
 Polygon2d.winding(face) // Solution.one('clockwise')
 Polygon2d.inset(face, 1) // Solution.one(Polygon2d((1, 1), (9, 1), (9, 9), (1, 9)))

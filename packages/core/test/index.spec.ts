@@ -4,6 +4,8 @@ import * as Curve from '../src/curve/index.ts'
 import * as Matrix from '../src/matrix/index.ts'
 import * as Path from '../src/path/index.ts'
 import * as PolygonIndex from '../src/polygon/index.ts'
+import * as QuaternionIndex from '../src/quaternion/index.ts'
+import * as Transform from '../src/transform/index.ts'
 import * as Polynomial from '../src/polynomial/index.ts'
 import * as Splines from '../src/splines/index.ts'
 import * as Vector from '../src/vector/index.ts'
@@ -21,6 +23,13 @@ describe('per-domain index re-exports', () => {
   test('polygon index exposes the namespace', () => {
     expect(typeof PolygonIndex.Polygon2d.fromArray).toBe('function')
     expect(typeof PolygonIndex.Polygon2d.toPathData).toBe('function')
+  })
+  test('quaternion index exposes the namespace', () => {
+    expect(typeof QuaternionIndex.Quaternion.multiply).toBe('function')
+  })
+  test('transform index exposes namespaces by type name', () => {
+    expect(typeof Transform.Affine2d.rotate).toBe('function')
+    expect(typeof Transform.Rotation3d.slerp).toBe('function')
   })
   test('path index exposes namespaces by type name', () => {
     expect(typeof Path.LinearPath2d.make).toBe('function')
