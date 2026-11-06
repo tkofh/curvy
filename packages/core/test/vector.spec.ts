@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 import * as vector2 from '../src/vector/vector2.ts'
 import * as vector3 from '../src/vector/vector3.ts'
 import * as vector4 from '../src/vector/vector4.ts'
@@ -36,6 +36,15 @@ describe('vector2', () => {
   })
   test('fromTuple', () => {
     expect(vector2.fromTuple([1, 2])).toBeCloseToValue(vector2.make(1, 2))
+  })
+  test('iterates x then y', () => {
+    const v = vector2.make(1, 2)
+    const [x, y] = v
+    expectTypeOf(x).toEqualTypeOf<number>()
+    expect([x, y]).toEqual([1, 2])
+    expect([...v]).toEqual([1, 2])
+    expect(Array.from(v)).toEqual(vector2.components(v))
+    expect(vector2.fromTuple(vector2.components(v))).toBeCloseToValue(v)
   })
   test('mapX / mapY apply a function to a single component', () => {
     const v = vector2.make(2, 3)
@@ -200,6 +209,12 @@ describe('vector3', () => {
       vector3.make(-2, -2, -2),
     )
   })
+  test('iterates x, y, then z', () => {
+    const v = vector3.make(1, 2, 3)
+    const [x, y, z] = v
+    expect([x, y, z]).toEqual([1, 2, 3])
+    expect([...v]).toEqual(vector3.components(v))
+  })
   test('hadamard', () => {
     expect(vector3.hadamard(vector3.make(1, 2, 3), vector3.make(3, 4, 5))).toBeCloseToValue(
       vector3.make(3, 8, 15),
@@ -283,6 +298,12 @@ describe('vector4', () => {
     expect(vector4.subtract(vector4.make(1, 2, 3, 4), vector4.make(3, 4, 5, 6))).toBeCloseToValue(
       vector4.make(-2, -2, -2, -2),
     )
+  })
+  test('iterates x, y, z, then w', () => {
+    const v = vector4.make(1, 2, 3, 4)
+    const [x, y, z, w] = v
+    expect([x, y, z, w]).toEqual([1, 2, 3, 4])
+    expect([...v]).toEqual(vector4.components(v))
   })
   test('hadamard', () => {
     expect(vector4.hadamard(vector4.make(1, 2, 3, 4), vector4.make(3, 4, 5, 6))).toBeCloseToValue(

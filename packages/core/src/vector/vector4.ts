@@ -11,9 +11,14 @@ import * as internal from './internal/vector4.ts'
  *
  * Construct via `make` or `fromTuple`.
  *
+ * Iterating a vector yields its components in order, x, y, z, then w, so it
+ * destructures like a tuple (`const [x, y, z, w] = v`) and works with `for..of`.
+ * Spreading it gives a `number[]`. For the typed `[x, y, z, w]` tuple, use
+ * `components`.
+ *
  * @since 1.0.0
  */
-export interface Vector4 extends Value.Instance, FourDimensional<number> {
+export interface Vector4 extends Value.Instance, FourDimensional<number>, Iterable<number> {
   readonly '~curvy/Vector4': '~curvy/Vector4'
 }
 

@@ -25,6 +25,10 @@ class Vector2Impl extends Value(TypeId) implements Vector2 {
     return this.y
   }
 
+  [Symbol.iterator](): Iterator<number> {
+    return [this.x, this.y][Symbol.iterator]()
+  }
+
   toString() {
     return `Vector2(${this.x}, ${this.y})`
   }

@@ -29,6 +29,10 @@ class Vector3Impl extends Value(Vector3TypeId) implements Vector3 {
     return this.z
   }
 
+  [Symbol.iterator](): Iterator<number> {
+    return [this.x, this.y, this.z][Symbol.iterator]()
+  }
+
   toString() {
     return `Vector3(${this.x}, ${this.y}, ${this.z})`
   }

@@ -11,9 +11,14 @@ import * as internal from './internal/vector2.ts'
  *
  * Construct via `make`, `fromTuple`, or `fromPolar`.
  *
+ * Iterating a vector yields its components in order, x then y, so it
+ * destructures like a tuple (`const [x, y] = v`) and works with `for..of`.
+ * Spreading it gives a `number[]`. For the typed `[x, y]` tuple, use
+ * `components`.
+ *
  * @since 1.0.0
  */
-export interface Vector2 extends Value.Instance, TwoDimensional<number> {
+export interface Vector2 extends Value.Instance, TwoDimensional<number>, Iterable<number> {
   readonly '~curvy/Vector2': '~curvy/Vector2'
 }
 

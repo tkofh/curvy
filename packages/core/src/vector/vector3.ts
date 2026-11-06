@@ -11,9 +11,14 @@ import * as internal from './internal/vector3.ts'
  *
  * Construct via `make`, `fromTuple`, or `fromSpherical`.
  *
+ * Iterating a vector yields its components in order, x, y, then z, so it
+ * destructures like a tuple (`const [x, y, z] = v`) and works with `for..of`.
+ * Spreading it gives a `number[]`. For the typed `[x, y, z]` tuple, use
+ * `components`.
+ *
  * @since 1.0.0
  */
-export interface Vector3 extends Value.Instance, ThreeDimensional<number> {
+export interface Vector3 extends Value.Instance, ThreeDimensional<number>, Iterable<number> {
   readonly '~curvy/Vector3': '~curvy/Vector3'
 }
 

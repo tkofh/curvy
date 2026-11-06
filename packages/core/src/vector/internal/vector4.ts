@@ -36,6 +36,10 @@ class Vector4Impl extends Value(Vector4TypeId) implements Vector4 {
     return this.w
   }
 
+  [Symbol.iterator](): Iterator<number> {
+    return [this.x, this.y, this.z, this.w][Symbol.iterator]()
+  }
+
   toString() {
     return `Vector4(${this.x}, ${this.y}, ${this.z}, ${this.w})`
   }
