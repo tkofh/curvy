@@ -82,6 +82,10 @@
       "types": "./dist/quaternion/index.d.ts",
       "import": "./dist/quaternion/index.mjs"
     },
+    "./plane": {
+      "types": "./dist/plane/index.d.ts",
+      "import": "./dist/plane/index.mjs"
+    },
     "./camera": {
       "types": "./dist/camera/index.d.ts",
       "import": "./dist/camera/index.mjs"

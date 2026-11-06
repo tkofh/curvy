@@ -6,7 +6,9 @@
 
 `project(camera, point)` returns the viewport position and a `depth`, the point's distance in front of the eye in world units. Depth is linear, so sorting faces by it paints back to front. A perspective camera returns `none` for points closer than its near plane, and either kind returns `none` for points beyond its far plane, which defaults to infinity. A point on either plane to within rounding still projects, so geometry clipped against the planes projects whole. `projectTo(camera)` is the curried form for mapping arrays of points, and it computes the screen mapping once.
 
-Each camera exposes its `eye` and its directions as a `Frame3d`, and `Camera.view` gives the rigid `Affine3d` from world coordinates to OpenGL-style eye space. Projected faces combine with `Polygon2d.winding` for back-face culling: a face that turns away from the camera flips its projected winding.
+Each camera exposes its `eye` and its directions as a `Frame3d`, and `Camera.view` gives the rigid `Affine3d` from world coordinates to OpenGL-style eye space. Projected faces combine with `Polygon2d.winding` for back-face culling: a face whose normal points toward the camera projects `'counterclockwise'`, and one that turns away flips.
+
+`Camera.clippingPlanes` returns the near and far planes as `Plane3d` values facing into the view, and `Camera.clip(camera, face)` cuts a convex `Polygon3d` against them. Every vertex of the result projects, so a face that crosses the near plane draws correctly instead of losing the vertices behind the eye.
 
 ```ts
 import { Camera } from 'curvy/camera'

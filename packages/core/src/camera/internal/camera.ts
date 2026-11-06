@@ -1,6 +1,11 @@
 import type { Bounds2d } from '../../interval/interval2d.ts'
 import * as matrix4x4 from '../../matrix/internal/matrix4x4.ts'
 import { before, coincident, EPSILON } from '../../number.ts'
+import * as plane3d from '../../plane/internal/plane3d.ts'
+import type { Plane3d } from '../../plane/plane3d.ts'
+import * as polygon3d from '../../polygon/internal/polygon3d.ts'
+import type { Convex, Planar } from '../../polygon/internal/traits.ts'
+import type { Polygon3d } from '../../polygon/polygon3d.ts'
 import * as Solution from '../../solution/solution.ts'
 import type { Affine3d } from '../../transform/affine3d.ts'
 import type { Frame3d } from '../../transform/frame3d.ts'
@@ -194,6 +199,42 @@ export const view = (c: Camera): Affine3d => {
     ),
   )
 }
+
+/** @internal */
+export const clippingPlanes = (c: Camera): ReadonlyArray<Plane3d> => {
+  // Each plane faces into the view, so its front side is what projects.
+  // Depth is `dot(forward, p) - dot(forward, eye)`, so `depth >= near` is
+  // `dot(forward, p) >= dot(forward, eye) + near`, and `depth <= far` is
+  // `dot(-forward, p) >= -(dot(forward, eye) + far)`.
+  const f = c.frame.forward
+  const base = vector3.dot(f, c.eye)
+  const planes: Array<Plane3d> = []
+  if (c.kind === 'perspective') {
+    planes.push(plane3d.fromUnit(f, base + c.near))
+  }
+  if (c.far !== Number.POSITIVE_INFINITY) {
+    planes.push(plane3d.fromUnit(vector3.make(0 - f.x, 0 - f.y, 0 - f.z), 0 - (base + c.far)))
+  }
+  return planes
+}
+
+/** @internal */
+export const clip = dual<
+  (p: Polygon3d<Convex>) => (c: Camera) => Solution.AtMostOne<Polygon3d<Convex & Planar>>,
+  (c: Camera, p: Polygon3d<Convex>) => Solution.AtMostOne<Polygon3d<Convex & Planar>>
+>(2, (c: Camera, p: Polygon3d<Convex>): Solution.AtMostOne<Polygon3d<Convex & Planar>> => {
+  // A convex 3D polygon is planar by definition, so the brand only widens.
+  let current: Solution.AtMostOne<Polygon3d<Convex & Planar>> = Solution.one(
+    p as Polygon3d<Convex & Planar>,
+  )
+  for (const pl of clippingPlanes(c)) {
+    if (Solution.isNone(current)) {
+      return current
+    }
+    current = polygon3d.clip(current.value, pl)
+  }
+  return current
+})
 
 // Pixels per world unit at depth 1 (perspective) or at any depth
 // (orthographic), and the viewport center the view axis lands on.

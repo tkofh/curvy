@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import * as Camera from '../src/camera/camera.ts'
 import * as Interval2d from '../src/interval/interval2d.ts'
+import * as Plane3d from '../src/plane/plane3d.ts'
 import * as Polygon2d from '../src/polygon/polygon2d.ts'
+import * as Polygon3d from '../src/polygon/polygon3d.ts'
 import * as Solution from '../src/solution/solution.ts'
 import * as Affine3d from '../src/transform/affine3d.ts'
 import * as Rotation3d from '../src/transform/rotation3d.ts'
@@ -231,6 +233,87 @@ describe('shared operations', () => {
     const edgeOn = square.map(Rotation3d.applyTo(Rotation3d.aboutY(Math.PI / 2)))
     const onScreen = Polygon2d.fromArray(edgeOn.map((v) => projected(camera, v).point))
     expect(Polygon2d.area(onScreen)).toBeLessThan(1e-9)
+  })
+
+  test('a face toward the camera projects counterclockwise on screen', () => {
+    const square = Polygon3d.fromTuples([
+      [-1, -1, 0],
+      [1, -1, 0],
+      [1, 1, 0],
+      [-1, 1, 0],
+    ])
+    // Its normal is +z, toward the eye at z = 10.
+    const n = Polygon3d.normal(square)
+    expect(Solution.isSome(n) && n.value.z).toBe(1)
+    const onScreen = Polygon2d.fromArray(square.vertices.map((v) => projected(camera, v).point))
+    expect(Polygon2d.winding(onScreen)).toEqual(Solution.one('counterclockwise'))
+  })
+
+  test('clippingPlanes face into the view', () => {
+    const bounded = Camera.perspective({
+      eye: Vector3.make(0, 0, 10),
+      target: Vector3.zero,
+      fovY: 1,
+      near: 0.5,
+      far: 30,
+      viewport,
+    })
+    const [near, far] = Camera.clippingPlanes(bounded)
+    expect(Plane3d.equals(near!, Plane3d.make(Vector3.make(0, 0, -1), -9.5))).toBe(true)
+    expect(Plane3d.equals(far!, Plane3d.make(Vector3.unitZ, -20))).toBe(true)
+    expect(Camera.clippingPlanes(camera)).toHaveLength(1)
+    expect(Camera.clippingPlanes(flat)).toHaveLength(0)
+    expect(
+      Camera.clippingPlanes(
+        Camera.orthographic({
+          eye: Vector3.one,
+          target: Vector3.zero,
+          height: 1,
+          far: 5,
+          viewport,
+        }),
+      ),
+    ).toHaveLength(1)
+  })
+
+  test('clip leaves a face crossing the near plane whose every vertex projects', () => {
+    // A long floor strip running from behind the eye to well in front.
+    const tilted = Camera.perspective({
+      eye: Vector3.make(0.3, 2, 0),
+      target: Vector3.make(0, 0, -10),
+      fovY: 1.2,
+      near: 0.25,
+      far: 40,
+      viewport,
+    })
+    const strip = Polygon3d.asConvex(
+      Polygon3d.fromTuples([
+        [-1, 0, 5],
+        [1, 0, 5],
+        [1.4, 0, -60],
+        [-1.6, 0, -60],
+      ]),
+    )
+    expect(strip.vertices.some((v) => Solution.isNone(Camera.project(tilted, v)))).toBe(true)
+    const visible = Camera.clip(tilted, strip)
+    if (Solution.isNone(visible)) {
+      throw new Error('expected a visible piece')
+    }
+    const depths = visible.value.vertices.map((v) => projected(tilted, v).depth)
+    // Two cut vertices on each plane, within rounding.
+    expect(depths.filter((d) => Math.abs(d - 0.25) < 1e-12)).toHaveLength(2)
+    expect(depths.filter((d) => Math.abs(d - 40) < 1e-12)).toHaveLength(2)
+    expect(tilted.pipe(Camera.clip(strip))).toEqual(visible)
+    // Wholly in view: the same instance. Wholly behind the eye: nothing.
+    const ahead = Polygon3d.asConvex(
+      Polygon3d.transform(
+        strip,
+        Affine3d.scale(0.1, 1, 0.1).pipe(Affine3d.andThen(Affine3d.translate(0, 0, -10))),
+      ),
+    )
+    expect(Camera.clip(tilted, ahead)).toEqual(Solution.one(ahead))
+    const behind = Polygon3d.asConvex(Polygon3d.transform(ahead, Affine3d.translate(0, 0, 30)))
+    expect(Camera.clip(tilted, behind)).toBe(Solution.none)
   })
 
   test('kind guards, equals, and printing', () => {

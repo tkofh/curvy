@@ -98,6 +98,26 @@ the previous turns left behind. `Frame3d.lookRotation` turns `forward` onto
 a target direction and keeps `up` as close to a hint as it can, so looking
 around never rolls.
 
+## Planes and faces
+
+A `Plane3d` is the set of points `p` with `dot(normal, p) = offset`, where
+`normal` is a unit vector. The normal picks a side. The **front** is the
+side it points toward, where `signedDistance` is positive. Clipping keeps
+the front, in 2D and 3D alike: `Polygon2d.clip` keeps the side its normal
+points toward, and `Polygon3d.clip` keeps a plane's front. Flip the plane
+to keep the back.
+
+A polygon's normal follows the right-hand rule. For a triangle
+`(a, b, c)` it is `cross(b - a, c - a)`, normalized, and `Plane3d.through`
+and `Polygon3d.normal` agree on it. A solid's faces listed
+counterclockwise from outside, in the usual right-handed picture, have
+outward normals, and their planes face out of the solid.
+
+Under a transform that mirrors space, a plane's front maps to the image's
+front, so `Plane3d.transform` keeps outward planes outward. A polygon's
+vertex order doesn't change under a mirror, so its normal turns inward.
+`Polygon3d.reverse` turns it back.
+
 ## Quaternions
 
 Quaternions follow Hamilton's convention, `i^2 = j^2 = k^2 = i*j*k = -1`, and
@@ -146,6 +166,9 @@ That keeps the view a rigid transform. A projected point's `depth` is its
 distance in front of the eye along the view direction, the negative of its
 eye-space z. Depth is linear in world units, not the nonlinear depth a GPU
 stores, so it sorts faces directly.
+
+A face whose normal points toward the camera projects with `Winding`
+`'counterclockwise'`, so the projected winding is the back-face test.
 
 A perspective camera projects only points between its near and far planes.
 An orthographic camera projects every point up to its far plane, including

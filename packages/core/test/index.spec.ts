@@ -4,6 +4,7 @@ import * as CameraIndex from '../src/camera/index.ts'
 import * as Curve from '../src/curve/index.ts'
 import * as Matrix from '../src/matrix/index.ts'
 import * as Path from '../src/path/index.ts'
+import * as PlaneIndex from '../src/plane/index.ts'
 import * as PolygonIndex from '../src/polygon/index.ts'
 import * as QuaternionIndex from '../src/quaternion/index.ts'
 import * as Transform from '../src/transform/index.ts'
@@ -24,6 +25,7 @@ describe('per-domain index re-exports', () => {
   test('polygon index exposes the namespace', () => {
     expect(typeof PolygonIndex.Polygon2d.fromArray).toBe('function')
     expect(typeof PolygonIndex.Polygon2d.toPathData).toBe('function')
+    expect(typeof PolygonIndex.Polygon3d.clip).toBe('function')
   })
   test('quaternion index exposes the namespace', () => {
     expect(typeof QuaternionIndex.Quaternion.multiply).toBe('function')
@@ -37,6 +39,11 @@ describe('per-domain index re-exports', () => {
   test('camera index exposes the namespace', () => {
     expect(typeof CameraIndex.Camera.perspective).toBe('function')
     expect(typeof CameraIndex.Camera.project).toBe('function')
+    expect(typeof CameraIndex.Camera.clip).toBe('function')
+  })
+
+  test('plane index exposes the namespace', () => {
+    expect(typeof PlaneIndex.Plane3d.through).toBe('function')
   })
   test('path index exposes namespaces by type name', () => {
     expect(typeof Path.LinearPath2d.make).toBe('function')

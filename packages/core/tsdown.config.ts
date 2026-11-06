@@ -21,6 +21,7 @@ export default defineConfig({
     'src/polygon/index.ts',
     'src/quaternion/index.ts',
     'src/camera/index.ts',
+    'src/plane/index.ts',
   ],
   format: 'esm',
   dts: false,

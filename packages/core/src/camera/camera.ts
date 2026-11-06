@@ -1,4 +1,6 @@
 import type { Bounds2d } from '../interval/interval2d.ts'
+import type { Plane3d } from '../plane/plane3d.ts'
+import type { Convex, Planar, Polygon3d } from '../polygon/polygon3d.ts'
 import type * as Solution from '../solution/solution.ts'
 import type { Affine3d } from '../transform/affine3d.ts'
 import type { Frame3d } from '../transform/frame3d.ts'
@@ -261,6 +263,58 @@ export const orthographic: (config: OrthographicConfig) => Orthographic = intern
  * @since 2.0.0
  */
 export const view: (c: Camera) => Affine3d = internal.view
+
+/**
+ * The planes that bound what a camera projects, each facing into the view.
+ *
+ * A perspective camera has its near plane, and a camera with a finite
+ * `far` has its far plane. The front side of each is what `project`
+ * accepts. The viewport's edges are not among them, since SVG crops to the
+ * viewport itself. `clip` cuts a face against all of them at once.
+ *
+ * @param c - The camera.
+ * @returns The near plane for a perspective camera, then the far plane
+ *   when `far` is finite. An orthographic camera with no far plane has
+ *   none.
+ * @since 2.0.0
+ */
+export const clippingPlanes: (c: Camera) => ReadonlyArray<Plane3d> = internal.clippingPlanes
+
+export const clip: {
+  /**
+   * Cuts a convex face down to the part a camera projects, by clipping it
+   * against each of the camera's `clippingPlanes`.
+   *
+   * Every vertex of the result projects, including the ones the cut adds
+   * on the near and far planes. A face that crosses the near plane would
+   * otherwise lose the vertices behind it and draw wrong.
+   *
+   * @param c - The camera.
+   * @param p - The convex face, in world coordinates.
+   * @returns The visible piece, or `none` when no part of the face lies
+   *   between the planes. A face wholly between them comes back unchanged,
+   *   the same instance.
+   * @example
+   * ```ts
+   * const visible = Camera.clip(camera, face)
+   *
+   * if (Solution.isSome(visible)) {
+   *   const outline = visible.value.vertices.map(Camera.projectTo(camera))
+   * }
+   * ```
+   * @since 2.0.0
+   */
+  (c: Camera, p: Polygon3d<Convex>): Solution.AtMostOne<Polygon3d<Convex & Planar>>
+  /**
+   * Cuts a convex face down to the part the piped-in camera projects.
+   *
+   * @param p - The convex face, in world coordinates.
+   * @returns A function that takes a camera and returns the visible piece,
+   *   or `none`.
+   * @since 2.0.0
+   */
+  (p: Polygon3d<Convex>): (c: Camera) => Solution.AtMostOne<Polygon3d<Convex & Planar>>
+} = internal.clip
 
 export const project: {
   /**

@@ -74,6 +74,12 @@ holds each column's squared length and each pair's dot product within
 `EPSILON` of a rotation's. `Frame3d.make` normalizes its two directions and
 requires their dot product within `EPSILON` of zero.
 
+Unit normals put two plane questions on a fixed scale as well.
+`Plane3d.intersection` reports no single point when the determinant of the
+three unit normals is within `EPSILON` of zero, and `Plane3d.intersectRay`
+calls a ray parallel to a plane when the cosine between the ray and the
+normal is within `EPSILON` of zero.
+
 ### 2. Identity of values and points
 
 `coincident(a, b, absolute?, relative?)` answers "Are these the same value /
@@ -106,6 +112,11 @@ Built on `coincident`:
   as on the cutting line when its signed distance is within
   `EPSILON + RELATIVE_TOLERANCE * M`, `M` being the largest coordinate
   among the vertices and the line's origin
+- the same on-plane test for 3D: `Polygon3d.clip` and `split`, the
+  planarity check in `Polygon3d.isPlanar` and `isConvex`, and the
+  start-on-the-plane case
+  of `Plane3d.intersectRay`, with `M` taken over the coordinates and the
+  plane's `|offset|`
 - the ordering predicates in `curvy/number`: `before`, `atMost`, `within`,
   `inside`, `overlaps`, and `touches`
 
@@ -138,16 +149,17 @@ that formed it. Determinants, discriminants, and derivatives that a
 construction drives to zero all fit this shape, and each such decision names
 its own scale:
 
-| decision                                       | scale                                                      |
-| ---------------------------------------------- | ---------------------------------------------------------- |
-| polynomial monotonicity (sign coverage)        | largest derivative value attained on the interval          |
-| matrix invertibility                           | Hadamard bound: the product of the row norms               |
-| quadratic root count                           | `max(c1^2, \|4*c2*c\|)`: the two discriminant terms        |
-| cubic solver branch dispatch                   | `max(\|4p^3\|, 27q^2)`: the depressed discriminant's terms |
-| rational easing constraint singularity         | the Cramer-system term magnitudes                          |
-| arc-length Newton convergence                  | the segment length                                         |
-| polygon area sign (winding, degeneracy)        | the shoelace products, plus `M` times the edge lengths     |
-| polygon corner turn (convexity, hull, fillets) | the cross-product terms, plus `M` times the edge lengths   |
+| decision                                         | scale                                                      |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| polynomial monotonicity (sign coverage)          | largest derivative value attained on the interval          |
+| matrix invertibility                             | Hadamard bound: the product of the row norms               |
+| quadratic root count                             | `max(c1^2, \|4*c2*c\|)`: the two discriminant terms        |
+| cubic solver branch dispatch                     | `max(\|4p^3\|, 27q^2)`: the depressed discriminant's terms |
+| rational easing constraint singularity           | the Cramer-system term magnitudes                          |
+| arc-length Newton convergence                    | the segment length                                         |
+| polygon area sign (winding, degeneracy)          | the shoelace products, plus `M` times the edge lengths     |
+| polygon corner turn (convexity, hull, fillets)   | the cross-product terms, plus `M` times the edge lengths   |
+| 3D polygon and triangle area (normal, `through`) | the vector-area products, plus `M` times the edge lengths  |
 
 In the polygon rows, `M` is the largest coordinate magnitude among the
 vertices. Each edge vector is a difference of coordinates that large, so
@@ -317,10 +329,12 @@ truth is unknowable from rounded coefficients.
 
 The geometric brands follow the same model. `Convex` on a `Polygon2d` claims
 that every corner turn exceeding its rounding band turns the same way, and
-that the outline goes around once. `Unit` on a `Quaternion` claims length
-`1` within `EPSILON`. Operations that guarantee a property by construction
+that the outline goes around once. `Planar` on a `Polygon3d` claims that
+the polygon has area and every vertex lies on its plane within the on-plane
+band, and a convex `Polygon3d` carries both brands. `Unit` on a
+`Quaternion` claims length `1` within `EPSILON`. Operations that guarantee a property by construction
 brand their results without re-checking them: products of unit quaternions,
-clipped and inset convex polygons, and convex hulls. Their results land
+clipped, split, and inset convex polygons, and convex hulls. Their results land
 within rounding distance of the property, which is all a brand promises.
 
 ## What stays exact
