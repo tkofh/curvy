@@ -208,6 +208,12 @@ export const isInvertible = <T>(a: Affine2d<T>): a is Affine2d<T & Invertible> =
   !linearSingular(a.matrix, linearDeterminant(a.matrix))
 
 /** @internal */
+export const isMirror = (a: Affine2d): boolean => {
+  const det = linearDeterminant(a.matrix)
+  return !linearSingular(a.matrix, det) && det < 0
+}
+
+/** @internal */
 export const asInvertible = <T>(a: Affine2d<T>): Affine2d<T & Invertible> => {
   invariant(isInvertible(a), 'affine2d is not invertible')
   return a

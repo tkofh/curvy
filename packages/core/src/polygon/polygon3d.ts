@@ -367,6 +367,49 @@ export const split: {
   (plane: Plane3d): (p: Polygon3d<Convex>) => Split
 } = internal.split
 
+export const inset: {
+  /**
+   * Shrinks a convex polygon within its plane by moving every edge inward
+   * by the same distance.
+   *
+   * Corners stay sharp, so each vertex moves along its corner's bisector.
+   * Short edges between sharp corners shrink faster than the rest. Once an
+   * edge shrinks to nothing it drops out, and the result has fewer
+   * vertices than `p`. A distance past the polygon's inradius leaves
+   * nothing.
+   *
+   * @param p - The convex polygon to shrink.
+   * @param distance - How far each edge moves inward, in coordinate units.
+   *   `0` returns `p` itself.
+   * @returns The inset polygon, in the same plane and with the same normal
+   *   as `p`, or `none` when the inset leaves no area.
+   * @throws `Error` when `distance` is negative or not finite.
+   * @example
+   * ```ts
+   * const slot = Polygon3d.asConvex(
+   *   Polygon3d.fromTuples([[0, 0, 2], [10, 0, 2], [10, 4, 2], [0, 4, 2]]),
+   * )
+   *
+   * Polygon3d.inset(slot, 1)
+   * // Solution.one(Polygon3d((1, 1, 2), (9, 1, 2), (9, 3, 2), (1, 3, 2)))
+   * Polygon3d.inset(slot, 2) // Solution.none: the 4-unit side collapses
+   * ```
+   * @since 2.0.0
+   */
+  (p: Polygon3d<Convex>, distance: number): Solution.AtMostOne<Polygon3d<Convex & Planar>>
+  /**
+   * Shrinks a convex polygon within its plane by moving every edge inward
+   * by the same distance.
+   *
+   * @param distance - How far each edge moves inward, in coordinate units.
+   * @returns A function that takes a convex polygon and returns the inset
+   *   polygon, or `none` when nothing remains.
+   * @throws `Error` when `distance` is negative or not finite.
+   * @since 2.0.0
+   */
+  (distance: number): (p: Polygon3d<Convex>) => Solution.AtMostOne<Polygon3d<Convex & Planar>>
+} = internal.inset
+
 /**
  * Reverses a polygon's vertex order, which flips its normal.
  *

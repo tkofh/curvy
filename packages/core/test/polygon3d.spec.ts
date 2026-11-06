@@ -325,3 +325,63 @@ describe('transform', () => {
     expect(face.pipe(Polygon3d.transform(mirror))).toEqual(image)
   })
 })
+
+describe('inset', () => {
+  test('moves every edge inward within the plane', () => {
+    const slot = Polygon3d.asConvex(
+      Polygon3d.fromTuples([
+        [0, 0, 2],
+        [10, 0, 2],
+        [10, 4, 2],
+        [0, 4, 2],
+      ]),
+    )
+    expect(Polygon3d.inset(slot, 1)).toEqual(
+      Solution.one(
+        Polygon3d.fromTuples([
+          [1, 1, 2],
+          [9, 1, 2],
+          [9, 3, 2],
+          [1, 3, 2],
+        ]),
+      ),
+    )
+    expect(Polygon3d.inset(slot, 2)).toBe(Solution.none)
+    expect(value(Polygon3d.inset(slot, 0))).toBe(slot)
+    expect(() => Polygon3d.inset(slot, -1)).toThrow()
+  })
+
+  test('matches a placed 2D inset, and keeps the plane and normal', () => {
+    const placed = Polygon3d.asConvex(Polygon3d.transform(square, placement))
+    const inner = value(placed.pipe(Polygon3d.inset(0.5)))
+    const expected = Polygon3d.transform(
+      Polygon3d.fromTuples([
+        [0.5, 0.5, 0],
+        [3.5, 0.5, 0],
+        [3.5, 3.5, 0],
+        [0.5, 3.5, 0],
+      ]),
+      placement,
+    )
+    inner.vertices.forEach((v, i) => expect(v).toBeCloseToValue(expected.vertices[i]!, 1e-12))
+    const pl = Polygon3d.plane(placed)
+    expect(Polygon3d.plane(inner).normal).toBeCloseToValue(pl.normal)
+    for (const v of inner) {
+      expect(Plane3d.signedDistance(pl, v)).toBeCloseTo(0, 12)
+    }
+  })
+
+  test('drops edges that collapse', () => {
+    // A triangle with a corner cut off: the short cut edge vanishes first.
+    const clipped = Polygon3d.asConvex(
+      Polygon3d.fromTuples([
+        [0, 0, 0],
+        [10, 0, 0],
+        [10, 0.2, 0],
+        [0.2, 10, 0],
+        [0, 10, 0],
+      ]),
+    )
+    expect(value(Polygon3d.inset(clipped, 1)).vertices).toHaveLength(3)
+  })
+})

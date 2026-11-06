@@ -387,6 +387,30 @@ export const isInvertible: <T>(a: Affine3d<T>) => a is Affine3d<T & Invertible> 
  */
 export const asInvertible: <T>(a: Affine3d<T>) => Affine3d<T & Invertible> = internal.asInvertible
 
+/**
+ * Checks if a transform mirrors space: it is invertible, and its linear
+ * part has a negative determinant.
+ *
+ * A mirror turns right-handed into left-handed, so cross products flip.
+ * Mapped through one, a polygon keeps its vertex order but its normal
+ * turns to the other side, and a solid's faces wind inward. Reverse them
+ * to keep them facing out, as `ConvexPolyhedron.transform` does.
+ * `Plane3d.transform` and `applyNormal` need no fix: they keep the side a
+ * normal points to.
+ *
+ * A singular transform, as `isInvertible` judges it, is not a mirror.
+ *
+ * @param a - The transform to check.
+ * @returns `true` when `a` is invertible and reverses handedness.
+ * @example
+ * ```ts
+ * Affine3d.isMirror(Affine3d.scale(-1, 1, 1)) // true
+ * Affine3d.isMirror(Affine3d.scale(-1, -1, 1)) // false: a half turn about z
+ * ```
+ * @since 2.0.0
+ */
+export const isMirror: (a: Affine3d) => boolean = internal.isMirror
+
 export const apply: {
   /**
    * Applies an `Affine3d` to a point.

@@ -245,30 +245,27 @@ export const minor = dual<
 export const vectorProductLeft = dual<
   (v: Vector4) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, v: Vector4) => Vector4
->(2, (m: Matrix4x4, v: Vector4) => {
-  const [v0, v1, v2, v3] = toRows(m) as [Vector4, Vector4, Vector4, Vector4]
-  return vector4.make(
-    vector4.dot(v0, v),
-    vector4.dot(v1, v),
-    vector4.dot(v2, v),
-    vector4.dot(v3, v),
-  )
-})
+>(2, (m: Matrix4x4, v: Vector4) =>
+  vector4.make(
+    m.m00 * v.x + m.m01 * v.y + m.m02 * v.z + m.m03 * v.w,
+    m.m10 * v.x + m.m11 * v.y + m.m12 * v.z + m.m13 * v.w,
+    m.m20 * v.x + m.m21 * v.y + m.m22 * v.z + m.m23 * v.w,
+    m.m30 * v.x + m.m31 * v.y + m.m32 * v.z + m.m33 * v.w,
+  ),
+)
 
 /** @internal */
 export const vectorProductRight = dual<
   (v: Vector4) => (m: Matrix4x4) => Vector4,
   (m: Matrix4x4, v: Vector4) => Vector4
->(2, (m: Matrix4x4, v: Vector4) => {
-  const [v0, v1, v2, v3] = toColumns(m) as [Vector4, Vector4, Vector4, Vector4]
-
-  return vector4.make(
-    vector4.dot(v, v0),
-    vector4.dot(v, v1),
-    vector4.dot(v, v2),
-    vector4.dot(v, v3),
-  )
-})
+>(2, (m: Matrix4x4, v: Vector4) =>
+  vector4.make(
+    v.x * m.m00 + v.y * m.m10 + v.z * m.m20 + v.w * m.m30,
+    v.x * m.m01 + v.y * m.m11 + v.z * m.m21 + v.w * m.m31,
+    v.x * m.m02 + v.y * m.m12 + v.z * m.m22 + v.w * m.m32,
+    v.x * m.m03 + v.y * m.m13 + v.z * m.m23 + v.w * m.m33,
+  ),
+)
 
 /** @internal */
 export const multiply = dual<

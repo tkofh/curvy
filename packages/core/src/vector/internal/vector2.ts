@@ -188,6 +188,17 @@ export const scale = dual<
 >(2, (v: Vector2, s: number) => (s === 1 ? v : make(v.x * s, v.y * s)))
 
 /** @internal */
+export const lerp = dual<
+  (b: Vector2, t: number) => (a: Vector2) => Vector2,
+  (a: Vector2, b: Vector2, t: number) => Vector2
+>(3, (a: Vector2, b: Vector2, t: number) => {
+  // (1 - t) * a + t * b lands exactly on a at t = 0 and on b at t = 1,
+  // which a + t * (b - a) doesn't.
+  const s = 1 - t
+  return make(s * a.x + t * b.x, s * a.y + t * b.y)
+})
+
+/** @internal */
 export const getX = (v: Vector2) => v.x
 /** @internal */
 export const setX = dual<

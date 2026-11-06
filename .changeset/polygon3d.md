@@ -8,6 +8,7 @@
 - `isPlanar` and `asPlanar` establish the `Planar` brand: the polygon has area and every vertex lies on one plane. `plane` takes a `Polygon3d<Planar>` and returns its `Plane3d`.
 - `isConvex` and `asConvex` establish the `Convex` brand. A convex 3D polygon is also planar, so they grant `Planar` too, as do `clip` and `split` on their results.
 - `clip(face, plane)` keeps the part on the plane's front side, by Sutherland–Hodgman, and `split(face, plane)` returns both pieces. A face lying in the plane counts as on both sides.
+- `inset(face, distance)` shrinks a convex face within its plane by moving every edge inward, like `Polygon2d.inset`.
 
 ```ts
 import { Plane3d } from 'curvy/plane'

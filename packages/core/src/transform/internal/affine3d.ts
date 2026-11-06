@@ -205,6 +205,12 @@ export const isInvertible = <T>(a: Affine3d<T>): a is Affine3d<T & Invertible> =
   matrix3x3.isInvertible(linearOf(a.matrix))
 
 /** @internal */
+export const isMirror = (a: Affine3d): boolean => {
+  const l = linearOf(a.matrix)
+  return matrix3x3.isInvertible(l) && matrix3x3.determinant(l) < 0
+}
+
+/** @internal */
 export const asInvertible = <T>(a: Affine3d<T>): Affine3d<T & Invertible> => {
   invariant(isInvertible(a), 'affine3d is not invertible')
   return a

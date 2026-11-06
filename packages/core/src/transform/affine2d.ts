@@ -295,6 +295,28 @@ export const isInvertible: <T>(a: Affine2d<T>) => a is Affine2d<T & Invertible> 
  */
 export const asInvertible: <T>(a: Affine2d<T>) => Affine2d<T & Invertible> = internal.asInvertible
 
+/**
+ * Checks if a transform mirrors the plane: it is invertible, and its
+ * linear part has a negative determinant.
+ *
+ * A mirror reverses the direction of turns, so a polygon mapped through
+ * one keeps its vertex order but flips its `Winding`, and
+ * `Polygon2d.signedArea` changes sign. Follow with `Polygon2d.reverse` to keep the
+ * original winding.
+ *
+ * A singular transform, as `isInvertible` judges it, is not a mirror.
+ *
+ * @param a - The transform to check.
+ * @returns `true` when `a` is invertible and reverses turns.
+ * @example
+ * ```ts
+ * Affine2d.isMirror(Affine2d.scale(-1, 1)) // true
+ * Affine2d.isMirror(Affine2d.scale(-1, -1)) // false: a half turn
+ * ```
+ * @since 2.0.0
+ */
+export const isMirror: (a: Affine2d) => boolean = internal.isMirror
+
 export const apply: {
   /**
    * Applies an `Affine2d` to a `Vector2`, returning the transformed point.

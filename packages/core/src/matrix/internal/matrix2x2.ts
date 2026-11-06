@@ -89,7 +89,7 @@ export const vectorProductLeft = dual<
   (v: Vector2) => (m: Matrix2x2) => Vector2,
   (m: Matrix2x2, v: Vector2) => Vector2
 >(2, (m: Matrix2x2, v: Vector2) =>
-  vector2.make(vector2.dot(rowVector(m, 0), v), vector2.dot(rowVector(m, 1), v)),
+  vector2.make(m.m00 * v.x + m.m01 * v.y, m.m10 * v.x + m.m11 * v.y),
 )
 
 /** @internal */
@@ -97,7 +97,7 @@ export const vectorProductRight = dual<
   (v: Vector2) => (m: Matrix2x2) => Vector2,
   (m: Matrix2x2, v: Vector2) => Vector2
 >(2, (m: Matrix2x2, v: Vector2) =>
-  vector2.make(vector2.dot(columnVector(m, 0), v), vector2.dot(columnVector(m, 1), v)),
+  vector2.make(v.x * m.m00 + v.y * m.m10, v.x * m.m01 + v.y * m.m11),
 )
 
 /** @internal */

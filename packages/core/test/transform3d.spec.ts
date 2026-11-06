@@ -454,3 +454,35 @@ describe('Frame3d', () => {
     expect(() => Frame3d.lookRotation(camera, Vector3.zero)).toThrow()
   })
 })
+
+describe('isMirror', () => {
+  test('odd numbers of reflections mirror, rotations and singular maps do not', () => {
+    expect(Affine3d.isMirror(Affine3d.scale(-1, 1, 1))).toBe(true)
+    expect(Affine3d.isMirror(Affine3d.scale(-1, -1, -1))).toBe(true)
+    expect(Affine3d.isMirror(Affine3d.scale(-1, -1, 1))).toBe(false)
+    expect(Affine3d.isMirror(Affine3d.identity)).toBe(false)
+    expect(Affine3d.isMirror(Affine3d.scale(-1, 0, 1))).toBe(false)
+    const turn = Affine3d.rotate(Rotation3d.fromAxisAngle(Vector3.make(1, 2, 3), 0.8))
+    expect(Affine3d.isMirror(turn)).toBe(false)
+    // Translation doesn't matter.
+    expect(
+      Affine3d.isMirror(
+        Affine3d.scale(1, 1, -2).pipe(Affine3d.andThen(Affine3d.translate(5, 0, 0))),
+      ),
+    ).toBe(true)
+
+    expect(Affine2d.isMirror(Affine2d.scale(-1, 1))).toBe(true)
+    expect(Affine2d.isMirror(Affine2d.scale(-1, -1))).toBe(false)
+    expect(Affine2d.isMirror(Affine2d.scale(0, -1))).toBe(false)
+  })
+
+  test('a mirror flips cross products', () => {
+    const m = Affine3d.scale(1, -3, 2)
+    const c = Vector3.cross(
+      Affine3d.applyDirection(m, Vector3.unitX),
+      Affine3d.applyDirection(m, Vector3.unitY),
+    )
+    expect(Affine3d.isMirror(m)).toBe(true)
+    expect(Vector3.dot(c, Affine3d.applyDirection(m, Vector3.unitZ))).toBeLessThan(0)
+  })
+})

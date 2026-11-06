@@ -372,6 +372,59 @@ export const split = dual<
   return { front: piece(p.vertices, c, 1), back: piece(p.vertices, c, -1) }
 })
 
+/** @internal */
+export const inset = dual<
+  (distance: number) => (p: Polygon3d<Convex>) => Solution.AtMostOne<Polygon3d<Convex & Planar>>,
+  (p: Polygon3d<Convex>, distance: number) => Solution.AtMostOne<Polygon3d<Convex & Planar>>
+>(2, (p: Polygon3d<Convex>, distance: number): Solution.AtMostOne<Polygon3d<Convex & Planar>> => {
+  invariant(
+    Number.isFinite(distance) && distance >= 0,
+    'inset requires a finite, non-negative distance',
+  )
+  if (distance === 0) {
+    return Solution.one(planar(p))
+  }
+  const fitted = plane3d.fit(p.vertices)
+  // Reachable only through a cast: every Convex polygon has area.
+  invariant(!Solution.isNone(fitted), 'polygon has no area')
+  const n = fitted.value.normal
+  // As in 2D: the polygon is the intersection of the inner sides of its
+  // edges, here planes through each edge perpendicular to the face. Pushing
+  // each inward by `distance` and clipping by it in turn drops edges that
+  // collapse, and leaves nothing once the inset passes the inradius.
+  const vs = p.vertices
+  let current: ReadonlyArray<Vector3> = vs
+  for (let i = 0; i < vs.length; i++) {
+    const a = vs[i]!
+    const b = vs[(i + 1) % vs.length]!
+    if (vector3.equals(a, b)) {
+      continue
+    }
+    // cross(n, b - a) points into a polygon running counterclockwise
+    // about n.
+    const ex = b.x - a.x
+    const ey = b.y - a.y
+    const ez = b.z - a.z
+    const mx = n.y * ez - n.z * ey
+    const my = n.z * ex - n.x * ez
+    const mz = n.x * ey - n.y * ex
+    const length = Math.hypot(mx, my, mz)
+    const m = vector3.make(mx / length, my / length, mz / length)
+    const c = cut(current, plane3d.fromUnit(m, m.x * a.x + m.y * a.y + m.z * a.z + distance))
+    if (!c.hasFront) {
+      return Solution.none
+    }
+    if (c.hasBack) {
+      const next = piece(current, c, 1)
+      if (Solution.isNone(next)) {
+        return Solution.none
+      }
+      current = next.value.vertices
+    }
+  }
+  return Solution.one(convex(current))
+})
+
 // ---------------------------------------------------------------------------
 // Transformation
 // ---------------------------------------------------------------------------

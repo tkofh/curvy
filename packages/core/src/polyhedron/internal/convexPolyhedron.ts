@@ -1,5 +1,4 @@
 import { onPlaneTolerance } from '../../internal/vectorArea.ts'
-import * as matrix3x3 from '../../matrix/internal/matrix3x3.ts'
 import * as plane3d from '../../plane/internal/plane3d.ts'
 import type { Plane3d } from '../../plane/plane3d.ts'
 import * as polygon3d from '../../polygon/internal/polygon3d.ts'
@@ -261,7 +260,7 @@ export const transform = dual<
   // A mirror reverses every face's winding, so reverse the indices to keep
   // them counterclockwise from outside. `Plane3d.transform` already keeps
   // the planes facing out.
-  const mirror = matrix3x3.determinant(affine3d.linear(a)) < 0
+  const mirror = affine3d.isMirror(a)
   return new ConvexPolyhedronImpl(
     p.vertices.map((v) => affine3d.apply(a, v)),
     p.faces.map((f) => ({

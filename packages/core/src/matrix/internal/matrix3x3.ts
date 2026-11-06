@@ -135,19 +135,25 @@ export const minor = dual<
 export const vectorProductLeft = dual<
   (v: Vector3) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, v: Vector3) => Vector3
->(2, (m: Matrix3x3, v: Vector3) => {
-  const [v0, v1, v2] = toRows(m) as [Vector3, Vector3, Vector3]
-  return vector3.make(vector3.dot(v0, v), vector3.dot(v1, v), vector3.dot(v2, v))
-})
+>(2, (m: Matrix3x3, v: Vector3) =>
+  vector3.make(
+    m.m00 * v.x + m.m01 * v.y + m.m02 * v.z,
+    m.m10 * v.x + m.m11 * v.y + m.m12 * v.z,
+    m.m20 * v.x + m.m21 * v.y + m.m22 * v.z,
+  ),
+)
 
 /** @internal */
 export const vectorProductRight = dual<
   (v: Vector3) => (m: Matrix3x3) => Vector3,
   (m: Matrix3x3, v: Vector3) => Vector3
->(2, (m: Matrix3x3, v: Vector3) => {
-  const [v0, v1, v2] = toColumns(m) as [Vector3, Vector3, Vector3]
-  return vector3.make(vector3.dot(v, v0), vector3.dot(v, v1), vector3.dot(v, v2))
-})
+>(2, (m: Matrix3x3, v: Vector3) =>
+  vector3.make(
+    v.x * m.m00 + v.y * m.m10 + v.z * m.m20,
+    v.x * m.m01 + v.y * m.m11 + v.z * m.m21,
+    v.x * m.m02 + v.y * m.m12 + v.z * m.m22,
+  ),
+)
 
 /** @internal */
 export const solveSystem = dual<

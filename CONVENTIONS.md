@@ -117,8 +117,8 @@ A `ConvexPolyhedron` is the region behind every one of its planes: each
 half-space it is built from is the back side of a plane facing out of the
 solid. Its faces run counterclockwise seen from outside.
 
-Under a transform that mirrors space, a plane's front maps to the image's
-front, so `Plane3d.transform` keeps outward planes outward. A polygon's
+Under a transform that mirrors space, which `Affine3d.isMirror` detects,
+a plane's front maps to the image's front, so `Plane3d.transform` keeps outward planes outward. A polygon's
 vertex order doesn't change under a mirror, so its normal turns inward.
 `Polygon3d.reverse` turns it back, and `ConvexPolyhedron.transform`
 reverses its faces itself.

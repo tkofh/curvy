@@ -366,3 +366,26 @@ describe('transpose', () => {
     expect(result[0]).toBeCloseToValue(vector4.make(10, 20, 30, 40))
   })
 })
+
+describe('lerp', () => {
+  test('hits both ends exactly and extrapolates past them', () => {
+    const a3 = vector3.make(0.1, -2, 7)
+    const b3 = vector3.make(3.3, 0.7, -1)
+    expect(vector3.lerp(a3, b3, 0)).toEqual(a3)
+    expect(vector3.lerp(a3, b3, 1)).toEqual(b3)
+    expect(vector3.lerp(vector3.make(0, 0, 0), vector3.make(2, 4, 6), 0.25)).toEqual(
+      vector3.make(0.5, 1, 1.5),
+    )
+    expect(vector3.lerp(vector3.make(0, 0, 0), vector3.make(2, 4, 6), -1)).toEqual(
+      vector3.make(-2, -4, -6),
+    )
+    expect(a3.pipe(vector3.lerp(b3, 0.5))).toEqual(vector3.lerp(a3, b3, 0.5))
+
+    const a2 = vector2.make(0.1, -2)
+    const b2 = vector2.make(3.3, 0.7)
+    expect(vector2.lerp(a2, b2, 0)).toEqual(a2)
+    expect(vector2.lerp(a2, b2, 1)).toEqual(b2)
+    expect(vector2.lerp(vector2.make(0, 0), vector2.make(2, 4), 2)).toEqual(vector2.make(4, 8))
+    expect(a2.pipe(vector2.lerp(b2, 0.5))).toEqual(vector2.lerp(a2, b2, 0.5))
+  })
+})

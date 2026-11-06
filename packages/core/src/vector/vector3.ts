@@ -360,6 +360,40 @@ export const scale: {
   (v: Vector3, s: number): Vector3
 } = internal.scale
 
+export const lerp: {
+  /**
+   * Interpolates linearly between two vectors: `(1 - t) * a + t * b`.
+   *
+   * `t = 0` gives `a` and `t = 1` gives `b`, both exactly. `t` isn't
+   * clamped, so values outside `[0, 1]` extrapolate along the line through
+   * them.
+   *
+   * @param a - The start, returned at `t = 0`.
+   * @param b - The end, returned at `t = 1`.
+   * @param t - The fraction of the way from `a` to `b`.
+   * @returns The interpolated vector.
+   * @example
+   * ```ts
+   * Vector3.lerp(Vector3.make(0, 0, 0), Vector3.make(2, 4, 6), 0.25) // Vector3(0.5, 1, 1.5)
+   *
+   * // Data-last: the start is piped in.
+   * Vector3.make(0, 0, 0).pipe(Vector3.lerp(Vector3.make(2, 4, 6), 0.25))
+   * ```
+   * @since 2.0.0
+   */
+  (a: Vector3, b: Vector3, t: number): Vector3
+  /**
+   * Interpolates linearly from the piped-in vector to another.
+   *
+   * @param b - The end, returned at `t = 1`.
+   * @param t - The fraction of the way to `b`.
+   * @returns A function that takes the start vector and returns the
+   *   interpolated vector.
+   * @since 2.0.0
+   */
+  (b: Vector3, t: number): (a: Vector3) => Vector3
+} = internal.lerp
+
 /**
  * Gets the x component of a `Vector3`.
  *
