@@ -30,6 +30,8 @@ describe('per-domain index re-exports', () => {
   test('transform index exposes namespaces by type name', () => {
     expect(typeof Transform.Affine2d.rotate).toBe('function')
     expect(typeof Transform.Rotation3d.slerp).toBe('function')
+    expect(typeof Transform.Affine3d.decompose).toBe('function')
+    expect(typeof Transform.Frame3d.lookRotation).toBe('function')
   })
   test('path index exposes namespaces by type name', () => {
     expect(typeof Path.LinearPath2d.make).toBe('function')

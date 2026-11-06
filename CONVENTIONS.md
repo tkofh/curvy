@@ -17,13 +17,30 @@ lists the first row first, and the field `m12` is row 1, column 2.
 
 `Affine2d` stores a 3x3 matrix in homogeneous form. Its bottom row is
 `[0, 0, 1]`, and its translation sits in the last column, so a point
-`(x, y)` maps as the column `(x, y, 1)`.
+`(x, y)` maps as the column `(x, y, 1)`. `Affine3d` does the same with a
+4x4 matrix whose bottom row is `[0, 0, 0, 1]`.
+
+Points, directions, and normals transform differently:
+
+- `apply` maps a point, translation included.
+- `applyDirection` maps a direction (a tangent, an edge, a difference of
+  points) by the linear part alone.
+- `applyNormal` maps a normal by the inverse transpose of the linear part,
+  then normalizes it. Under a non-uniform scale or a shear this is the
+  only map that keeps the normal perpendicular to the surface.
 
 ## Composition
 
 `andThen(a, b)` applies `a` first and `b` second, for `Affine2d` and
 `Rotation3d` alike. On column vectors that is the product `b * a`, and
 `a.pipe(andThen(b))` reads in the order the transforms apply.
+
+`Affine3d.compose` assembles a transform from parts in a fixed order:
+scale, then shear, then rotation, then translation. Its linear part is
+`rotation * shear * scale`. `Affine3d.decompose` splits a transform back
+into those parts. It puts all of the shear in the coefficients `xy`, `xz`,
+and `yz`. A transform that mirrors space gets a negative `x` scale, since a
+rotation can't mirror.
 
 The raw products keep the mathematical order. `Matrix3x3.multiply(a, b)` and
 `Quaternion.multiply(a, b)` both compute `a * b`, which applies `b` first.
@@ -58,7 +75,28 @@ picture with `+x` to the right and `+y` up puts `+z` toward the viewer.
 
 curvy gives the axes no meaning such as up or forward. An operation that
 needs a direction takes it as an argument, the way `Rotation3d.between` takes
-its two vectors.
+its two vectors, or takes a `Frame3d` that names the directions.
+
+## Frames
+
+A `Frame3d` names three perpendicular unit directions: `up` and `forward`
+as given, and `right = cross(forward, up)`. `right` is the right-hand side
+of someone standing along `up` and facing `forward`. A camera looking down
+`-z` with `+y` up has `right = +x`. A character facing `+z` with `+y` up
+has `right = -x`, its own right as it faces the viewer.
+
+Yaw, pitch, and roll are each defined as turning one frame direction toward
+another, which needs no appeal to handedness:
+
+- a positive yaw turns `forward` toward `right`, about `up`
+- a positive pitch turns `forward` toward `up`, about `right`
+- a positive roll turns `up` toward `right`, about `forward`
+
+These are the aircraft conventions: nose right, nose up, right wing down.
+`Frame3d.fromYawPitchRoll` applies them in that order, each about the axes
+the previous turns left behind. `Frame3d.lookRotation` turns `forward` onto
+a target direction and keeps `up` as close to a hint as it can, so looking
+around never rolls.
 
 ## Quaternions
 

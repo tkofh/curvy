@@ -71,81 +71,82 @@ export const fromMatrix: (matrix: Matrix3x3) => Affine2d = internal.fromMatrix
  */
 export const identity: Affine2d = internal.identity
 
-/**
- * Creates an `Affine2d` that translates by `(tx, ty)`.
- *
- * @param tx - The x translation.
- * @param ty - The y translation.
- * @returns A new translating `Affine2d`.
- * @since 2.0.0
- */
-export const translate: (tx: number, ty: number) => Affine2d = internal.translate
-
-/**
- * Creates an `Affine2d` that translates by the components of a `Vector2`.
- *
- * @param v - The vector whose components define the translation.
- * @returns A new translating `Affine2d`.
- * @since 2.0.0
- */
-export const translateBy: (v: Vector2) => Affine2d = internal.translateBy
+export const translate: {
+  /**
+   * Creates an `Affine2d` that translates by `(tx, ty)`.
+   *
+   * @param tx - The x translation.
+   * @param ty - The y translation.
+   * @returns A new translating `Affine2d`.
+   * @since 2.0.0
+   */
+  (tx: number, ty: number): Affine2d
+  /**
+   * Creates an `Affine2d` that translates by a vector.
+   *
+   * @param v - The translation, as an offset added to every point.
+   * @returns A new translating `Affine2d`.
+   * @since 2.0.0
+   */
+  (v: Vector2): Affine2d
+} = internal.translate
 
 export const scale: {
   /**
-   * Creates an `Affine2d` that scales uniformly by `xy` on both axes,
-   * centered on the origin.
+   * Creates an `Affine2d` that scales uniformly by `xy` on both axes.
    *
    * @param xy - The uniform scale factor.
+   * @param origin - The point that stays fixed. Every other point moves
+   *   toward or away from it. Defaults to `Vector2.zero`.
    * @returns A new scaling `Affine2d`.
    * @since 2.0.0
    */
-  (xy: number): Affine2d
+  (xy: number, origin?: Vector2): Affine2d
   /**
-   * Creates an `Affine2d` that scales by `sx` on the x axis and `sy` on the
-   * y axis, centered on the origin.
+   * Creates an `Affine2d` that scales by `sx` along the x axis and `sy`
+   * along the y axis.
    *
    * @param sx - The x scale factor.
    * @param sy - The y scale factor.
+   * @param origin - The point that stays fixed. Every other point moves
+   *   toward or away from it along each axis. Defaults to `Vector2.zero`.
+   * @returns A new scaling `Affine2d`.
+   * @example
+   * ```ts
+   * // Stretch a shape about its own center.
+   * const center = Vector2.make(50, 50)
+   * const stretch = Affine2d.scale(2, 1, center)
+   *
+   * Affine2d.apply(stretch, center) // Vector2(50, 50)
+   * Affine2d.apply(stretch, Vector2.make(60, 60)) // Vector2(70, 60)
+   * ```
+   * @since 2.0.0
+   */
+  (sx: number, sy: number, origin?: Vector2): Affine2d
+  /**
+   * Creates an `Affine2d` that scales by each component of a vector along
+   * its axis.
+   *
+   * @param factors - The x and y scale factors, as the vector's components.
+   * @param origin - The point that stays fixed. Defaults to `Vector2.zero`.
    * @returns A new scaling `Affine2d`.
    * @since 2.0.0
    */
-  (sx: number, sy: number): Affine2d
+  (factors: Vector2, origin?: Vector2): Affine2d
 } = internal.scale
 
 /**
- * Creates an `Affine2d` that scales by `(sx, sy)` about `origin`. Points at
- * `origin` are left fixed. Every other point moves toward or away from
- * `origin` along the corresponding axis.
+ * Creates an `Affine2d` that rotates by `theta` radians about a point.
  *
- * @param sx - The x scale factor.
- * @param sy - The y scale factor.
- * @param origin - The fixed point of the scaling.
- * @returns A new scaling `Affine2d`.
- * @since 2.0.0
- */
-export const scaleAround: (sx: number, sy: number, origin: Vector2) => Affine2d =
-  internal.scaleAround
-
-/**
- * Creates an `Affine2d` that rotates by `theta` radians around the origin.
- * Counter-clockwise in the standard mathematical orientation (with y up). If
- * your coordinate system has y down, rotation is clockwise.
+ * A positive angle turns `+x` toward `+y`. That is counterclockwise on a
+ * y-up plot and clockwise in an SVG viewport, where y points down.
  *
  * @param theta - The rotation angle in radians.
+ * @param origin - The point that stays fixed. Defaults to `Vector2.zero`.
  * @returns A new rotating `Affine2d`.
  * @since 2.0.0
  */
-export const rotate: (theta: number) => Affine2d = internal.rotate
-
-/**
- * Creates an `Affine2d` that rotates by `theta` radians around `origin`.
- *
- * @param theta - The rotation angle in radians.
- * @param origin - The fixed point of the rotation.
- * @returns A new rotating `Affine2d`.
- * @since 2.0.0
- */
-export const rotateAround: (theta: number, origin: Vector2) => Affine2d = internal.rotateAround
+export const rotate: (theta: number, origin?: Vector2) => Affine2d = internal.rotate
 
 /**
  * Reflects points across the x axis: `(x, y) -> (x, -y)`.
@@ -162,29 +163,39 @@ export const reflectX: Affine2d = internal.reflectX
 export const reflectY: Affine2d = internal.reflectY
 
 /**
- * Creates an `Affine2d` that reflects across the line passing through
- * `origin` in the direction `direction`. `direction` need not be unit length.
- * It is normalized internally.
+ * Creates an `Affine2d` that reflects across a line.
  *
- * @param origin - A point on the mirror line.
- * @param direction - A non-zero vector parallel to the mirror line.
+ * @param direction - A non-zero vector along the mirror line. Its length
+ *   doesn't matter.
+ * @param origin - A point on the mirror line. Defaults to `Vector2.zero`,
+ *   so the line passes through the origin.
  * @returns A new reflecting `Affine2d`.
  * @throws `Error` when `direction` has exactly zero magnitude.
+ * @example
+ * ```ts
+ * // Mirror across the diagonal y = x + 1.
+ * const mirror = Affine2d.reflectAcrossLine(Vector2.make(1, 1), Vector2.make(0, 1))
+ *
+ * Affine2d.apply(mirror, Vector2.make(2, 0)) // Vector2(-1, 3), up to rounding
+ * ```
  * @since 2.0.0
  */
-export const reflectAcrossLine: (origin: Vector2, direction: Vector2) => Affine2d =
+export const reflectAcrossLine: (direction: Vector2, origin?: Vector2) => Affine2d =
   internal.reflectAcrossLine
 
 /**
- * Creates an `Affine2d` shear with `kx` horizontal shear (x gains `kx * y`)
- * and `ky` vertical shear (y gains `ky * x`).
+ * Creates an `Affine2d` shear with `kx` horizontal shear (x gains `kx` times
+ * the height above `origin`) and `ky` vertical shear (y gains `ky` times the
+ * distance right of `origin`).
  *
  * @param kx - The horizontal shear factor.
  * @param ky - The vertical shear factor.
+ * @param origin - The point that stays fixed, along with the lines through
+ *   it that each shear slides along. Defaults to `Vector2.zero`.
  * @returns A new shearing `Affine2d`.
  * @since 2.0.0
  */
-export const shear: (kx: number, ky: number) => Affine2d = internal.shear
+export const shear: (kx: number, ky: number, origin?: Vector2) => Affine2d = internal.shear
 
 export const andThen: {
   /**
@@ -259,10 +270,13 @@ export const inverse: {
 export const inverseUnsafe: (a: Affine2d) => Affine2d = internal.inverseUnsafe
 
 /**
- * Checks if a transform is invertible, meaning its underlying matrix's determinant
- * exceeds `RELATIVE_TOLERANCE` times the Hadamard bound, the scale-free
- * singularity test of `Matrix3x3.isInvertible`. See `PRECISION.md` for the
- * mechanics.
+ * Checks if a transform is invertible.
+ *
+ * Only the 2x2 linear part decides it, since translation never makes an
+ * affine map singular. The test is the scale-free one `Matrix2x2` and
+ * `Matrix3x3` use: the determinant must exceed `RELATIVE_TOLERANCE` times
+ * the Hadamard bound, the product of the row lengths. See `PRECISION.md`
+ * for the mechanics.
  *
  * @param a - The transform to check.
  * @returns `true` when `a` is invertible, narrowing to `Affine2d<T & Invertible>`.
@@ -314,6 +328,62 @@ export const apply: {
  * @since 2.0.0
  */
 export const applyTo: (a: Affine2d) => (p: Vector2) => Vector2 = internal.applyTo
+
+export const applyDirection: {
+  /**
+   * Applies an `Affine2d` to a direction: a tangent, an edge vector, or any
+   * difference of two points.
+   *
+   * Directions ignore translation, so only the linear part acts. Moving
+   * both endpoints of an edge with `apply` and subtracting gives the same
+   * vector.
+   *
+   * @param a - The transform to apply.
+   * @param d - The direction to transform.
+   * @returns The transformed direction, not normalized.
+   * @since 2.0.0
+   */
+  (a: Affine2d, d: Vector2): Vector2
+  /**
+   * Applies an `Affine2d` to a direction, ignoring translation.
+   *
+   * @param d - The direction to transform.
+   * @returns A function that takes the transform and returns the transformed direction.
+   * @since 2.0.0
+   */
+  (d: Vector2): (a: Affine2d) => Vector2
+} = internal.applyDirection
+
+export const applyNormal: {
+  /**
+   * Maps a normal of an edge so that it stays perpendicular to the mapped
+   * edge, pointing to the same side.
+   *
+   * A normal is not a direction under every transform. Under a non-uniform
+   * scale or a shear, `applyDirection` would tilt it off perpendicular.
+   * Normals map by the inverse transpose of the linear part instead. A
+   * reflection keeps the normal on the side the edge's points move to, so
+   * an outward normal stays outward.
+   *
+   * @param a - The transform to apply.
+   * @param n - The normal to transform. Any non-zero length works.
+   * @returns The transformed normal, unit length.
+   * @throws `Error` when `a` is not invertible.
+   * @since 2.0.0
+   */
+  (a: Affine2d, n: Vector2): Vector2
+  /**
+   * Maps a normal of an edge so that it stays perpendicular to the mapped
+   * edge.
+   *
+   * @param n - The normal to transform.
+   * @returns A function that takes the transform and returns the transformed
+   *   unit normal.
+   * @throws `Error` when the transform is not invertible.
+   * @since 2.0.0
+   */
+  (n: Vector2): (a: Affine2d) => Vector2
+} = internal.applyNormal
 
 /**
  * Extracts the 2x2 linear part of an `Affine2d`. The result is the

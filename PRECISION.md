@@ -71,7 +71,8 @@ rotation matrix has orthonormal columns whatever the data, so both checks
 use plain `EPSILON`. `Quaternion.isUnit` tests
 `abs(x^2 + y^2 + z^2 + w^2 - 1) <= EPSILON`, and `Rotation3d.fromMatrix3x3`
 holds each column's squared length and each pair's dot product within
-`EPSILON` of a rotation's.
+`EPSILON` of a rotation's. `Frame3d.make` normalizes its two directions and
+requires their dot product within `EPSILON` of zero.
 
 ### 2. Identity of values and points
 
@@ -173,6 +174,12 @@ measure of row independence (1 for orthogonal rows, 0 for parallel ones), so
 `diag(1e-8, 1e-8, 1)` is correctly invertible (its inverse is exactly
 `diag(1e8, 1e8, 1)`) while a large matrix with nearly dependent rows is
 correctly singular even when its raw determinant is sizeable.
+
+`Affine2d` and `Affine3d` apply the same test to their linear part alone.
+Translation never makes an affine map singular, and counting the
+translation column in the row norms would inflate the bound with distance
+from the origin: a `1e-3` scale translated by `1000` would read as
+singular.
 
 ## Certified approximations
 

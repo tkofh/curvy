@@ -179,32 +179,30 @@ export const fromMatrix3x3 = (m: Matrix3x3): Solution.AtMostOne<Rotation3d> => {
   if (matrix3x3.determinant(m) <= 0) {
     return Solution.none
   }
+  return Solution.one(fromOrthonormal(m))
+}
 
+// The rotation of a matrix already known to be one, built by an operation
+// that guarantees orthonormal columns with determinant +1.
+/** @internal */
+export const fromOrthonormal = (m: Matrix3x3): Rotation3d => {
   // Shepperd's method: divide by the largest of the four candidate
   // components, so the square root never sees a value near zero.
   const trace = m.m00 + m.m11 + m.m22
   if (trace > 0) {
     const s = 2 * Math.sqrt(trace + 1)
-    return Solution.one(
-      fromComponents((m.m21 - m.m12) / s, (m.m02 - m.m20) / s, (m.m10 - m.m01) / s, s / 4),
-    )
+    return fromComponents((m.m21 - m.m12) / s, (m.m02 - m.m20) / s, (m.m10 - m.m01) / s, s / 4)
   }
   if (m.m00 > m.m11 && m.m00 > m.m22) {
     const s = 2 * Math.sqrt(1 + m.m00 - m.m11 - m.m22)
-    return Solution.one(
-      fromComponents(s / 4, (m.m01 + m.m10) / s, (m.m02 + m.m20) / s, (m.m21 - m.m12) / s),
-    )
+    return fromComponents(s / 4, (m.m01 + m.m10) / s, (m.m02 + m.m20) / s, (m.m21 - m.m12) / s)
   }
   if (m.m11 > m.m22) {
     const s = 2 * Math.sqrt(1 + m.m11 - m.m00 - m.m22)
-    return Solution.one(
-      fromComponents((m.m01 + m.m10) / s, s / 4, (m.m12 + m.m21) / s, (m.m02 - m.m20) / s),
-    )
+    return fromComponents((m.m01 + m.m10) / s, s / 4, (m.m12 + m.m21) / s, (m.m02 - m.m20) / s)
   }
   const s = 2 * Math.sqrt(1 + m.m22 - m.m00 - m.m11)
-  return Solution.one(
-    fromComponents((m.m02 + m.m20) / s, (m.m12 + m.m21) / s, s / 4, (m.m10 - m.m01) / s),
-  )
+  return fromComponents((m.m02 + m.m20) / s, (m.m12 + m.m21) / s, s / 4, (m.m10 - m.m01) / s)
 }
 
 /** @internal */

@@ -11,11 +11,11 @@ import { Affine2d } from 'curvy/transform'
 import { Vector2 } from 'curvy/vector'
 
 Affine2d.identity
-Affine2d.translate(10, 0) // or translateBy(Vector2.make(10, 0))
-Affine2d.rotate(Math.PI / 4) // or rotateAround(theta, origin)
-Affine2d.scale(2) // or scale(sx, sy), scaleAround(sx, sy, origin)
-Affine2d.shear(kx, ky)
-Affine2d.reflectX // constants; or reflectAcrossLine(origin, direction)
+Affine2d.translate(10, 0) // or translate(Vector2.make(10, 0))
+Affine2d.rotate(Math.PI / 4) // or rotate(theta, origin)
+Affine2d.scale(2) // or scale(sx, sy), scale(factors), each with an optional origin
+Affine2d.shear(kx, ky) // or shear(kx, ky, origin)
+Affine2d.reflectX // constants; or reflectAcrossLine(direction, origin?)
 Affine2d.fromMatrix(m) // validates the bottom row is affine
 ```
 

@@ -31,10 +31,20 @@ describe('Affine2d', () => {
     )
   })
 
-  test('translateBy uses vector components', () => {
-    expect(
-      Affine2d.apply(Affine2d.translateBy(Vector2.make(1, 2)), Vector2.make(3, 4)),
-    ).toBeCloseToValue(Vector2.make(4, 6))
+  test('translate and scale take vectors as well as components', () => {
+    const p = Vector2.make(3, 4)
+    const o = Vector2.make(1, 1)
+    expect(Affine2d.equals(Affine2d.translate(Vector2.make(1, 2)), Affine2d.translate(1, 2))).toBe(
+      true,
+    )
+    expect(Affine2d.equals(Affine2d.scale(Vector2.make(2, 3)), Affine2d.scale(2, 3))).toBe(true)
+    expect(Affine2d.equals(Affine2d.scale(Vector2.make(2, 3), o), Affine2d.scale(2, 3, o))).toBe(
+      true,
+    )
+    expect(Affine2d.apply(Affine2d.translate(Vector2.make(1, 2)), p)).toBeCloseToValue(
+      Vector2.make(4, 6),
+    )
+    expect(Affine2d.apply(Affine2d.scale(Vector2.make(2, 3), o), o)).toBeCloseToValue(o)
   })
 
   test('scale(xy) is uniform', () => {
@@ -49,14 +59,30 @@ describe('Affine2d', () => {
     )
   })
 
-  test('scaleAround fixes the origin point', () => {
-    const o = Vector2.make(10, 20)
-    expect(Affine2d.apply(Affine2d.scaleAround(2, 3, o), o)).toBeCloseToValue(o)
+  test('scale tells a second factor from an origin', () => {
+    const o = Vector2.make(10, 10)
+    const uniform = Affine2d.scale(2, o)
+    expect(Affine2d.apply(uniform, o)).toBeCloseToValue(o)
+    expect(Affine2d.apply(uniform, Vector2.make(11, 12))).toBeCloseToValue(Vector2.make(12, 14))
+    expect(Affine2d.apply(Affine2d.scale(2, 3), Vector2.one)).toBeCloseToValue(Vector2.make(2, 3))
+    expect(Affine2d.equals(Affine2d.scale(Vector2.make(2, 2), o), uniform)).toBe(true)
   })
 
-  test('scaleAround equals scale at the origin', () => {
+  test('scale example', () => {
+    const center = Vector2.make(50, 50)
+    const stretch = Affine2d.scale(2, 1, center)
+    expect(Affine2d.apply(stretch, center)).toBeCloseToValue(center)
+    expect(Affine2d.apply(stretch, Vector2.make(60, 60))).toBeCloseToValue(Vector2.make(70, 60))
+  })
+
+  test('scale with an origin keeps it fixed', () => {
+    const o = Vector2.make(10, 20)
+    expect(Affine2d.apply(Affine2d.scale(2, 3, o), o)).toBeCloseToValue(o)
+  })
+
+  test('scale about the zero vector equals scale without an origin', () => {
     const p = Vector2.make(3, 4)
-    expect(Affine2d.apply(Affine2d.scaleAround(2, 3, Vector2.zero), p)).toBeCloseToValue(
+    expect(Affine2d.apply(Affine2d.scale(2, 3, Vector2.zero), p)).toBeCloseToValue(
       Affine2d.apply(Affine2d.scale(2, 3), p),
     )
   })
@@ -72,14 +98,14 @@ describe('Affine2d', () => {
     )
   })
 
-  test('rotateAround fixes the origin point', () => {
+  test('rotate with an origin keeps it fixed', () => {
     const o = Vector2.make(5, 7)
-    expect(Affine2d.apply(Affine2d.rotateAround(1.2, o), o)).toBeCloseToValue(o)
+    expect(Affine2d.apply(Affine2d.rotate(1.2, o), o)).toBeCloseToValue(o)
   })
 
-  test('rotateAround equals rotate at the origin', () => {
+  test('rotate about the zero vector equals rotate without an origin', () => {
     const p = Vector2.make(3, 4)
-    expect(Affine2d.apply(Affine2d.rotateAround(1.2, Vector2.zero), p)).toBeCloseToValue(
+    expect(Affine2d.apply(Affine2d.rotate(1.2, Vector2.zero), p)).toBeCloseToValue(
       Affine2d.apply(Affine2d.rotate(1.2), p),
     )
   })
@@ -98,20 +124,38 @@ describe('Affine2d', () => {
 
   test('reflectAcrossLine through origin in x direction equals reflectX', () => {
     const p = Vector2.make(3, 4)
-    expect(
-      Affine2d.apply(Affine2d.reflectAcrossLine(Vector2.zero, Vector2.make(1, 0)), p),
-    ).toBeCloseToValue(Affine2d.apply(Affine2d.reflectX, p))
+    expect(Affine2d.apply(Affine2d.reflectAcrossLine(Vector2.make(1, 0)), p)).toBeCloseToValue(
+      Affine2d.apply(Affine2d.reflectX, p),
+    )
   })
 
   test('reflectAcrossLine through origin in y direction equals reflectY', () => {
     const p = Vector2.make(3, 4)
     expect(
-      Affine2d.apply(Affine2d.reflectAcrossLine(Vector2.zero, Vector2.make(0, 1)), p),
+      Affine2d.apply(Affine2d.reflectAcrossLine(Vector2.make(0, 1), Vector2.zero), p),
     ).toBeCloseToValue(Affine2d.apply(Affine2d.reflectY, p))
   })
 
+  test('reflectAcrossLine example: direction first, then a point on the line', () => {
+    const mirror = Affine2d.reflectAcrossLine(Vector2.make(1, 1), Vector2.make(0, 1))
+    expect(Affine2d.apply(mirror, Vector2.make(2, 0))).toBeCloseToValue(Vector2.make(-1, 3))
+    // Points on the line stay put.
+    expect(Affine2d.apply(mirror, Vector2.make(3, 4))).toBeCloseToValue(Vector2.make(3, 4))
+  })
+
+  test('shear with an origin keeps it fixed and slides relative to it', () => {
+    const o = Vector2.make(2, 3)
+    const a = Affine2d.shear(0.5, -1, o)
+    expect(Affine2d.apply(a, o)).toBeCloseToValue(o)
+    // x gains 0.5 * (y - 3), y gains -1 * (x - 2).
+    expect(Affine2d.apply(a, Vector2.make(4, 7))).toBeCloseToValue(Vector2.make(6, 5))
+    expect(Affine2d.equals(Affine2d.shear(0.5, -1, Vector2.zero), Affine2d.shear(0.5, -1))).toBe(
+      true,
+    )
+  })
+
   test('reflectAcrossLine twice is identity', () => {
-    const line = Affine2d.reflectAcrossLine(Vector2.make(1, 1), Vector2.make(2, 3))
+    const line = Affine2d.reflectAcrossLine(Vector2.make(2, 3), Vector2.make(1, 1))
     const p = Vector2.make(5, 7)
     expect(Affine2d.apply(line, Affine2d.apply(line, p))).toBeCloseToValue(p)
   })
