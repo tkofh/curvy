@@ -20,6 +20,7 @@ export default defineConfig({
     'src/arc/index.ts',
     'src/polygon/index.ts',
     'src/quaternion/index.ts',
+    'src/camera/index.ts',
   ],
   format: 'esm',
   dts: false,

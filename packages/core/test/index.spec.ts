@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import * as ArcIndex from '../src/arc/index.ts'
+import * as CameraIndex from '../src/camera/index.ts'
 import * as Curve from '../src/curve/index.ts'
 import * as Matrix from '../src/matrix/index.ts'
 import * as Path from '../src/path/index.ts'
@@ -32,6 +33,10 @@ describe('per-domain index re-exports', () => {
     expect(typeof Transform.Rotation3d.slerp).toBe('function')
     expect(typeof Transform.Affine3d.decompose).toBe('function')
     expect(typeof Transform.Frame3d.lookRotation).toBe('function')
+  })
+  test('camera index exposes the namespace', () => {
+    expect(typeof CameraIndex.Camera.perspective).toBe('function')
+    expect(typeof CameraIndex.Camera.project).toBe('function')
   })
   test('path index exposes namespaces by type name', () => {
     expect(typeof Path.LinearPath2d.make).toBe('function')

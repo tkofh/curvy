@@ -131,3 +131,21 @@ and the default order is `'XYZ'` in both.
 `[-pi, pi]`. At the middle angle's extremes the first and third axes line up
 (gimbal lock), and only their combined turn is determined. There `toEuler`
 sets the third angle to `0` and puts the whole turn in the first.
+
+## Cameras
+
+A `Camera` maps world points to an SVG viewport, where y points down. The
+camera's `frame` names its directions: `forward` points from the eye toward
+the target, and `right = cross(forward, up)` as for any frame. The frame's
+`up` lands toward the top of the viewport and its `right` toward the right,
+so a scene modeled with `+y` up appears upright.
+
+`Camera.view` maps world points to eye space, the OpenGL convention: the eye
+at the origin, `right` along `+x`, `up` along `+y`, and the view down `-z`.
+That keeps the view a rigid transform. A projected point's `depth` is its
+distance in front of the eye along the view direction, the negative of its
+eye-space z. Depth is linear in world units, not the nonlinear depth a GPU
+stores, so it sorts faces directly.
+
+A perspective camera projects only points at or beyond its near plane. An
+orthographic camera projects every point.

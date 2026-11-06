@@ -1,0 +1,213 @@
+import { describe, expect, test } from 'vitest'
+import * as Camera from '../src/camera/camera.ts'
+import * as Interval2d from '../src/interval/interval2d.ts'
+import * as Polygon2d from '../src/polygon/polygon2d.ts'
+import * as Solution from '../src/solution/solution.ts'
+import * as Affine3d from '../src/transform/affine3d.ts'
+import * as Rotation3d from '../src/transform/rotation3d.ts'
+import * as Vector2 from '../src/vector/vector2.ts'
+import * as Vector3 from '../src/vector/vector3.ts'
+
+const viewport = Interval2d.fromCorners(Vector2.zero, Vector2.make(800, 600))
+
+const camera = Camera.perspective({
+  eye: Vector3.make(0, 0, 10),
+  target: Vector3.zero,
+  fovY: Math.PI / 4,
+  near: 0.1,
+  viewport,
+})
+
+const flat = Camera.orthographic({
+  eye: Vector3.make(0, 0, 10),
+  target: Vector3.zero,
+  height: 6,
+  viewport,
+})
+
+const projected = (c: Camera.Camera, p: Vector3.Vector3) => {
+  const result = Camera.project(c, p)
+  if (Solution.isNone(result)) {
+    throw new Error('expected a projection')
+  }
+  return result.value
+}
+
+describe('perspective', () => {
+  test('perspective example: the target lands at the viewport center', () => {
+    const { point, depth } = projected(camera, Vector3.zero)
+    expect(point).toBeCloseToValue(Vector2.make(400, 300))
+    expect(depth).toBe(10)
+  })
+
+  test('project example: up is toward the top of the viewport', () => {
+    const { point, depth } = projected(camera, Vector3.make(0, 1, 0))
+    const scale = 300 / Math.tan(Math.PI / 8)
+    expect(point).toBeCloseToValue(Vector2.make(400, 300 - scale / 10))
+    expect(point.y).toBeCloseTo(227.57, 2)
+    expect(depth).toBe(10)
+  })
+
+  test('right is toward the right of the viewport', () => {
+    expect(projected(camera, Vector3.make(1, 0, 0)).point.x).toBeGreaterThan(400)
+  })
+
+  test('the field of view spans the viewport height', () => {
+    const edge = 10 * Math.tan(Math.PI / 8)
+    expect(projected(camera, Vector3.make(0, edge, 0)).point.y).toBeCloseTo(0, 10)
+    expect(projected(camera, Vector3.make(0, -edge, 0)).point.y).toBeCloseTo(600, 10)
+  })
+
+  test('twice as far is half the offset', () => {
+    const near = projected(camera, Vector3.make(1, 0, 0)).point.x - 400
+    const far = projected(camera, Vector3.make(2, 0, -10)).point.x - 400
+    expect(far).toBeCloseTo(near, 10)
+  })
+
+  test('points in front of the near plane do not project; points on it do', () => {
+    expect(Camera.project(camera, Vector3.make(0, 0, 10 - 0.05))).toBe(Solution.none)
+    expect(Camera.project(camera, Vector3.make(0, 0, 11))).toBe(Solution.none)
+    expect(Solution.isSome(Camera.project(camera, Vector3.make(0, 0, 9.9)))).toBe(true)
+    // A rounding step short of the plane still counts as on it.
+    expect(Solution.isSome(Camera.project(camera, Vector3.make(0, 0, 9.9 + 1e-14)))).toBe(true)
+  })
+
+  test('a viewport away from the origin centers there', () => {
+    const offset = Camera.perspective({
+      eye: Vector3.make(0, 0, 10),
+      target: Vector3.zero,
+      fovY: Math.PI / 4,
+      near: 0.1,
+      viewport: { x: { start: 100, end: 300 }, y: { start: 50, end: 250 } },
+    })
+    expect(projected(offset, Vector3.zero).point).toBeCloseToValue(Vector2.make(200, 150))
+  })
+
+  test('up chooses the screen orientation', () => {
+    // Looking straight down from above, with -z as the screen's up.
+    const top = Camera.perspective({
+      eye: Vector3.make(0, 10, 0),
+      target: Vector3.zero,
+      up: Vector3.make(0, 0, -1),
+      fovY: Math.PI / 4,
+      near: 0.1,
+      viewport,
+    })
+    expect(projected(top, Vector3.make(0, 0, -1)).point.y).toBeLessThan(300)
+    expect(projected(top, Vector3.make(1, 0, 0)).point.x).toBeGreaterThan(400)
+  })
+
+  test('invalid settings throw', () => {
+    const base = { eye: Vector3.make(0, 0, 10), target: Vector3.zero, fovY: 1, near: 0.1, viewport }
+    expect(() => Camera.perspective({ ...base, target: base.eye })).toThrow()
+    expect(() => Camera.perspective({ ...base, up: Vector3.make(0, 0, 1) })).toThrow()
+    expect(() => Camera.perspective({ ...base, up: Vector3.zero })).toThrow()
+    expect(() => Camera.perspective({ ...base, fovY: 0 })).toThrow()
+    expect(() => Camera.perspective({ ...base, fovY: Math.PI })).toThrow()
+    expect(() => Camera.perspective({ ...base, near: 0 })).toThrow()
+    expect(() =>
+      Camera.perspective({
+        ...base,
+        viewport: { x: { start: 0, end: 0 }, y: { start: 0, end: 1 } },
+      }),
+    ).toThrow()
+    expect(() => Camera.perspective({ ...base, eye: Vector3.make(Number.NaN, 0, 0) })).toThrow()
+  })
+})
+
+describe('orthographic', () => {
+  test('height fits the viewport, regardless of distance', () => {
+    expect(projected(flat, Vector3.make(0, 3, 0)).point.y).toBeCloseTo(0, 10)
+    expect(projected(flat, Vector3.make(0, 3, -50)).point.y).toBeCloseTo(0, 10)
+    expect(projected(flat, Vector3.make(4, 0, 0)).point.x).toBeCloseTo(400 + 400, 10)
+  })
+
+  test('points behind the eye still project, with negative depth', () => {
+    const { depth } = projected(flat, Vector3.make(0, 0, 20))
+    expect(depth).toBe(-10)
+  })
+
+  test('invalid height throws', () => {
+    expect(() =>
+      Camera.orthographic({ eye: Vector3.one, target: Vector3.zero, height: 0, viewport }),
+    ).toThrow()
+  })
+})
+
+describe('shared operations', () => {
+  test('view maps the eye to the origin and the target down -z', () => {
+    for (const c of [camera, flat]) {
+      const v = Camera.view(c)
+      expect(Vector3.magnitude(Affine3d.apply(v, c.eye))).toBeCloseTo(0, 12)
+      const target = Affine3d.apply(v, Vector3.zero)
+      expect(target.x).toBeCloseTo(0, 12)
+      expect(target.y).toBeCloseTo(0, 12)
+      expect(target.z).toBeCloseTo(-10, 12)
+    }
+  })
+
+  test('view agrees with project for any camera pose', () => {
+    const tilted = Camera.perspective({
+      eye: Vector3.make(3, 4, 5),
+      target: Vector3.make(-1, 0.5, 2),
+      up: Vector3.make(0.2, 1, 0),
+      fovY: 1,
+      near: 0.1,
+      viewport,
+    })
+    const p = Vector3.make(-2, 1, 0)
+    const eyeSpace = Affine3d.apply(Camera.view(tilted), p)
+    const { depth, point } = projected(tilted, p)
+    expect(depth).toBeCloseTo(-eyeSpace.z, 12)
+    const scale = 300 / Math.tan(0.5)
+    expect(point).toBeCloseToValue(
+      Vector2.make(400 + (eyeSpace.x / depth) * scale, 300 - (eyeSpace.y / depth) * scale),
+    )
+    // The view is rigid.
+    expect(Affine3d.isInvertible(Camera.view(tilted))).toBe(true)
+  })
+
+  test('projectTo matches project, and project is data-last too', () => {
+    const points = [Vector3.zero, Vector3.make(1, 2, 3), Vector3.make(0, 0, 50)]
+    expect(points.map(Camera.projectTo(camera))).toEqual(
+      points.map((p) => Camera.project(camera, p)),
+    )
+    expect(camera.pipe(Camera.project(Vector3.zero))).toEqual(Camera.project(camera, Vector3.zero))
+  })
+
+  test('a face that turns away from the camera flips its projected winding', () => {
+    const square = [
+      Vector3.make(-1, -1, 0),
+      Vector3.make(1, -1, 0),
+      Vector3.make(1, 1, 0),
+      Vector3.make(-1, 1, 0),
+    ]
+    const windingFrom = (vertices: ReadonlyArray<Vector3.Vector3>) =>
+      Polygon2d.winding(Polygon2d.fromArray(vertices.map((v) => projected(camera, v).point)))
+    const facing = windingFrom(square)
+    const away = windingFrom(square.map(Rotation3d.applyTo(Rotation3d.aboutY(Math.PI))))
+    expect(Solution.isSome(facing) && Solution.isSome(away)).toBe(true)
+    expect(facing).not.toEqual(away)
+    // Edge-on, the face has no area on screen.
+    const edgeOn = square.map(Rotation3d.applyTo(Rotation3d.aboutY(Math.PI / 2)))
+    const onScreen = Polygon2d.fromArray(edgeOn.map((v) => projected(camera, v).point))
+    expect(Polygon2d.area(onScreen)).toBeLessThan(1e-9)
+  })
+
+  test('kind guards, equals, and printing', () => {
+    expect(Camera.isPerspective(camera) && Camera.isOrthographic(flat)).toBe(true)
+    expect(Camera.isOrthographic(camera) || Camera.isCamera({ kind: 'perspective' })).toBe(false)
+    const same = Camera.perspective({
+      eye: Vector3.make(0, 0, 10),
+      target: Vector3.make(0, 0, -5),
+      fovY: Math.PI / 4,
+      near: 0.1,
+      viewport,
+    })
+    expect(Camera.equals(camera, same)).toBe(true)
+    expect(Camera.equals(camera, flat)).toBe(false)
+    expect(String(flat)).toBe(
+      'Camera.Orthographic(eye (0, 0, 10), forward (0, 0, -1), height 6, viewport [0, 800] x [0, 600])',
+    )
+  })
+})
