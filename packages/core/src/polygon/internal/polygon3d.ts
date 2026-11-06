@@ -39,9 +39,15 @@ class Polygon3dImpl extends Value(Polygon3dTypeId) implements Polygon3d<unknown>
   }
 }
 
-// Results of an operation that keeps convexity by construction (clip,
-// split) skip the public validation and carry the brands.
-const convex = (vertices: ReadonlyArray<Vector3>): Polygon3d<Convex & Planar> =>
+/**
+ * A polygon from vertices already known to be convex and planar, unchecked
+ * and uncopied. Results of an operation that keeps convexity by
+ * construction (clip, split, a polyhedron's faces) skip the public
+ * validation and carry the brands.
+ *
+ * @internal
+ */
+export const convex = (vertices: ReadonlyArray<Vector3>): Polygon3d<Convex & Planar> =>
   new Polygon3dImpl(vertices) as Polygon3d<Convex & Planar>
 
 // A convex 3D polygon is planar by definition, so the brand only needs

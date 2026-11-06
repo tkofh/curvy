@@ -78,7 +78,9 @@ Unit normals put two plane questions on a fixed scale as well.
 `Plane3d.intersection` reports no single point when the determinant of the
 three unit normals is within `EPSILON` of zero, and `Plane3d.intersectRay`
 calls a ray parallel to a plane when the cosine between the ray and the
-normal is within `EPSILON` of zero.
+normal is within `EPSILON` of zero. `ConvexPolyhedron.fromHalfSpaces`
+finds its corners with `Plane3d.intersection`, so the same cutoff decides
+which triples of planes meet.
 
 ### 2. Identity of values and points
 
@@ -113,10 +115,15 @@ Built on `coincident`:
   `EPSILON + RELATIVE_TOLERANCE * M`, `M` being the largest coordinate
   among the vertices and the line's origin
 - the same on-plane test for 3D: `Polygon3d.clip` and `split`, the
-  planarity check in `Polygon3d.isPlanar` and `isConvex`, and the
-  start-on-the-plane case
-  of `Plane3d.intersectRay`, with `M` taken over the coordinates and the
+  planarity check in `Polygon3d.isPlanar` and `isConvex`, the
+  start-on-the-plane case of `Plane3d.intersectRay`, and
+  `ConvexPolyhedron.contains`, with `M` taken over the coordinates and the
   plane's `|offset|`
+- `ConvexPolyhedron.fromHalfSpaces`, which applies the on-plane test to
+  decide which planes a corner lies on and which half-spaces exclude it.
+  Two corners on the same set of planes are one corner. So are two within
+  the band of each other in every coordinate. `M` there is the largest
+  coordinate among the corners and plane offsets
 - the ordering predicates in `curvy/number`: `before`, `atMost`, `within`,
   `inside`, `overlaps`, and `touches`
 

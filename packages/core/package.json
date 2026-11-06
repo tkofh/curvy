@@ -86,6 +86,10 @@
       "types": "./dist/plane/index.d.ts",
       "import": "./dist/plane/index.mjs"
     },
+    "./polyhedron": {
+      "types": "./dist/polyhedron/index.d.ts",
+      "import": "./dist/polyhedron/index.mjs"
+    },
     "./camera": {
       "types": "./dist/camera/index.d.ts",
       "import": "./dist/camera/index.mjs"

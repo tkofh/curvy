@@ -5,6 +5,7 @@ import * as Curve from '../src/curve/index.ts'
 import * as Matrix from '../src/matrix/index.ts'
 import * as Path from '../src/path/index.ts'
 import * as PlaneIndex from '../src/plane/index.ts'
+import * as PolyhedronIndex from '../src/polyhedron/index.ts'
 import * as PolygonIndex from '../src/polygon/index.ts'
 import * as QuaternionIndex from '../src/quaternion/index.ts'
 import * as Transform from '../src/transform/index.ts'
@@ -44,6 +45,9 @@ describe('per-domain index re-exports', () => {
 
   test('plane index exposes the namespace', () => {
     expect(typeof PlaneIndex.Plane3d.through).toBe('function')
+  })
+  test('polyhedron index exposes the namespace', () => {
+    expect(typeof PolyhedronIndex.ConvexPolyhedron.fromHalfSpaces).toBe('function')
   })
   test('path index exposes namespaces by type name', () => {
     expect(typeof Path.LinearPath2d.make).toBe('function')

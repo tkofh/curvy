@@ -113,10 +113,15 @@ and `Polygon3d.normal` agree on it. A solid's faces listed
 counterclockwise from outside, in the usual right-handed picture, have
 outward normals, and their planes face out of the solid.
 
+A `ConvexPolyhedron` is the region behind every one of its planes: each
+half-space it is built from is the back side of a plane facing out of the
+solid. Its faces run counterclockwise seen from outside.
+
 Under a transform that mirrors space, a plane's front maps to the image's
 front, so `Plane3d.transform` keeps outward planes outward. A polygon's
 vertex order doesn't change under a mirror, so its normal turns inward.
-`Polygon3d.reverse` turns it back.
+`Polygon3d.reverse` turns it back, and `ConvexPolyhedron.transform`
+reverses its faces itself.
 
 ## Quaternions
 

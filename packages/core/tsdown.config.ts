@@ -22,6 +22,7 @@ export default defineConfig({
     'src/quaternion/index.ts',
     'src/camera/index.ts',
     'src/plane/index.ts',
+    'src/polyhedron/index.ts',
   ],
   format: 'esm',
   dts: false,
