@@ -100,17 +100,15 @@ export const solve = dual<
 // (t-ascending).
 /** @internal */
 export const solveAtX = dual(2, (c: QuadraticCurve2d, x: number) =>
-  QuadraticPolynomial.solveInverse(c.x, x).pipe(
-    Solution.clipApprox(Interval.unit),
-    Solution.map((t) => QuadraticPolynomial.solve(c.y, t)),
+  Solution.map(Solution.clipApprox(QuadraticPolynomial.solveInverse(c.x, x), Interval.unit), (t) =>
+    QuadraticPolynomial.solve(c.y, t),
   ),
 )
 
 /** @internal */
 export const solveAtY = dual(2, (c: QuadraticCurve2d, y: number) =>
-  QuadraticPolynomial.solveInverse(c.y, y).pipe(
-    Solution.clipApprox(Interval.unit),
-    Solution.map((t) => QuadraticPolynomial.solve(c.x, t)),
+  Solution.map(Solution.clipApprox(QuadraticPolynomial.solveInverse(c.y, y), Interval.unit), (t) =>
+    QuadraticPolynomial.solve(c.x, t),
   ),
 )
 

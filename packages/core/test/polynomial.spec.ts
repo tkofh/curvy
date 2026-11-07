@@ -242,6 +242,22 @@ describe('quadratic', () => {
 })
 
 describe('cubic', () => {
+  test('solveInverse reports a zero root as 0, never -0', () => {
+    const triple = [...cubic.solveInverse(cubic.make(0, 0, 0, 1), 0)]
+    expect(triple).toHaveLength(1)
+    expect(Object.is(triple[0], 0)).toBe(true)
+    const double = [...cubic.solveInverse(cubic.make(0, 0, 2, 1), 0)]
+    expect(double[0]).toBe(-2)
+    expect(Object.is(double[1], 0)).toBe(true)
+  })
+
+  test('solveInverse returns distinct roots in ascending order', () => {
+    // (t - 1)(t - 2)(t - 3) = t^3 - 6t^2 + 11t - 6
+    expect([...cubic.solveInverse(cubic.make(0, 11, -6, 1), 6)]).toEqual(
+      [1, 2, 3].map((r) => expect.closeTo(r, 12)),
+    )
+  })
+
   test('make', () => {
     expect(cubic.make(0, 1, 2, 3)).toMatchObject({
       c0: 0,

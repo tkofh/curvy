@@ -1,8 +1,11 @@
 import { bench, describe } from 'vitest'
+import * as Arc from '../src/arc/arc.ts'
 import * as CubicCurve2d from '../src/curve/cubic2d.ts'
 import * as Interval from '../src/interval/interval.ts'
 import * as QuadraticCurve2d from '../src/curve/quadratic2d.ts'
 import * as Matrix4x4 from '../src/matrix/matrix4x4.ts'
+import * as Piecewise from '../src/piecewise/piecewise.ts'
+import * as CubicPolynomial from '../src/polynomial/cubic.ts'
 import * as CubicPath2d from '../src/path/cubic2d.ts'
 import * as Polygon2d from '../src/polygon/polygon2d.ts'
 import * as Bezier2d from '../src/splines/bezier2d.ts'
@@ -147,5 +150,81 @@ describe('cardinal -> bezier', () => {
 
   bench('toBezier (uniform alpha = 0)', () => {
     _sink = Cardinal2d.toBezier(uniform)
+  })
+})
+
+describe('easing', () => {
+  // CSS ease-in-out.
+  const ease = CubicCurve2d.fromBezierPoints(
+    Vector2.make(0, 0),
+    Vector2.make(0.42, 0),
+    Vector2.make(0.58, 1),
+    Vector2.make(1, 1),
+  )
+  const threeRoots = CubicPolynomial.make(0, 11, -6, 1) // roots of y = 6 at 1, 2, 3
+
+  bench('CubicCurve2d.solveAtX x 100', () => {
+    let last: unknown
+    for (let i = 0; i <= 100; i++) {
+      last = CubicCurve2d.solveAtX(ease, i / 100)
+    }
+    _sink = last
+  })
+
+  bench('CubicPolynomial.solveInverse, three roots', () => {
+    _sink = CubicPolynomial.solveInverse(threeRoots, 6)
+  })
+})
+
+const steps = (count: number) =>
+  Array.from({ length: count }, (_, i) =>
+    CubicCurve2d.fromBezierPoints(
+      Vector2.make(i, i),
+      Vector2.make(i + 0.42, i),
+      Vector2.make(i + 0.58, i + 1),
+      Vector2.make(i + 1, i + 1),
+    ),
+  )
+
+const pieces = (count: number) =>
+  Piecewise.fromArray(
+    Array.from(
+      { length: count },
+      (_, i) => [Interval.make(i, i + 1), CubicPolynomial.make(i, 0, 3, -2)] as const,
+    ),
+  )
+
+describe('segment lookup', () => {
+  for (const count of [4, 64]) {
+    const path = CubicPath2d.asMonotonicX(CubicPath2d.fromArray(steps(count)))
+    const pp = pieces(count)
+
+    bench(`CubicPath2d.solveAtX x 100, ${count} segments`, () => {
+      let last: unknown
+      for (let i = 0; i <= 100; i++) {
+        last = CubicPath2d.solveAtX(path, (i / 100) * count)
+      }
+      _sink = last
+    })
+
+    bench(`Piecewise.solve x 100, ${count} pieces`, () => {
+      let last: unknown
+      for (let i = 0; i <= 100; i++) {
+        last = Piecewise.solve(pp, (i / 100) * count)
+      }
+      _sink = last
+    })
+  }
+})
+
+describe('arc', () => {
+  const ellipse = Arc.elliptical({ radiusX: 3, radiusY: 1, rotation: 0.4, sweep: Math.PI })
+
+  bench('elliptical Arc.solve x 100', () => {
+    let last: unknown
+    for (let i = 0; i <= 100; i++) {
+      last = Arc.solve(ellipse, i / 100)
+    }
+    _sink = last
   })
 })

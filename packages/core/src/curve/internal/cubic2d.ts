@@ -124,17 +124,15 @@ export const solve = dual<
 // (t-ascending).
 /** @internal */
 export const solveAtX = dual(2, (c: CubicCurve2d, x: number) =>
-  CubicPolynomial.solveInverse(c.x, x).pipe(
-    Solution.clipApprox(Interval.unit),
-    Solution.map(CubicPolynomial.toSolver(c.y)),
+  Solution.map(Solution.clipApprox(CubicPolynomial.solveInverse(c.x, x), Interval.unit), (t) =>
+    CubicPolynomial.solve(c.y, t),
   ),
 )
 
 /** @internal */
 export const solveAtY = dual(2, (c: CubicCurve2d, y: number) =>
-  CubicPolynomial.solveInverse(c.y, y).pipe(
-    Solution.clipApprox(Interval.unit),
-    Solution.map(CubicPolynomial.toSolver(c.x)),
+  Solution.map(Solution.clipApprox(CubicPolynomial.solveInverse(c.y, y), Interval.unit), (t) =>
+    CubicPolynomial.solve(c.x, t),
   ),
 )
 

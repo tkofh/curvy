@@ -127,6 +127,22 @@ const refine = (p: CubicPolynomial, y: number, t0: number): number => {
   return t
 }
 
+// The distinct roots in ascending order, as collecting them in a `Set` and
+// sorting would give, without the three intermediate collections. Like a
+// `Set`, `includes` treats 0 and -0 as one root and NaN as one root, and the
+// `+ 0` stores -0 as 0, as `Set.add` does. Sorting in place with the same
+// comparator orders them as `toSorted` would.
+const distinctAscending = (candidates: Array<number>): Solution.AtMostThree<number> => {
+  const roots: Array<number> = []
+  for (const r of candidates) {
+    if (!roots.includes(r)) {
+      roots.push(r + 0)
+    }
+  }
+  roots.sort((a, b) => a - b)
+  return Solution.fromArray(roots) as Solution.AtMostThree<number>
+}
+
 /** @internal */
 export const solveInverse = dual<
   (y: number) => (p: CubicPolynomial) => Solution.AtMostThree<number>,
@@ -154,38 +170,38 @@ export const solveInverse = dual<
   const q2 = 27 * q ** 2
   const discriminant = clampToZero(-(p3 + q2), RELATIVE_TOLERANCE * Math.max(Math.abs(p3), q2))
 
-  const roots = new Set<number>()
-
   if (discriminant > 0) {
     const r = 2 * Math.sqrt(-p / 3)
     const theta = Math.acos(((3 * q) / (2 * p)) * Math.sqrt(-3 / p)) / 3
     const offset = (2 * Math.PI) / 3
 
-    roots.add(refine(self, y, r * Math.cos(theta + offset) - shift))
-    roots.add(refine(self, y, r * Math.cos(theta) - shift))
-    roots.add(refine(self, y, r * Math.cos(theta - offset) - shift))
-  } else if (discriminant < 0) {
+    return distinctAscending([
+      refine(self, y, r * Math.cos(theta + offset) - shift),
+      refine(self, y, r * Math.cos(theta) - shift),
+      refine(self, y, r * Math.cos(theta - offset) - shift),
+    ])
+  }
+  if (discriminant < 0) {
     const u = Math.sqrt(q ** 2 / 4 + p ** 3 / 27)
 
     const u1 = Math.cbrt(-q / 2 + u)
     const u2 = Math.cbrt(-q / 2 - u)
 
-    roots.add(refine(self, y, u1 + u2 - shift))
-  } else if (d0 === 0) {
-    roots.add(refine(self, y, -shift))
-  } else {
-    roots.add(refine(self, y, (9 * self.c3 * (self.c0 - y) - self.c2 * self.c1) / (2 * d0)))
-    roots.add(
-      refine(
-        self,
-        y,
-        (4 * self.c3 * self.c2 * self.c1 - 9 * self.c3 ** 2 * (self.c0 - y) - self.c2 ** 3) /
-          (self.c3 * d0),
-      ),
-    )
+    // `+ 0` reports a -0 root as 0, as the other branches do.
+    return Solution.one(refine(self, y, u1 + u2 - shift) + 0)
   }
-
-  return Solution.fromArray(Array.from(roots).toSorted((a, b) => a - b))
+  if (d0 === 0) {
+    return Solution.one(refine(self, y, -shift) + 0)
+  }
+  return distinctAscending([
+    refine(self, y, (9 * self.c3 * (self.c0 - y) - self.c2 * self.c1) / (2 * d0)),
+    refine(
+      self,
+      y,
+      (4 * self.c3 * self.c2 * self.c1 - 9 * self.c3 ** 2 * (self.c0 - y) - self.c2 ** 3) /
+        (self.c3 * d0),
+    ),
+  ])
 })
 
 /** @internal */
@@ -377,13 +393,24 @@ export const domain = dual<
 export const range = dual<
   (domain: Interval.Interval) => (p: CubicPolynomial) => Interval.Closed,
   (p: CubicPolynomial, domain: Interval.Interval) => Interval.Closed
->(2, (p: CubicPolynomial, d: Interval.Interval) =>
-  Interval.fromValues([
-    solve(p, d.start),
-    solve(p, d.end),
-    ...Interval.filter(d, [...extrema(p)]).map((e) => solve(p, e)),
-  ]),
-)
+>(2, (p: CubicPolynomial, d: Interval.Interval) => {
+  // The values at both ends and at each interior extremum, folded into
+  // min and max as they come instead of collected into arrays first.
+  // `Math.min` and `Math.max` don't depend on order, so this rounds as
+  // `Interval.fromValues` over the same values does.
+  const a = solve(p, d.start)
+  const b = solve(p, d.end)
+  let min = Math.min(a, b)
+  let max = Math.max(a, b)
+  for (const e of extrema(p)) {
+    if (Interval.contains(d, e)) {
+      const v = solve(p, e)
+      min = Math.min(min, v)
+      max = Math.max(max, v)
+    }
+  }
+  return Interval.make(min, max)
+})
 
 /** @internal */
 export const unitRange = (p: CubicPolynomial): Interval.Closed => range(p, Interval.unit)

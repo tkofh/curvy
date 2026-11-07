@@ -304,15 +304,19 @@ export const endPoint = (c: RationalCubicCurve2d): Vector2.Vector2 => {
 export const solveAtX = dual(
   2,
   (c: RationalCubicCurve2d, x: number): Solution.Solution<number> =>
-    CubicPolynomial.make(
-      c.x.c0 - x * c.w.c0,
-      c.x.c1 - x * c.w.c1,
-      c.x.c2 - x * c.w.c2,
-      c.x.c3 - x * c.w.c3,
-    ).pipe(
-      CubicPolynomial.roots,
-      Solution.clipApprox(Interval.unit),
-      Solution.map((t) => CubicPolynomial.solve(c.y, t) / CubicPolynomial.solve(c.w, t)),
+    Solution.map(
+      Solution.clipApprox(
+        CubicPolynomial.roots(
+          CubicPolynomial.make(
+            c.x.c0 - x * c.w.c0,
+            c.x.c1 - x * c.w.c1,
+            c.x.c2 - x * c.w.c2,
+            c.x.c3 - x * c.w.c3,
+          ),
+        ),
+        Interval.unit,
+      ),
+      (t) => CubicPolynomial.solve(c.y, t) / CubicPolynomial.solve(c.w, t),
     ),
 )
 
@@ -320,15 +324,19 @@ export const solveAtX = dual(
 export const solveAtY = dual(
   2,
   (c: RationalCubicCurve2d, y: number): Solution.Solution<number> =>
-    CubicPolynomial.make(
-      c.y.c0 - y * c.w.c0,
-      c.y.c1 - y * c.w.c1,
-      c.y.c2 - y * c.w.c2,
-      c.y.c3 - y * c.w.c3,
-    ).pipe(
-      CubicPolynomial.roots,
-      Solution.clipApprox(Interval.unit),
-      Solution.map((t) => CubicPolynomial.solve(c.x, t) / CubicPolynomial.solve(c.w, t)),
+    Solution.map(
+      Solution.clipApprox(
+        CubicPolynomial.roots(
+          CubicPolynomial.make(
+            c.y.c0 - y * c.w.c0,
+            c.y.c1 - y * c.w.c1,
+            c.y.c2 - y * c.w.c2,
+            c.y.c3 - y * c.w.c3,
+          ),
+        ),
+        Interval.unit,
+      ),
+      (t) => CubicPolynomial.solve(c.x, t) / CubicPolynomial.solve(c.w, t),
     ),
 )
 

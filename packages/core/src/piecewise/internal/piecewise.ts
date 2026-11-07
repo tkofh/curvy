@@ -2,7 +2,7 @@ import * as CubicCurve2d from '../../curve/cubic2d.ts'
 import * as LinearCurve2d from '../../curve/linear2d.ts'
 import * as QuadraticCurve2d from '../../curve/quadratic2d.ts'
 import * as Interval from '../../interval/interval.ts'
-import { coincident } from '../../number.ts'
+import { EPSILON, coincident } from '../../number.ts'
 import * as CubicPath2d from '../../path/cubic2d.ts'
 import * as LinearPath2d from '../../path/linear2d.ts'
 import * as QuadraticPath2d from '../../path/quadratic2d.ts'
@@ -53,12 +53,50 @@ class PiecewiseImpl<P> extends Value(PiecewiseTypeId) implements Piecewise<P, un
 
   readonly pieces: ReadonlyArray<Piece<P>>
   readonly ops: PolynomialOps<P>
+  // Whether both the starts and the ends of the pieces ascend, which lets
+  // `indexAt` binary search. Construction admits pieces that overlap within
+  // `coincident`, which can break that order, and those keep the scan.
+  readonly #ascending: boolean
 
   constructor(pieces: ReadonlyArray<Piece<P>>, ops: PolynomialOps<P>) {
     invariant(pieces.length > 0, 'piecewise requires at least one piece')
     super()
     this.pieces = pieces
     this.ops = ops
+    let ascending = true
+    for (let i = 1; i < pieces.length && ascending; i++) {
+      const prev = (pieces[i - 1] as Piece<P>)[0]
+      const next = (pieces[i] as Piece<P>)[0]
+      ascending = next.start >= prev.start && next.end >= prev.end
+    }
+    this.#ascending = ascending
+  }
+
+  // The index of the first piece whose domain holds `x` by `containsApprox`,
+  // or -1. On ascending pieces the first one whose end admits `x` is the
+  // only candidate: every earlier end is too low, and if its start is too
+  // high, every later start is too.
+  indexAt(x: number): number {
+    const pieces = this.pieces
+    if (!this.#ascending) {
+      for (let i = 0; i < pieces.length; i++) {
+        if (Interval.containsApprox((pieces[i] as Piece<P>)[0], x)) {
+          return i
+        }
+      }
+      return -1
+    }
+    let lo = 0
+    let hi = pieces.length
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1
+      if (x <= (pieces[mid] as Piece<P>)[0].end + EPSILON) {
+        hi = mid
+      } else {
+        lo = mid + 1
+      }
+    }
+    return lo < pieces.length && Interval.containsApprox((pieces[lo] as Piece<P>)[0], x) ? lo : -1
   }
 
   [Symbol.iterator](): IterableIterator<Piece<P>> {
@@ -332,13 +370,13 @@ export const fromPath = (
 /** @internal */
 export const solve = dual(2, (pp: Piecewise<unknown>, x: number): Solution.AtMostOne<number> => {
   const impl = pp as PiecewiseImpl<unknown>
-  for (const [domain, poly] of impl.pieces) {
-    if (Interval.containsApprox(domain, x)) {
-      const u = Interval.clamp(Interval.unit, Interval.normalize(domain, x))
-      return Solution.one(impl.ops.solve(poly, u))
-    }
+  const i = impl.indexAt(x)
+  if (i < 0) {
+    return Solution.none
   }
-  return Solution.none
+  const [domain, poly] = impl.pieces[i] as Piece<unknown>
+  const u = Interval.clamp(Interval.unit, Interval.normalize(domain, x))
+  return Solution.one(impl.ops.solve(poly, u))
 })
 
 /** @internal */
