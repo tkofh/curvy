@@ -88,6 +88,33 @@ export const cubicBasisSpline: Matrix4x4.Matrix4x4 = Matrix4x4.make(
   1 / 6,
 )
 
+const cardinalMatrix = (tension: number): Matrix4x4.Matrix4x4 =>
+  Matrix4x4.make(
+    0,
+    1,
+    0,
+    0,
+    -tension,
+    0,
+    tension,
+    0,
+    2 * tension,
+    tension - 3,
+    3 - 2 * tension,
+    -tension,
+    -tension,
+    2 - tension,
+    tension - 2,
+    tension,
+  )
+
+const catmullRom = cardinalMatrix(0.5)
+
+// The most recently used tensions, oldest first. Reusing the instance keeps
+// identity-keyed caches downstream warm (`Bezier2d.fromBasis` keys its
+// conversion matrix on it), and the bound keeps a tension that changes on
+// every call, such as one driven by a slider, from growing the cache.
+const CARDINAL_CACHE_SIZE = 16
 const cardinalCache = new Map<number, Matrix4x4.Matrix4x4>()
 
 /**
@@ -99,36 +126,29 @@ const cardinalCache = new Map<number, Matrix4x4.Matrix4x4>()
  * points, `0.5` is the Catmull-Rom variant (`cubicCatmullRom`), and
  * higher values produce looser, more curved shapes.
  *
- * Cached per tension value, so repeated calls with the same tension return
- * the same matrix instance.
+ * Tension `0.5` always returns `cubicCatmullRom` itself. Other tensions
+ * return the same instance on repeated calls while they stay among the 16
+ * most recently used, and a new, equal matrix after that.
  *
  * @param tension - How tightly the curve hugs the control points. `0` gives straight segments, `0.5` Catmull-Rom.
  * @returns The characteristic matrix for that tension.
  * @since 2.0.0
  */
 export const cubicCardinal = (tension: number): Matrix4x4.Matrix4x4 => {
+  if (tension === 0.5) {
+    return catmullRom
+  }
   let m = cardinalCache.get(tension)
   if (m === undefined) {
-    m = Matrix4x4.make(
-      0,
-      1,
-      0,
-      0,
-      -tension,
-      0,
-      tension,
-      0,
-      2 * tension,
-      tension - 3,
-      3 - 2 * tension,
-      -tension,
-      -tension,
-      2 - tension,
-      tension - 2,
-      tension,
-    )
-    cardinalCache.set(tension, m)
+    m = cardinalMatrix(tension)
+    if (cardinalCache.size >= CARDINAL_CACHE_SIZE) {
+      cardinalCache.delete(cardinalCache.keys().next().value!)
+    }
+  } else {
+    // Move it to the newest end.
+    cardinalCache.delete(tension)
   }
+  cardinalCache.set(tension, m)
   return m
 }
 
@@ -138,7 +158,7 @@ export const cubicCardinal = (tension: number): Matrix4x4.Matrix4x4 => {
  *
  * @since 2.0.0
  */
-export const cubicCatmullRom: Matrix4x4.Matrix4x4 = cubicCardinal(0.5)
+export const cubicCatmullRom: Matrix4x4.Matrix4x4 = catmullRom
 
 /**
  * Applies a characteristic matrix to N channels of control values, producing
@@ -161,7 +181,7 @@ export const cubicCatmullRom: Matrix4x4.Matrix4x4 = cubicCardinal(0.5)
  */
 export const apply = <const Channels extends ReadonlyArray<Vector4.Vector4>>(
   matrix: Matrix4x4.Matrix4x4,
-  ...channels: Channels
+  channels: Channels,
 ): { readonly [K in keyof Channels]: CubicPolynomial.CubicPolynomial } => {
   const result = channels.map((c) =>
     CubicPolynomial.fromVector(Matrix4x4.vectorProductLeft(matrix, c)),

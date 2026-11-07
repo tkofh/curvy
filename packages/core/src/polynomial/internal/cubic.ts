@@ -370,7 +370,7 @@ export const domain = dual<
     return Solution.none
   }
 
-  return Solution.one(Interval.fromMinMax(...start, ...end))
+  return Solution.one(Interval.fromValues([...start, ...end]))
 })
 
 /** @internal */
@@ -378,11 +378,11 @@ export const range = dual<
   (domain: Interval.Interval) => (p: CubicPolynomial) => Interval.Closed,
   (p: CubicPolynomial, domain: Interval.Interval) => Interval.Closed
 >(2, (p: CubicPolynomial, d: Interval.Interval) =>
-  Interval.fromMinMax(
+  Interval.fromValues([
     solve(p, d.start),
     solve(p, d.end),
     ...Interval.filter(d, [...extrema(p)]).map((e) => solve(p, e)),
-  ),
+  ]),
 )
 
 /** @internal */

@@ -77,15 +77,20 @@ export const fromCorners: (p0: Vector2, p1: Vector2) => Interval2d<Closed, Close
   internal.fromCorners
 
 /**
- * Creates the smallest closed `Interval2d` enclosing the given points. Useful
- * for computing a bounding box from sampled points.
+ * Creates the smallest closed `Interval2d` enclosing every point in an array.
+ * Useful for computing a bounding box from sampled points.
  *
- * @param points - One or more points to enclose.
+ * @param points - The points to enclose. At least one is required.
  * @returns A new `Interval2d<Closed, Closed>` enclosing all input points.
- * @throws `Error` when called with no points.
+ * @throws `Error` when `points` is empty.
+ * @example
+ * ```ts
+ * Interval2d.fromVectors([Vector2.make(1, 4), Vector2.make(-2, 0), Vector2.make(3, 1)])
+ * // Interval2d(Interval [-2, 3] x Interval [0, 4])
+ * ```
  * @since 2.0.0
  */
-export const fromVectors: (...points: ReadonlyArray<Vector2>) => Interval2d<Closed, Closed> =
+export const fromVectors: (points: ReadonlyArray<Vector2>) => Interval2d<Closed, Closed> =
   internal.fromVectors
 
 export const containsVector: {

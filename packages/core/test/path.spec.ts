@@ -17,10 +17,10 @@ import * as vector2 from '../src/vector/vector2.ts'
 describe('linear2d', () => {
   test('make', () => {
     expect(
-      linearPath2d.make(
+      linearPath2d.fromArray([
         linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
         linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
-      ),
+      ]),
     ).toBeDefined()
   })
   test('fromArray', () => {
@@ -34,10 +34,10 @@ describe('linear2d', () => {
   test('isLinear2dPath', () => {
     expect(
       linearPath2d.isLinearPath2d(
-        linearPath2d.make(
+        linearPath2d.fromArray([
           linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
           linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
-        ),
+        ]),
       ),
     ).toBe(true)
   })
@@ -50,7 +50,7 @@ describe('linear2d', () => {
       linearPolynomial.make(1, 1),
       linearPolynomial.make(1, -1),
     )
-    const p0 = linearPath2d.make(c0)
+    const p0 = linearPath2d.fromArray([c0])
 
     const p1Curves = [...p0]
 
@@ -63,10 +63,10 @@ describe('linear2d', () => {
     expect(p2Curves).toEqual([c0, c1])
   })
   test('solve', () => {
-    const p = linearPath2d.make(
+    const p = linearPath2d.fromArray([
       linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
       linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
-    )
+    ])
 
     expect(linearPath2d.solve(p, 0)).toEqual(vector2.make(0, 1))
     expect(linearPath2d.solve(p, 0.5)).toEqual(vector2.make(1, 1))
@@ -75,10 +75,10 @@ describe('linear2d', () => {
   test('length', () => {
     expect(
       linearPath2d.length(
-        linearPath2d.make(
+        linearPath2d.fromArray([
           linearCurve2d.fromPolynomials(linearPolynomial.make(0, 1), linearPolynomial.make(1, 0)),
           linearCurve2d.fromPolynomials(linearPolynomial.make(1, 1), linearPolynomial.make(1, -1)),
-        ),
+        ]),
       ),
     ).toBeCloseTo(1 + Math.sqrt(2), 10)
   })
@@ -87,7 +87,7 @@ describe('linear2d', () => {
 describe('quadratic2d', () => {
   test('make', () => {
     expect(
-      quadraticPath2d.make(
+      quadraticPath2d.fromArray([
         quadraticCurve2d.fromPolynomials(
           quadraticPolynomial.make(0, 0, 1),
           quadraticPolynomial.make(0, 0, 1),
@@ -96,7 +96,7 @@ describe('quadratic2d', () => {
           quadraticPolynomial.make(0, 0, 1),
           quadraticPolynomial.make(0, 0, 1),
         ),
-      ),
+      ]),
     ).toBeDefined()
   })
   test('fromArray', () => {
@@ -116,7 +116,7 @@ describe('quadratic2d', () => {
   test('isQuadratic2dPath', () => {
     expect(
       quadraticPath2d.isQuadraticPath2d(
-        quadraticPath2d.make(
+        quadraticPath2d.fromArray([
           quadraticCurve2d.fromPolynomials(
             quadraticPolynomial.make(0, 0, 1),
             quadraticPolynomial.make(0, 0, 1),
@@ -125,7 +125,7 @@ describe('quadratic2d', () => {
             quadraticPolynomial.make(0, 0, 1),
             quadraticPolynomial.make(0, 0, 1),
           ),
-        ),
+        ]),
       ),
     ).toBe(true)
   })
@@ -138,7 +138,7 @@ describe('quadratic2d', () => {
       quadraticPolynomial.make(0, 0, 1),
       quadraticPolynomial.make(0, 0, 1),
     )
-    const p0 = quadraticPath2d.make(c0)
+    const p0 = quadraticPath2d.fromArray([c0])
 
     const p1Curves = [...p0]
 
@@ -151,7 +151,7 @@ describe('quadratic2d', () => {
     expect(p2Curves).toEqual([c0, c1])
   })
   test('solve', () => {
-    const p = quadraticPath2d.make(
+    const p = quadraticPath2d.fromArray([
       quadraticCurve2d.fromPolynomials(
         quadraticPolynomial.make(0, 0, 1),
         quadraticPolynomial.make(0, 0, 1),
@@ -160,7 +160,7 @@ describe('quadratic2d', () => {
         quadraticPolynomial.make(1, 0, 1),
         quadraticPolynomial.make(1, 0, 1),
       ),
-    )
+    ])
 
     expect(quadraticPath2d.solve(p, 0)).toEqual(vector2.make(0, 0))
     expect(quadraticPath2d.solve(p, 0.5)).toEqual(vector2.make(1, 1))
@@ -171,7 +171,7 @@ describe('quadratic2d', () => {
 describe('cubic2d', () => {
   test('make', () => {
     expect(
-      cubicPath2d.make(
+      cubicPath2d.fromArray([
         cubicCurve2d.fromPolynomials(
           cubicPolynomial.make(0, 0, 0, 1),
           cubicPolynomial.make(0, 0, 0, 1),
@@ -180,7 +180,7 @@ describe('cubic2d', () => {
           cubicPolynomial.make(0, 0, 0, 1),
           cubicPolynomial.make(0, 0, 0, 1),
         ),
-      ),
+      ]),
     ).toBeDefined()
   })
   test('fromArray', () => {
@@ -200,7 +200,7 @@ describe('cubic2d', () => {
   test('isCubic2dPath', () => {
     expect(
       cubicPath2d.isCubicPath2d(
-        cubicPath2d.make(
+        cubicPath2d.fromArray([
           cubicCurve2d.fromPolynomials(
             cubicPolynomial.make(0, 0, 0, 1),
             cubicPolynomial.make(0, 0, 0, 1),
@@ -209,7 +209,7 @@ describe('cubic2d', () => {
             cubicPolynomial.make(0, 0, 0, 1),
             cubicPolynomial.make(0, 0, 0, 1),
           ),
-        ),
+        ]),
       ),
     ).toBe(true)
   })
@@ -222,7 +222,7 @@ describe('cubic2d', () => {
       cubicPolynomial.make(0, 0, 0, 1),
       cubicPolynomial.make(0, 0, 0, 1),
     )
-    const p0 = cubicPath2d.make(c0)
+    const p0 = cubicPath2d.fromArray([c0])
 
     const p1Curves = [...p0]
 
@@ -235,7 +235,7 @@ describe('cubic2d', () => {
     expect(p2Curves).toEqual([c0, c1])
   })
   test('solve', () => {
-    const p = cubicPath2d.make(
+    const p = cubicPath2d.fromArray([
       cubicCurve2d.fromPolynomials(
         cubicPolynomial.make(0, 0, 0, 1),
         cubicPolynomial.make(0, 0, 0, 1),
@@ -244,7 +244,7 @@ describe('cubic2d', () => {
         cubicPolynomial.make(1, 0, 0, 1),
         cubicPolynomial.make(1, 0, 0, 1),
       ),
-    )
+    ])
 
     expect(cubicPath2d.solve(p, 0)).toEqual(vector2.make(0, 0))
     expect(cubicPath2d.solve(p, 0.5)).toEqual(vector2.make(1, 1))
@@ -376,15 +376,15 @@ describe('cubic2d', () => {
       vector2.make(11, 11),
       vector2.make(10, 11),
     )
-    const d = cubicPath2d.make(c0, c1).pipe(cubicPath2d.toPathData)
+    const d = cubicPath2d.fromArray([c0, c1]).pipe(cubicPath2d.toPathData)
     expect(d).toBe('M 0,0 C 1,0 1,1 0,1 M 10,10 C 11,10 11,11 10,11')
   })
   test('fromLinear elevates per segment, bitwise-exact, and keeps traits', () => {
     const path = linearPath2d.asContinuous(
-      linearPath2d.make(
+      linearPath2d.fromArray([
         linearCurve2d.fromEndpoints(vector2.make(0.1, 0.2), vector2.make(2.3, 1.1)),
         linearCurve2d.fromEndpoints(vector2.make(2.3, 1.1), vector2.make(4.5, 1.9)),
-      ),
+      ]),
     )
     const elevated = cubicPath2d.fromLinear(path)
     expectTypeOf(elevated).toEqualTypeOf<cubicPath2d.CubicPath2d<cubicPath2d.Continuous>>()
@@ -401,13 +401,13 @@ describe('cubic2d', () => {
     expect(cubicPath2d.length(elevated)).toBeCloseTo(linearPath2d.length(path), 12)
   })
   test('fromQuadratic elevates per segment bitwise-exact', () => {
-    const path = quadraticPath2d.make(
+    const path = quadraticPath2d.fromArray([
       quadraticCurve2d.fromBezierPoints(
         vector2.make(0.1, 0.7),
         vector2.make(3.3, 6.1),
         vector2.make(9.9, 0.7),
       ),
-    )
+    ])
     const elevated = cubicPath2d.fromQuadratic(path)
     expect([...elevated].length).toBe(1)
     for (const u of [0, 0.25, 0.5, 0.77, 1]) {
@@ -422,25 +422,25 @@ describe('cubic2d', () => {
 describe('toPathData', () => {
   test('linear path renders M and L commands', () => {
     const d = linearPath2d
-      .make(
+      .fromArray([
         linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(1, 1)),
         linearCurve2d.fromEndpoints(vector2.make(1, 1), vector2.make(2, 0)),
-      )
+      ])
       .pipe(linearPath2d.toPathData)
     expect(d).toBe('M 0,0 L 1,1 L 2,0')
   })
   test('linear path emits fresh M on discontinuity', () => {
     const d = linearPath2d
-      .make(
+      .fromArray([
         linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(1, 1)),
         linearCurve2d.fromEndpoints(vector2.make(5, 5), vector2.make(6, 6)),
-      )
+      ])
       .pipe(linearPath2d.toPathData)
     expect(d).toBe('M 0,0 L 1,1 M 5,5 L 6,6')
   })
   test('quadratic path renders M and Q commands', () => {
     const d = quadraticPath2d
-      .make(
+      .fromArray([
         quadraticCurve2d.fromBezierPoints(
           vector2.make(0, 0),
           vector2.make(1, 1),
@@ -451,13 +451,13 @@ describe('toPathData', () => {
           vector2.make(3, -1),
           vector2.make(4, 0),
         ),
-      )
+      ])
       .pipe(quadraticPath2d.toPathData)
     expect(d).toBe('M 0,0 Q 1,1 2,0 Q 3,-1 4,0')
   })
   test('quadratic path emits fresh M on discontinuity', () => {
     const d = quadraticPath2d
-      .make(
+      .fromArray([
         quadraticCurve2d.fromBezierPoints(
           vector2.make(0, 0),
           vector2.make(1, 1),
@@ -468,7 +468,7 @@ describe('toPathData', () => {
           vector2.make(11, 11),
           vector2.make(12, 10),
         ),
-      )
+      ])
       .pipe(quadraticPath2d.toPathData)
     expect(d).toBe('M 0,0 Q 1,1 2,0 M 10,10 Q 11,11 12,10')
   })
@@ -488,7 +488,7 @@ describe('rationalCubicPath2d.approximateAsCubicPath', () => {
       vector2.makeWeighted(5, -1, 1),
       vector2.makeWeighted(6, 0, 1),
     )
-    const path = rationalCubicPath2d.make(curveA, curveB)
+    const path = rationalCubicPath2d.fromArray([curveA, curveB])
     const tolerance = 1e-3
     const approxA = rationalCubicCurve2d.approximateAsCubicCurves(curveA, tolerance)
     const approxB = rationalCubicCurve2d.approximateAsCubicCurves(curveB, tolerance)
@@ -497,7 +497,7 @@ describe('rationalCubicPath2d.approximateAsCubicPath', () => {
   })
 
   test('endpoints match input path at u = 0 and u = 1', () => {
-    const path = rationalCubicPath2d.make(
+    const path = rationalCubicPath2d.fromArray([
       rationalCubicCurve2d.fromBezierPoints(
         vector2.makeWeighted(0, 0, 1),
         vector2.makeWeighted(1, 2, 5),
@@ -510,14 +510,14 @@ describe('rationalCubicPath2d.approximateAsCubicPath', () => {
         vector2.makeWeighted(5, -1, 1),
         vector2.makeWeighted(6, 0, 1),
       ),
-    )
+    ])
     const approx = rationalCubicPath2d.approximateAsCubicPath(path, 1e-3)
     expect(cubicPath2d.solve(approx, 0)).toBeCloseToValue(rationalCubicPath2d.solve(path, 0), 1e-10)
     expect(cubicPath2d.solve(approx, 1)).toBeCloseToValue(rationalCubicPath2d.solve(path, 1), 1e-10)
   })
 
   test('preserves C0 continuity from a continuous input', () => {
-    const path = rationalCubicPath2d.make(
+    const path = rationalCubicPath2d.fromArray([
       rationalCubicCurve2d.fromBezierPoints(
         vector2.makeWeighted(0, 0, 1),
         vector2.makeWeighted(1, 2, 5),
@@ -530,7 +530,7 @@ describe('rationalCubicPath2d.approximateAsCubicPath', () => {
         vector2.makeWeighted(5, -1, 1),
         vector2.makeWeighted(6, 0, 1),
       ),
-    )
+    ])
     const approx = rationalCubicPath2d.approximateAsCubicPath(path, 1e-3)
     expect(cubicPath2d.isContinuous(approx)).toBe(true)
   })
@@ -538,7 +538,7 @@ describe('rationalCubicPath2d.approximateAsCubicPath', () => {
 
 describe('rationalCubicPath2d.boundingBox', () => {
   test('encloses every segment of the path', () => {
-    const path = rationalCubicPath2d.make(
+    const path = rationalCubicPath2d.fromArray([
       rationalCubicCurve2d.fromBezierPoints(
         vector2.makeWeighted(0, 0, 1),
         vector2.makeWeighted(1, 3, 2),
@@ -551,7 +551,7 @@ describe('rationalCubicPath2d.boundingBox', () => {
         vector2.makeWeighted(5, -2, 1),
         vector2.makeWeighted(6, 0, 1),
       ),
-    )
+    ])
     const box = rationalCubicPath2d.boundingBox(path, 1e-3)
     for (let i = 0; i <= 400; i++) {
       const u = i / 400
@@ -577,7 +577,10 @@ describe('rationalCubicPath2d.boundingBox', () => {
       vector2.makeWeighted(6, 0, 1),
     )
     const tolerance = 1e-3
-    const pathBox = rationalCubicPath2d.boundingBox(rationalCubicPath2d.make(seg0, seg1), tolerance)
+    const pathBox = rationalCubicPath2d.boundingBox(
+      rationalCubicPath2d.fromArray([seg0, seg1]),
+      tolerance,
+    )
     const box0 = rationalCubicCurve2d.boundingBox(seg0, tolerance)
     const box1 = rationalCubicCurve2d.boundingBox(seg1, tolerance)
 
@@ -612,7 +615,7 @@ describe('Path2d.appendContinuous', () => {
     vector2.make(0, 0),
     vector2.make(0, 0),
   )
-  const cont = cubicPath2d.asContinuous(cubicPath2d.make(a))
+  const cont = cubicPath2d.asContinuous(cubicPath2d.fromArray([a]))
 
   test('preserves Continuous on a connecting curve', () => {
     const p = cubicPath2d.appendContinuous(cont, b)
@@ -631,7 +634,7 @@ describe('reverse', () => {
   // (0,0) -> (2,4) -> (5,5): connected, increasing in x.
   const segA = linearCurve2d.fromCoefficients(vector2.make(0, 0), vector2.make(2, 4))
   const segB = linearCurve2d.fromCoefficients(vector2.make(2, 4), vector2.make(3, 1))
-  const path = linearPath2d.make(segA, segB)
+  const path = linearPath2d.fromArray([segA, segB])
 
   test('whole-path reversal: solve(rev, u) === solve(orig, 1 - u)', () => {
     const rev = linearPath2d.reverse(path)

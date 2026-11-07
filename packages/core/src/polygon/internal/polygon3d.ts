@@ -71,14 +71,6 @@ export const fromArray = (vertices: ReadonlyArray<Vector3>): Polygon3d => {
 }
 
 /** @internal */
-export const make = (
-  p0: Vector3,
-  p1: Vector3,
-  p2: Vector3,
-  ...rest: ReadonlyArray<Vector3>
-): Polygon3d => fromArray([p0, p1, p2, ...rest])
-
-/** @internal */
 export const fromTuples = (tuples: ReadonlyArray<readonly [number, number, number]>): Polygon3d =>
   fromArray(tuples.map(([x, y, z]) => vector3.make(x, y, z)))
 

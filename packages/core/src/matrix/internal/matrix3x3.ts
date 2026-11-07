@@ -112,11 +112,28 @@ export const setColumn = dual<
   ),
 )
 
+// Cofactor expansion along the first row, written out on the entries so it
+// allocates nothing. Each bracket is the determinant of a 2x2 minor, in the
+// order `minor` would build it.
 /** @internal */
-export const determinant = (m: Matrix3x3) =>
-  m.m00 * matrix2x2.determinant(minor(m, 0, 0)) -
-  m.m01 * matrix2x2.determinant(minor(m, 0, 1)) +
-  m.m02 * matrix2x2.determinant(minor(m, 0, 2))
+export const determinant = (m: Matrix3x3): number =>
+  determinantOf(m.m00, m.m01, m.m02, m.m10, m.m11, m.m12, m.m20, m.m21, m.m22)
+
+// The determinant of the 3x3 matrix with these entries in row-major order,
+// expanded along its first row. `Matrix4x4` passes its minors' entries here
+// directly, so they round as `determinant` of the built minor would.
+/** @internal */
+export const determinantOf = (
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+  f: number,
+  g: number,
+  h: number,
+  i: number,
+): number => a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g)
 
 /** @internal */
 export const minor = dual<
@@ -261,24 +278,22 @@ export const asInvertible = <T>(m: Matrix3x3<T>): Matrix3x3<T & Invertible> => {
   return m
 }
 
+// The adjugate, the transpose of the cofactor matrix, divided by the
+// determinant. Entry (r, c) of the inverse is cofactor (c, r): the signed
+// determinant of the 2x2 minor that drops row c and column r, written out on
+// the entries so the inverse allocates only itself.
 const buildInverse = (m: Matrix3x3, det: number): Matrix3x3 => {
   const inv = 1 / det
-  // adjugate is the transpose of the cofactor matrix
-  const cof = (row: Matrix3x3Coordinate, col: Matrix3x3Coordinate) => {
-    const sign = ((row as number) + (col as number)) % 2 === 0 ? 1 : -1
-    return sign * matrix2x2.determinant(minor(m, row, col)) * inv
-  }
-
   return new Matrix3x3Impl(
-    cof(0, 0),
-    cof(1, 0),
-    cof(2, 0),
-    cof(0, 1),
-    cof(1, 1),
-    cof(2, 1),
-    cof(0, 2),
-    cof(1, 2),
-    cof(2, 2),
+    (m.m11 * m.m22 - m.m12 * m.m21) * inv,
+    -(m.m01 * m.m22 - m.m02 * m.m21) * inv,
+    (m.m01 * m.m12 - m.m02 * m.m11) * inv,
+    -(m.m10 * m.m22 - m.m12 * m.m20) * inv,
+    (m.m00 * m.m22 - m.m02 * m.m20) * inv,
+    -(m.m00 * m.m12 - m.m02 * m.m10) * inv,
+    (m.m10 * m.m21 - m.m11 * m.m20) * inv,
+    -(m.m00 * m.m21 - m.m01 * m.m20) * inv,
+    (m.m00 * m.m11 - m.m01 * m.m10) * inv,
   )
 }
 

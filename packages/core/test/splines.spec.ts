@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import * as Characteristic from '../src/characteristic/characteristic.ts'
 import * as CubicCurve2d from '../src/curve/cubic2d.ts'
 import * as CubicPath2d from '../src/path/cubic2d.ts'
 import * as LinearPath2d from '../src/path/linear2d.ts'
@@ -146,21 +147,21 @@ describe('hermite', () => {
 })
 
 describe('cardinal', () => {
-  const fourPoints = Cardinal2d.make(
+  const fourPoints = Cardinal2d.fromArray([
     Vector2.zero,
     Vector2.make(0, 1),
     Vector2.make(1, 1),
     Vector2.make(1, 0),
-  ).pipe(Cardinal2d.withDuplicatedEndpoints)
+  ]).pipe(Cardinal2d.withDuplicatedEndpoints)
 
   test('make: defaults are centripetal Catmull-Rom', () => {
-    const c = Cardinal2d.make(Vector2.zero, Vector2.make(1, 1))
+    const c = Cardinal2d.fromArray([Vector2.zero, Vector2.make(1, 1)])
     expect(c.tension).toBe(0.5)
     expect(c.alpha).toBe(0.5)
   })
 
   test('make: options-first overload', () => {
-    const c = Cardinal2d.make({ tension: 0.7, alpha: 0.3 }, Vector2.zero, Vector2.make(1, 1))
+    const c = Cardinal2d.fromArray([Vector2.zero, Vector2.make(1, 1)], { tension: 0.7, alpha: 0.3 })
     expect(c.tension).toBe(0.7)
     expect(c.alpha).toBe(0.3)
   })
@@ -172,7 +173,7 @@ describe('cardinal', () => {
   })
 
   test('withTension / withAlpha / withOptions are pipeable and preserve points', () => {
-    const c = Cardinal2d.make(Vector2.zero, Vector2.make(1, 1))
+    const c = Cardinal2d.fromArray([Vector2.zero, Vector2.make(1, 1)])
     const withT = c.pipe(Cardinal2d.withTension(0.9))
     expect(withT.tension).toBe(0.9)
     expect(withT.alpha).toBe(0.5)
@@ -193,8 +194,11 @@ describe('cardinal', () => {
   })
 
   test('append / prepend / endpoint helpers preserve tension and alpha', () => {
-    const c = Cardinal2d.make({ tension: 0.7, alpha: 0.25 }, Vector2.zero, Vector2.make(1, 1))
-    const appended = c.pipe(Cardinal2d.append(Vector2.make(2, 0)))
+    const c = Cardinal2d.fromArray([Vector2.zero, Vector2.make(1, 1)], {
+      tension: 0.7,
+      alpha: 0.25,
+    })
+    const appended = c.pipe(Cardinal2d.append([Vector2.make(2, 0)]))
     expect(appended.tension).toBe(0.7)
     expect(appended.alpha).toBe(0.25)
 
@@ -217,12 +221,9 @@ describe('cardinal', () => {
     // Uniform Catmull-Rom (tension = 0.5, alpha = 0) at midpoint of a
     // straight horizontal control polygon is exactly the midpoint between
     // segment endpoints.
-    const cardinal = Cardinal2d.make(
+    const cardinal = Cardinal2d.fromArray(
+      [Vector2.make(0, 0), Vector2.make(1, 0), Vector2.make(2, 0), Vector2.make(3, 0)],
       { alpha: 0 },
-      Vector2.make(0, 0),
-      Vector2.make(1, 0),
-      Vector2.make(2, 0),
-      Vector2.make(3, 0),
     )
     expect(CubicPath2d.solve(Cardinal2d.toPath(cardinal), 0.5)).toBeCloseToValue(
       Vector2.make(1.5, 0),
@@ -610,26 +611,26 @@ describe('fromTuples', () => {
 
 describe('Cardinal2d.withInterpolatedEndpoints', () => {
   test('matches withDuplicatedEndpoints structurally', () => {
-    const c = Cardinal2d.make(Vector2.make(0, 0), Vector2.make(1, 1), Vector2.make(2, 0))
+    const c = Cardinal2d.fromArray([Vector2.make(0, 0), Vector2.make(1, 1), Vector2.make(2, 0)])
     const dup = Cardinal2d.withDuplicatedEndpoints(c)
     const interp = Cardinal2d.withInterpolatedEndpoints(c)
     expect([...interp]).toEqual([...dup])
   })
   test('preserves tension and alpha', () => {
-    const c = Cardinal2d.make(
-      { tension: 0.7, alpha: 0.25 },
-      Vector2.make(0, 0),
-      Vector2.make(1, 1),
-      Vector2.make(2, 0),
-    )
+    const c = Cardinal2d.fromArray([Vector2.make(0, 0), Vector2.make(1, 1), Vector2.make(2, 0)], {
+      tension: 0.7,
+      alpha: 0.25,
+    })
     const interp = Cardinal2d.withInterpolatedEndpoints(c)
     expect(interp.tension).toBe(0.7)
     expect(interp.alpha).toBe(0.25)
   })
   test('resulting path interpolates first and last control points', () => {
-    const c = Cardinal2d.make(Vector2.make(0, 0), Vector2.make(1, 1), Vector2.make(2, 0)).pipe(
-      Cardinal2d.withInterpolatedEndpoints,
-    )
+    const c = Cardinal2d.fromArray([
+      Vector2.make(0, 0),
+      Vector2.make(1, 1),
+      Vector2.make(2, 0),
+    ]).pipe(Cardinal2d.withInterpolatedEndpoints)
     const path = Cardinal2d.toPath(c)
     expect(CubicPath2d.solve(path, 0)).toBeCloseToValue(Vector2.make(0, 0))
     expect(CubicPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(2, 0))
@@ -638,12 +639,12 @@ describe('Cardinal2d.withInterpolatedEndpoints', () => {
 
 describe('Linear2d', () => {
   test('toPath produces N-1 segments from N points', () => {
-    const l = Linear2d.make(
+    const l = Linear2d.fromArray([
       Vector2.make(0, 0),
       Vector2.make(1, 2),
       Vector2.make(3, 1),
       Vector2.make(5, 4),
-    )
+    ])
     const path = Linear2d.toPath(l)
     expect([...path]).toHaveLength(3)
     // path visits each original point at u=0, u=1/3, u=2/3, u=1
@@ -653,9 +654,9 @@ describe('Linear2d', () => {
     expect(LinearPath2d.solve(path, 1)).toBeCloseToValue(Vector2.make(5, 4))
   })
   test('append / prepend round-trip', () => {
-    const base = Linear2d.make(Vector2.make(0, 0), Vector2.make(1, 1))
-    const appended = Linear2d.append(base, Vector2.make(2, 2), Vector2.make(3, 3))
-    const prepended = Linear2d.prepend(base, Vector2.make(-1, -1))
+    const base = Linear2d.fromArray([Vector2.make(0, 0), Vector2.make(1, 1)])
+    const appended = Linear2d.append(base, [Vector2.make(2, 2), Vector2.make(3, 3)])
+    const prepended = Linear2d.prepend(base, [Vector2.make(-1, -1)])
     expect([...appended]).toEqual([
       Vector2.make(0, 0),
       Vector2.make(1, 1),
@@ -768,12 +769,10 @@ describe('mapPoints and flatMap', () => {
   })
 
   test('Cardinal2d.mapPoints preserves tension and alpha', () => {
-    const c = Cardinal2d.make(
-      { tension: 0.7, alpha: 0.25 },
-      Vector2.make(0, 0),
-      Vector2.make(1, 1),
-      Vector2.make(2, 0),
-    )
+    const c = Cardinal2d.fromArray([Vector2.make(0, 0), Vector2.make(1, 1), Vector2.make(2, 0)], {
+      tension: 0.7,
+      alpha: 0.25,
+    })
     const moved = c.pipe(Cardinal2d.mapPoints(translateBy(1, 1)))
     expect(moved.tension).toBe(0.7)
     expect(moved.alpha).toBe(0.25)
@@ -781,12 +780,10 @@ describe('mapPoints and flatMap', () => {
   })
 
   test('Cardinal2d.flatMap returns the mapper-supplied tension/alpha', () => {
-    const c = Cardinal2d.make(
-      { tension: 0.7, alpha: 0.25 },
-      Vector2.make(0, 0),
-      Vector2.make(1, 1),
-      Vector2.make(2, 0),
-    )
+    const c = Cardinal2d.fromArray([Vector2.make(0, 0), Vector2.make(1, 1), Vector2.make(2, 0)], {
+      tension: 0.7,
+      alpha: 0.25,
+    })
     const rebuilt = c.pipe(
       Cardinal2d.flatMap((points) => Cardinal2d.fromArray([...points], { tension: 0.1 })),
     )
@@ -871,5 +868,32 @@ describe('mapPoints and flatMap', () => {
     )
     expect([...reversed][0]?.x).toBe(3)
     expect([...reversed][3]?.x).toBe(0)
+  })
+})
+
+describe('toPath on long splines', () => {
+  test('builds a path with more curves than fit in a call', () => {
+    const points = Array.from({ length: 200_000 }, (_, i) => Vector2.make(i, (i * 7) % 5))
+    expect([...Basis2d.toPath(Basis2d.fromArray(points))]).toHaveLength(199_997)
+  })
+})
+
+describe('Characteristic.cubicCardinal', () => {
+  test('tension 0.5 is always the Catmull-Rom matrix', () => {
+    expect(Characteristic.cubicCardinal(0.5)).toBe(Characteristic.cubicCatmullRom)
+  })
+
+  test('reuses recent tensions and forgets old ones', () => {
+    const first = Characteristic.cubicCardinal(0.25)
+    expect(Characteristic.cubicCardinal(0.25)).toBe(first)
+    // 16 other tensions push 0.25 out of the cache.
+    for (let i = 0; i < 16; i++) {
+      Characteristic.cubicCardinal(0.3 + i / 100)
+    }
+    const again = Characteristic.cubicCardinal(0.25)
+    expect(again).not.toBe(first)
+    expect(again).toEqual(first)
+    // 0.5 stays pinned however many tensions pass through.
+    expect(Characteristic.cubicCardinal(0.5)).toBe(Characteristic.cubicCatmullRom)
   })
 })

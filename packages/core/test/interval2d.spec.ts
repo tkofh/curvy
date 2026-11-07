@@ -44,12 +44,12 @@ describe('interval2d', () => {
   })
 
   test('fromVectors encloses all input points', () => {
-    const b = interval2d.fromVectors(
+    const b = interval2d.fromVectors([
       vector2.make(1, 1),
       vector2.make(-2, 3),
       vector2.make(5, -1),
       vector2.make(0, 0),
-    )
+    ])
     expect(b.x.start).toBe(-2)
     expect(b.x.end).toBe(5)
     expect(b.y.start).toBe(-1)
@@ -57,7 +57,7 @@ describe('interval2d', () => {
   })
 
   test('fromVectors rejects empty input', () => {
-    expect(() => interval2d.fromVectors()).toThrowError()
+    expect(() => interval2d.fromVectors([])).toThrowError()
   })
 
   test('containsVector respects both axes', () => {
@@ -291,10 +291,10 @@ describe('curve boundingBox', () => {
 
 describe('path boundingBox', () => {
   test('LinearPath2d is union of segment bboxes', () => {
-    const p = linearPath2d.make(
+    const p = linearPath2d.fromArray([
       linear2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 5)),
       linear2d.fromEndpoints(vector2.make(2, 5), vector2.make(-1, 3)),
-    )
+    ])
     const b = linearPath2d.boundingBox(p)
     expect(b.x.start).toBeCloseTo(-1, 10)
     expect(b.x.end).toBeCloseTo(2, 10)
@@ -303,10 +303,10 @@ describe('path boundingBox', () => {
   })
 
   test('QuadraticPath2d unions over segments', () => {
-    const p = quadraticPath2d.make(
+    const p = quadraticPath2d.fromArray([
       quadratic2d.fromBezierPoints(vector2.make(0, 0), vector2.make(1, 4), vector2.make(2, 0)),
       quadratic2d.fromBezierPoints(vector2.make(2, 0), vector2.make(3, -4), vector2.make(4, 0)),
-    )
+    ])
     const b = quadraticPath2d.boundingBox(p)
     expect(b.x.start).toBeCloseTo(0, 10)
     expect(b.x.end).toBeCloseTo(4, 10)
@@ -315,7 +315,7 @@ describe('path boundingBox', () => {
   })
 
   test('CubicPath2d sampled points all fall inside', () => {
-    const p = cubicPath2d.make(
+    const p = cubicPath2d.fromArray([
       cubic2d.fromBezierPoints(
         vector2.make(0, 0),
         vector2.make(1, 2),
@@ -328,7 +328,7 @@ describe('path boundingBox', () => {
         vector2.make(9, 1),
         vector2.make(10, 5),
       ),
-    )
+    ])
     const b = cubicPath2d.boundingBox(p)
     for (let i = 0; i <= 200; i++) {
       const point = cubicPath2d.solve(p, i / 200)

@@ -31,15 +31,9 @@ const methods = Path2d.makeMethods(CubicPath2dTypeId, cubicCurveInternal.Ops)
 export const isCubicPath2d = (p: unknown): p is CubicPath2d =>
   typeof p === 'object' && p !== null && CubicPath2dTypeId in p
 
-// The cubic path enforces a non-empty curve list. Wrap the generic factories
-// to check the invariant; the generic builders accept empty arrays as a
+// The cubic path enforces a non-empty curve list. Wrap the generic factory
+// to check the invariant; the generic builder accepts empty arrays as a
 // matter of structural minimality, but the cubic-specific contract is stricter.
-/** @internal */
-export const make = (...curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d => {
-  invariant(curves.length > 0, 'cubic path requires at least one curve')
-  return methods.make(...curves) as CubicPath2d
-}
-
 /** @internal */
 export const fromArray = (curves: ReadonlyArray<CubicCurve2d.CubicCurve2d>): CubicPath2d => {
   invariant(curves.length > 0, 'cubic path requires at least one curve')

@@ -47,26 +47,6 @@ const resolveOptions = (options?: Options): { tension: number; alpha: number } =
   alpha: options?.alpha ?? DEFAULT_ALPHA,
 })
 
-// Overload: `make(options, p0, p1, ...points)` vs `make(p0, p1, ...points)`.
-// First-arg-is-Vector2 -> no options, defaults apply.
-/** @internal */
-export const make = (
-  ...args:
-    | [Vector2.Vector2, Vector2.Vector2, ...Array<Vector2.Vector2>]
-    | [Options, Vector2.Vector2, Vector2.Vector2, ...Array<Vector2.Vector2>]
-): Cardinal2d => {
-  if (Vector2.isVector2(args[0])) {
-    return new Cardinal2dImpl(
-      args as ReadonlyArray<Vector2.Vector2>,
-      DEFAULT_TENSION,
-      DEFAULT_ALPHA,
-    )
-  }
-  const [options, ...points] = args as [Options, ...Array<Vector2.Vector2>]
-  const { tension, alpha } = resolveOptions(options)
-  return new Cardinal2dImpl(points, tension, alpha)
-}
-
 /** @internal */
 export const fromArray = (
   points: ReadonlyArray<Vector2.Vector2>,
@@ -91,21 +71,21 @@ export const fromTuples = (
 
 /** @internal */
 export const append = dual<
-  (...points: ReadonlyArray<Vector2.Vector2>) => (p: Cardinal2d) => Cardinal2d,
-  (p: Cardinal2d, ...points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d
+  (points: ReadonlyArray<Vector2.Vector2>) => (p: Cardinal2d) => Cardinal2d,
+  (p: Cardinal2d, points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d
 >(
-  (args) => isCardinal2d(args[0]),
-  (p: Cardinal2d, ...points: ReadonlyArray<Vector2.Vector2>) =>
+  2,
+  (p: Cardinal2d, points: ReadonlyArray<Vector2.Vector2>) =>
     new Cardinal2dImpl([...p, ...points], p.tension, p.alpha),
 )
 
 /** @internal */
 export const prepend = dual<
-  (...points: ReadonlyArray<Vector2.Vector2>) => (p: Cardinal2d) => Cardinal2d,
-  (p: Cardinal2d, ...points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d
+  (points: ReadonlyArray<Vector2.Vector2>) => (p: Cardinal2d) => Cardinal2d,
+  (p: Cardinal2d, points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d
 >(
-  (args) => isCardinal2d(args[0]),
-  (p: Cardinal2d, ...points: ReadonlyArray<Vector2.Vector2>) =>
+  2,
+  (p: Cardinal2d, points: ReadonlyArray<Vector2.Vector2>) =>
     new Cardinal2dImpl([...points, ...p], p.tension, p.alpha),
 )
 
@@ -265,7 +245,7 @@ function* cardinalCurves(p: Cardinal2d): IterableIterator<CubicCurve2d.CubicCurv
 }
 
 /** @internal */
-export const toPath = (p: Cardinal2d) => CubicPath2d.make(...cardinalCurves(p))
+export const toPath = (p: Cardinal2d) => CubicPath2d.fromArray(Array.from(cardinalCurves(p)))
 
 // Converts each segment's monomial cubic to four Bézier control points and
 // stitches them, dropping the shared endpoint between adjacent segments.

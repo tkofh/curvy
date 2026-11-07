@@ -45,16 +45,6 @@ export interface CubicPath2d<out Trait = unknown> extends Value.Instance, Iterab
 }
 
 /**
- * Creates a new `CubicPath2d` instance from a sequence of curves.
- *
- * @param curves - The curves to create the path from. At least one is required.
- * @returns A new `CubicPath2d` instance.
- * @throws `Error` when called with no curves.
- * @since 2.0.0
- */
-export const make: (...curves: ReadonlyArray<CubicCurve2d>) => CubicPath2d = internal.make
-
-/**
  * Creates a new `CubicPath2d` instance from an array of curves.
  *
  * @param curves - The curves to create the path from. At least one is required.
@@ -82,9 +72,9 @@ export const fromArray: (curves: ReadonlyArray<CubicCurve2d>) => CubicPath2d = i
  * @example
  * ```ts
  * // A polyline into the polar plane: elevate, then map.
- * const chartPath = LinearPath2d.make(
+ * const chartPath = LinearPath2d.fromArray([
  *   LinearCurve2d.fromEndpoints(Vector2.make(0, 40), Vector2.make(90, 120)),
- * )
+ * ])
  * const spiral = CoordinateSystem.image(
  *   CoordinateSystem.polar({ theta: Dimension.degrees }),
  *   CubicPath2d.fromLinear(chartPath),

@@ -2,7 +2,7 @@
 'curvy': minor
 ---
 
-**Polygons.** A new `curvy/polygon` module adds `Polygon2d`, a closed cycle of three or more vertices with an implicit closing edge. Build one with `make`, `fromArray`, or `fromTuples`. It iterates over its vertices, and `transform` applies an `Affine2d` to every vertex.
+**Polygons.** A new `curvy/polygon` module adds `Polygon2d`, a closed cycle of three or more vertices with an implicit closing edge. Build one with `fromArray` or `fromTuples`. It iterates over its vertices, and `transform` applies an `Affine2d` to every vertex.
 
 Measures read the polygon as a region:
 

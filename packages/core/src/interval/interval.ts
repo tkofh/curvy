@@ -257,14 +257,34 @@ export const fromSize: {
 } = internal.fromSize
 
 /**
- * Creates a new closed `Interval` from a minimum and maximum value, in any order.
+ * Creates a new closed `Interval` from two endpoints given in either order.
  *
- * @param values - The values to take the min and max of. At least one is required.
- * @returns A new `Closed` interval `[min(values), max(values)]`.
- * @throws `Error` when called with no values.
+ * @param a - One endpoint.
+ * @param b - The other endpoint.
+ * @returns A new `Closed` interval `[min(a, b), max(a, b)]`. A NaN endpoint
+ *   makes both ends NaN, as `Math.min` and `Math.max` do.
+ * @example
+ * ```ts
+ * Interval.fromMinMax(3, -1) // Interval [-1, 3]
+ * ```
  * @since 1.0.0
  */
-export const fromMinMax: (...values: ReadonlyArray<number>) => Closed = internal.fromMinMax
+export const fromMinMax: (a: number, b: number) => Closed = internal.fromMinMax
+
+/**
+ * Creates the smallest closed `Interval` containing every value in an array.
+ *
+ * @param values - The values to enclose, in any order. At least one is required.
+ * @returns A new `Closed` interval `[min(values), max(values)]`. A NaN value
+ *   makes both ends NaN, as `Math.min` and `Math.max` do.
+ * @throws `Error` when `values` is empty.
+ * @example
+ * ```ts
+ * Interval.fromValues([4, -2, 7, 0]) // Interval [-2, 7]
+ * ```
+ * @since 1.0.0
+ */
+export const fromValues: (values: ReadonlyArray<number>) => Closed = internal.fromValues
 
 /**
  * Calculates the size of an interval.

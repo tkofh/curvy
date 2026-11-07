@@ -38,17 +38,6 @@ export const isRationalCubicPath2d: (p: unknown) => p is RationalCubicPath2d =
   internal.isRationalCubicPath2d
 
 /**
- * Creates a new `RationalCubicPath2d` from a sequence of curves.
- *
- * @param curves - The curves to create the path from. At least one is required.
- * @returns A new `RationalCubicPath2d` instance.
- * @throws `Error` when called with no curves.
- * @since 2.0.0
- */
-export const make: (...curves: ReadonlyArray<RationalCubicCurve2d>) => RationalCubicPath2d =
-  internal.make
-
-/**
  * Creates a new `RationalCubicPath2d` from an array of curves.
  *
  * @param curves - The curves to create the path from. At least one is required.

@@ -2,6 +2,7 @@ import { bench, describe } from 'vitest'
 import * as Matrix2x2 from '../src/matrix/matrix2x2.ts'
 import * as Matrix3x3 from '../src/matrix/matrix3x3.ts'
 import * as Matrix4x4 from '../src/matrix/matrix4x4.ts'
+import * as Plane3d from '../src/plane/plane3d.ts'
 import * as Affine3d from '../src/transform/affine3d.ts'
 import * as Vector2 from '../src/vector/vector2.ts'
 import * as Vector3 from '../src/vector/vector3.ts'
@@ -72,5 +73,33 @@ describe('matrix-vector products x1k', () => {
       r = Matrix4x4.vectorProductLeft(m4, r)
     }
     _sink = r
+  })
+})
+
+describe('determinants and inverses', () => {
+  const m4 = affine.matrix
+  const normal = Vector3.make(0, 0, 1)
+  const plane = Plane3d.make(Vector3.make(1, 1, 1), 2)
+
+  bench('Matrix3x3.determinant', () => {
+    _sink = Matrix3x3.determinant(m3)
+  })
+  bench('Matrix3x3.inverse', () => {
+    _sink = Matrix3x3.inverse(m3)
+  })
+  bench('Matrix4x4.determinant', () => {
+    _sink = Matrix4x4.determinant(m4)
+  })
+  bench('Matrix4x4.inverse', () => {
+    _sink = Matrix4x4.inverse(m4)
+  })
+  bench('Affine3d.inverse', () => {
+    _sink = Affine3d.inverse(affine)
+  })
+  bench('Affine3d.applyNormal', () => {
+    _sink = Affine3d.applyNormal(affine, normal)
+  })
+  bench('Plane3d.transform', () => {
+    _sink = Plane3d.transform(plane, affine)
   })
 })

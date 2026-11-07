@@ -92,7 +92,7 @@ export const fromBezierPoints: (
  * trait brands carry over with them.
  *
  * Use this to hand straight segments to cubic-only consumers, like
- * `CubicPath2d.make` or `CoordinateSystem.image`.
+ * `CubicPath2d.fromArray` or `CoordinateSystem.image`.
  *
  * @param c - The linear curve to elevate.
  * @returns A `CubicCurve2d` tracing the same points at the same parameters.

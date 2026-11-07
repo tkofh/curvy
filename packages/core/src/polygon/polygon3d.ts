@@ -13,9 +13,9 @@ export type { Convex, Planar } from './internal/traits.ts'
  * vertices joined by straight edges, with an implicit closing edge from
  * the last vertex back to the first.
  *
- * Construct with `make`, `fromArray`, or `fromTuples`. Any three or more
- * finite vertices make a polygon, including ones that don't lie in a
- * plane. Two trait brands narrow it:
+ * Construct with `fromArray` or `fromTuples`. Any three or more finite
+ * vertices make a polygon, including ones that don't lie in a plane. Two
+ * trait brands narrow it:
  *
  * - `Planar`, from `isPlanar` and `asPlanar`, promises a plane, which
  *   `plane` returns.
@@ -74,25 +74,6 @@ export interface Split {
  * @since 2.0.0
  */
 export const isPolygon3d: (p: unknown) => p is Polygon3d = internal.isPolygon3d
-
-/**
- * Creates a `Polygon3d` from three or more vertices.
- *
- * @param p0 - The first vertex.
- * @param p1 - The second vertex.
- * @param p2 - The third vertex.
- * @param rest - Any further vertices, in order.
- * @returns A polygon with the given vertices, closed from the last back to
- *   the first.
- * @throws `Error` when a vertex coordinate is not finite.
- * @since 2.0.0
- */
-export const make: (
-  p0: Vector3,
-  p1: Vector3,
-  p2: Vector3,
-  ...rest: ReadonlyArray<Vector3>
-) => Polygon3d = internal.make
 
 /**
  * Creates a `Polygon3d` from an array of vertices.

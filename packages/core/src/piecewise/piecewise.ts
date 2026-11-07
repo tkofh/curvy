@@ -66,23 +66,12 @@ export interface Piecewise<P, out Trait = unknown> extends Value.Instance, Itera
 export const isPiecewise: (u: unknown) => u is Piecewise<unknown> = internal.isPiecewise
 
 /**
- * Creates a `Piecewise` from an ordered sequence of `[interval, polynomial]`
- * pieces. All pieces must share a polynomial degree.
+ * Creates a `Piecewise` from an array of `[interval, polynomial]` pieces. All
+ * pieces must share a polynomial degree.
  *
  * The pieces must be ordered and non-overlapping in x; gaps are allowed. To
  * assert the stronger gapless property, refine the result with `isContiguous`
  * or `asContiguous`.
- *
- * @param pieces - The pieces, in ascending x order. At least one is required.
- * @returns A new `Piecewise`.
- * @throws `Error` when called with no pieces, or when two pieces overlap in x.
- * @since 2.0.0
- */
-export const make: <P>(...pieces: ReadonlyArray<Piece<P>>) => Piecewise<P> = internal.make
-
-/**
- * Creates a `Piecewise` from an array of `[interval, polynomial]` pieces. All
- * pieces must share a polynomial degree.
  *
  * @param pieces - The pieces, in ascending x order. At least one is required.
  * @returns A new `Piecewise`.

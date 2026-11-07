@@ -39,11 +39,6 @@ export const isRationalCubicPath2d = (p: unknown): p is RationalCubicPath2d =>
   typeof p === 'object' && p !== null && RationalCubicPath2dTypeId in p
 
 /** @internal */
-export const make = (
-  ...curves: ReadonlyArray<RationalCubicCurve2d.RationalCubicCurve2d>
-): RationalCubicPath2d => new RationalCubicPath2dImpl(curves)
-
-/** @internal */
 export const fromArray = (
   curves: ReadonlyArray<RationalCubicCurve2d.RationalCubicCurve2d>,
 ): RationalCubicPath2d => new RationalCubicPath2dImpl(curves)

@@ -51,21 +51,15 @@ export const fromTuples = (tuples: ReadonlyArray<readonly [number, number]>) =>
 
 /** @internal */
 export const append = dual<
-  (...points: ReadonlyArray<Vector2.Vector2>) => (p: Basis2d) => Basis2d,
-  (p: Basis2d, ...points: ReadonlyArray<Vector2.Vector2>) => Basis2d
->(
-  (args) => isBasis2d(args[0]),
-  (p: Basis2d, ...points: ReadonlyArray<Vector2.Vector2>) => new Basis2dImpl([...p, ...points]),
-)
+  (points: ReadonlyArray<Vector2.Vector2>) => (p: Basis2d) => Basis2d,
+  (p: Basis2d, points: ReadonlyArray<Vector2.Vector2>) => Basis2d
+>(2, (p: Basis2d, points: ReadonlyArray<Vector2.Vector2>) => new Basis2dImpl([...p, ...points]))
 
 /** @internal */
 export const prepend = dual<
-  (...points: ReadonlyArray<Vector2.Vector2>) => (p: Basis2d) => Basis2d,
-  (p: Basis2d, ...points: ReadonlyArray<Vector2.Vector2>) => Basis2d
->(
-  (args) => isBasis2d(args[0]),
-  (p: Basis2d, ...points: ReadonlyArray<Vector2.Vector2>) => new Basis2dImpl([...points, ...p]),
-)
+  (points: ReadonlyArray<Vector2.Vector2>) => (p: Basis2d) => Basis2d,
+  (p: Basis2d, points: ReadonlyArray<Vector2.Vector2>) => Basis2d
+>(2, (p: Basis2d, points: ReadonlyArray<Vector2.Vector2>) => new Basis2dImpl([...points, ...p]))
 
 /** @internal */
 export const withTriplicatedEndpoints = (p: Basis2d) => {
@@ -104,7 +98,7 @@ export const transform = dual<
 
 /** @internal */
 export const toPath = (p: Basis2d) =>
-  CubicPath2d.make(...toCurves(p, Characteristic.cubicBasisSpline, 1))
+  CubicPath2d.fromArray(Array.from(toCurves(p, Characteristic.cubicBasisSpline, 1)))
 
 /** @internal */
 export const toBezier = (p: Basis2d): Bezier2d =>

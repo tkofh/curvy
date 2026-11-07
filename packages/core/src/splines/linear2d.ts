@@ -28,23 +28,12 @@ export interface Linear2d extends Value.Instance {
 export const isLinear2d: (p: unknown) => p is Linear2d = internal.isLinear2d
 
 /**
- * Creates a new `Linear2d` from 2 or more points.
- *
- * @param p0 - The first point.
- * @param p1 - The second point.
- * @param rest - Additional points.
- * @returns A new `Linear2d` instance.
- * @since 2.0.0
- */
-export const make: (p0: Vector2, p1: Vector2, ...rest: ReadonlyArray<Vector2>) => Linear2d =
-  internal.make
-
-/**
  * Creates a new `Linear2d` from an array of points. Requires at least 2
  * points.
  *
- * @param points - The points.
+ * @param points - The points, in order.
  * @returns A new `Linear2d` instance.
+ * @throws `Error` when there are fewer than 2 points.
  * @since 2.0.0
  */
 export const fromArray: (points: ReadonlyArray<Vector2>) => Linear2d = internal.fromArray
@@ -68,16 +57,22 @@ export const append: {
    * @returns A function that takes a `Linear2d` and returns a new `Linear2d` with the appended points.
    * @since 2.0.0
    */
-  (...points: ReadonlyArray<Vector2>): (p: Linear2d) => Linear2d
+  (points: ReadonlyArray<Vector2>): (p: Linear2d) => Linear2d
   /**
    * Appends points to a `Linear2d`.
    *
    * @param p - The `Linear2d` to append to.
    * @param points - The points to append.
    * @returns A new `Linear2d` with the appended points.
+   * @example
+   * ```ts
+   * const spline = Linear2d.fromTuples([[0, 0], [1, 1]])
+   * Linear2d.append(spline, [Vector2.make(2, 0), Vector2.make(3, 1)])
+   * spline.pipe(Linear2d.append([Vector2.make(2, 0)]))
+   * ```
    * @since 2.0.0
    */
-  (p: Linear2d, ...points: ReadonlyArray<Vector2>): Linear2d
+  (p: Linear2d, points: ReadonlyArray<Vector2>): Linear2d
 } = internal.append
 
 export const prepend: {
@@ -88,7 +83,7 @@ export const prepend: {
    * @returns A function that takes a `Linear2d` and returns a new `Linear2d` with the prepended points.
    * @since 2.0.0
    */
-  (...points: ReadonlyArray<Vector2>): (p: Linear2d) => Linear2d
+  (points: ReadonlyArray<Vector2>): (p: Linear2d) => Linear2d
   /**
    * Prepends points to a `Linear2d`.
    *
@@ -97,7 +92,7 @@ export const prepend: {
    * @returns A new `Linear2d` with the prepended points.
    * @since 2.0.0
    */
-  (p: Linear2d, ...points: ReadonlyArray<Vector2>): Linear2d
+  (p: Linear2d, points: ReadonlyArray<Vector2>): Linear2d
 } = internal.prepend
 
 export const mapPoints: {

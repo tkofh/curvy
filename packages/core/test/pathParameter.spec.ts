@@ -7,7 +7,7 @@ import * as cubicPolynomial from '../src/polynomial/cubic.ts'
 const segment = (x0: number) =>
   cubicCurve2d.fromPolynomials(cubicPolynomial.make(x0, 1, 0, 0), cubicPolynomial.make(0, 0, 0, 0))
 
-const path = cubicPath2d.make(segment(0), segment(1))
+const path = cubicPath2d.fromArray([segment(0), segment(1)])
 
 describe('path solve parameter contract', () => {
   test('snaps parameters within EPSILON of the boundaries', () => {

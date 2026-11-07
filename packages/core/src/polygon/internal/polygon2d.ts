@@ -3,7 +3,8 @@ import type { Winding } from '../../coordinates/coordinateSystem.ts'
 import { lineSegment } from '../../curve/internal/rationalCubic2d.ts'
 import * as LinearCurve2d from '../../curve/linear2d.ts'
 import type { Closed } from '../../interval/interval.ts'
-import * as Interval2d from '../../interval/interval2d.ts'
+import type * as Interval2d from '../../interval/interval2d.ts'
+import * as interval2d from '../../interval/internal/interval2d.ts'
 import { EPSILON, RELATIVE_TOLERANCE } from '../../number.ts'
 import * as LinearPath2d from '../../path/linear2d.ts'
 import * as RationalCubicPath2d from '../../path/rationalCubic2d.ts'
@@ -58,14 +59,6 @@ export const fromArray = (vertices: ReadonlyArray<Vector2.Vector2>): Polygon2d =
   }
   return new Polygon2dImpl(vertices.slice())
 }
-
-/** @internal */
-export const make = (
-  p0: Vector2.Vector2,
-  p1: Vector2.Vector2,
-  p2: Vector2.Vector2,
-  ...rest: ReadonlyArray<Vector2.Vector2>
-): Polygon2d => fromArray([p0, p1, p2, ...rest])
 
 /** @internal */
 export const fromTuples = (tuples: ReadonlyArray<readonly [number, number]>): Polygon2d =>
@@ -212,7 +205,7 @@ export const centroid = (p: Polygon2d): Solution.AtMostOne<Vector2.Vector2> => {
 
 /** @internal */
 export const boundingBox = (p: Polygon2d): Interval2d.Interval2d<Closed, Closed> =>
-  Interval2d.fromVectors(...p.vertices)
+  interval2d.fromVectors(p.vertices)
 
 // ---------------------------------------------------------------------------
 // Convexity

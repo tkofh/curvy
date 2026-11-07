@@ -25,11 +25,6 @@ export const isLinearPath2d = (p: unknown): p is LinearPath2d =>
   typeof p === 'object' && p !== null && LinearPath2dTypeId in p
 
 /** @internal */
-export const make = methods.make as (
-  ...curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>
-) => LinearPath2d
-
-/** @internal */
 export const fromArray = methods.fromArray as (
   curves: ReadonlyArray<LinearCurve2d.LinearCurve2d>,
 ) => LinearPath2d

@@ -1,6 +1,7 @@
 import type { Bounds, Closed, Interval, Open, OpenEnd, OpenStart } from '../interval.ts'
 import { dual } from '../../utils/function.ts'
 import { Value } from '../../utils/value.ts'
+import { invariant } from '../../utils/invariant.ts'
 import { EPSILON, coincident } from '../../number.ts'
 
 const TypeId = '~curvy/Interval'
@@ -88,8 +89,23 @@ export const fromSize = (a: number, b?: number): Closed => {
 }
 
 /** @internal */
-export const fromMinMax = (...values: ReadonlyArray<number>): Closed =>
-  new ClosedImpl(Math.min(...values), Math.max(...values))
+export const fromMinMax = (a: number, b: number): Closed =>
+  new ClosedImpl(Math.min(a, b), Math.max(a, b))
+
+// A loop rather than `Math.min(...values)`: spreading a long array into
+// arguments overflows the call stack.
+/** @internal */
+export const fromValues = (values: ReadonlyArray<number>): Closed => {
+  invariant(values.length > 0, 'fromValues requires at least one value')
+  let min = Infinity
+  let max = -Infinity
+  for (const v of values) {
+    // `Math.min` and `Math.max` semantics: NaN wins, and -0 is below 0.
+    min = Math.min(min, v)
+    max = Math.max(max, v)
+  }
+  return new ClosedImpl(min, max)
+}
 
 /** @internal */
 export const size = (i: Bounds): number => Math.abs(i.end - i.start)

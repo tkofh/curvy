@@ -34,7 +34,12 @@ const tilted = Polygon3d.transform(square, placement)
 
 describe('construction', () => {
   test('constructors agree, iterate, and print', () => {
-    const made = Polygon3d.make(Vector3.zero, Vector3.unitX, Vector3.make(1, 1, 0), Vector3.unitY)
+    const made = Polygon3d.fromArray([
+      Vector3.zero,
+      Vector3.unitX,
+      Vector3.make(1, 1, 0),
+      Vector3.unitY,
+    ])
     expect(Polygon3d.equals(made, face)).toBe(true)
     expect([...face]).toHaveLength(4)
     expect(Polygon3d.isPolygon3d(face)).toBe(true)
@@ -52,7 +57,7 @@ describe('construction', () => {
   test('invalid input throws', () => {
     expect(() => Polygon3d.fromArray([Vector3.zero, Vector3.unitX])).toThrow()
     expect(() =>
-      Polygon3d.make(Vector3.zero, Vector3.unitX, Vector3.make(0, Number.NaN, 0)),
+      Polygon3d.fromArray([Vector3.zero, Vector3.unitX, Vector3.make(0, Number.NaN, 0)]),
     ).toThrow()
   })
 

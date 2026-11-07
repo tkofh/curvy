@@ -223,7 +223,7 @@ describe('Path Continuous trait', () => {
       vector2.make(11, 11),
       vector2.make(10, 11),
     )
-    const p = cubicPath2d.make(c0, c1)
+    const p = cubicPath2d.fromArray([c0, c1])
     expect(cubicPath2d.isContinuous(p)).toBe(false)
     expect(() => cubicPath2d.asContinuous(p)).toThrow(/not continuous/)
   })
@@ -261,7 +261,7 @@ describe('Path Continuous trait', () => {
   test('linear path Continuous refiner', () => {
     const c0 = linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(1, 1))
     const c1 = linearCurve2d.fromEndpoints(vector2.make(1, 1), vector2.make(2, 0))
-    const p = linearPath2d.make(c0, c1)
+    const p = linearPath2d.fromArray([c0, c1])
     expect(linearPath2d.isContinuous(p)).toBe(true)
     if (linearPath2d.isContinuous(p)) {
       expectTypeOf(p).toMatchTypeOf<linearPath2d.LinearPath2d<linearPath2d.Continuous>>()
@@ -278,54 +278,57 @@ describe('Path Continuous trait', () => {
       vector2.make(3, -1),
       vector2.make(4, 0),
     )
-    const p = quadraticPath2d.make(c0, c1)
+    const p = quadraticPath2d.fromArray([c0, c1])
     expect(quadraticPath2d.isContinuous(p)).toBe(true)
   })
 })
 
 describe('LinearPath2d per-axis monotonicity', () => {
   test('isIncreasingX on a path with strictly-increasing x segments', () => {
-    const p = linearPath2d.make(
+    const p = linearPath2d.fromArray([
       linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(1, 2)),
       linearCurve2d.fromEndpoints(vector2.make(1, 2), vector2.make(3, 5)),
-    )
+    ])
     expect(linearPath2d.isIncreasingX(p)).toBe(true)
     expect(linearPath2d.isMonotonicX(p)).toBe(true)
     expect(linearPath2d.isDecreasingX(p)).toBe(false)
   })
   test('isIncreasingX fails when adjacent segments overlap in x', () => {
-    const p = linearPath2d.make(
+    const p = linearPath2d.fromArray([
       linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(5, 2)),
       linearCurve2d.fromEndpoints(vector2.make(3, 2), vector2.make(7, 5)),
-    )
+    ])
     expect(linearPath2d.isIncreasingX(p)).toBe(false)
   })
   test('isDecreasingX on a path with strictly-decreasing x segments', () => {
-    const p = linearPath2d.make(
+    const p = linearPath2d.fromArray([
       linearCurve2d.fromEndpoints(vector2.make(3, 0), vector2.make(1, 2)),
       linearCurve2d.fromEndpoints(vector2.make(1, 2), vector2.make(-1, 5)),
-    )
+    ])
     expect(linearPath2d.isDecreasingX(p)).toBe(true)
     expect(linearPath2d.isMonotonicX(p)).toBe(true)
   })
   test('isIncreasingY / isDecreasingY check the y axis', () => {
-    const incY = linearPath2d.make(
+    const incY = linearPath2d.fromArray([
       linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(3, 1)),
       linearCurve2d.fromEndpoints(vector2.make(3, 1), vector2.make(-2, 4)),
-    )
+    ])
     expect(linearPath2d.isIncreasingY(incY)).toBe(true)
     expect(linearPath2d.isIncreasingX(incY)).toBe(false) // x goes 0->3->-2
   })
   test('asMonotonicX returns the branded path', () => {
-    const p = linearPath2d.make(linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 5)))
+    const p = linearPath2d.fromArray([
+      linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 5)),
+    ])
     const branded = linearPath2d.asMonotonicX(p)
     expectTypeOf(branded).toMatchTypeOf<linearPath2d.LinearPath2d<linearPath2d.MonotonicX>>()
   })
   test('asMonotonicX throws on non-monotonic-x paths', () => {
-    const p = linearPath2d.make(
+    const p = linearPath2d.fromArray([
       linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 1)),
-      linearCurve2d.fromEndpoints(vector2.make(2, 1), vector2.make(0, 2)), // x reverses
-    )
+      linearCurve2d.fromEndpoints(vector2.make(2, 1), vector2.make(0, 2)),
+      // x reverses,
+    ])
     expect(() => linearPath2d.asMonotonicX(p)).toThrow(/not monotonic in x/)
   })
 })
@@ -343,7 +346,7 @@ describe('QuadraticPath2d per-axis monotonicity', () => {
       vector2.make(3, -1),
       vector2.make(4, 1),
     )
-    const p = quadraticPath2d.make(c0, c1)
+    const p = quadraticPath2d.fromArray([c0, c1])
     expect(quadraticPath2d.isIncreasingX(p)).toBe(true)
   })
   test('isIncreasingX rejects a curve with an interior x-extremum', () => {
@@ -353,7 +356,7 @@ describe('QuadraticPath2d per-axis monotonicity', () => {
       vector2.make(1, 1),
       vector2.make(0, 0),
     )
-    const p = quadraticPath2d.make(c)
+    const p = quadraticPath2d.fromArray([c])
     expect(quadraticPath2d.isIncreasingX(p)).toBe(false)
   })
 })
@@ -372,7 +375,7 @@ describe('CubicPath2d per-axis monotonicity', () => {
       vector2.make(5, 5),
       vector2.make(6, 6),
     )
-    const p = cubicPath2d.make(c0, c1)
+    const p = cubicPath2d.fromArray([c0, c1])
     expect(cubicPath2d.isIncreasingX(p)).toBe(true)
   })
   test('isMonotonicY rejects a path with a y-extremum in [0, 1]', () => {
@@ -383,7 +386,7 @@ describe('CubicPath2d per-axis monotonicity', () => {
       vector2.make(2, 1),
       vector2.make(3, 0),
     )
-    const p = cubicPath2d.make(c)
+    const p = cubicPath2d.fromArray([c])
     expect(cubicPath2d.isMonotonicY(p)).toBe(false)
   })
 })

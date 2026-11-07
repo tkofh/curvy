@@ -267,7 +267,7 @@ describe('spline transforms', () => {
   })
 
   test('Linear2d.transform matches transformed evaluation', () => {
-    const l = Linear2d.make(Vector2.make(0, 0), Vector2.make(2, 3), Vector2.make(5, 1))
+    const l = Linear2d.fromArray([Vector2.make(0, 0), Vector2.make(2, 3), Vector2.make(5, 1)])
     const transformed = Linear2d.transform(l, t)
     const original = Linear2d.toPath(l)
     const result = Linear2d.toPath(transformed)
@@ -285,12 +285,9 @@ describe('spline transforms', () => {
     // / chordal), non-uniform scale breaks chord-length normalization; the
     // implementation still returns a useful curve but no longer matches the
     // affine image of the original pointwise.
-    const c = Cardinal2d.make(
+    const c = Cardinal2d.fromArray(
+      [Vector2.make(0, 0), Vector2.make(1, 2), Vector2.make(3, 1), Vector2.make(4, 4)],
       { alpha: 0 },
-      Vector2.make(0, 0),
-      Vector2.make(1, 2),
-      Vector2.make(3, 1),
-      Vector2.make(4, 4),
     )
     const transformed = Cardinal2d.transform(c, t)
     const original = Cardinal2d.toPath(c)
@@ -464,7 +461,7 @@ describe('path transforms', () => {
 
   test('LinearPath2d.transform', () => {
     const p = Linear2d.toPath(
-      Linear2d.make(Vector2.make(0, 0), Vector2.make(2, 3), Vector2.make(5, 1)),
+      Linear2d.fromArray([Vector2.make(0, 0), Vector2.make(2, 3), Vector2.make(5, 1)]),
     )
     const tp = LinearPath2d.transform(p, t)
     for (const u of samples) {
@@ -480,7 +477,7 @@ describe('path transforms', () => {
       Vector2.make(1, 2),
       Vector2.make(3, 1),
     )
-    const p = QuadraticPath2d.make(c)
+    const p = QuadraticPath2d.fromArray([c])
     const tp = QuadraticPath2d.transform(p, t)
     for (const u of samples) {
       expect(QuadraticPath2d.solve(tp, u)).toBeCloseToValue(

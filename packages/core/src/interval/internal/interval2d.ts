@@ -42,18 +42,24 @@ export const fromCorners = (
 ): Interval2d<Interval.Closed, Interval.Closed> =>
   new Interval2dImpl(Interval.fromMinMax(p0.x, p1.x), Interval.fromMinMax(p0.y, p1.y))
 
+// One pass with no spread, so a long point array neither overflows the call
+// stack nor copies into per-axis arrays.
 /** @internal */
 export const fromVectors = (
-  ...points: ReadonlyArray<Vector2.Vector2>
+  points: ReadonlyArray<Vector2.Vector2>,
 ): Interval2d<Interval.Closed, Interval.Closed> => {
   invariant(points.length > 0, 'fromVectors requires at least one point')
-  const xs: Array<number> = []
-  const ys: Array<number> = []
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
   for (const p of points) {
-    xs.push(p.x)
-    ys.push(p.y)
+    minX = Math.min(minX, p.x)
+    maxX = Math.max(maxX, p.x)
+    minY = Math.min(minY, p.y)
+    maxY = Math.max(maxY, p.y)
   }
-  return new Interval2dImpl(Interval.fromMinMax(...xs), Interval.fromMinMax(...ys))
+  return new Interval2dImpl(Interval.make(minX, maxX), Interval.make(minY, maxY))
 }
 
 /** @internal */

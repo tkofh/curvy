@@ -172,10 +172,10 @@ describe('CubicCurve2d.solveAtX/solveAtY', () => {
 
 describe('Path solveAtX / solveAtY (Monotonic-axis required)', () => {
   test('LinearPath: solveAtX picks the segment whose x-range contains the query', () => {
-    const p = linearPath2d.make(
+    const p = linearPath2d.fromArray([
       linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 4)),
       linearCurve2d.fromEndpoints(vector2.make(2, 4), vector2.make(5, 1)),
-    )
+    ])
     if (!linearPath2d.isMonotonicX(p)) {
       throw new Error('expected MonotonicX')
     }
@@ -194,16 +194,16 @@ describe('Path solveAtX / solveAtY (Monotonic-axis required)', () => {
   })
   test('LinearPath: solveAtX returns None when x is outside the range', () => {
     const p = linearPath2d.asMonotonicX(
-      linearPath2d.make(linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 4))),
+      linearPath2d.fromArray([linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 4))]),
     )
     expect(Solution.isNone(linearPath2d.solveAtX(p, -1))).toBe(true)
     expect(Solution.isNone(linearPath2d.solveAtX(p, 5))).toBe(true)
   })
   test('LinearPath: solveAtY mirrors solveAtX on the y axis', () => {
-    const p = linearPath2d.make(
+    const p = linearPath2d.fromArray([
       linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(3, 1)),
       linearCurve2d.fromEndpoints(vector2.make(3, 1), vector2.make(-2, 4)),
-    )
+    ])
     if (!linearPath2d.isMonotonicY(p)) {
       throw new Error('expected MonotonicY')
     }
@@ -227,7 +227,7 @@ describe('Path solveAtX / solveAtY (Monotonic-axis required)', () => {
       vector2.make(3, -1),
       vector2.make(4, 1),
     )
-    const p = quadraticPath2d.make(c0, c1)
+    const p = quadraticPath2d.fromArray([c0, c1])
     if (!quadraticPath2d.isMonotonicX(p)) {
       throw new Error('expected MonotonicX')
     }
@@ -247,7 +247,7 @@ describe('Path solveAtX / solveAtY (Monotonic-axis required)', () => {
       vector2.make(0.58, 1),
       vector2.make(1, 1),
     )
-    const p = cubicPath2d.make(c)
+    const p = cubicPath2d.fromArray([c])
     if (!cubicPath2d.isMonotonicX(p)) {
       throw new Error('expected MonotonicX')
     }
@@ -257,14 +257,14 @@ describe('Path solveAtX / solveAtY (Monotonic-axis required)', () => {
   })
   test('solveAtX result narrows to AtMostOne under MonotonicX', () => {
     const p = linearPath2d.asMonotonicX(
-      linearPath2d.make(linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(1, 1))),
+      linearPath2d.fromArray([linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(1, 1))]),
     )
     const result = linearPath2d.solveAtX(p, 0.5)
     expectTypeOf(result).toEqualTypeOf<Solution.AtMostOne<number>>()
   })
   test('curried form works', () => {
     const p = linearPath2d.asMonotonicX(
-      linearPath2d.make(linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 4))),
+      linearPath2d.fromArray([linearCurve2d.fromEndpoints(vector2.make(0, 0), vector2.make(2, 4))]),
     )
     expect([...linearPath2d.solveAtX(1)(p)]).toEqual([2])
   })

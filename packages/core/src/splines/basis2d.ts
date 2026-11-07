@@ -68,16 +68,22 @@ export const append: {
    * @returns A function that takes a `Basis2d` and returns a new `Basis2d` instance with the appended control points.
    * @since 1.0.0
    */
-  (...points: ReadonlyArray<Vector2>): (p: Basis2d) => Basis2d
+  (points: ReadonlyArray<Vector2>): (p: Basis2d) => Basis2d
   /**
    * Appends control points to a `Basis2d`.
    *
    * @param p - The `Basis2d` to append the control points to.
    * @param points - The control points to append.
    * @returns A new `Basis2d` instance with the appended control points.
+   * @example
+   * ```ts
+   * const spline = Basis2d.fromTuples([[0, 0], [1, 1], [2, 0], [3, 1]])
+   * Basis2d.append(spline, [Vector2.make(2, 0), Vector2.make(3, 1)])
+   * spline.pipe(Basis2d.append([Vector2.make(2, 0)]))
+   * ```
    * @since 1.0.0
    */
-  (p: Basis2d, ...points: ReadonlyArray<Vector2>): Basis2d
+  (p: Basis2d, points: ReadonlyArray<Vector2>): Basis2d
 } = internal.append
 
 export const prepend: {
@@ -88,7 +94,7 @@ export const prepend: {
    * @returns A function that takes a `Basis2d` and returns a new `Basis2d` instance with the prepended control points.
    * @since 1.0.0
    */
-  (...points: ReadonlyArray<Vector2>): (p: Basis2d) => Basis2d
+  (points: ReadonlyArray<Vector2>): (p: Basis2d) => Basis2d
   /**
    * Prepends control points to a `Basis2d`.
    *
@@ -97,7 +103,7 @@ export const prepend: {
    * @returns A new `Basis2d` instance with the prepended control points.
    * @since 1.0.0
    */
-  (p: Basis2d, ...points: ReadonlyArray<Vector2>): Basis2d
+  (p: Basis2d, points: ReadonlyArray<Vector2>): Basis2d
 } = internal.prepend
 
 export const mapPoints: {

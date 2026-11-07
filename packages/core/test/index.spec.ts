@@ -50,13 +50,13 @@ describe('per-domain index re-exports', () => {
     expect(typeof PolyhedronIndex.ConvexPolyhedron.fromHalfSpaces).toBe('function')
   })
   test('path index exposes namespaces by type name', () => {
-    expect(typeof Path.LinearPath2d.make).toBe('function')
-    expect(typeof Path.QuadraticPath2d.make).toBe('function')
-    expect(typeof Path.CubicPath2d.make).toBe('function')
+    expect(typeof Path.LinearPath2d.fromArray).toBe('function')
+    expect(typeof Path.QuadraticPath2d.fromArray).toBe('function')
+    expect(typeof Path.CubicPath2d.fromArray).toBe('function')
   })
   test('splines index exposes namespaces by type name', () => {
     expect(typeof Splines.Bezier2d.make).toBe('function')
-    expect(typeof Splines.Cardinal2d.make).toBe('function')
+    expect(typeof Splines.Cardinal2d.fromArray).toBe('function')
     expect(typeof Splines.Hermite2d.make).toBe('function')
     expect(typeof Splines.Basis2d.make).toBe('function')
   })
@@ -82,7 +82,7 @@ describe('per-domain index re-exports', () => {
       Vector.Vector2.make(1, 1),
       Vector.Vector2.make(0, 1),
     )
-    const p = Path.CubicPath2d.make(c)
+    const p = Path.CubicPath2d.fromArray([c])
     expect(Path.CubicPath2d.toPathData(p)).toBe('M 0,0 C 1,0 1,1 0,1')
   })
 })

@@ -202,9 +202,9 @@ export const arc = dual<
   assertFinite('arc', theta.start, theta.end, r)
 
   if (s.kind === 'cartesian') {
-    return RationalCubicPath2d.make(
+    return RationalCubicPath2d.fromArray([
       rationalCubicCurve2d.lineSegment(Vector2.make(theta.start, r), Vector2.make(theta.end, r)),
-    )
+    ])
   }
 
   const rho = mapRadius(s, r)
@@ -230,12 +230,12 @@ export const ray = dual<
 >(3, (s: CoordinateSystem, theta: number, r: Bounds): RationalCubicPath2d.RationalCubicPath2d => {
   assertFinite('ray', theta, r.start, r.end)
 
-  return RationalCubicPath2d.make(
+  return RationalCubicPath2d.fromArray([
     rationalCubicCurve2d.lineSegment(
       toCartesian(s, Vector2.make(theta, r.start)),
       toCartesian(s, Vector2.make(theta, r.end)),
     ),
-  )
+  ])
 })
 
 /** @internal */
@@ -266,12 +266,12 @@ export const sector = dual<
     const corner1 = Vector2.make(theta.end, y0)
     const corner2 = Vector2.make(theta.end, y1)
     const corner3 = Vector2.make(theta.start, y1)
-    return RationalCubicPath2d.make(
+    return RationalCubicPath2d.fromArray([
       rationalCubicCurve2d.lineSegment(corner0, corner1),
       rationalCubicCurve2d.lineSegment(corner1, corner2),
       rationalCubicCurve2d.lineSegment(corner2, corner3),
       rationalCubicCurve2d.lineSegment(corner3, corner0),
-    )
+    ])
   }
 
   const [rhoInner, rhoOuter] = minMax(mapRadius(s, r.start), mapRadius(s, r.end))
@@ -547,11 +547,10 @@ type ImageSample = ReturnType<typeof imageEval>
 // chain-rule factor (left'(u) = t * p'(t*u)), so no explicit width scaling
 // appears here.
 const hermiteCandidate = (start: ImageSample, end: ImageSample): CubicCurve2d.CubicCurve2d => {
-  const [x, y] = Characteristic.apply(
-    Characteristic.cubicHermite,
+  const [x, y] = Characteristic.apply(Characteristic.cubicHermite, [
     Vector4.make(start.px, start.tx, end.px, end.tx),
     Vector4.make(start.py, start.ty, end.py, end.ty),
-  )
+  ])
   return CubicCurve2d.fromPolynomials(x, y)
 }
 

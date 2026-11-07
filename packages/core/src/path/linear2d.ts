@@ -44,16 +44,6 @@ export interface LinearPath2d<out Trait = unknown> extends Value.Instance, Itera
 }
 
 /**
- * Creates a new `LinearPath2d` instance from a sequence of curves.
- *
- * @param curves - The curves to create the path from. At least one is required.
- * @returns A new `LinearPath2d` instance.
- * @throws `Error` when called with no curves.
- * @since 2.0.0
- */
-export const make: (...curves: ReadonlyArray<LinearCurve2d>) => LinearPath2d = internal.make
-
-/**
  * Creates a new `LinearPath2d` instance from an array of curves.
  *
  * @param curves - The curves to create the path from. At least one is required.

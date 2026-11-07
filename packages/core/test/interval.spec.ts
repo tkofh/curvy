@@ -27,8 +27,33 @@ describe('interval', () => {
     expect(Interval.fromSize(5, 10)).toMatchObject(Interval.make(5, 15))
   })
 
-  test('fromMinMax accepts values in any order', () => {
-    expect(Interval.fromMinMax(3, 1, 2)).toMatchObject(Interval.make(1, 3))
+  test('fromMinMax accepts its endpoints in either order', () => {
+    expect(Interval.fromMinMax(3, 1)).toMatchObject(Interval.make(1, 3))
+    expect(Interval.fromMinMax(1, 3)).toMatchObject(Interval.make(1, 3))
+  })
+
+  test('fromMinMax and fromValues keep the Math.min and Math.max treatment of -0', () => {
+    expect(Object.is(Interval.fromMinMax(0, -0).start, -0)).toBe(true)
+    expect(Object.is(Interval.fromValues([0, 2, -0]).start, -0)).toBe(true)
+  })
+
+  test('fromValues encloses every value in any order', () => {
+    expect(Interval.fromValues([3, 1, 2])).toMatchObject(Interval.make(1, 3))
+    expect(Interval.fromValues([5])).toMatchObject(Interval.make(5, 5))
+  })
+
+  test('fromValues takes arrays too long to spread into arguments', () => {
+    const values = Array.from({ length: 200_000 }, (_, i) => i - 1000)
+    expect(Interval.fromValues(values)).toMatchObject(Interval.make(-1000, 198_999))
+  })
+
+  test('fromMinMax and fromValues carry NaN to both ends', () => {
+    expect(Interval.fromMinMax(1, Number.NaN).start).toBeNaN()
+    expect(Interval.fromValues([1, Number.NaN, 2]).end).toBeNaN()
+  })
+
+  test('fromValues rejects empty input', () => {
+    expect(() => Interval.fromValues([])).toThrowError()
   })
 
   test('isInterval', () => {

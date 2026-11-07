@@ -927,7 +927,8 @@ const chartSegment = (
 
 // theta(t) = (pi/2) t, r(t) = 1 + 0.25 t: a quarter turn of an
 // Archimedean spiral with closed form (1 + 0.25 t) * u((pi/2) t).
-const spiralPath = () => CubicPath2d.make(chartSegment([0, Math.PI / 2, 0, 0], [1, 0.25, 0, 0]))
+const spiralPath = () =>
+  CubicPath2d.fromArray([chartSegment([0, Math.PI / 2, 0, 0], [1, 0.25, 0, 0])])
 
 const spiralTruth = (t: number): [number, number] => {
   const a = (Math.PI / 2) * t
@@ -1020,7 +1021,7 @@ describe('coordinateSystem.image', () => {
     const tolerance = 1e-4
     const out = CoordinateSystem.image(
       unitPolar,
-      CubicPath2d.make(chartSegment([0, Math.PI / 2, 0, 0], [5, 0, 0, 0])),
+      CubicPath2d.fromArray([chartSegment([0, Math.PI / 2, 0, 0], [5, 0, 0, 0])]),
       tolerance,
     )
     for (let i = 0; i <= 200; i++) {
@@ -1040,10 +1041,10 @@ describe('coordinateSystem.image', () => {
   })
 
   test('continuous input yields a continuous output', () => {
-    const path = CubicPath2d.make(
+    const path = CubicPath2d.fromArray([
       chartSegment([0, Math.PI / 2, 0, 0], [1, 0.25, 0, 0]),
       chartSegment([Math.PI / 2, Math.PI / 2, 0, 0], [1.25, -0.25, 0, 0]),
-    )
+    ])
     const out = CoordinateSystem.image(unitPolar, path, 1e-4)
     expect(CubicPath2d.isContinuous(out)).toBe(true)
   })
@@ -1051,7 +1052,7 @@ describe('coordinateSystem.image', () => {
   test('multi-turn spirals loop', () => {
     const out = CoordinateSystem.image(
       unitPolar,
-      CubicPath2d.make(chartSegment([0, 6 * Math.PI, 0, 0], [1.5, 0, 0, 0])),
+      CubicPath2d.fromArray([chartSegment([0, 6 * Math.PI, 0, 0], [1.5, 0, 0, 0])]),
       1e-3,
     )
     expect([...out].length).toBeGreaterThanOrEqual(12)
@@ -1066,7 +1067,7 @@ describe('coordinateSystem.image', () => {
     const tolerance = 1e-3
     const out = CoordinateSystem.image(
       unitPolar,
-      CubicPath2d.make(chartSegment([0, Math.PI / 2, 0, 0], [-1, 2, 0, 0])),
+      CubicPath2d.fromArray([chartSegment([0, Math.PI / 2, 0, 0], [-1, 2, 0, 0])]),
       tolerance,
     )
     assertWithinBothWays(out, crossingTruth, tolerance)
@@ -1076,7 +1077,7 @@ describe('coordinateSystem.image', () => {
   test('zero-length segments image to exact point curves', () => {
     const out = CoordinateSystem.image(
       unitPolar,
-      CubicPath2d.make(chartSegment([1, 0, 0, 0], [2, 0, 0, 0])),
+      CubicPath2d.fromArray([chartSegment([1, 0, 0, 0], [2, 0, 0, 0])]),
       1e-3,
     )
     const segments = [...out]
@@ -1093,7 +1094,7 @@ describe('coordinateSystem.image', () => {
   test('loose tolerance keeps a quarter arc to one segment', () => {
     const out = CoordinateSystem.image(
       unitPolar,
-      CubicPath2d.make(chartSegment([0, Math.PI / 2, 0, 0], [1, 0, 0, 0])),
+      CubicPath2d.fromArray([chartSegment([0, Math.PI / 2, 0, 0], [1, 0, 0, 0])]),
       0.5,
     )
     expect([...out].length).toBe(1)
@@ -1136,7 +1137,7 @@ describe('coordinateSystem.image', () => {
       ] as const) {
         const out = CoordinateSystem.image(
           sqrtPolar,
-          CubicPath2d.make(chartSegment([0, Math.PI / 2, 0, 0], [r0, r1, 0, 0])),
+          CubicPath2d.fromArray([chartSegment([0, Math.PI / 2, 0, 0], [r0, r1, 0, 0])]),
           tolerance,
         )
         assertWithinBothWays(
@@ -1160,7 +1161,7 @@ describe('coordinateSystem.image', () => {
       const tolerance = 1e-3
       const out = CoordinateSystem.image(
         logPolar,
-        CubicPath2d.make(chartSegment([0, Math.PI, 0, 0], [1, -3.6, 3.6, 0])),
+        CubicPath2d.fromArray([chartSegment([0, Math.PI, 0, 0], [1, -3.6, 3.6, 0])]),
         tolerance,
       )
       assertWithinBothWays(
@@ -1180,7 +1181,11 @@ describe('coordinateSystem.image', () => {
         [1, -4, 4, 0],
       ] as const) {
         expect(() =>
-          CoordinateSystem.image(logPolar, CubicPath2d.make(chartSegment([0, 1, 0, 0], r)), 1e-3),
+          CoordinateSystem.image(
+            logPolar,
+            CubicPath2d.fromArray([chartSegment([0, 1, 0, 0], r)]),
+            1e-3,
+          ),
         ).toThrow()
       }
     })
@@ -1217,13 +1222,13 @@ describe('coordinateSystem.image', () => {
     test('rejects non-positive rational weights', () => {
       // w(t) = 1 - 3t + 3t^2 stays positive, but its Bernstein weights are
       // [1, 0, 0, 1], so the hull enclosure would divide by zero.
-      const zeroWeight = RationalCubicPath2d.make(
+      const zeroWeight = RationalCubicPath2d.fromArray([
         RationalCubicCurve2d.fromPolynomials(
           CubicPolynomial.make(1, 1, 0, 0),
           CubicPolynomial.make(1, 0, 0, 0),
           CubicPolynomial.make(1, -3, 3, 0),
         ),
-      )
+      ])
       expect(() => CoordinateSystem.image(unitPolar, zeroWeight, 1e-3)).toThrow()
       expect(() => CoordinateSystem.image(CoordinateSystem.cartesian, zeroWeight, 1e-3)).toThrow()
     })

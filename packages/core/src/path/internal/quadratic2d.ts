@@ -25,11 +25,6 @@ export const isQuadraticPath2d = (p: unknown): p is QuadraticPath2d =>
   typeof p === 'object' && p !== null && QuadraticPath2dTypeId in p
 
 /** @internal */
-export const make = methods.make as (
-  ...curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>
-) => QuadraticPath2d
-
-/** @internal */
 export const fromArray = methods.fromArray as (
   curves: ReadonlyArray<QuadraticCurve2d.QuadraticCurve2d>,
 ) => QuadraticPath2d

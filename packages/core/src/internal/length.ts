@@ -30,3 +30,63 @@ export const GL32_W12 = 0.0911738786957639
 export const GL32_W13 = 0.09384439908080454
 export const GL32_W14 = 0.09563872007927485
 export const GL32_W15 = 0.09654008851472785
+
+// The nodes in [0, 1] and their weights, in the order above. Each node `x`
+// stands for the pair `-x` and `x` in [-1, 1], which share its weight.
+const GL32_NODES: ReadonlyArray<number> = [
+  GL32_X0,
+  GL32_X1,
+  GL32_X2,
+  GL32_X3,
+  GL32_X4,
+  GL32_X5,
+  GL32_X6,
+  GL32_X7,
+  GL32_X8,
+  GL32_X9,
+  GL32_X10,
+  GL32_X11,
+  GL32_X12,
+  GL32_X13,
+  GL32_X14,
+  GL32_X15,
+]
+
+const GL32_WEIGHTS: ReadonlyArray<number> = [
+  GL32_W0,
+  GL32_W1,
+  GL32_W2,
+  GL32_W3,
+  GL32_W4,
+  GL32_W5,
+  GL32_W6,
+  GL32_W7,
+  GL32_W8,
+  GL32_W9,
+  GL32_W10,
+  GL32_W11,
+  GL32_W12,
+  GL32_W13,
+  GL32_W14,
+  GL32_W15,
+]
+
+/**
+ * The 32-point Gauss-Legendre estimate of the integral of `f` over the
+ * interval that `t = shift + scale * u` maps `u in [-1, 1]` onto.
+ *
+ * The terms add left to right, `-x` before `x` for each node, so the sum
+ * rounds the same as writing the 32 terms out in that order.
+ *
+ * @internal
+ */
+export const gl32 = (scale: number, shift: number, f: (t: number) => number): number => {
+  let sum = 0
+  for (let k = 0; k < 16; k++) {
+    const x = GL32_NODES[k]!
+    const w = GL32_WEIGHTS[k]!
+    sum += w * f(shift + scale * -x)
+    sum += w * f(shift + scale * x)
+  }
+  return sum * scale
+}

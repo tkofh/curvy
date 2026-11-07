@@ -1,8 +1,10 @@
 import { bench, describe } from 'vitest'
 import * as CubicCurve2d from '../src/curve/cubic2d.ts'
 import * as Interval from '../src/interval/interval.ts'
+import * as QuadraticCurve2d from '../src/curve/quadratic2d.ts'
 import * as Matrix4x4 from '../src/matrix/matrix4x4.ts'
 import * as CubicPath2d from '../src/path/cubic2d.ts'
+import * as Polygon2d from '../src/polygon/polygon2d.ts'
 import * as Bezier2d from '../src/splines/bezier2d.ts'
 import * as Cardinal2d from '../src/splines/cardinal2d.ts'
 import * as Vector2 from '../src/vector/vector2.ts'
@@ -49,6 +51,32 @@ describe('curve/cubic2d', () => {
 
   bench('length over [0,1]', () => {
     _sink = CubicCurve2d.length(curve, Interval.unit)
+  })
+
+  bench('boundingBox', () => {
+    _sink = CubicCurve2d.boundingBox(curve)
+  })
+})
+
+describe('curve/quadratic2d', () => {
+  const curve = QuadraticCurve2d.fromBezierPoints(
+    Vector2.make(0, 0),
+    Vector2.make(1, 2),
+    Vector2.make(3, 0),
+  )
+
+  bench('length over [0,1]', () => {
+    _sink = QuadraticCurve2d.length(curve, Interval.unit)
+  })
+})
+
+describe('polygon2d', () => {
+  const polygon = Polygon2d.fromArray(
+    Array.from({ length: 1000 }, (_, i) => Vector2.make(Math.cos(i), Math.sin(i))),
+  )
+
+  bench('boundingBox, 1000 vertices', () => {
+    _sink = Polygon2d.boundingBox(polygon)
   })
 })
 
@@ -105,7 +133,7 @@ describe('cardinal -> bezier', () => {
     Vector2.make(4, 0),
     Vector2.make(5, 1),
   ] as const
-  const centripetal = Cardinal2d.make(...points).pipe(Cardinal2d.withDuplicatedEndpoints)
+  const centripetal = Cardinal2d.fromArray(points).pipe(Cardinal2d.withDuplicatedEndpoints)
   const customTension = centripetal.pipe(Cardinal2d.withTension(0.7))
   const uniform = centripetal.pipe(Cardinal2d.withAlpha(0))
 

@@ -53,6 +53,6 @@ export function* toCurves(
 ) {
   for (const quad of toPointQuads(points, stride)) {
     const channels = Vector4.transpose(quad, (p) => [p.x, p.y])
-    yield CubicCurve2d.fromPolynomials(...Characteristic.apply(matrix, ...channels))
+    yield CubicCurve2d.fromPolynomials(...Characteristic.apply(matrix, channels))
   }
 }

@@ -22,7 +22,7 @@ const tuples = (s: Solution.AtMostOne<Polygon2d.Polygon2d>) =>
 
 describe('construction', () => {
   test('make, fromArray, and fromTuples agree', () => {
-    const a = Polygon2d.make(Vector2.make(0, 0), Vector2.make(1, 0), Vector2.make(0, 1))
+    const a = Polygon2d.fromArray([Vector2.make(0, 0), Vector2.make(1, 0), Vector2.make(0, 1)])
     const b = Polygon2d.fromArray([Vector2.make(0, 0), Vector2.make(1, 0), Vector2.make(0, 1)])
     const c = Polygon2d.fromTuples([
       [0, 0],
@@ -159,6 +159,15 @@ describe('measures', () => {
       ]),
     )
     expect([box.x.start, box.x.end, box.y.start, box.y.end]).toEqual([1, 5, -2, 7])
+  })
+
+  test('boundingBox handles more vertices than a call can take as arguments', () => {
+    const n = 200_000
+    const box = Polygon2d.boundingBox(
+      Polygon2d.fromArray(Array.from({ length: n }, (_, i) => Vector2.make(i, Math.sin(i) * 3))),
+    )
+    expect([box.x.start, box.x.end]).toEqual([0, n - 1])
+    expect(box.y.end).toBeCloseTo(3, 6)
   })
 })
 
@@ -509,7 +518,7 @@ describe('rounded corners', () => {
     ])
     const path = Polygon2d.rounded(p, 1.5)
     // Closed, continuous outline: each segment ends where the next begins.
-    const segments = [...path].map((c) => RationalCubicPath2d.make(c))
+    const segments = [...path].map((c) => RationalCubicPath2d.fromArray([c]))
     const junctions = segments.map((s) => RationalCubicPath2d.solve(s, 0))
     segments.forEach((s, i) => {
       expect(

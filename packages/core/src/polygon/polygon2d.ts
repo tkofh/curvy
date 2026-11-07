@@ -17,11 +17,11 @@ export type { Convex } from './internal/traits.ts'
  * edges, with an implicit closing edge from the last vertex back to the
  * first.
  *
- * Construct with `make`, `fromArray`, `fromTuples`, or `convexHull`. Any
- * three or more finite vertices make a polygon, including collinear,
- * repeated, and self-intersecting ones. Operations that need more state
- * it in their types: clipping, splitting, and insetting take a
- * `Polygon2d<Convex>`, which `isConvex` and `asConvex` establish.
+ * Construct with `fromArray`, `fromTuples`, or `convexHull`. Any three or
+ * more finite vertices make a polygon, including collinear, repeated, and
+ * self-intersecting ones. Operations that need more state it in their
+ * types: clipping, splitting, and insetting take a `Polygon2d<Convex>`,
+ * which `isConvex` and `asConvex` establish.
  *
  * Orientation uses the coordinates module's `Winding`. Vertices that rotate
  * `+x` toward `+y` wind `'clockwise'`, as they appear in an SVG viewport
@@ -75,25 +75,6 @@ export interface Split {
  * @since 2.0.0
  */
 export const isPolygon2d: (p: unknown) => p is Polygon2d = internal.isPolygon2d
-
-/**
- * Creates a `Polygon2d` from three or more vertices.
- *
- * @param p0 - The first vertex.
- * @param p1 - The second vertex.
- * @param p2 - The third vertex.
- * @param rest - Any further vertices, in order.
- * @returns A polygon with the given vertices, closed from the last back to
- *   the first.
- * @throws `Error` when a vertex coordinate is not finite.
- * @since 2.0.0
- */
-export const make: (
-  p0: Vector2,
-  p1: Vector2,
-  p2: Vector2,
-  ...rest: ReadonlyArray<Vector2>
-) => Polygon2d = internal.make
 
 /**
  * Creates a `Polygon2d` from an array of vertices.

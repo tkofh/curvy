@@ -185,7 +185,7 @@ export const transform = dual<
 
 /** @internal */
 export const toPath = (p: Bezier2d) =>
-  CubicPath2d.make(...toCurves(p, Characteristic.cubicBezier, 3))
+  CubicPath2d.fromArray(Array.from(toCurves(p, Characteristic.cubicBezier, 3)))
 
 /** @internal */
 export const fromRational = (r: RationalBezier2d): Solution.AtMostOne<Bezier2d> => {

@@ -146,6 +146,18 @@ describe('matrix3x3', () => {
       matrix2x2.make(4, 6, 7, 9),
     )
   })
+  test('determinant and inverse round exactly as the cofactor expansion by minors', () => {
+    const m = matrix3x3.make(0.36, 0.48, -0.8, -0.8, 0.6, 0.1, 0.48, 0.64, 0.6)
+    const cofactor = (r: 0 | 1 | 2, c: 0 | 1 | 2) =>
+      ((r + c) % 2 === 0 ? 1 : -1) * matrix2x2.determinant(matrix3x3.minor(m, r, c))
+    const det = m.m00 * cofactor(0, 0) + m.m01 * cofactor(0, 1) + m.m02 * cofactor(0, 2)
+    expect(matrix3x3.determinant(m)).toBe(det)
+    const k = 1 / det
+    const adjugate = matrix3x3.make(
+      ...([0, 1, 2] as const).flatMap((r) => ([0, 1, 2] as const).map((c) => cofactor(c, r) * k)),
+    )
+    expect(matrix3x3.inverseUnsafe(m)).toEqual(adjugate)
+  })
   test('vectorProductLeft', () => {
     expect(
       matrix3x3.vectorProductLeft(matrix3x3.make(1, 2, 3, 4, 5, 6, 7, 8, 9), vector3.make(1, 2, 3)),
@@ -334,6 +346,40 @@ describe('matrix4x4', () => {
     expect(
       matrix4x4.minor(matrix4x4.make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16), 0, 1),
     ).toEqual(matrix3x3.make(5, 7, 8, 9, 11, 12, 13, 15, 16))
+  })
+  test('determinant and inverse round exactly as the cofactor expansion by minors', () => {
+    const m = matrix4x4.make(
+      0.36,
+      0.48,
+      -0.8,
+      1,
+      -0.8,
+      0.6,
+      0.1,
+      2,
+      0.48,
+      0.64,
+      0.6,
+      3,
+      0.2,
+      -0.3,
+      0.5,
+      1.5,
+    )
+    const cofactor = (r: 0 | 1 | 2 | 3, c: 0 | 1 | 2 | 3) =>
+      ((r + c) % 2 === 0 ? 1 : -1) * matrix3x3.determinant(matrix4x4.minor(m, r, c))
+    const det =
+      m.m00 * cofactor(0, 0) +
+      m.m01 * cofactor(0, 1) +
+      m.m02 * cofactor(0, 2) +
+      m.m03 * cofactor(0, 3)
+    expect(matrix4x4.determinant(m)).toBe(det)
+    const k = 1 / det
+    const indices = [0, 1, 2, 3] as const
+    const adjugate = matrix4x4.make(
+      ...indices.flatMap((r) => indices.map((c) => cofactor(c, r) * k)),
+    )
+    expect(matrix4x4.inverseUnsafe(m)).toEqual(adjugate)
   })
   test('vectorProductLeft', () => {
     expect(

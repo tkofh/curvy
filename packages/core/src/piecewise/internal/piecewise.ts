@@ -93,9 +93,6 @@ export const fromArray = <P>(pieces: ReadonlyArray<Piece<P>>): Piecewise<P> => {
   return new PiecewiseImpl(pieces, resolveOps((pieces[0] as Piece<P>)[1]) as PolynomialOps<P>)
 }
 
-/** @internal */
-export const make = <P>(...pieces: ReadonlyArray<Piece<P>>): Piecewise<P> => fromArray(pieces)
-
 // --- fromPath: refit a monotonic-x path into a function of x ----------------
 //
 // A segment whose x is affine in t maps t === u, so its y-polynomial already is

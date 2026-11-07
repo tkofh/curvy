@@ -80,36 +80,13 @@ export interface Options {
  */
 export const isCardinal2d: (p: unknown) => p is Cardinal2d = internal.isCardinal2d
 
-export const make: {
-  /**
-   * Creates a new `Cardinal2d` with default tension and alpha.
-   *
-   * @param p0 - The first control point.
-   * @param p1 - The second control point.
-   * @param points - The remaining control points.
-   * @returns A new `Cardinal2d` instance.
-   * @since 1.0.0
-   */
-  (p0: Vector2, p1: Vector2, ...points: ReadonlyArray<Vector2>): Cardinal2d
-  /**
-   * Creates a new `Cardinal2d` with the given options.
-   *
-   * @param options - Tension and alpha. See `Options`.
-   * @param p0 - The first control point.
-   * @param p1 - The second control point.
-   * @param points - The remaining control points.
-   * @returns A new `Cardinal2d` instance.
-   * @since 2.0.0
-   */
-  (options: Options, p0: Vector2, p1: Vector2, ...points: ReadonlyArray<Vector2>): Cardinal2d
-} = internal.make
-
 /**
  * Creates a new `Cardinal2d` from an array of control points.
  *
- * @param points - The control points.
+ * @param points - The control points, in order.
  * @param options - Tension and alpha. See `Options`. Defaults to centripetal Catmull-Rom.
  * @returns A new `Cardinal2d` instance.
+ * @throws `Error` when there are fewer than 2 points.
  * @since 1.0.0
  */
 export const fromArray: (points: ReadonlyArray<Vector2>, options?: Options) => Cardinal2d =
@@ -136,16 +113,22 @@ export const append: {
    * @returns A function that takes a `Cardinal2d` and returns a new instance.
    * @since 1.0.0
    */
-  (...points: ReadonlyArray<Vector2>): (c: Cardinal2d) => Cardinal2d
+  (points: ReadonlyArray<Vector2>): (c: Cardinal2d) => Cardinal2d
   /**
    * Appends control points to a `Cardinal2d`. Tension and alpha are preserved.
    *
    * @param c - The `Cardinal2d` to append to.
    * @param points - The control points to append.
    * @returns A new `Cardinal2d` instance.
+   * @example
+   * ```ts
+   * const spline = Cardinal2d.fromTuples([[0, 0], [1, 1]])
+   * Cardinal2d.append(spline, [Vector2.make(2, 0), Vector2.make(3, 1)])
+   * spline.pipe(Cardinal2d.append([Vector2.make(2, 0)]))
+   * ```
    * @since 1.0.0
    */
-  (c: Cardinal2d, ...points: ReadonlyArray<Vector2>): Cardinal2d
+  (c: Cardinal2d, points: ReadonlyArray<Vector2>): Cardinal2d
 } = internal.append
 
 export const prepend: {
@@ -156,7 +139,7 @@ export const prepend: {
    * @returns A function that takes a `Cardinal2d` and returns a new instance.
    * @since 1.0.0
    */
-  (...points: ReadonlyArray<Vector2>): (c: Cardinal2d) => Cardinal2d
+  (points: ReadonlyArray<Vector2>): (c: Cardinal2d) => Cardinal2d
   /**
    * Prepends control points to a `Cardinal2d`. Tension and alpha are preserved.
    *
@@ -165,7 +148,7 @@ export const prepend: {
    * @returns A new `Cardinal2d` instance.
    * @since 1.0.0
    */
-  (c: Cardinal2d, ...points: ReadonlyArray<Vector2>): Cardinal2d
+  (c: Cardinal2d, points: ReadonlyArray<Vector2>): Cardinal2d
 } = internal.prepend
 
 /**

@@ -102,7 +102,7 @@ export const fromBezierPoints = (
       Characteristic.cubicBezier,
       // Lift each control point to homogeneous (w*x, w*y, w), then transpose
       // the four lifted CPs into three per-channel Vector4s for the matrix.
-      ...Vector4.transpose([p0, p1, p2, p3], (p) => [p.x * p.weight, p.y * p.weight, p.weight]),
+      Vector4.transpose([p0, p1, p2, p3], (p) => [p.x * p.weight, p.y * p.weight, p.weight]),
     ),
   )
 }

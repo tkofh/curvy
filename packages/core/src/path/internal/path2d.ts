@@ -76,8 +76,6 @@ export const makeMethods = <C>(typeId: `~curvy/${string}`, ops: Curve2dOps<C>) =
 
   const fromArray = (curves: ReadonlyArray<C>): Path2d<C> => new KindImpl(curves)
 
-  const make = (...curves: ReadonlyArray<C>): Path2d<C> => fromArray(curves)
-
   const append = dual<(c: C) => (p: Path2d<C>) => Path2d<C>, (p: Path2d<C>, c: C) => Path2d<C>>(
     2,
     (p: Path2d<C>, c: C) => fromArray([...p, c]),
@@ -332,7 +330,6 @@ export const makeMethods = <C>(typeId: `~curvy/${string}`, ops: Curve2dOps<C>) =
   return {
     curvesOf,
     fromArray,
-    make,
     append,
     appendContinuous,
     length,

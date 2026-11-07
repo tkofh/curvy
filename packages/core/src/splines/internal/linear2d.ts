@@ -32,13 +32,6 @@ export const isLinear2d = (p: unknown): p is Linear2d =>
   typeof p === 'object' && p !== null && Linear2dTypeId in p
 
 /** @internal */
-export const make = (
-  p0: Vector2.Vector2,
-  p1: Vector2.Vector2,
-  ...rest: ReadonlyArray<Vector2.Vector2>
-) => new Linear2dImpl([p0, p1, ...rest])
-
-/** @internal */
 export const fromArray = (points: ReadonlyArray<Vector2.Vector2>) => new Linear2dImpl(points)
 
 /** @internal */
@@ -47,21 +40,15 @@ export const fromTuples = (tuples: ReadonlyArray<readonly [number, number]>) =>
 
 /** @internal */
 export const append = dual<
-  (...points: ReadonlyArray<Vector2.Vector2>) => (p: Linear2d) => Linear2d,
-  (p: Linear2d, ...points: ReadonlyArray<Vector2.Vector2>) => Linear2d
->(
-  (args) => isLinear2d(args[0]),
-  (p: Linear2d, ...points: ReadonlyArray<Vector2.Vector2>) => new Linear2dImpl([...p, ...points]),
-)
+  (points: ReadonlyArray<Vector2.Vector2>) => (p: Linear2d) => Linear2d,
+  (p: Linear2d, points: ReadonlyArray<Vector2.Vector2>) => Linear2d
+>(2, (p: Linear2d, points: ReadonlyArray<Vector2.Vector2>) => new Linear2dImpl([...p, ...points]))
 
 /** @internal */
 export const prepend = dual<
-  (...points: ReadonlyArray<Vector2.Vector2>) => (p: Linear2d) => Linear2d,
-  (p: Linear2d, ...points: ReadonlyArray<Vector2.Vector2>) => Linear2d
->(
-  (args) => isLinear2d(args[0]),
-  (p: Linear2d, ...points: ReadonlyArray<Vector2.Vector2>) => new Linear2dImpl([...points, ...p]),
-)
+  (points: ReadonlyArray<Vector2.Vector2>) => (p: Linear2d) => Linear2d,
+  (p: Linear2d, points: ReadonlyArray<Vector2.Vector2>) => Linear2d
+>(2, (p: Linear2d, points: ReadonlyArray<Vector2.Vector2>) => new Linear2dImpl([...points, ...p]))
 
 /** @internal */
 export const mapPoints = dual<

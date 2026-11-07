@@ -204,12 +204,16 @@ export const setColumn = dual<
   ),
 )
 
+// Each minor's entries go straight to the 3x3 determinant. Building them
+// into an array to pick rows and columns by index ran 20 times slower.
+const det3 = matrix3x3.determinantOf
+
 /** @internal */
-export const determinant = (m: Matrix4x4) =>
-  m.m00 * matrix3x3.determinant(minor(m, 0, 0)) -
-  m.m01 * matrix3x3.determinant(minor(m, 0, 1)) +
-  m.m02 * matrix3x3.determinant(minor(m, 0, 2)) -
-  m.m03 * matrix3x3.determinant(minor(m, 0, 3))
+export const determinant = (m: Matrix4x4): number =>
+  m.m00 * det3(m.m11, m.m12, m.m13, m.m21, m.m22, m.m23, m.m31, m.m32, m.m33) -
+  m.m01 * det3(m.m10, m.m12, m.m13, m.m20, m.m22, m.m23, m.m30, m.m32, m.m33) +
+  m.m02 * det3(m.m10, m.m11, m.m13, m.m20, m.m21, m.m23, m.m30, m.m31, m.m33) -
+  m.m03 * det3(m.m10, m.m11, m.m12, m.m20, m.m21, m.m22, m.m30, m.m31, m.m32)
 
 /** @internal */
 export const minor = dual<
@@ -316,29 +320,25 @@ export const asInvertible = <T>(m: Matrix4x4<T>): Matrix4x4<T & Invertible> => {
 
 const buildInverse = (m: Matrix4x4, det: number): Matrix4x4 => {
   const inv = 1 / det
-  // adjugate is the transpose of the cofactor matrix
-  const cof = (row: Matrix4x4Coordinate, col: Matrix4x4Coordinate) => {
-    const sign = ((row as number) + (col as number)) % 2 === 0 ? 1 : -1
-    return sign * matrix3x3.determinant(minor(m, row, col)) * inv
-  }
-
+  // Entry (row, column) of the inverse is cofactor (column, row): the
+  // adjugate is the transpose of the cofactor matrix.
   return new Matrix4x4Impl(
-    cof(0, 0),
-    cof(1, 0),
-    cof(2, 0),
-    cof(3, 0),
-    cof(0, 1),
-    cof(1, 1),
-    cof(2, 1),
-    cof(3, 1),
-    cof(0, 2),
-    cof(1, 2),
-    cof(2, 2),
-    cof(3, 2),
-    cof(0, 3),
-    cof(1, 3),
-    cof(2, 3),
-    cof(3, 3),
+    det3(m.m11, m.m12, m.m13, m.m21, m.m22, m.m23, m.m31, m.m32, m.m33) * inv,
+    -det3(m.m01, m.m02, m.m03, m.m21, m.m22, m.m23, m.m31, m.m32, m.m33) * inv,
+    det3(m.m01, m.m02, m.m03, m.m11, m.m12, m.m13, m.m31, m.m32, m.m33) * inv,
+    -det3(m.m01, m.m02, m.m03, m.m11, m.m12, m.m13, m.m21, m.m22, m.m23) * inv,
+    -det3(m.m10, m.m12, m.m13, m.m20, m.m22, m.m23, m.m30, m.m32, m.m33) * inv,
+    det3(m.m00, m.m02, m.m03, m.m20, m.m22, m.m23, m.m30, m.m32, m.m33) * inv,
+    -det3(m.m00, m.m02, m.m03, m.m10, m.m12, m.m13, m.m30, m.m32, m.m33) * inv,
+    det3(m.m00, m.m02, m.m03, m.m10, m.m12, m.m13, m.m20, m.m22, m.m23) * inv,
+    det3(m.m10, m.m11, m.m13, m.m20, m.m21, m.m23, m.m30, m.m31, m.m33) * inv,
+    -det3(m.m00, m.m01, m.m03, m.m20, m.m21, m.m23, m.m30, m.m31, m.m33) * inv,
+    det3(m.m00, m.m01, m.m03, m.m10, m.m11, m.m13, m.m30, m.m31, m.m33) * inv,
+    -det3(m.m00, m.m01, m.m03, m.m10, m.m11, m.m13, m.m20, m.m21, m.m23) * inv,
+    -det3(m.m10, m.m11, m.m12, m.m20, m.m21, m.m22, m.m30, m.m31, m.m32) * inv,
+    det3(m.m00, m.m01, m.m02, m.m20, m.m21, m.m22, m.m30, m.m31, m.m32) * inv,
+    -det3(m.m00, m.m01, m.m02, m.m10, m.m11, m.m12, m.m30, m.m31, m.m32) * inv,
+    det3(m.m00, m.m01, m.m02, m.m10, m.m11, m.m12, m.m20, m.m21, m.m22) * inv,
   )
 }
 

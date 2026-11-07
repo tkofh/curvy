@@ -261,7 +261,7 @@ export const domain = dual<
     return Solution.none
   }
 
-  return Solution.one(Interval.fromMinMax(...start, ...end))
+  return Solution.one(Interval.fromValues([...start, ...end]))
 })
 
 /** @internal */
@@ -276,7 +276,7 @@ export const range = dual<
   const e = extreme(p)
 
   return e !== null && Interval.contains(d, e.x)
-    ? Interval.fromMinMax(solve(p, d.start), solve(p, d.end), e.y)
+    ? Interval.fromValues([solve(p, d.start), solve(p, d.end), e.y])
     : Interval.fromMinMax(solve(p, d.start), solve(p, d.end))
 })
 
