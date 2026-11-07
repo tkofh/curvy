@@ -216,7 +216,10 @@ export const unsafeMax = (s: Solution<number>): number => {
 }
 
 /** @internal */
-export const filter = <T>(s: Solution<T>, predicate: (v: T) => boolean): Solution<T> => {
+export const filter: {
+  <T>(s: Solution<T>, predicate: (v: T) => boolean): Solution<T>
+  <T>(predicate: (v: T) => boolean): (s: Solution<T>) => Solution<T>
+} = dual(2, <T>(s: Solution<T>, predicate: (v: T) => boolean): Solution<T> => {
   switch (s._tag) {
     case 'none':
       return s
@@ -250,7 +253,7 @@ export const filter = <T>(s: Solution<T>, predicate: (v: T) => boolean): Solutio
       return fromArray(survivors)
     }
   }
-}
+})
 
 /** @internal */
 export const clip = dual(

@@ -13,7 +13,7 @@ import type { Bezier2d } from './bezier2d.ts'
  * The characteristic matrix that identifies this spline family lives in the
  * `characteristic` module as `Characteristic.cubicBasisSpline`.
  *
- * @since 1.0.0
+ * @since 1.0.2
  */
 export interface Basis2d extends Value.Instance {
   readonly '~curvy/Basis2d': '~curvy/Basis2d'
@@ -25,7 +25,7 @@ export interface Basis2d extends Value.Instance {
  *
  * @param p - The value to check.
  * @returns `true` if the value is a `Basis2d`, `false` otherwise.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const isBasis2d: (p: unknown) => p is Basis2d = internal.isBasis2d
 
@@ -37,7 +37,7 @@ export const isBasis2d: (p: unknown) => p is Basis2d = internal.isBasis2d
  * @param p2 - The third control point.
  * @param p3 - The fourth control point.
  * @returns A new `Basis2d` instance.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const make: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => Basis2d = internal.make
 
@@ -46,7 +46,7 @@ export const make: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => Basis
  *
  * @param points - The control points.
  * @returns A new `Basis2d` instance.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const fromArray: (points: ReadonlyArray<Vector2>) => Basis2d = internal.fromArray
 
@@ -66,7 +66,8 @@ export const append: {
    *
    * @param points - The control points to append.
    * @returns A function that takes a `Basis2d` and returns a new `Basis2d` instance with the appended control points.
-   * @since 1.0.0
+   * @throws `Error` when `points` is not an array.
+   * @since 1.0.2
    */
   (points: ReadonlyArray<Vector2>): (p: Basis2d) => Basis2d
   /**
@@ -75,13 +76,14 @@ export const append: {
    * @param p - The `Basis2d` to append the control points to.
    * @param points - The control points to append.
    * @returns A new `Basis2d` instance with the appended control points.
+   * @throws `Error` when `points` is not an array.
    * @example
    * ```ts
    * const spline = Basis2d.fromTuples([[0, 0], [1, 1], [2, 0], [3, 1]])
    * Basis2d.append(spline, [Vector2.make(2, 0), Vector2.make(3, 1)])
    * spline.pipe(Basis2d.append([Vector2.make(2, 0)]))
    * ```
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (p: Basis2d, points: ReadonlyArray<Vector2>): Basis2d
 } = internal.append
@@ -92,7 +94,8 @@ export const prepend: {
    *
    * @param points - The control points to prepend.
    * @returns A function that takes a `Basis2d` and returns a new `Basis2d` instance with the prepended control points.
-   * @since 1.0.0
+   * @throws `Error` when `points` is not an array.
+   * @since 1.0.2
    */
   (points: ReadonlyArray<Vector2>): (p: Basis2d) => Basis2d
   /**
@@ -101,7 +104,8 @@ export const prepend: {
    * @param p - The `Basis2d` to prepend the control points to.
    * @param points - The control points to prepend.
    * @returns A new `Basis2d` instance with the prepended control points.
-   * @since 1.0.0
+   * @throws `Error` when `points` is not an array.
+   * @since 1.0.2
    */
   (p: Basis2d, points: ReadonlyArray<Vector2>): Basis2d
 } = internal.prepend
@@ -179,7 +183,7 @@ export const transform: {
  *
  * @param p - The `Basis2d` to triplicate the endpoints of.
  * @returns A new `Basis2d` instance with the triplicated endpoints.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const withTriplicatedEndpoints: (p: Basis2d) => Basis2d = internal.withTriplicatedEndpoints
 
@@ -188,7 +192,7 @@ export const withTriplicatedEndpoints: (p: Basis2d) => Basis2d = internal.withTr
  *
  * @param p - The `Basis2d` to convert to a `Path2d`.
  * @returns A new `Path2d` instance.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const toPath: (p: Basis2d) => CubicPath2d = internal.toPath
 
@@ -197,6 +201,6 @@ export const toPath: (p: Basis2d) => CubicPath2d = internal.toPath
  *
  * @param p - The `Basis2d` to convert.
  * @returns A new `Bezier2d` instance.
- * @since 1.0.0
+ * @since 1.0.3
  */
 export const toBezier: (p: Basis2d) => Bezier2d = internal.toBezier

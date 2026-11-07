@@ -111,6 +111,9 @@ describe('Solution transformations', () => {
     expect(Solution.filter(s, (v) => v > 1)).toEqual(Solution.two(2, 3))
     expect(Solution.filter(s, (v) => v > 5)).toEqual(Solution.none)
   })
+  test('filter data-last form pipes from a Solution', () => {
+    expect(Solution.two(-1, 2).pipe(Solution.filter((v) => v > 0))).toEqual(Solution.one(2))
+  })
   test('clip keeps values within an interval', () => {
     const s = Solution.three(-1, 0.5, 2)
     expect([...Solution.clip(s, Interval.unit)]).toEqual([0.5])

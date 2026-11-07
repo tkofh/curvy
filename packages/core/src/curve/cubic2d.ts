@@ -52,7 +52,7 @@ export const fromPolynomials: (x: CubicPolynomial, y: CubicPolynomial) => CubicC
  * @param c2 - The x^2 coefficients (x and y).
  * @param c3 - The x^3 coefficients (x and y).
  * @returns A new `CubicCurve2d` instance.
- * @since 2.0.0
+ * @since 1.0.0
  */
 export const fromCoefficients: (
   c0: Vector2,
@@ -247,7 +247,7 @@ export const curvature: {
    * @param c - The cubic curve to calculate the curvature for.
    * @param t - The parameter value.
    * @returns The curvature of the cubic curve at parameter t.
-   * @since 1.0.0
+   * @since 1.0.1
    */
   (c: CubicCurve2d, t: number): number
   /**
@@ -255,7 +255,7 @@ export const curvature: {
    *
    * @param t - The parameter value.
    * @returns A function that takes a cubic curve and returns the curvature of the cubic curve at parameter t.
-   * @since 1.0.0
+   * @since 1.0.1
    */
   (t: number): (c: CubicCurve2d) => number
 } = internal.curvature

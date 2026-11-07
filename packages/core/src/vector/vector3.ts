@@ -137,7 +137,7 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
  * @param phi - The azimuth from the positive x-axis in the xy-plane, in radians.
  * @param r - The radius. A negative radius reflects through the origin.
  * @returns The vector `(r*sin(theta)*cos(phi), r*sin(theta)*sin(phi), r*cos(theta))`.
- * @since 2.0.0
+ * @since 1.0.7
  */
 export const fromSpherical: (theta: number, phi: number, r: number) => Vector3 =
   internal.fromSpherical
@@ -156,7 +156,7 @@ export const magnitude: (vector: Vector3) => number = internal.magnitude
  *
  * @param vector - The vector to calculate the length of.
  * @returns The Euclidean length `sqrt(x^2 + y^2 + z^2)`.
- * @since 1.0.0
+ * @since 1.0.9
  */
 export const length: (vector: Vector3) => number = magnitude
 
@@ -204,7 +204,7 @@ export const cross: {
    * @param a - The first vector.
    * @param b - The second vector.
    * @returns A new `Vector3` perpendicular to both inputs.
-   * @since 1.0.0
+   * @since 1.0.8
    */
   (a: Vector3, b: Vector3): Vector3
   /**
@@ -212,7 +212,7 @@ export const cross: {
    *
    * @param b - The second vector.
    * @returns A function that takes the first vector and returns the cross product.
-   * @since 1.0.0
+   * @since 1.0.8
    */
   (b: Vector3): (a: Vector3) => Vector3
 } = internal.cross
@@ -251,28 +251,28 @@ export const zero = make(0)
 /**
  * The all-ones vector `(1, 1, 1)`, the `hadamard` identity.
  *
- * @since 1.0.0
+ * @since 1.0.9
  */
 export const one = make(1)
 
 /**
  * The unit vector `(1, 0, 0)` along the x-axis.
  *
- * @since 1.0.0
+ * @since 1.0.9
  */
 export const unitX = make(1, 0, 0)
 
 /**
  * The unit vector `(0, 1, 0)` along the y-axis.
  *
- * @since 1.0.0
+ * @since 1.0.9
  */
 export const unitY = make(0, 1, 0)
 
 /**
  * The unit vector `(0, 0, 1)` along the z-axis.
  *
- * @since 1.0.0
+ * @since 1.0.9
  */
 export const unitZ = make(0, 0, 1)
 
@@ -346,7 +346,7 @@ export const scale: {
    *
    * @param s - The scalar value to scale by.
    * @returns A function that takes a vector and returns the scaled vector.
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (s: number): (v: Vector3) => Vector3
   /**
@@ -355,7 +355,7 @@ export const scale: {
    * @param v - The vector to scale.
    * @param s - The scalar value to scale by.
    * @returns A new `Vector3` scaled by `s`, or the input instance itself when `s` is exactly `1`.
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (v: Vector3, s: number): Vector3
 } = internal.scale
@@ -399,7 +399,7 @@ export const lerp: {
  *
  * @param v - The vector to get the x component of.
  * @returns The x component of the vector.
- * @since 1.0.0
+ * @since 1.0.5
  */
 export const getX: (v: Vector3) => number = internal.getX
 
@@ -410,7 +410,7 @@ export const setX: {
    * @param v - The vector to set the x component of.
    * @param x - The new x component.
    * @returns A new `Vector3` instance with the updated x component.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (v: Vector3, x: number): Vector3
   /**
@@ -418,7 +418,7 @@ export const setX: {
    *
    * @param x - The new x component.
    * @returns A function that takes the vector and returns a new `Vector3` instance with the updated x component.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (x: number): (v: Vector3) => Vector3
 } = internal.setX
@@ -448,7 +448,7 @@ export const mapX: {
  *
  * @param v - The vector of which to get the y component.
  * @returns The y component of the vector.
- * @since 1.0.0
+ * @since 1.0.5
  */
 export const getY: (v: Vector3) => number = internal.getY
 
@@ -459,7 +459,7 @@ export const setY: {
    * @param v - The vector of which to set the y component.
    * @param y - The new y component.
    * @returns A new `Vector3` instance with the updated y component.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (v: Vector3, y: number): Vector3
   /**
@@ -467,7 +467,7 @@ export const setY: {
    *
    * @param y - The new y component.
    * @returns A function that takes the vector and returns a new `Vector3` instance with the updated y component.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (y: number): (v: Vector3) => Vector3
 } = internal.setY
@@ -497,7 +497,7 @@ export const mapY: {
  *
  * @param v - The vector of which to get the z component.
  * @returns The z component of the vector.
- * @since 1.0.0
+ * @since 1.0.5
  */
 export const getZ: (v: Vector3) => number = internal.getZ
 
@@ -508,7 +508,7 @@ export const setZ: {
    * @param v - The vector of which to set the z component.
    * @param z - The new z component.
    * @returns A new `Vector3` instance with the updated z component.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (v: Vector3, z: number): Vector3
   /**
@@ -516,7 +516,7 @@ export const setZ: {
    *
    * @param z - The new z component.
    * @returns A function that takes the vector and returns a new `Vector3` instance with the updated z component.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (z: number): (v: Vector3) => Vector3
 } = internal.setZ
@@ -546,7 +546,7 @@ export const mapZ: {
  *
  * @param v - The vector of which to get the radius.
  * @returns The radius (the vector's magnitude).
- * @since 1.0.0
+ * @since 1.0.5
  */
 export const getR: (v: Vector3) => number = magnitude
 
@@ -560,7 +560,7 @@ export const setR: {
    * @param v - The vector of which to set the radius.
    * @param r - The new radius.
    * @returns A new `Vector3` instance with the updated radius.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (v: Vector3, r: number): Vector3
   /**
@@ -568,7 +568,7 @@ export const setR: {
    *
    * @param r - The new radius.
    * @returns A function that takes the vector and returns the updated vector.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (r: number): (v: Vector3) => Vector3
 } = internal.setR
@@ -607,7 +607,7 @@ export const mapR: {
  *
  * @param v - The vector of which to get the polar angle.
  * @returns The inclination `acos(z / magnitude(v))`, in radians, in `[0, pi]`. `NaN` for the zero vector.
- * @since 1.0.0
+ * @since 1.0.5
  */
 export const getTheta: (v: Vector3) => number = internal.getTheta
 
@@ -621,7 +621,7 @@ export const setTheta: {
    * @param v - The vector of which to set the polar angle.
    * @param theta - The new inclination from the positive z-axis, in radians.
    * @returns A new `Vector3` instance with the updated polar angle.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (v: Vector3, theta: number): Vector3
   /**
@@ -629,7 +629,7 @@ export const setTheta: {
    *
    * @param theta - The new polar angle.
    * @returns A function that takes the vector and returns the updated vector.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (theta: number): (v: Vector3) => Vector3
 } = internal.setTheta
@@ -662,7 +662,7 @@ export const mapTheta: {
  *
  * @param v - The vector of which to get the azimuthal angle.
  * @returns The azimuth `atan2(y, x)`, in radians, in `[-pi, pi]`. `0` for any vector on the z-axis.
- * @since 1.0.0
+ * @since 1.0.5
  */
 export const getPhi: (v: Vector3) => number = internal.getPhi
 
@@ -676,7 +676,7 @@ export const setPhi: {
    * @param v - The vector of which to set the azimuthal angle.
    * @param phi - The new azimuth from the positive x-axis in the xy-plane, in radians.
    * @returns A new `Vector3` instance with the updated azimuthal angle.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (v: Vector3, phi: number): Vector3
   /**
@@ -684,7 +684,7 @@ export const setPhi: {
    *
    * @param phi - The new azimuthal angle.
    * @returns A function that takes the vector and returns the updated vector.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (phi: number): (v: Vector3) => Vector3
 } = internal.setPhi

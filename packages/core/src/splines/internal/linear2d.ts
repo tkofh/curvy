@@ -6,6 +6,7 @@ import { invariant } from '../../utils/invariant.ts'
 import { Value } from '../../utils/value.ts'
 import * as Vector2 from '../../vector/vector2.ts'
 import type { Linear2d } from '../linear2d.ts'
+import { assertPointArray } from './util.ts'
 
 const Linear2dTypeId = '~curvy/Linear2d'
 
@@ -42,13 +43,19 @@ export const fromTuples = (tuples: ReadonlyArray<readonly [number, number]>) =>
 export const append = dual<
   (points: ReadonlyArray<Vector2.Vector2>) => (p: Linear2d) => Linear2d,
   (p: Linear2d, points: ReadonlyArray<Vector2.Vector2>) => Linear2d
->(2, (p: Linear2d, points: ReadonlyArray<Vector2.Vector2>) => new Linear2dImpl([...p, ...points]))
+>(2, (p: Linear2d, points: ReadonlyArray<Vector2.Vector2>) => {
+  assertPointArray(points, 'Linear2d.append')
+  return new Linear2dImpl([...p, ...points])
+})
 
 /** @internal */
 export const prepend = dual<
   (points: ReadonlyArray<Vector2.Vector2>) => (p: Linear2d) => Linear2d,
   (p: Linear2d, points: ReadonlyArray<Vector2.Vector2>) => Linear2d
->(2, (p: Linear2d, points: ReadonlyArray<Vector2.Vector2>) => new Linear2dImpl([...points, ...p]))
+>(2, (p: Linear2d, points: ReadonlyArray<Vector2.Vector2>) => {
+  assertPointArray(points, 'Linear2d.prepend')
+  return new Linear2dImpl([...points, ...p])
+})
 
 /** @internal */
 export const mapPoints = dual<

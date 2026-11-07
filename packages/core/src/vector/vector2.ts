@@ -292,7 +292,7 @@ export const transpose: <T, const Channels extends ReadonlyArray<number>>(
  * @param theta - The angle, in radians.
  * @param r - The radius. A negative radius reflects through the origin.
  * @returns The vector `(r * cos(theta), r * sin(theta))`.
- * @since 2.0.0
+ * @since 1.0.6
  */
 export const fromPolar: (theta: number, r: number) => Vector2 = internal.fromPolar
 
@@ -349,7 +349,7 @@ export const cross: {
    * @param a - The first vector.
    * @param b - The second vector.
    * @returns The scalar cross product `a.x * b.y - a.y * b.x`.
-   * @since 1.0.0
+   * @since 1.0.1
    */
   (a: Vector2, b: Vector2): number
   /**
@@ -357,7 +357,7 @@ export const cross: {
    *
    * @param b - The second vector.
    * @returns A function that takes the first vector and returns the cross product.
-   * @since 1.0.0
+   * @since 1.0.1
    */
   (b: Vector2): (a: Vector2) => number
 } = internal.cross
@@ -397,7 +397,7 @@ export const zero = make(0)
 /**
  * The all-ones vector `(1, 1)`, the `hadamard` identity.
  *
- * @since 1.0.0
+ * @since 1.0.9
  */
 export const one = make(1)
 
@@ -469,7 +469,7 @@ export const scale: {
    *
    * @param s - The scalar value to scale by.
    * @returns A function that takes a vector and returns the scaled vector.
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (s: number): (v: Vector2) => Vector2
   /**
@@ -478,7 +478,7 @@ export const scale: {
    * @param v - The vector to scale.
    * @param s - The scalar value to scale by.
    * @returns A new `Vector2` scaled by `s`, or the input instance itself when `s` is exactly `1`.
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (v: Vector2, s: number): Vector2
 } = internal.scale
@@ -522,7 +522,7 @@ export const lerp: {
  *
  * @param v - The vector to get the x component from.
  * @returns The x component of the vector.
- * @since 1.0.0
+ * @since 1.0.5
  */
 export const getX: (v: Vector2) => number = internal.getX
 
@@ -533,7 +533,7 @@ export const setX: {
    * @param v - The vector to set the x component of.
    * @param x - The new x component.
    * @returns A new `Vector2` instance with the updated x component.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (v: Vector2, x: number): Vector2
   /**
@@ -541,7 +541,7 @@ export const setX: {
    *
    * @param x - The new x component.
    * @returns A function that takes a vector and returns the updated vector.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (x: number): (v: Vector2) => Vector2
 } = internal.setX
@@ -571,7 +571,7 @@ export const mapX: {
  *
  * @param v - The vector to get the y component from.
  * @returns The y component of the vector.
- * @since 1.0.0
+ * @since 1.0.5
  */
 export const getY: (v: Vector2) => number = internal.getY
 
@@ -582,7 +582,7 @@ export const setY: {
    * @param v - The vector to set the y component of.
    * @param y - The new y component.
    * @returns A new `Vector2` instance with the updated y component.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (v: Vector2, y: number): Vector2
   /**
@@ -590,7 +590,7 @@ export const setY: {
    *
    * @param y - The new y component.
    * @returns A function that takes a vector and returns the updated vector.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (y: number): (v: Vector2) => Vector2
 } = internal.setY
@@ -620,7 +620,7 @@ export const mapY: {
  *
  * @param v - The vector to get the radius from.
  * @returns The radius (the vector's magnitude).
- * @since 1.0.0
+ * @since 1.0.5
  */
 export const getR: (v: Vector2) => number = magnitude
 
@@ -634,7 +634,7 @@ export const setR: {
    * @param v - The vector to set the radius of.
    * @param r - The new radius.
    * @returns A new `Vector2` instance with the updated radius.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (v: Vector2, r: number): Vector2
   /**
@@ -642,7 +642,7 @@ export const setR: {
    *
    * @param r - The new radius.
    * @returns A function that takes a vector and returns the updated vector.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (r: number): (v: Vector2) => Vector2
 } = internal.setR
@@ -677,7 +677,7 @@ export const mapR: {
  *
  * @param v - The vector to get the angle from.
  * @returns The angle in radians, in `[-pi, pi]` (`Math.atan2` semantics).
- * @since 1.0.0
+ * @since 1.0.5
  */
 export const getTheta: (v: Vector2) => number = internal.getTheta
 
@@ -690,7 +690,7 @@ export const setTheta: {
    * @param v - The vector to set the angle of.
    * @param theta - The new angle, in radians.
    * @returns A new `Vector2` instance with the updated angle.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (v: Vector2, theta: number): Vector2
   /**
@@ -698,7 +698,7 @@ export const setTheta: {
    *
    * @param theta - The new angle, in radians.
    * @returns A function that takes a vector and returns the updated vector.
-   * @since 1.0.0
+   * @since 1.0.5
    */
   (theta: number): (v: Vector2) => Vector2
 } = internal.setTheta

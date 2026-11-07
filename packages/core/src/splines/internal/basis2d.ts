@@ -8,7 +8,7 @@ import * as Vector2 from '../../vector/vector2.ts'
 import type { Basis2d } from '../basis2d.ts'
 import type { Bezier2d } from '../bezier2d.ts'
 import * as bezierInternal from './bezier2d.ts'
-import { toCurves } from './util.ts'
+import { assertPointArray, toCurves } from './util.ts'
 
 const Basis2dTypeId = '~curvy/Basis2d'
 
@@ -53,13 +53,19 @@ export const fromTuples = (tuples: ReadonlyArray<readonly [number, number]>) =>
 export const append = dual<
   (points: ReadonlyArray<Vector2.Vector2>) => (p: Basis2d) => Basis2d,
   (p: Basis2d, points: ReadonlyArray<Vector2.Vector2>) => Basis2d
->(2, (p: Basis2d, points: ReadonlyArray<Vector2.Vector2>) => new Basis2dImpl([...p, ...points]))
+>(2, (p: Basis2d, points: ReadonlyArray<Vector2.Vector2>) => {
+  assertPointArray(points, 'Basis2d.append')
+  return new Basis2dImpl([...p, ...points])
+})
 
 /** @internal */
 export const prepend = dual<
   (points: ReadonlyArray<Vector2.Vector2>) => (p: Basis2d) => Basis2d,
   (p: Basis2d, points: ReadonlyArray<Vector2.Vector2>) => Basis2d
->(2, (p: Basis2d, points: ReadonlyArray<Vector2.Vector2>) => new Basis2dImpl([...points, ...p]))
+>(2, (p: Basis2d, points: ReadonlyArray<Vector2.Vector2>) => {
+  assertPointArray(points, 'Basis2d.prepend')
+  return new Basis2dImpl([...points, ...p])
+})
 
 /** @internal */
 export const withTriplicatedEndpoints = (p: Basis2d) => {
@@ -102,4 +108,4 @@ export const toPath = (p: Basis2d) =>
 
 /** @internal */
 export const toBezier = (p: Basis2d): Bezier2d =>
-  bezierInternal.fromBasis(p, Characteristic.cubicBasisSpline, 1)
+  bezierInternal.fromSpline(p, Characteristic.cubicBasisSpline, 1)

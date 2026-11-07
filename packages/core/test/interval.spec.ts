@@ -31,6 +31,11 @@ describe('interval', () => {
     expect(Interval.fromMinMax(3, 1)).toMatchObject(Interval.make(1, 3))
     expect(Interval.fromMinMax(1, 3)).toMatchObject(Interval.make(1, 3))
   })
+  test('fromMinMax rejects other argument counts', () => {
+    const untyped = Interval.fromMinMax as (...values: Array<number>) => Interval.Closed
+    expect(() => untyped(1, 3, 2)).toThrow(/fromValues/)
+    expect(() => untyped(1)).toThrow(/fromValues/)
+  })
 
   test('fromMinMax and fromValues keep the Math.min and Math.max treatment of -0', () => {
     expect(Object.is(Interval.fromMinMax(0, -0).start, -0)).toBe(true)

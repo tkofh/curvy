@@ -4,6 +4,16 @@ import type * as Matrix4x4 from '../../matrix/matrix4x4.ts'
 import type { Vector2 } from '../../vector/vector2.ts'
 import * as Vector4 from '../../vector/vector4.ts'
 
+// 1.x `append` and `prepend` took points as separate arguments. An untyped
+// call in that shape passes one vector where the array belongs, and since
+// vectors are iterable the spread would splice its x and y in as points.
+/** @internal */
+export function assertPointArray(points: ReadonlyArray<Vector2>, name: string): void {
+  if (!Array.isArray(points)) {
+    throw new Error(`${name} takes an array of points; wrap a single point as [p]`)
+  }
+}
+
 export function* toPointQuads(points: Iterable<Vector2>, stride: 1 | 2 | 3) {
   let p0: Vector2 | undefined
   let p1: Vector2 | undefined

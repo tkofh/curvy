@@ -18,5 +18,5 @@ Plane3d.intersection(
   Plane3d.make(Vector3.unitX, 1),
   Plane3d.make(Vector3.unitY, 2),
   Plane3d.make(Vector3.unitZ, 3),
-) // Solution.one(Vector3(1, 2, 3))
+) // Solution.One(Vector3(1, 2, 3))
 ```

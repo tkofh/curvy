@@ -2,6 +2,7 @@ import type * as CubicCurve2d from '../../curve/cubic2d.ts'
 import * as RationalCubicCurve2d from '../../curve/rationalCubic2d.ts'
 import type * as Interval from '../../interval/interval.ts'
 import * as Interval2d from '../../interval/interval2d.ts'
+import { EPSILON } from '../../number.ts'
 import type * as Affine2d from '../../transform/affine2d.ts'
 import { dual } from '../../utils/function.ts'
 import { invariant } from '../../utils/invariant.ts'
@@ -54,11 +55,17 @@ export const solve = dual<
   (u: number) => (p: RationalCubicPath2d) => Vector2.Vector2,
   (p: RationalCubicPath2d, u: number) => Vector2.Vector2
 >(2, (p: RationalCubicPath2d, u: number) => {
+  // Same contract as the polynomial paths: an absolute EPSILON grazing band
+  // around the normalized domain (PRECISION.md, regime 1).
+  invariant(u >= -EPSILON && u <= 1 + EPSILON, 'path parameter must be within [0, 1]')
   const curves = p instanceof RationalCubicPath2dImpl ? p.curves : [...p]
 
-  if (u === 1) {
+  if (u >= 1) {
     const last = curves.at(-1) as RationalCubicCurve2d.RationalCubicCurve2d
     return RationalCubicCurve2d.solve(last, 1)
+  }
+  if (u <= 0) {
+    return RationalCubicCurve2d.solve(curves[0] as RationalCubicCurve2d.RationalCubicCurve2d, 0)
   }
 
   const t = u * curves.length

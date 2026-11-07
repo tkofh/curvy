@@ -536,6 +536,34 @@ describe('rationalCubicPath2d.approximateAsCubicPath', () => {
   })
 })
 
+describe('rationalCubicPath2d.solve', () => {
+  const path = rationalCubicPath2d.fromArray([
+    rationalCubicCurve2d.fromBezierPoints(
+      vector2.makeWeighted(0, 0, 1),
+      vector2.makeWeighted(1, 3, 2),
+      vector2.makeWeighted(2, 3, 2),
+      vector2.makeWeighted(3, 0, 1),
+    ),
+    rationalCubicCurve2d.fromBezierPoints(
+      vector2.makeWeighted(3, 0, 1),
+      vector2.makeWeighted(4, -2, 1),
+      vector2.makeWeighted(5, -2, 1),
+      vector2.makeWeighted(6, 0, 1),
+    ),
+  ])
+
+  test('clamps a parameter that grazes the domain by up to EPSILON', () => {
+    expect(rationalCubicPath2d.solve(path, 1 + 1e-12)).toMatchObject({ x: 6, y: 0 })
+    expect(rationalCubicPath2d.solve(path, -1e-12)).toMatchObject({ x: 0, y: 0 })
+  })
+
+  test('throws for a parameter outside [0, 1] by more than EPSILON', () => {
+    expect(() => rationalCubicPath2d.solve(path, 1.01)).toThrow(/within \[0, 1\]/)
+    expect(() => rationalCubicPath2d.solve(path, -0.01)).toThrow(/within \[0, 1\]/)
+    expect(() => path.pipe(rationalCubicPath2d.solve(2))).toThrow(/within \[0, 1\]/)
+  })
+})
+
 describe('rationalCubicPath2d.boundingBox', () => {
   test('encloses every segment of the path', () => {
     const path = rationalCubicPath2d.fromArray([

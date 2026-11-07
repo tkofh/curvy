@@ -2,50 +2,28 @@
 'curvy': major
 ---
 
-**New `curvy/characteristic` module.** The characteristic matrices that identify each cubic spline family now live in a shared module rather than being scattered across the spline modules.
+**The spline characteristic matrices move to the new `curvy/characteristic` module, and their entries are now exact.** The per-spline `characteristic` exports are removed:
+
+| 1.0.9                              | 2.0                                     |
+| ---------------------------------- | --------------------------------------- |
+| `Bezier2d.characteristic`          | `Characteristic.cubicBezier`            |
+| `Hermite2d.characteristic`         | `Characteristic.cubicHermite`           |
+| `Basis2d.characteristic`           | `Characteristic.cubicBasisSpline`       |
+| `Cardinal2d.characteristic(scale)` | `Characteristic.cubicCardinal(tension)` |
+| `Cardinal2d.catRomCharacteristic`  | `Characteristic.cubicCatmullRom`        |
+
+`tension` is the 1.x `scale` under its proper name. `Bezier2d.fromSpline(points, matrix, stride)` keeps its 1.x signature and takes these matrices or one of your own.
+
+1.x rounded every matrix entry to 8 decimal places, so the B-spline matrix held `0.16666667` and `0.16666666` where 2.0 holds `1/6`. Any matrix with an entry that needs more digits, such as `cubicCardinal(1/3)`, differs from 1.x in its last digits. The Bézier, Hermite and Catmull-Rom matrices are unchanged. See [PRECISION.md](https://github.com/tkofh/curvy/blob/main/PRECISION.md) for the rounding removal across the library.
+
+`Characteristic.apply(matrix, channels)` is new. It multiplies the matrix by each channel, a `Vector4` holding one axis's values at the four control points, and returns one monomial cubic per channel. `Vector4.transpose` packs point data into those channels (`Vector2.transpose` and `Vector3.transpose` do the same for 2 and 3 items):
 
 ```ts
-import { Characteristic } from 'curvy/characteristic'
-
-Characteristic.cubicBezier // Matrix4x4 — was Bezier2d.characteristic
-Characteristic.cubicHermite // Matrix4x4 — was Hermite2d.characteristic
-Characteristic.cubicBasisSpline // Matrix4x4 — was Basis2d.characteristic
-Characteristic.cubicCardinal // (tension: number) => Matrix4x4 — was Cardinal2d.characteristic
-Characteristic.cubicCatmullRom // Matrix4x4 — was Cardinal2d.catRomCharacteristic
-```
-
-**The per-spline `characteristic` exports are removed.** Update imports to pull from the new module. The runtime values are unchanged; only the import path moves. `Cardinal2d.catRomCharacteristic` similarly moves to `Characteristic.cubicCatmullRom`.
-
-**New `Characteristic.apply` helper.** Applies a characteristic matrix to N channels of control values, producing N cubic polynomials in monomial form. This is the operation Freya Holmér describes in _The Continuity of Splines_ — the matrix IS the spline, and `apply` is the canonical way to combine it with control points to produce a polynomial.
-
-```ts
-import { Characteristic } from 'curvy/characteristic'
-import { Vector4 } from 'curvy/vector'
-
-// Polynomial 2D spline: two channels (x, y)
-const [x, y] = Characteristic.apply(
-  Characteristic.cubicBezier,
-  Vector4.make(p0.x, p1.x, p2.x, p3.x),
-  Vector4.make(p0.y, p1.y, p2.y, p3.y),
-)
-
-// Rational 2D spline: same matrix, three channels (x, y, w)
-const [x, y, w] = Characteristic.apply(
-  Characteristic.cubicBezier,
-  Vector4.make(p0.x * p0.weight, p1.x * p1.weight, p2.x * p2.weight, p3.x * p3.weight),
-  Vector4.make(p0.y * p0.weight, p1.y * p1.weight, p2.y * p2.weight, p3.y * p3.weight),
-  Vector4.make(p0.weight, p1.weight, p2.weight, p3.weight),
-)
-```
-
-**`Vector2.transpose` / `Vector3.transpose` / `Vector4.transpose`** build those per-channel vectors from point-shaped data. Each takes an N-tuple of items plus a projection returning a fixed-arity tuple of numbers, and packs the k-th projected component of every item into the k-th output vector — the data-layout flip NumPy calls a transpose and FP calls `unzip`. The projection's return arity is preserved in the return type, so the destructuring below is fully typed.
-
-```ts
-// Equivalent to the two Vector4.make calls above.
 const [xs, ys] = Vector4.transpose([p0, p1, p2, p3], (p) => [p.x, p.y])
-const [x, y] = Characteristic.apply(Characteristic.cubicBezier, xs, ys)
+const [x, y] = Characteristic.apply(Characteristic.cubicBezier, [xs, ys])
+const curve = CubicCurve2d.fromPolynomials(x, y)
 ```
 
-The polynomial pipeline (`CubicCurve2d.fromBezierPoints`, `splines/util.ts -> toCurves`) and the rational pipeline (`RationalCubicCurve2d.fromBezierPoints`) both flow through `apply` now, and both feed it via `transpose` — the rational one projecting three channels (`[p.x * p.weight, p.y * p.weight, p.weight]`). The unified entry point makes the spline-family-as-matrix story visible at the type level.
+The channel array takes any length, so a rational spline passes three channels, `x * w`, `y * w` and `w`.
 
-**Cardinal cache moved.** The per-tension memoization that used to live in `Cardinal2d` now lives inside `Characteristic.cubicCardinal`. Behavior unchanged.
+The full table of 1.x exports and their 2.0 forms is in [MIGRATION.md](https://github.com/tkofh/curvy/blob/main/MIGRATION.md).

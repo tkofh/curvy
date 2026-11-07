@@ -54,7 +54,7 @@ export const fromPolynomials: (
  * @param c1 - The x^1 coefficients (x and y).
  * @param c2 - The x^2 coefficients (x and y).
  * @returns A new `QuadraticCurve2d` instance.
- * @since 2.0.0
+ * @since 1.0.0
  */
 export const fromCoefficients: (c0: Vector2, c1: Vector2, c2: Vector2) => QuadraticCurve2d =
   internal.fromCoefficients
@@ -204,7 +204,7 @@ export const solveAtY: {
  *
  * @param c - The quadratic curve to compute the derivative of.
  * @returns The derivative of the quadratic curve as a linear curve.
- * @since 1.0.0
+ * @since 1.0.1
  */
 export const derivative: (c: QuadraticCurve2d) => LinearCurve2d = internal.derivative
 
@@ -215,7 +215,7 @@ export const curvature: {
    * @param c - The quadratic curve to compute the curvature for.
    * @param t - The parameter value.
    * @returns The curvature of the quadratic curve at parameter t.
-   * @since 1.0.0
+   * @since 1.0.1
    */
   (c: QuadraticCurve2d, t: number): number
   /**
@@ -223,7 +223,7 @@ export const curvature: {
    *
    * @param t - The parameter value.
    * @returns A function that takes a quadratic curve and returns the curvature of the curve at parameter t.
-   * @since 1.0.0
+   * @since 1.0.1
    */
   (t: number): (c: QuadraticCurve2d) => number
 } = internal.curvature

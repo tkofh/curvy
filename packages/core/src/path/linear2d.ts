@@ -49,7 +49,7 @@ export interface LinearPath2d<out Trait = unknown> extends Value.Instance, Itera
  * @param curves - The curves to create the path from. At least one is required.
  * @returns A new `LinearPath2d` instance.
  * @throws `Error` when the array is empty.
- * @since 2.0.0
+ * @since 1.0.0
  */
 export const fromArray: (curves: ReadonlyArray<LinearCurve2d>) => LinearPath2d = internal.fromArray
 

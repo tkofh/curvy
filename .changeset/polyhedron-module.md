@@ -21,6 +21,6 @@ const wedge = ConvexPolyhedron.fromHalfSpaces([
   { plane: Plane3d.make(Vector3.make(0, 1, 0), 1), label: 'right' },
   { plane: Plane3d.make(Vector3.make(1, 0, 1), 1), label: 'roof' },
 ])
-// Solution.one(ConvexPolyhedron(6 vertices, 5 faces)), faces labeled
+// Solution.One(ConvexPolyhedron(6 vertices, 5 faces)), faces labeled
 // 'floor', 'back', 'left', 'right', 'roof'
 ```

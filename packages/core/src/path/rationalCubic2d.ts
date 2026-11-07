@@ -76,12 +76,13 @@ export const solve: {
    * parameter range, regardless of its arc length. The selected segment's
    * curve is evaluated at the corresponding local parameter.
    *
-   * `u` is not range-checked. Values outside `[0, 1]` index past the
-   * segment array and fail.
+   * `u` may graze the domain by up to `EPSILON` (values in the band clamp
+   * to the nearest endpoint). Beyond that the call throws.
    *
    * @param p - The path to evaluate.
    * @param u - The path parameter in `[0, 1]`.
    * @returns The point on the path at parameter `u`.
+   * @throws `Error` when `u` is outside `[0, 1]` by more than `EPSILON`.
    * @since 2.0.0
    */
   (p: RationalCubicPath2d, u: number): Vector2
@@ -90,6 +91,7 @@ export const solve: {
    *
    * @param u - The path parameter in `[0, 1]`.
    * @returns A function that takes a path and returns the point at `u`.
+   * @throws `Error` when `u` is outside `[0, 1]` by more than `EPSILON`.
    * @since 2.0.0
    */
   (u: number): (p: RationalCubicPath2d) => Vector2

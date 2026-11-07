@@ -2,93 +2,26 @@
 'curvy': major
 ---
 
-**Consolidated public module surface.** The `package.json` `exports` map is reduced from ~30 subpaths to 13. Every group exposes a single namespace-indexed subpath, and per-module subpaths are removed. The internal directory layout is unchanged; only the public import shape moves.
+**Imports move to grouped subpaths that export each namespace by name.** In 1.x, each module had its own subpath and you imported it whole with `import * as`. Version 2.0 has 21 subpaths, one per group, and you import namespaces from them by name:
 
-**New v2 surface:**
+| 1.0.9                                                                                            | 2.0                                                  |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| `import * as Vector2 from 'curvy/vector2'` (also `vector3`, `vector4`)                           | `import { Vector2 } from 'curvy/vector'`             |
+| `import * as Matrix3x3 from 'curvy/matrix3x3'` (also `matrix2x2`, `matrix4x4`)                   | `import { Matrix3x3 } from 'curvy/matrix'`           |
+| `import * as CubicPolynomial from 'curvy/polynomial/cubic'` (also `linear`, `quadratic`)         | `import { CubicPolynomial } from 'curvy/polynomial'` |
+| `import * as CubicCurve2d from 'curvy/curve/cubic2d'` (also `linear2d`, `quadratic2d`)           | `import { CubicCurve2d } from 'curvy/curve'`         |
+| `import * as CubicPath2d from 'curvy/path/cubic2d'` (also `linear2d`, `quadratic2d`)             | `import { CubicPath2d } from 'curvy/path'`           |
+| `import * as Bezier2d from 'curvy/splines/bezier2d'` (also `hermite2d`, `cardinal2d`, `basis2d`) | `import { Bezier2d } from 'curvy/splines'`           |
+| `import * as Interval from 'curvy/interval'`                                                     | `import { Interval } from 'curvy/interval'`          |
+| `import { pipe, dual, Pipeable } from 'curvy/pipe'`                                              | `import { pipe, dual, Pipeable } from 'curvy/utils'` |
+| `import { lerp, clamp, round } from 'curvy/utils'`                                               | `import { lerp, clamp, round } from 'curvy/number'`  |
 
-| Subpath                | Style         | Members                                                                                                                                |
-| ---------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `curvy/vector`         | namespaces    | `Vector2`, `Vector3`, `Vector4`                                                                                                        |
-| `curvy/matrix`         | namespaces    | `Matrix2x2`, `Matrix3x3`, `Matrix4x4`                                                                                                  |
-| `curvy/polynomial`     | namespaces    | `LinearPolynomial`, `QuadraticPolynomial`, `CubicPolynomial`                                                                           |
-| `curvy/curve`          | namespaces    | `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`, `RationalCubicCurve2d`                                                            |
-| `curvy/path`           | namespaces    | `LinearPath2d`, `QuadraticPath2d`, `CubicPath2d`, `RationalCubicPath2d`                                                                |
-| `curvy/splines`        | namespaces    | `Bezier2d`, `Hermite2d`, `Cardinal2d`, `Basis2d`, `RationalBezier2d`                                                                   |
-| `curvy/interval`       | namespace     | `Interval`                                                                                                                             |
-| `curvy/solution`       | namespace     | `Solution`                                                                                                                             |
-| `curvy/characteristic` | namespace     | `Characteristic`                                                                                                                       |
-| `curvy/monotonicity`   | namespace     | `Monotonicity`                                                                                                                         |
-| `curvy/transform`      | namespace     | `Affine2d`                                                                                                                             |
-| `curvy/number`         | named exports | `lerp`, `clamp`, `clip`, `normalize`, `remap`, `minMax`, `mod`, `round`, `roundUp`, `roundDown`, `epsEquals`, `clampToZero`, `EPSILON` |
-| `curvy/utils`          | named exports | `pipe`, `dual`, `Pipeable`, `invariant`                                                                                                |
+All ten numeric helpers move to `curvy/number`: `lerp`, `clamp`, `clip`, `normalize`, `remap`, `minMax`, `mod`, `round`, `roundUp`, and `roundDown`. `invariant` stays in `curvy/utils`, and the `PRECISION` constant is removed.
 
-The split principle: **namespaces for things that look like algebraic structures with operations** (you build them and operate on them), **named exports for free-floating utilities** (you call them inline). Consumers can still promote any of the named-export modules to a namespace via `import * as` if they prefer.
+The other 12 subpaths are new and have no 1.x counterpart: `curvy/piecewise`, `curvy/monotonicity`, `curvy/solution`, `curvy/characteristic`, `curvy/transform`, `curvy/coordinates`, `curvy/arc`, `curvy/polygon`, `curvy/quaternion`, `curvy/plane`, `curvy/polyhedron`, and `curvy/camera`. Only the subpaths in `exports` are supported, and file paths into `dist/` are not.
 
-**Per-module subpaths removed.** Every previous `curvy/<group>/<module>` subpath collapses into the group index:
+**`curvy/interval` keeps its path and changes its shape.** `import * as Interval from 'curvy/interval'` still resolves. It now binds the module, which exports the namespace as `Interval`, so `Interval.make` is `undefined`. TypeScript reports the missing property, and plain JavaScript throws `TypeError: Interval.make is not a function` at the first call.
 
-```ts
-// before
-import * as Vector2 from 'curvy/vector2'
-import * as CubicCurve2d from 'curvy/curve/cubic2d'
-import * as RationalCubicPath2d from 'curvy/path/rationalCubic2d'
-import * as Bezier2d from 'curvy/splines/bezier2d'
+**Types.** Every group except `curvy/solution` and `curvy/characteristic` exports each namespace's main type under the namespace's name, so `Vector2` works as a type and `Vector2.Vector2` still does. Write the solution type as `Solution.Solution<T>`. The 1.x secondary types are reachable only through their namespace: `Matrix2x2.Matrix2x2Coordinate` (and the 3x3 and 4x4 forms) and `Interval.ScaleShift`.
 
-// after
-import { Vector2 } from 'curvy/vector'
-import { CubicCurve2d, RationalCubicCurve2d } from 'curvy/curve'
-import { RationalCubicPath2d } from 'curvy/path'
-import { Bezier2d } from 'curvy/splines'
-```
-
-The internal namespace identity (`Vector2.make`, `CubicCurve2d.solve`, etc.) is unchanged — only the path you import from moves. Tree-shaking remains intact: importing one namespace from a group index does not pull in its siblings, given `"sideEffects": false`. These group indexes also re-export each member namespace's primary type flat, so `import { Vector2 } from 'curvy/vector'` works in both value and type position.
-
-**Solo namespaces (`Interval`, `Solution`, `Characteristic`) now exported through wrappers.** These were previously bare-module subpaths. Each now lives in a directory whose `index.ts` re-exports the implementation as a namespace, so the import shape matches the multi-namespace groups:
-
-```ts
-// before
-import * as Interval from 'curvy/interval'
-import * as Solution from 'curvy/solution'
-import * as Characteristic from 'curvy/characteristic'
-
-// after
-import { Interval } from 'curvy/interval'
-import { Solution } from 'curvy/solution'
-import { Characteristic } from 'curvy/characteristic'
-```
-
-**New `curvy/number` module.** The math utilities (`lerp`, `clamp`, `round`, `epsEquals`, etc.) move out of `curvy/utils` into a dedicated module. The grouping reflects what each is for: `curvy/utils` is now language plumbing every other module needs (`pipe`, `dual`, `Pipeable`, `invariant`); `curvy/number` is numeric utilities.
-
-```ts
-// before
-import { lerp, clamp, epsEquals } from 'curvy/utils'
-
-// after
-import { lerp, clamp, epsEquals } from 'curvy/number'
-```
-
-**`curvy/pipe` removed.** `pipe`, `dual`, and `Pipeable` move into `curvy/utils` alongside `invariant`. The `curvy/pipe` subpath is gone.
-
-```ts
-// before
-import { dual, pipe, Pipeable } from 'curvy/pipe'
-import { invariant } from 'curvy/utils'
-
-// after
-import { dual, pipe, Pipeable, invariant } from 'curvy/utils'
-```
-
-**Migration summary table.**
-
-| Before                                                      | After                                                   |
-| ----------------------------------------------------------- | ------------------------------------------------------- |
-| `import * as Vector2 from 'curvy/vector2'`                  | `import { Vector2 } from 'curvy/vector'`                |
-| `import * as Matrix4x4 from 'curvy/matrix4x4'`              | `import { Matrix4x4 } from 'curvy/matrix'`              |
-| `import * as CubicPolynomial from 'curvy/polynomial/cubic'` | `import { CubicPolynomial } from 'curvy/polynomial'`    |
-| `import * as CubicCurve2d from 'curvy/curve/cubic2d'`       | `import { CubicCurve2d } from 'curvy/curve'`            |
-| `import * as CubicPath2d from 'curvy/path/cubic2d'`         | `import { CubicPath2d } from 'curvy/path'`              |
-| `import * as Bezier2d from 'curvy/splines/bezier2d'`        | `import { Bezier2d } from 'curvy/splines'`              |
-| `import * as Interval from 'curvy/interval'`                | `import { Interval } from 'curvy/interval'`             |
-| `import * as Solution from 'curvy/solution'`                | `import { Solution } from 'curvy/solution'`             |
-| `import * as Characteristic from 'curvy/characteristic'`    | `import { Characteristic } from 'curvy/characteristic'` |
-| `import { lerp } from 'curvy/utils'`                        | `import { lerp } from 'curvy/number'`                   |
-| `import { dual } from 'curvy/pipe'`                         | `import { dual } from 'curvy/utils'`                    |
+The full export-by-export table is in [MIGRATION.md](https://github.com/tkofh/curvy/blob/main/MIGRATION.md).

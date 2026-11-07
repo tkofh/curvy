@@ -2,13 +2,21 @@
 'curvy': patch
 ---
 
-**Faster matrices, arc lengths, easing lookups, and bounding boxes, and a bounded Cardinal cache.**
+**Faster across the board than 1.x.** The operations 1.0.9 and 2.0 share run 1.2 to 340 times faster. The table compares the published 1.0.9 build with the 2.0 build on the same inputs under Node 26, with the mean of three alternating runs per operation. The two builds agree to within 1.x's 8-decimal rounding.
 
-- `Matrix3x3` and `Matrix4x4` compute `determinant`, `inverse`, and `inverseUnsafe` from the entries directly instead of building every minor as a matrix. `Matrix3x3.inverse` went from about 1.6 µs to 70 ns and `Matrix4x4.inverse` from 11 µs to 120 ns. Everything built on the 3x3 inverse speeds up with them: `Affine3d.inverse`, `Affine3d.applyNormal`, and `Plane3d.transform` each went from about 1.7 µs to 120–150 ns.
-- `CubicCurve2d.length` and `QuadraticCurve2d.length` sample the derivative's polynomials directly instead of building a vector at each of the 32 quadrature points, so they run about 3 times faster. `CubicPath2d.solveByDistance`, which measures length on every Newton step, runs about 3 times faster with them.
-- `CubicCurve2d.solveAtX` and `solveAtY`, the lookup behind cubic easing, run about 1.5 times faster, from about 185 ns to 125 ns. `CubicPolynomial.solveInverse` no longer collects its roots through a `Set` and two arrays. The quadratic and rational cubic curves' `solveAtX` and `solveAtY` drop the same intermediate closures.
-- `CubicPolynomial.range` and `unitRange` fold the values at the ends and extrema into a min and max directly, so `CubicCurve2d.boundingBox` runs about 1.75 times faster.
-- `Piecewise.solve` finds its piece by binary search instead of scanning from the first piece. On 64 pieces it runs about 3.7 times faster. An easing refit by `Piecewise.fromPath` typically has 8 to 22 pieces. Pieces that overlap within tolerance, which `fromArray` admits, keep the scan.
-- `Characteristic.cubicCardinal` keeps the 16 most recently used tensions instead of every tension it has seen, so a tension that changes on every call no longer grows memory without bound. Tension `0.5` always returns `cubicCatmullRom` itself. Other tensions return the same instance while they stay recent, and an equal new matrix after that.
+| Operation                         |  1.0.9 |    2.0 | Speedup |
+| --------------------------------- | -----: | -----: | ------: |
+| `Vector2.add`                     |  11 ns | 3.8 ns |      3x |
+| `Matrix4x4.determinant`           | 2.7 µs |  20 ns |    136x |
+| `Matrix4x4.solveSystem`           |  15 µs | 215 ns |     70x |
+| `Matrix4x4.vectorProductLeft`     | 159 ns |  22 ns |      7x |
+| `CubicPolynomial.solve`           |  41 ns |  20 ns |      2x |
+| `CubicPolynomial.roots`           | 205 ns | 172 ns |    1.2x |
+| `CubicPolynomial.range`           | 248 ns |  78 ns |      3x |
+| `CubicCurve2d.length`             | 1.5 µs | 319 ns |    4.8x |
+| `CubicPath2d.length` (4 segments) | 5.9 µs | 1.2 µs |      5x |
+| `Bezier2d.toPath` (4 segments)    | 1.8 µs | 664 ns |    2.7x |
+| `Basis2d.toBezier` (13 segments)  | 374 µs | 1.1 µs |    340x |
+| `Cardinal2d.toPath` (13 segments) | 5.0 µs | 1.4 µs |    3.5x |
 
-No results change: the new code rounds exactly as the old did.
+The largest gains come from computing determinants and the spline-to-Bézier conversion directly, where 1.x built every minor as a matrix and solved a linear system per segment. 2.0 also skips the 8-decimal rounding that 1.x applied to every constructed value. `Cardinal2d.toPath` costs the same under the centripetal default as under `{ alpha: 0 }`.

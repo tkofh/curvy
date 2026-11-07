@@ -305,17 +305,31 @@ export const unsafeMin: (s: Solution<number>) => number = internal.unsafeMin
  */
 export const unsafeMax: (s: Solution<number>) => number = internal.unsafeMax
 
-/**
- * Filters the solution by a predicate, preserving the order of survivors.
- * Result cardinality is at most that of the input.
- *
- * @param s - The solution to filter.
- * @param predicate - Keeps a value when it returns `true`.
- * @returns A solution holding the values that passed.
- * @since 2.0.0
- */
-export const filter: <T>(s: Solution<T>, predicate: (v: T) => boolean) => Solution<T> =
-  internal.filter
+export const filter: {
+  /**
+   * Filters the solution by a predicate, preserving the order of survivors.
+   * Result cardinality is at most that of the input.
+   *
+   * @param s - The solution to filter.
+   * @param predicate - Keeps a value when it returns `true`.
+   * @returns A solution holding the values that passed.
+   * @example
+   * ```ts
+   * Solution.filter(Solution.two(-1, 2), (v) => v > 0) // Solution.one(2)
+   * Solution.two(-1, 2).pipe(Solution.filter((v) => v > 0)) // Solution.one(2)
+   * ```
+   * @since 2.0.0
+   */
+  <T>(s: Solution<T>, predicate: (v: T) => boolean): Solution<T>
+  /**
+   * Filters a solution by a predicate, preserving the order of survivors.
+   *
+   * @param predicate - Keeps a value when it returns `true`.
+   * @returns A function that takes a solution and returns the values that passed.
+   * @since 2.0.0
+   */
+  <T>(predicate: (v: T) => boolean): (s: Solution<T>) => Solution<T>
+} = internal.filter
 
 export const clip: {
   /**

@@ -11,6 +11,7 @@ import * as Hermite2d from '../src/splines/hermite2d.ts'
 import * as Linear2d from '../src/splines/linear2d.ts'
 import * as RationalBezier2d from '../src/splines/rationalBezier2d.ts'
 import * as Vector2 from '../src/vector/vector2.ts'
+import * as Vector4 from '../src/vector/vector4.ts'
 
 describe('bezier', () => {
   test('makes a path', () => {
@@ -895,5 +896,103 @@ describe('Characteristic.cubicCardinal', () => {
     expect(again).toEqual(first)
     // 0.5 stays pinned however many tensions pass through.
     expect(Characteristic.cubicCardinal(0.5)).toBe(Characteristic.cubicCatmullRom)
+  })
+})
+
+// 1.x took the points as separate arguments; untyped callers may still do so.
+const loose = (f: unknown) => f as (...args: Array<unknown>) => unknown
+
+describe('append and prepend with separate points', () => {
+  const p = [Vector2.make(0, 0), Vector2.make(1, 1), Vector2.make(2, 0), Vector2.make(3, 1)]
+
+  test('Basis2d throws instead of splicing vector components in as points', () => {
+    const s = Basis2d.fromArray(p)
+    expect(() => loose(Basis2d.append)(s, Vector2.make(4, 0), Vector2.make(5, 1))).toThrow(
+      /Basis2d.append takes an array/,
+    )
+    expect(() => loose(Basis2d.prepend)(s, Vector2.make(-1, 0))).toThrow(
+      /Basis2d.prepend takes an array/,
+    )
+  })
+
+  test('Cardinal2d and Linear2d throw the same way', () => {
+    expect(() => loose(Cardinal2d.append)(Cardinal2d.fromArray(p), Vector2.make(4, 0))).toThrow(
+      /Cardinal2d.append/,
+    )
+    expect(() => loose(Linear2d.prepend)(Linear2d.fromArray(p), Vector2.make(4, 0))).toThrow(
+      /Linear2d.prepend/,
+    )
+  })
+
+  test('the 1.x data-last shape throws when applied', () => {
+    const s = Basis2d.fromArray(p)
+    expect(() =>
+      s.pipe(loose(Basis2d.append)(Vector2.make(4, 0), Vector2.make(5, 1)) as never),
+    ).toThrow(/Basis2d.append/)
+  })
+})
+
+describe('Bezier2d.fromSpline', () => {
+  const points = [
+    [0, 0],
+    [1, 2],
+    [3, 2],
+    [4, 0],
+    [6, 1],
+    [7, 3],
+    [9, 2],
+  ].map(([x, y]) => Vector2.make(x as number, y as number))
+
+  const expectSamePoints = (a: Bezier2d.Bezier2d, b: Bezier2d.Bezier2d) => {
+    const pa = [...a]
+    const pb = [...b]
+    expect(pa.length).toBe(pb.length)
+    pa.forEach((v, i) => {
+      expect(v.x).toBeCloseTo((pb[i] as Vector2.Vector2).x, 12)
+      expect(v.y).toBeCloseTo((pb[i] as Vector2.Vector2).y, 12)
+    })
+  }
+
+  test('matches the built-in conversions', () => {
+    expectSamePoints(
+      Bezier2d.fromSpline(points, Characteristic.cubicBasisSpline, 1),
+      Basis2d.toBezier(Basis2d.fromArray(points)),
+    )
+    expectSamePoints(
+      Bezier2d.fromSpline(points, Characteristic.cubicCatmullRom, 1),
+      Cardinal2d.toBezier(Cardinal2d.fromArray(points, { alpha: 0 })),
+    )
+    expectSamePoints(
+      Bezier2d.fromSpline(points, Characteristic.cubicBezier, 3),
+      Bezier2d.fromArray(points),
+    )
+  })
+
+  test('traces the same curve as Characteristic.apply under a custom matrix', () => {
+    const m = Characteristic.cubicCardinal(0.3)
+    const bez = Bezier2d.fromSpline(points, m, 1)
+    const path = Bezier2d.toPath(bez)
+    const segments = points.length - 3
+    for (let i = 0; i < segments; i++) {
+      const quad = points.slice(i, i + 4)
+      const curve = CubicCurve2d.fromPolynomials(
+        ...Characteristic.apply(m, [
+          Vector4.make(...(quad.map((q) => q.x) as [number, number, number, number])),
+          Vector4.make(...(quad.map((q) => q.y) as [number, number, number, number])),
+        ]),
+      )
+      for (const t of [0, 0.25, 0.5, 0.75, 1]) {
+        const a = CubicCurve2d.solve(curve, t)
+        const b = CubicPath2d.solve(path, (i + t) / segments)
+        expect(a.x).toBeCloseTo(b.x, 10)
+        expect(a.y).toBeCloseTo(b.y, 10)
+      }
+    }
+  })
+
+  test('throws for fewer than four points', () => {
+    expect(() =>
+      Bezier2d.fromSpline(points.slice(0, 3), Characteristic.cubicBasisSpline, 1),
+    ).toThrow()
   })
 })

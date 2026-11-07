@@ -13,7 +13,7 @@ import * as internal from './internal/hermite2d.ts'
  * The characteristic matrix that identifies this spline family lives in the
  * `characteristic` module as `Characteristic.cubicHermite`.
  *
- * @since 1.0.0
+ * @since 1.0.2
  */
 export interface Hermite2d extends Value.Instance {
   readonly '~curvy/Hermite2d': '~curvy/Hermite2d'
@@ -26,7 +26,7 @@ export interface Hermite2d extends Value.Instance {
  *
  * @param p - The value to check.
  * @returns `true` if the value is a `Hermite2d`, `false` otherwise.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const isHermite2d: (p: unknown) => p is Hermite2d = internal.isHermite2d
 
@@ -38,7 +38,7 @@ export const isHermite2d: (p: unknown) => p is Hermite2d = internal.isHermite2d
  * @param p1 - The second control point.
  * @param v1 - The second tangent vector.
  * @returns A new `Hermite2d` instance.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const make: (p0: Vector2, v0: Vector2, p1: Vector2, v1: Vector2) => Hermite2d = internal.make
 
@@ -47,7 +47,7 @@ export const make: (p0: Vector2, v0: Vector2, p1: Vector2, v1: Vector2) => Hermi
  *
  * @param points - The control points.
  * @returns A new `Hermite2d` instance.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const fromArray: (points: ReadonlyArray<Vector2>) => Hermite2d = internal.fromArray
 
@@ -69,7 +69,7 @@ export const append: {
    * @param p1 - The new control point.
    * @param v1 - The new tangent vector.
    * @returns A new `Hermite2d` instance with the appended control point and tangent vector.
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (p1: Vector2, v1: Vector2): (p: Hermite2d) => Hermite2d
   /**
@@ -79,7 +79,7 @@ export const append: {
    * @param p1 - The new control point.
    * @param v1 - The new tangent vector.
    * @returns A new `Hermite2d` instance with the appended control point and tangent vector.
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (p: Hermite2d, p1: Vector2, v1: Vector2): Hermite2d
 } = internal.append
@@ -91,7 +91,7 @@ export const prepend: {
    * @param p0 - The new control point.
    * @param v0 - The new tangent vector.
    * @returns A new `Hermite2d` instance with the prepended control point and tangent vector.
-   * @since 1.0.0
+   * @since 1.0.9
    */
   (p0: Vector2, v0: Vector2): (p: Hermite2d) => Hermite2d
   /**
@@ -101,7 +101,7 @@ export const prepend: {
    * @param p0 - The new control point.
    * @param v0 - The new tangent vector.
    * @returns A new `Hermite2d` instance with the prepended control point and tangent vector.
-   * @since 1.0.0
+   * @since 1.0.9
    */
   (p: Hermite2d, p0: Vector2, v0: Vector2): Hermite2d
 } = internal.prepend
@@ -189,7 +189,7 @@ export const transform: {
  *
  * @param p - The `Hermite2d` to convert.
  * @returns A new `CubicPath2d` instance.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const toPath: (p: Hermite2d) => CubicPath2d = internal.toPath
 
@@ -198,6 +198,6 @@ export const toPath: (p: Hermite2d) => CubicPath2d = internal.toPath
  *
  * @param p - The `Hermite2d` to convert.
  * @returns A new `Bezier2d` instance.
- * @since 1.0.0
+ * @since 1.0.3
  */
 export const toBezier: (p: Hermite2d) => Bezier2d = internal.toBezier

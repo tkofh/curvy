@@ -19,7 +19,7 @@ import * as internal from './internal/cardinal2d.ts'
  * For non-uniform parameterization (any `alpha != 0`), the per-segment cubic
  * is computed directly from chord-length-weighted tangents.
  *
- * @since 1.0.0
+ * @since 1.0.2
  */
 export interface Cardinal2d extends Value.Instance {
   readonly '~curvy/Cardinal2d': '~curvy/Cardinal2d'
@@ -76,7 +76,7 @@ export interface Options {
  *
  * @param p - The value to check.
  * @returns `true` if the value is a `Cardinal2d`, `false` otherwise.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const isCardinal2d: (p: unknown) => p is Cardinal2d = internal.isCardinal2d
 
@@ -87,7 +87,7 @@ export const isCardinal2d: (p: unknown) => p is Cardinal2d = internal.isCardinal
  * @param options - Tension and alpha. See `Options`. Defaults to centripetal Catmull-Rom.
  * @returns A new `Cardinal2d` instance.
  * @throws `Error` when there are fewer than 2 points.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const fromArray: (points: ReadonlyArray<Vector2>, options?: Options) => Cardinal2d =
   internal.fromArray
@@ -111,7 +111,8 @@ export const append: {
    *
    * @param points - The control points to append.
    * @returns A function that takes a `Cardinal2d` and returns a new instance.
-   * @since 1.0.0
+   * @throws `Error` when `points` is not an array.
+   * @since 1.0.2
    */
   (points: ReadonlyArray<Vector2>): (c: Cardinal2d) => Cardinal2d
   /**
@@ -120,13 +121,14 @@ export const append: {
    * @param c - The `Cardinal2d` to append to.
    * @param points - The control points to append.
    * @returns A new `Cardinal2d` instance.
+   * @throws `Error` when `points` is not an array.
    * @example
    * ```ts
    * const spline = Cardinal2d.fromTuples([[0, 0], [1, 1]])
    * Cardinal2d.append(spline, [Vector2.make(2, 0), Vector2.make(3, 1)])
    * spline.pipe(Cardinal2d.append([Vector2.make(2, 0)]))
    * ```
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (c: Cardinal2d, points: ReadonlyArray<Vector2>): Cardinal2d
 } = internal.append
@@ -137,7 +139,8 @@ export const prepend: {
    *
    * @param points - The control points to prepend.
    * @returns A function that takes a `Cardinal2d` and returns a new instance.
-   * @since 1.0.0
+   * @throws `Error` when `points` is not an array.
+   * @since 1.0.2
    */
   (points: ReadonlyArray<Vector2>): (c: Cardinal2d) => Cardinal2d
   /**
@@ -146,7 +149,8 @@ export const prepend: {
    * @param c - The `Cardinal2d` to prepend to.
    * @param points - The control points to prepend.
    * @returns A new `Cardinal2d` instance.
-   * @since 1.0.0
+   * @throws `Error` when `points` is not an array.
+   * @since 1.0.2
    */
   (c: Cardinal2d, points: ReadonlyArray<Vector2>): Cardinal2d
 } = internal.prepend
@@ -157,7 +161,7 @@ export const prepend: {
  *
  * @param c - The `Cardinal2d` to duplicate the endpoints of.
  * @returns A new `Cardinal2d` instance with duplicated endpoints.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const withDuplicatedEndpoints: (c: Cardinal2d) => Cardinal2d =
   internal.withDuplicatedEndpoints
@@ -185,7 +189,7 @@ export const withReflectedEndpoints: {
    *
    * @param scale - The scale factor for the reflection.
    * @returns A function that takes a `Cardinal2d` and returns a new instance.
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (scale: number): (c: Cardinal2d) => Cardinal2d
   /**
@@ -195,7 +199,7 @@ export const withReflectedEndpoints: {
    * @param c - The `Cardinal2d` to reflect the endpoints of.
    * @param scale - The scale factor for the reflection.
    * @returns A new `Cardinal2d` instance with reflected endpoints.
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (c: Cardinal2d, scale?: number): Cardinal2d
 } = internal.withReflectedEndpoints
@@ -354,7 +358,7 @@ export const transform: {
  *
  * @param c - The Cardinal spline.
  * @returns A new `CubicPath2d` representing the spline.
- * @since 1.0.0
+ * @since 1.0.2
  */
 export const toPath: (c: Cardinal2d) => CubicPath2d = internal.toPath
 
@@ -366,6 +370,6 @@ export const toPath: (c: Cardinal2d) => CubicPath2d = internal.toPath
  *
  * @param c - The Cardinal spline.
  * @returns A new `Bezier2d` representing the spline.
- * @since 1.0.0
+ * @since 1.0.3
  */
 export const toBezier: (c: Cardinal2d) => Bezier2d = internal.toBezier

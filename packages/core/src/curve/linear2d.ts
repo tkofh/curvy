@@ -50,7 +50,7 @@ export const fromPolynomials: (x: LinearPolynomial, y: LinearPolynomial) => Line
  * @param c0 - The x^0 coefficients (x and y).
  * @param c1 - The x^1 coefficients (x and y).
  * @returns A new `LinearCurve2d` instance.
- * @since 2.0.0
+ * @since 1.0.0
  */
 export const fromCoefficients: (c0: Vector2, c1: Vector2) => LinearCurve2d =
   internal.fromCoefficients
@@ -83,7 +83,7 @@ export const isLinearCurve2d: (c: unknown) => c is LinearCurve2d = internal.isLi
  *
  * @param c - The linear curve to get the derivative of.
  * @returns The constant velocity `(x.c1, y.c1)`.
- * @since 1.0.0
+ * @since 1.0.1
  */
 export const derivative: (c: LinearCurve2d) => Vector2 = internal.derivative
 

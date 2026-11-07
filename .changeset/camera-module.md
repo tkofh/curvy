@@ -25,5 +25,5 @@ const camera = Camera.perspective({
   viewport: Interval2d.fromCorners(Vector2.zero, Vector2.make(800, 600)),
 })
 
-Camera.project(camera, Vector3.zero) // Solution.one({ point: Vector2(400, 300), depth: 10 })
+Camera.project(camera, Vector3.zero) // Solution.One({ point: Vector2(400, 300), depth: 10 })
 ```

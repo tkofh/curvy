@@ -8,7 +8,7 @@ import * as Vector2 from '../../vector/vector2.ts'
 import type { Bezier2d } from '../bezier2d.ts'
 import * as bezierInternal from './bezier2d.ts'
 import type { Cardinal2d, Options } from '../cardinal2d.ts'
-import { toPointQuads } from './util.ts'
+import { assertPointArray, toPointQuads } from './util.ts'
 
 const Cardinal2dTypeId = '~curvy/Cardinal2d'
 
@@ -73,21 +73,19 @@ export const fromTuples = (
 export const append = dual<
   (points: ReadonlyArray<Vector2.Vector2>) => (p: Cardinal2d) => Cardinal2d,
   (p: Cardinal2d, points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d
->(
-  2,
-  (p: Cardinal2d, points: ReadonlyArray<Vector2.Vector2>) =>
-    new Cardinal2dImpl([...p, ...points], p.tension, p.alpha),
-)
+>(2, (p: Cardinal2d, points: ReadonlyArray<Vector2.Vector2>) => {
+  assertPointArray(points, 'Cardinal2d.append')
+  return new Cardinal2dImpl([...p, ...points], p.tension, p.alpha)
+})
 
 /** @internal */
 export const prepend = dual<
   (points: ReadonlyArray<Vector2.Vector2>) => (p: Cardinal2d) => Cardinal2d,
   (p: Cardinal2d, points: ReadonlyArray<Vector2.Vector2>) => Cardinal2d
->(
-  2,
-  (p: Cardinal2d, points: ReadonlyArray<Vector2.Vector2>) =>
-    new Cardinal2dImpl([...points, ...p], p.tension, p.alpha),
-)
+>(2, (p: Cardinal2d, points: ReadonlyArray<Vector2.Vector2>) => {
+  assertPointArray(points, 'Cardinal2d.prepend')
+  return new Cardinal2dImpl([...points, ...p], p.tension, p.alpha)
+})
 
 /** @internal */
 export const withDuplicatedEndpoints = (p: Cardinal2d) => {

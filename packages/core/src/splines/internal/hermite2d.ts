@@ -112,4 +112,4 @@ export const toPath = (p: Hermite2d) =>
 
 /** @internal */
 export const toBezier = (p: Hermite2d): Bezier2d =>
-  bezierInternal.fromBasis(p, Characteristic.cubicHermite, 2)
+  bezierInternal.fromSpline(p, Characteristic.cubicHermite, 2)

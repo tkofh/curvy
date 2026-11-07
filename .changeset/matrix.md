@@ -1,34 +1,22 @@
 ---
-'curvy': major
+'curvy': minor
 ---
 
-**Matrix primitives and the `Invertible` trait.** `Matrix3x3` and `Matrix4x4` fill out their primitive surface, and all three matrix sizes plus `Affine2d` gain an `Invertible` trait paralleling the polynomial `Monotonic` family.
+**Matrix identities, products, and inverses.** `Matrix3x3` and `Matrix4x4` gain an `identity` constant, `multiply(a, b)` for the product `a * b`, and an inverse API. `Matrix2x2` has none of these.
 
-**New primitives.** `Matrix3x3` and `Matrix4x4` each gain an `identity` constant and a `multiply(a, b)` (matrix-matrix product, data-first and data-last). These back the transform composition in the `Affine2d` changeset and the caching in the spline-conversion changeset, and stand on their own as general 4x4/3x3 transform primitives.
+- `inverse(m)` returns a `Solution`: `none` for a singular matrix, otherwise `Solution.One` holding the inverse.
+- `inverseUnsafe(m)` returns the inverse directly and throws on a singular matrix.
+- `isInvertible(m)` narrows `m` to the `Invertible` brand, and `asInvertible(m)` asserts it, throwing on a singular matrix. `inverse` of a branded matrix returns `Solution.One`, so `.value` needs no check.
 
-**`Invertible` trait.** Exposed through `isInvertible` / `asInvertible` refiners and a phantom `Traits` parameter on each carrier's interface. `inverse` now returns a `Solution.AtMostOne` by default, tightening to `Solution.One` when the carrier is `Invertible`-branded. The previous throwing-on-singular behavior is preserved under the new name `inverseUnsafe`.
-
-Invertibility uses a scale-relative singular test on the determinant rather than an exact `det !== 0` — the tolerance model is described in the precision-model changeset. `Affine2d` shares the same brand: an invertible `Affine2d` is one whose underlying matrix is invertible.
+A matrix is singular when its determinant falls below `RELATIVE_TOLERANCE` times the product of its row norms. The test scales with the matrix, so `diag(1e-8, 1e-8, 1)` still inverts. [PRECISION.md](https://github.com/tkofh/curvy/blob/main/PRECISION.md) describes the tolerance model.
 
 ```ts
-import { Matrix3x3 } from 'curvy/matrix'
-import { Solution } from 'curvy/solution'
-
-// Solution.AtMostOne<Matrix3x3>
-const a = Matrix3x3.inverse(m)
-if (Solution.isSome(a)) {
-  use(a.value)
+const inv = Matrix3x3.inverse(m) // Solution.AtMostOne<Matrix3x3>
+if (Solution.isSome(inv)) {
+  use(inv.value)
 }
 
-// Solution.One<Matrix3x3<Invertible>> — .value directly accessible
-const b = Matrix3x3.inverse(Matrix3x3.asInvertible(m))
-use(b.value)
-
-// Throws on singular — equivalent to the pre-2.0 `inverse`
-const c = Matrix3x3.inverseUnsafe(m)
+if (Matrix3x3.isInvertible(m)) {
+  use(Matrix3x3.inverse(m).value) // Solution.One, no check needed
+}
 ```
-
-**Migration:**
-
-- `Matrix3x3.inverse(m)`, `Matrix4x4.inverse(m)`, and `Affine2d.inverse(a)` now return a `Solution.AtMostOne` instead of a bare value. Replace with `inverseUnsafe` for the simplest behavior-preserving change, or pattern-match the `Solution` for the safer path.
-- The singular check is now scale-relative rather than exact `=== 0`. Matrices that were marginally non-singular under the old check (determinants smaller than the scaled tolerance) are now treated as singular.

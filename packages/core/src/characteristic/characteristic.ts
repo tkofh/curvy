@@ -11,7 +11,7 @@ import type * as Vector4 from '../vector/vector4.ts'
  * points via `apply`, it produces the cubic polynomial that parameterizes
  * the curve.
  *
- * @since 2.0.0
+ * @since 1.0.3
  */
 export const cubicBezier: Matrix4x4.Matrix4x4 = Matrix4x4.make(
   1,
@@ -38,7 +38,7 @@ export const cubicBezier: Matrix4x4.Matrix4x4 = Matrix4x4.make(
  * Maps Hermite control data `(P0, V0, P1, V1)`, two endpoints and two
  * tangent vectors, to monomial cubic coefficients.
  *
- * @since 2.0.0
+ * @since 1.0.2
  */
 export const cubicHermite: Matrix4x4.Matrix4x4 = Matrix4x4.make(
   1,
@@ -67,7 +67,7 @@ export const cubicHermite: Matrix4x4.Matrix4x4 = Matrix4x4.make(
  * application produces a C2 piecewise spline. The curve does not generally
  * pass through the control points.
  *
- * @since 2.0.0
+ * @since 1.0.2
  */
 export const cubicBasisSpline: Matrix4x4.Matrix4x4 = Matrix4x4.make(
   1 / 6,
@@ -111,7 +111,7 @@ const cardinalMatrix = (tension: number): Matrix4x4.Matrix4x4 =>
 const catmullRom = cardinalMatrix(0.5)
 
 // The most recently used tensions, oldest first. Reusing the instance keeps
-// identity-keyed caches downstream warm (`Bezier2d.fromBasis` keys its
+// identity-keyed caches downstream warm (`Bezier2d.fromSpline` keys its
 // conversion matrix on it), and the bound keeps a tension that changes on
 // every call, such as one driven by a slider, from growing the cache.
 const CARDINAL_CACHE_SIZE = 16
@@ -132,7 +132,7 @@ const cardinalCache = new Map<number, Matrix4x4.Matrix4x4>()
  *
  * @param tension - How tightly the curve hugs the control points. `0` gives straight segments, `0.5` Catmull-Rom.
  * @returns The characteristic matrix for that tension.
- * @since 2.0.0
+ * @since 1.0.2
  */
 export const cubicCardinal = (tension: number): Matrix4x4.Matrix4x4 => {
   if (tension === 0.5) {
@@ -156,7 +156,7 @@ export const cubicCardinal = (tension: number): Matrix4x4.Matrix4x4 => {
  * The cubic Catmull-Rom characteristic matrix: Cardinal with tension
  * `0.5`, the most common Cardinal-family variant.
  *
- * @since 2.0.0
+ * @since 1.0.2
  */
 export const cubicCatmullRom: Matrix4x4.Matrix4x4 = catmullRom
 

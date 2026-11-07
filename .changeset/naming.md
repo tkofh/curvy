@@ -2,56 +2,42 @@
 'curvy': major
 ---
 
-Sweep the public surface for naming coherence. The library accumulated several inconsistencies organically; v2 lands one rule per verb and cleans up the stragglers across the constructor surface, one spline method, and the vector constants.
+**Several 1.x constructors and methods change name or shape.** Functions that took a variable number of arguments now take one array or a fixed argument list. Spreading a long array into a rest parameter throws a `RangeError` at the call site, and an array has no such limit.
 
-**Constructor rule.** `make` is the primary variadic constructor, `fromArray` is its array form, `fromXxx` is for genuinely-from-X semantic constructors named for what their inputs represent.
+| 1.0.9                                                                                                   | 2.0                                                                        |
+| ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `CubicCurve2d.fromPoints(c0, c1, c2, c3)` (also `LinearCurve2d`, `QuadraticCurve2d`)                    | `CubicCurve2d.fromCoefficients(c0, c1, c2, c3)`                            |
+| `CubicPath2d.fromCurves(c0, c1)` or `fromCurveArray([c0, c1])` (also `LinearPath2d`, `QuadraticPath2d`) | `CubicPath2d.fromArray([c0, c1])`                                          |
+| `Cardinal2d.make(p0, p1, p2)`                                                                           | `Cardinal2d.fromArray([p0, p1, p2], { alpha: 0 })` for the 1.x curve shape |
+| `Basis2d.append(spline, p4, p5)` (also `prepend`, and both on `Cardinal2d`)                             | `Basis2d.append(spline, [p4, p5])`                                         |
+| `Interval.fromMinMax(a, b, c)`                                                                          | `Interval.fromValues([a, b, c])`, or `Interval.fromMinMax(a, b)` for two   |
+| `Matrix3x3.matrix3x3(m00, ..., m22)`                                                                    | `Matrix3x3.make(m00, ..., m22)`                                            |
+| `Bezier2d.appendCurvatureMirrored`                                                                      | `Bezier2d.appendCurvatureAligned`                                          |
+| `Vector2.unit` (also `Vector3`, `Vector4`)                                                              | `Vector2.one`                                                              |
 
-**Renames (curve modules):** `LinearCurve2d.fromPoints`, `QuadraticCurve2d.fromPoints`, `CubicCurve2d.fromPoints` -> `fromCoefficients`. The old name was a misnomer — the function takes `Vector2`s but stores them as polynomial coefficient bundles, not as points on the curve. The new name is honest about that.
+The curve `fromPoints` took polynomial coefficients rather than points on the curve, and `fromCoefficients` names what it takes. `one` is the all-ones vector, and `Vector3.unitX`, `unitY`, and `unitZ` keep their names. The data-last `append` and `prepend` take the array too, as in `Basis2d.append([p4, p5])`. `Cardinal2d.fromArray` takes the spline options as an optional second argument, where `alpha: 0` keeps the 1.x uniform parameterization. `Interval.fromValues` throws on an empty array. `Hermite2d.append` and `prepend` keep their point-and-tangent pair.
 
-```ts
-// before
-CubicCurve2d.fromPoints(c0, c1, c2, c3) // Vector2s = polynomial coefficients
-// after
-CubicCurve2d.fromCoefficients(c0, c1, c2, c3)
-```
+**The old variadic calls throw.** TypeScript rejects them, and in untyped JavaScript `append` and `prepend` on `Basis2d` and `Cardinal2d` throw an `Error` when the points argument is not an array, as in `Basis2d.append(spline, p4, p5)`. `Interval.fromMinMax` throws when it gets other than two arguments.
 
-**Renames (path modules):** `LinearPath2d`, `QuadraticPath2d`, `CubicPath2d` switch from `fromCurves` / `fromCurveArray` to `make` / `fromArray`, matching every spline module's `make` + `fromArray` convention.
+**New constructors:**
 
-```ts
-// before
-CubicPath2d.fromCurves(c0, c1)
-CubicPath2d.fromCurveArray([c0, c1])
-// after
-CubicPath2d.make(c0, c1)
-CubicPath2d.fromArray([c0, c1])
-```
-
-**Removed (Bézier conversion primitive):** `Bezier2d.fromSpline` is now package-private. Its only callers were the other splines' own `toBezier` methods, and SVG path serialization (which now lives in core, not a separate package). End users should reach for `Cardinal2d.toBezier`, `Hermite2d.toBezier`, or `Basis2d.toBezier` rather than constructing a basis-conversion call by hand.
-
-**New (curve modules):** `LinearCurve2d.fromEndpoints`, `QuadraticCurve2d.fromBezierPoints`, `CubicCurve2d.fromBezierPoints` — closed-form Bernstein-basis to monomial conversion. Constructs a single curve from real Bézier control points without the round-trip through `Bezier2d` + `toPath`. For cubics, `p0` and `p3` are the curve's endpoints and `p1`, `p2` are off-curve control handles; for quadratics, `p1` is the single control handle. The linear case has no off-curve control points (it's just the two endpoints), so it gets the more discoverable `fromEndpoints` name.
+- `CubicCurve2d.fromBezierPoints` and `QuadraticCurve2d.fromBezierPoints` build a curve from Bézier control points, and `LinearCurve2d.fromEndpoints` builds one from its endpoints.
+- `QuadraticPolynomial.fromPoints` and `CubicPolynomial.fromPoints` fit a polynomial through three or four `(x, y)` points with distinct `x`, like the existing `LinearPolynomial.fromPoints`.
+- Every spline has `fromTuples`, which takes `[x, y]` tuples, or `[x, y, weight]` for `RationalBezier2d`.
 
 ```ts
-const c = CubicCurve2d.fromBezierPoints(
+CubicCurve2d.fromBezierPoints(
   Vector2.make(0, 0),
   Vector2.make(1, 0),
   Vector2.make(1, 1),
   Vector2.make(0, 1),
 )
+Bezier2d.fromTuples([
+  [0, 0],
+  [1, 2],
+  [3, 2],
+  [4, 0],
+])
 ```
 
-**New (polynomial modules):** `QuadraticPolynomial.fromPoints` and `CubicPolynomial.fromPoints` — Lagrange interpolation through 3 and 4 `(x, y)` points, completing the symmetry with `LinearPolynomial.fromPoints` (which already existed). Implementation uses Newton's divided differences collected to monomial form. The input `x` values must be distinct.
-
-```ts
-// y = x^2 + 2x + 3
-const p = QuadraticPolynomial.fromPoints(
-  Vector2.make(-1, 2),
-  Vector2.make(0, 3),
-  Vector2.make(1, 6),
-)
-```
-
-**Renamed (matrix module):** `Matrix3x3.matrix3x3` -> `Matrix3x3.make`. The `Matrix2x2` and `Matrix4x4` modules already used `make`; only `Matrix3x3` had the type-name-as-constructor variant, breaking symmetry across the matrix family.
-
-**Renamed (spline method):** `Bezier2d.appendCurvatureMirrored` -> `Bezier2d.appendCurvatureAligned`, for consistency with the rest of the `*Aligned` family (`appendTangentAligned`, `appendVelocityAligned`, `appendAccelerationAligned`). The internal binding was already named `appendCurvatureAligned`; this aligns the public surface.
-
-**Renamed (vector constants):** `Vector2.unit`, `Vector3.unit`, and `Vector4.unit` -> `one`. These are the all-ones constants (magnitude `sqrt(2)`/`sqrt(3)`/`2`), not unit-length vectors, and the old name promised normalization it never had. `Vector3.unitX`/`unitY`/`unitZ` keep their names: those are genuine unit vectors.
+[MIGRATION.md](https://github.com/tkofh/curvy/blob/main/MIGRATION.md) lists every renamed and removed export.

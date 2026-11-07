@@ -106,7 +106,7 @@ export const fromVector: (v: Vector2) => LinearPolynomial = internal.fromVector
  * @param p - The point on the line.
  * @param slope - The slope of the line.
  * @returns A new `LinearPolynomial` instance.
- * @since 1.0.0
+ * @since 1.0.1
  */
 export const fromPointSlope: (p: Vector2, slope: number) => LinearPolynomial =
   internal.fromPointSlope
@@ -120,7 +120,7 @@ export const fromPointSlope: (p: Vector2, slope: number) => LinearPolynomial =
  * @param p1 - The first point.
  * @param p2 - The second point.
  * @returns A new `LinearPolynomial` whose graph passes through both points.
- * @since 1.0.0
+ * @since 1.0.1
  */
 export const fromPoints: (p1: Vector2, p2: Vector2) => LinearPolynomial = internal.fromPoints
 
@@ -306,7 +306,7 @@ export const coefficients: (p: LinearPolynomial) => readonly [number, number] =
  *
  * @param p - The linear polynomial to differentiate.
  * @returns The constant derivative `c1`, as a plain number.
- * @since 1.0.0
+ * @since 1.0.1
  */
 export const derivative: (p: LinearPolynomial) => number = internal.derivative
 

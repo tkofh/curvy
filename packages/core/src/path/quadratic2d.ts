@@ -49,7 +49,7 @@ export interface QuadraticPath2d<out Trait = unknown>
  * @param curves - The curves to create the path from. At least one is required.
  * @returns A new `QuadraticPath2d` instance.
  * @throws `Error` when the array is empty.
- * @since 2.0.0
+ * @since 1.0.0
  */
 export const fromArray: (curves: ReadonlyArray<QuadraticCurve2d>) => QuadraticPath2d =
   internal.fromArray

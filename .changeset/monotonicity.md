@@ -2,34 +2,27 @@
 'curvy': major
 ---
 
-**`Monotonicity` is now a top-level subpath, encoded as a bitmask.** The type moved out of `curvy/polynomial`'s internals into its own first-class module at `curvy/monotonicity`, and the values switched from a string union to a 2-bit sign-coverage bitmask of the function's derivative. This is the runtime classification that the type-level `Monotonic` / `Increasing` / `Decreasing` brands (see the trait-system changeset) refine into the type system, and that curves compute through `Monotonicity.fromDerivativeRange` (see the precision-model changeset).
+**`monotonicity` returns a numeric constant from the new `curvy/monotonicity` module, where 1.x returned a string.** `LinearPolynomial.monotonicity`, `QuadraticPolynomial.monotonicity`, and `CubicPolynomial.monotonicity` all switch:
+
+| 1.x            | 2.0                       | Value |
+| -------------- | ------------------------- | ----- |
+| `'constant'`   | `Monotonicity.Constant`   | `0`   |
+| `'increasing'` | `Monotonicity.Increasing` | `1`   |
+| `'decreasing'` | `Monotonicity.Decreasing` | `2`   |
+| `'none'`       | `Monotonicity.None`       | `3`   |
 
 ```ts
 import { Monotonicity } from 'curvy/monotonicity'
-import { CubicPolynomial } from 'curvy/polynomial'
 
-const m: Monotonicity = CubicPolynomial.monotonicity(p, Interval.unit)
-if (m === Monotonicity.Increasing) {
-  /* ... */
-}
-if (Monotonicity.isStrict(m)) {
-  /* m is Increasing | Decreasing */
-}
+// 1.x: CubicPolynomial.monotonicity(p, i) === 'increasing'
+CubicPolynomial.monotonicity(p, i) === Monotonicity.Increasing
 ```
 
-The new encoding:
+The value is a bitmask of the derivative's sign: bit 0 says it takes positive values, and bit 1 says it takes negative ones. The OR of two adjacent intervals' classifications is the classification of their union, so `Increasing | Decreasing` is `None`. `Monotonicity.isStrict(m)` replaces `m === 'increasing' || m === 'decreasing'` and narrows `m` to `1 | 2`. The `Monotonicity` type and `GuaranteedMonotonicity` (the three values without `None`, which `LinearPolynomial.monotonicity` returns) are importable for the first time. `Monotonicity.fromComparison` and `Monotonicity.fromDerivativeRange` classify your own functions from two endpoint values or from a derivative's range.
 
-| value | name         | derivative on the interval    |
-| ----- | ------------ | ----------------------------- |
-| `0`   | `Constant`   | = 0 everywhere                |
-| `1`   | `Increasing` | >= 0, with at least one `> 0` |
-| `2`   | `Decreasing` | <= 0, with at least one `< 0` |
-| `3`   | `None`       | crosses zero                  |
+Two results change:
 
-The numeric encoding is principled, not arbitrary: bit 0 is "derivative takes positive values", bit 1 is "derivative takes negative values". So the bitwise OR of two adjacent subintervals' classifications gives the classification of their union — `Increasing | Decreasing === None` is a literal algebraic identity, not a special case. That lets subdivision-based monotonicity checks combine sub-results with a single `|`, no custom merge logic.
+- Quadratic and cubic classification reads the derivative's values over the interval and ignores where its roots fall. A sign counts only beyond `RELATIVE_TOLERANCE` times the larger derivative magnitude, so a derivative that touches zero without changing sign leaves the polynomial monotonic: `t^3` on `[-1, 1]` is `Increasing`, where 1.x said `'none'`.
+- `QuadraticPolynomial.monotonicity` and `CubicPolynomial.monotonicity` throw on a zero-width interval, where 1.x returned `'constant'`.
 
-`Monotonicity.isStrict(m)` is the new type-narrowing predicate (`m is 1 | 2`) for "strict monotonicity" — the cases that admit a unique inverse. Replaces inline `m === 'increasing' || m === 'decreasing'` checks.
-
-`Monotonicity.fromComparison(s0, s1)` is the renamed `guaranteedMonotonicityFromComparison` — returns `GuaranteedMonotonicity` (the `Constant | Increasing | Decreasing` subset) based on the comparison of two endpoint values.
-
-**Breaking.** Any code comparing against the old string literals (`'increasing'`, `'decreasing'`, `'constant'`, `'none'`) needs to compare against the constants (`Monotonicity.Increasing`, etc.) instead. The migration is mechanical — replace each string with the corresponding constant from the new subpath.
+The [migration guide](https://github.com/tkofh/curvy/blob/main/MIGRATION.md) lists every 1.x export and its 2.0 form.

@@ -2,28 +2,30 @@
 'curvy': minor
 ---
 
-**Rational cubic curves, paths, and splines.** A new `RationalCubicCurve2d` lives in `curvy/curve`, alongside the existing polynomial cubic. It stores the curve as three monomial polynomials `x(t)`, `y(t)`, `w(t)` and evaluates as `(x(t)/w(t), y(t)/w(t))` — the projection from homogeneous coordinates back to the plane. With uniform weights the curve degenerates to a polynomial cubic.
+**Rational cubic curves, paths, and splines draw circles and conics exactly.** Each control point carries a weight, and the curve evaluates as `(x(t)/w(t), y(t)/w(t))`. Uniform weights give back the polynomial cubic.
 
 ```ts
-import { RationalCubicCurve2d } from 'curvy/curve'
-import { Vector2 } from 'curvy/vector'
-
-// Four weighted Bézier control points; the matrix-based constructor
-// lifts them to homogeneous (w*x, w*y, w) and runs the same characteristic
-// matrix the polynomial pipeline uses, just on three channels.
 const c = RationalCubicCurve2d.fromBezierPoints(
   Vector2.makeWeighted(0, 0, 1),
   Vector2.makeWeighted(1, 2, 5),
   Vector2.makeWeighted(2, 2, 5),
   Vector2.makeWeighted(3, 0, 1),
 )
-RationalCubicCurve2d.solve(c, 0.5) // -> Vector2
+RationalCubicCurve2d.solve(c, 0.5) // Vector2(1.5, 1.875)
 ```
 
-A matching path type (`RationalCubicPath2d` in `curvy/path`) and spline type (`RationalBezier2d` in `curvy/splines`) follow the same shape as their polynomial counterparts, with `solve`, `solveAtX`, `solveAtY`, and the standard pipeable API.
+- `RationalCubicCurve2d` (`curvy/curve`) also builds from three polynomials with `fromPolynomials`. It has `solve`, `startPoint`, `endPoint`, `solveAtX`, `solveAtY`, `subdivide`, `transform`, and per-axis monotonicity refiners such as `isIncreasingX` and `asMonotonic`.
+- `RationalCubicPath2d` (`curvy/path`) joins curves with `fromArray` and `append`, and has `solve` and `transform`. Its `solve` clamps a `u` within `EPSILON` of `[0, 1]` and throws beyond that, like the other paths.
+- `RationalBezier2d` (`curvy/splines`) is the weighted Bézier spline, lowered by `toPath`. `fromBezier` lifts a `Bezier2d` with unit weights, and `Bezier2d.fromRational` converts back, returning `Solution.none` unless the weights are uniform.
+- `Vector2.Weighted` is the control point, made with `Vector2.makeWeighted(x, y, w)` or `withWeight`. Weights must be positive and finite, and vector arithmetic rejects weighted points.
 
-**Per-axis monotonicity traits live on the curve, not the polynomials.** Unlike `CubicCurve2d` where the trait brand flows through to the underlying polynomial, rational traits are properties of the projected rational functions `x(t)/w(t)` and `y(t)/w(t)` — not of any individual polynomial. The brand therefore lives on the curve itself via a phantom property, and `RationalCubicCurve2d<XTraits, YTraits>` carries `Increasing` / `Decreasing` / `Monotonic` exactly like the polynomial curve does.
+**Approximation.** `RationalCubicCurve2d.approximateAsCubicCurves` and `RationalCubicPath2d.approximateAsCubicPath` rebuild a rational shape from polynomial cubics, keeping every point of each within `tolerance` of the other. [PRECISION.md](https://github.com/tkofh/curvy/blob/main/PRECISION.md) states the guarantee under "Certified approximations". `CubicPolynomial.subdivide(p, t)` splits one polynomial at `t`.
 
-**Weighted control points.** `Vector2.Weighted` is a structurally distinct branded type — a 2D point carrying a positive scalar weight — constructed via `Vector2.makeWeighted(x, y, w)` or `Vector2.withWeight(v, w)`, with `isWeighted`, `unweighted`, and `weightedEquals` alongside. The brand keeps weighted points out of plain vector arithmetic (`add`, `scale`, ...), where weighted operations are not well-defined.
+**Easing.** Two constructors build a `y(x)` curve from `(0, 0)` to `(1, 1)`. `RationalCubicCurve2d.fromBezierPoints(p1, p2)` takes only the two handles, like CSS `cubic-bezier(x1, y1, x2, y2)` with a weight on each. `fromSlopesAndCurvatures(m0, m1, k0, k1)` takes end slopes and signed curvatures (positive bends upward), and throws for inputs it cannot fit. Neither checks monotonicity. `asIncreasing` does, and narrows `solveAtX` to at most one answer:
 
-**Conversions.** `RationalCubicCurve2d.fromPolynomials(x, y, w)` constructs a curve directly from the three monomial polynomials, and `subdivide(c, t)` splits a curve at `t in (0, 1)` into two rational cubics that together trace the original exactly. In the other direction, `Bezier2d.fromRational(r)` returns `Solution.AtMostOne<Bezier2d>` — `Solution.one` when the rational spline's weights are uniform (the curve is mathematically a polynomial Bézier), `Solution.none` otherwise, since a genuinely rational curve cannot be represented exactly by a polynomial one.
+```ts
+const ease = RationalCubicCurve2d.asIncreasing(
+  RationalCubicCurve2d.fromSlopesAndCurvatures(0.5, 1.5, 0.5, -0.5),
+)
+RationalCubicCurve2d.solveAtX(ease, 0.7) // Solution.One(0.5721279817520788)
+```

@@ -55,6 +55,7 @@ export const append: {
    *
    * @param points - The points to append.
    * @returns A function that takes a `Linear2d` and returns a new `Linear2d` with the appended points.
+   * @throws `Error` when `points` is not an array.
    * @since 2.0.0
    */
   (points: ReadonlyArray<Vector2>): (p: Linear2d) => Linear2d
@@ -64,6 +65,7 @@ export const append: {
    * @param p - The `Linear2d` to append to.
    * @param points - The points to append.
    * @returns A new `Linear2d` with the appended points.
+   * @throws `Error` when `points` is not an array.
    * @example
    * ```ts
    * const spline = Linear2d.fromTuples([[0, 0], [1, 1]])
@@ -81,6 +83,7 @@ export const prepend: {
    *
    * @param points - The points to prepend.
    * @returns A function that takes a `Linear2d` and returns a new `Linear2d` with the prepended points.
+   * @throws `Error` when `points` is not an array.
    * @since 2.0.0
    */
   (points: ReadonlyArray<Vector2>): (p: Linear2d) => Linear2d
@@ -90,6 +93,7 @@ export const prepend: {
    * @param p - The `Linear2d` to prepend to.
    * @param points - The points to prepend.
    * @returns A new `Linear2d` with the prepended points.
+   * @throws `Error` when `points` is not an array.
    * @since 2.0.0
    */
   (p: Linear2d, points: ReadonlyArray<Vector2>): Linear2d

@@ -215,7 +215,7 @@ export const zero = make(0)
 /**
  * The all-ones vector `(1, 1, 1, 1)`, the `hadamard` identity.
  *
- * @since 1.0.0
+ * @since 1.0.9
  */
 export const one = make(1)
 
@@ -286,7 +286,7 @@ export const scale: {
    *
    * @param s - The scalar to scale the vector by.
    * @returns A function that takes the vector and returns the scaled vector.
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (s: number): (v: Vector4) => Vector4
   /**
@@ -295,7 +295,7 @@ export const scale: {
    * @param v - The vector to scale.
    * @param s - The scalar to scale the vector by.
    * @returns A new `Vector4` scaled by `s`, or the input instance itself when `s` is exactly `1`.
-   * @since 1.0.0
+   * @since 1.0.2
    */
   (v: Vector4, s: number): Vector4
 } = internal.scale

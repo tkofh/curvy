@@ -495,7 +495,7 @@ export const curvature: {
    * @param p - The quadratic polynomial.
    * @param x - The input at which to measure curvature.
    * @returns The unsigned curvature at `x`.
-   * @since 1.0.0
+   * @since 1.0.1
    */
   (p: QuadraticPolynomial, x: number): number
   /**
@@ -504,7 +504,7 @@ export const curvature: {
    *
    * @param x - The input at which to measure curvature.
    * @returns A function that takes a quadratic polynomial and returns the curvature at `x`.
-   * @since 1.0.0
+   * @since 1.0.1
    */
   (x: number): (p: QuadraticPolynomial) => number
 } = internal.curvature

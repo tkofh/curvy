@@ -1,3 +1,4 @@
+import type { Matrix4x4 } from '../matrix/matrix4x4.ts'
 import type { CubicPath2d } from '../path/cubic2d.ts'
 import type { Affine2d } from '../transform/affine2d.ts'
 import type { Value } from '../utils/value.ts'
@@ -47,6 +48,38 @@ export const make: (p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) => Bezie
 export const fromArray: (points: ReadonlyArray<Vector2>) => Bezier2d = internal.fromArray
 
 /**
+ * Converts a spline given by its control points and characteristic matrix
+ * into Bézier control points that trace the same curve.
+ *
+ * Each run of four consecutive points, advancing `stride` points at a time,
+ * forms one segment. `matrix` maps the run to the segment's cubic
+ * coefficients, as in `Characteristic.apply`. Every segment but the last
+ * ends where the next one starts, so the matrix and stride must give a
+ * spline whose consecutive segments meet. The built-in families do at their
+ * natural strides: `cubicBezier` at 3, `cubicHermite` at 2, and
+ * `cubicBasisSpline` and `cubicCardinal` at 1. Points past the last full
+ * run of four are ignored.
+ *
+ * @param points - The spline's control points.
+ * @param matrix - The spline family's characteristic matrix.
+ * @param stride - How many points each segment advances past the previous one.
+ * @returns A new `Bezier2d` with one segment per run of four points.
+ * @throws `Error` when `points` holds fewer than four points.
+ * @example
+ * ```ts
+ * // Uniform Catmull-Rom, the 1.x Cardinal2d shape, as Bézier points
+ * const points = [[0, 0], [1, 2], [3, 2], [4, 0], [6, 1]].map(([x, y]) => Vector2.make(x, y))
+ * Bezier2d.fromSpline(points, Characteristic.cubicCatmullRom, 1) // 7 points, 2 segments
+ * ```
+ * @since 1.0.3
+ */
+export const fromSpline: (
+  points: Iterable<Vector2>,
+  matrix: Matrix4x4,
+  stride: 1 | 2 | 3,
+) => Bezier2d = internal.fromSpline
+
+/**
  * Creates a new `Bezier2d` from an array of `[x, y]` tuples. Convenient for
  * data sourced from JSON, CSV, or other tuple-shaped formats.
  *
@@ -75,7 +108,7 @@ export const append: {
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
    * @returns A function that takes a `Bezier2d` and returns a new spline with the segment appended.
-   * @since 1.0.1
+   * @since 1.0.0
    */
   (p1: Vector2, p2: Vector2, p3: Vector2): (p: Bezier2d) => Bezier2d
   /**
@@ -90,7 +123,7 @@ export const append: {
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
    * @returns A new `Bezier2d` with the segment appended.
-   * @since 1.0.1
+   * @since 1.0.0
    */
   (p: Bezier2d, p1: Vector2, p2: Vector2, p3: Vector2): Bezier2d
 } = internal.append
@@ -104,7 +137,7 @@ export const appendTangentAligned: {
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
    * @returns A function that takes a `Bezier2d` and returns a new spline with the segment appended.
-   * @since 1.0.1
+   * @since 1.0.0
    */
   (ratio: number, p2: Vector2, p3: Vector2): (p: Bezier2d) => Bezier2d
   /**
@@ -124,7 +157,7 @@ export const appendTangentAligned: {
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
    * @returns A new `Bezier2d` with the segment appended.
-   * @since 1.0.1
+   * @since 1.0.0
    */
   (p: Bezier2d, ratio: number, p2: Vector2, p3: Vector2): Bezier2d
 } = internal.appendTangentAligned
@@ -170,7 +203,7 @@ export const appendVelocityAligned: {
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
    * @returns A function that takes a `Bezier2d` and returns a new spline with the segment appended.
-   * @since 1.0.1
+   * @since 1.0.0
    */
   (p2: Vector2, p3: Vector2): (p: Bezier2d) => Bezier2d
   /**
@@ -185,7 +218,7 @@ export const appendVelocityAligned: {
    * @param p2 - The appended segment's second handle.
    * @param p3 - The appended segment's end point.
    * @returns A new `Bezier2d` with the segment appended.
-   * @since 1.0.1
+   * @since 1.0.0
    */
   (p: Bezier2d, p2: Vector2, p3: Vector2): Bezier2d
 } = internal.appendVelocityAligned

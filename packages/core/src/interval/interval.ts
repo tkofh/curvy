@@ -263,6 +263,8 @@ export const fromSize: {
  * @param b - The other endpoint.
  * @returns A new `Closed` interval `[min(a, b), max(a, b)]`. A NaN endpoint
  *   makes both ends NaN, as `Math.min` and `Math.max` do.
+ * @throws `Error` when called with other than two arguments. For any other
+ *   count, use `fromValues`.
  * @example
  * ```ts
  * Interval.fromMinMax(3, -1) // Interval [-1, 3]

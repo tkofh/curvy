@@ -4,30 +4,28 @@
 
 **New `curvy/transform` module: `Affine2d`, plus `transform` on every curve, path, and spline.**
 
-`Affine2d` is an immutable 2D affine transform backed by a homogeneous `Matrix3x3`. Constructors cover the standard family:
+`Affine2d` is an immutable 2D affine transform backed by a homogeneous `Matrix3x3`. Constructors with a fixed point take it as an optional last `origin`, which defaults to `Vector2.zero`:
 
 ```ts
-import { Affine2d } from 'curvy/transform'
-import { Vector2 } from 'curvy/vector'
-
 Affine2d.identity
 Affine2d.translate(10, 0) // or translate(Vector2.make(10, 0))
 Affine2d.rotate(Math.PI / 4) // or rotate(theta, origin)
 Affine2d.scale(2) // or scale(sx, sy), scale(factors), each with an optional origin
 Affine2d.shear(kx, ky) // or shear(kx, ky, origin)
-Affine2d.reflectX // constants; or reflectAcrossLine(direction, origin?)
-Affine2d.fromMatrix(m) // validates the bottom row is affine
+Affine2d.reflectX // and reflectY; or reflectAcrossLine(direction, origin?)
+Affine2d.fromMatrix(m) // throws unless the bottom row is [0, 0, 1]
 ```
 
-`andThen` composes transforms; `apply` / `applyTo` send a `Vector2` through one. Accessors `translation`, `linear`, and `linearPart` decompose a transform into its translation vector and linear part. `equals` compares component-wise. `inverse` / `inverseUnsafe` and the `Invertible` trait integration are described in the matrix changeset — an invertible `Affine2d` is one whose underlying matrix is invertible.
+- `andThen(a, b)` applies `a`, then `b`.
+- `apply` and `applyTo` map a point. `applyDirection` ignores translation, for tangents and edge vectors. `applyNormal` maps by the inverse transpose of the linear part and normalizes, so a normal stays perpendicular under a non-uniform scale or a shear, and an outward normal stays outward under a reflection.
+- `isMirror` is `true` for an invertible transform that reverses orientation, the case where a polygon's winding flips.
+- `translation`, `linear`, and `linearPart` split a transform into its translation and linear part. `equals` compares within a tolerance.
+- `inverse` returns a `Solution`, `none` when the transform is singular. `inverseUnsafe` throws instead. `isInvertible` and `asInvertible` add the `Invertible` brand, under which `inverse` returns `Solution.One`. Singularity is judged on the 2x2 linear part alone, so a translation never makes a transform singular.
 
-**`transform(x, t: Affine2d)` is available on every geometric carrier** — `LinearCurve2d`, `QuadraticCurve2d`, `CubicCurve2d`, `RationalCubicCurve2d`, the four path types, and all six spline types — in both data-first and data-last forms. Each returns a new instance of the same kind with the transform applied to its geometry; `Cardinal2d.transform` preserves `tension` and `alpha`, and `RationalBezier2d.transform` preserves control-point weights.
+**`transform(x, a)` maps every curve, path, and spline type through an `Affine2d`**, data-first or data-last, and returns the same kind. `Cardinal2d.transform` keeps `tension` and `alpha`, and `RationalBezier2d.transform` keeps each weight. Splines transform their control points, so a centripetal or chordal `Cardinal2d` under a non-uniform scale or a shear is not the exact image of the original curve. Convert it with `toBezier` first when that matters.
 
-Transforming **drops trait brands** — the result is unbranded even when the input carried `Monotonic*` or `Continuous`. An affine map can break axis monotonicity outright (rotate an x-increasing curve by 90 degrees), so the brands can't travel through in general; re-refine with the `is*` / `as*` refiners after transforming when the property still matters.
+The result carries no trait brands, because a rotation can break axis monotonicity. Re-refine with the `is*` and `as*` refiners when the property still matters.
 
 ```ts
-import { Affine2d } from 'curvy/transform'
-import { CubicPath2d } from 'curvy/path'
-
 const flipped = path.pipe(CubicPath2d.transform(Affine2d.reflectY))
 ```
