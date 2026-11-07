@@ -61,8 +61,10 @@ jobs:
           node-version: 24
           cache: pnpm
 
+      # Root only: versioning needs just changesets and oxfmt, not any
+      # workspace package's dependencies.
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --filter .
 
       - name: Maintain Version Packages PR
         id: changesets
@@ -117,13 +119,17 @@ jobs:
             exit 1
           fi
 
+      # Scoped to what gets published: curvy, its workspace dependencies, and
+      # the root (turbo, oxlint, oxfmt, changesets). Skips the playground's
+      # Nuxt install and its `nuxt prepare` postinstall.
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --filter "curvy..." --filter .
 
       # The Version Packages PR is opened by GITHUB_TOKEN, so CI never runs on
       # it; this is the verification gate for the exact tree being published.
+      # `//` keeps the root-level `check` task in scope.
       - name: Check, build, test, typecheck
-        run: pnpm turbo run check build test typecheck
+        run: pnpm turbo run check build test typecheck --filter=curvy --filter=//
 
       - name: Publish to npm
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
